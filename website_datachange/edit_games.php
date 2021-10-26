@@ -1,0 +1,265 @@
+<?php
+//##########################################################
+include_once '../database/db_connection.php';
+include_once 'edit_interface.php';
+//##########################################################
+
+//Variablen speichern
+$TurnierID = $_POST['TurnierID'];
+//echo "<script>console.log('TurnierID: $TurnierID')</script>";
+
+$begegnungId = $_POST['begegnungId'];
+//echo "<script>console.log('begegnungId: $begegnungId')</script>";
+$spielID = $_POST['spielId'];
+//echo "<script>console.log('Id des Spiels das bearbeitet oder gelöscht wird wird: $spielID')</script>";
+$flaschen1 = $_POST['Flaschen1'];
+$flaschen2 = $_POST['Flaschen2'];
+$action = $_POST['action'];
+//echo "<script>console.log('Action: $action')</script>";
+
+//##########################################################
+//LOGIN
+include_once 'login_interface.php';
+//##########################################################
+
+if ($action == 'Ändern') {
+  if($successfulLogin == 1 || ($successfulLogin == 2 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+    $sql = "UPDATE `Turnier_Spiel` SET `biereheimteam` = ?, `biereauswaertsteam` = ? WHERE `Turnier_Spiel`.`id` = ?;";
+    myDb_execute($conn, $TurnierID, $bn, $sql, array($flaschen1, $flaschen2, $spielID));
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde erfolgreich geändert. $successfulLogin $spielGehoertZuTeam')</script>";
+  }else{ //Team-Login
+
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde nicht geändert.')</script>";
+    $message = "Leider gehört das Spiel, das du bearbeiten möchtest, nicht zu deinem Team. Falls du es bearbeiten möchtest, wende dich am besten an einen Administrator.";
+    //echo "<script type='text/javascript'>alert('$message');</script>";
+  }
+}else if ($action == 'Löschen'){
+  if($successfulLogin == 1){ //Account-Login
+    $sql = "DELETE FROM `Turnier_Spiel` WHERE `Turnier_Spiel`.`id` = ?;";
+    myDb_execute($conn, $TurnierID, $bn, $sql, array($spielID));
+
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde erfolgreich gelöscht.')</script>";
+  }else{ //Team-Login
+
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde nicht gelöscht..')</script>";
+    $message = "Leider hast du nicht die nötigen Bearbeitungsrechte, um  einen Spielstand zu löschen.";
+    //echo "<script type='text/javascript'>alert('$message');</script>";
+  }
+}else if($action == 'Eintragen'){
+  if($successfulLogin == 1 || ($successfulLogin == 2 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+    $sql = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
+    myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde erfolgreich eingetragen. $successfulLogin $spielGehoertZuTeam')</script>";
+  }else{ //Team-Login
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde nicht eingetragen.')</script>";
+    $message = "Leider gehört das Spiel, das du eintragen möchtest, nicht zu deinem Team. Falls du es eintragen möchtest, wende dich am besten an einen Administrator.";
+    //echo "<script type='text/javascript'>alert('$message');</script>";
+  }
+}else if($action == 'Finalisieren'){
+  if($successfulLogin == 1 || ($successfulLogin == 2 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+    $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE id = ?";
+    myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId));
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde erfolgreich finalisiert. $successfulLogin $spielGehoertZuTeam')</script>";
+  }else{ //Team-Login
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    //echo "<script>console.log('Das Spiel wurde nicht finalisiert.')</script>";
+    $message = "Leider gehört das Spiel, das du bearbeiten möchtest, nicht zu deinem Team. Falls du es bearbeiten möchtest, wende dich am besten an einen Administrator.";
+    //echo "<script type='text/javascript'>alert('$message');</script>";
+  }
+}else if($action == 'Unfinalisieren'){
+  if($successfulLogin == 1){ //Account-Login
+    $sql = "UPDATE Turnier_Begegnung SET `status` = 1, fk_siegerteam = NULL WHERE id = ?";
+    myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId));
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+  }else{ //Team-Login
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    //echo "<script>console.log('Die Begegnung wurde nicht unfinalisiert...')</script>";
+    $message = "Leider hast du nicht die nötigen Bearbeitungsrechte, um die Finalisierung aufzuheben. Wende dich am besten an einen Admininstrator";
+    //echo "<script type='text/javascript'>alert('$message');</script>";
+  }
+}else if($action == 'Gruppe_Finalisieren'){
+  if($successfulLogin == 1){ //Account-Login
+    $groupId = $_POST['groupId'];
+    $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?)";
+    myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+  }else{ //Team-Login
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    //echo "<script>console.log('Die Begegnung wurde nicht unfinalisiert...')</script>";
+    $message = "Leider hast du nicht die nötigen Bearbeitungsrechte, um die gesamte Gruppe zu finalisieren. Wende dich am besten an einen Admininstrator";
+    //echo "<script type='text/javascript'>alert('$message');</script>";
+  }
+}else if($action == 'Gruppe_Uninalisieren'){
+  if($successfulLogin == 1){ //Account-Login
+    $groupId = $_POST['groupId'];
+    $sql = "UPDATE Turnier_Begegnung SET `status` = 1 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?)";
+    myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+  }else{ //Team-Login
+    
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+    //echo "<script>console.log('Die Begegnung wurde nicht unfinalisiert...')</script>";
+    $message = "Leider hast du nicht die nötigen Bearbeitungsrechte, um die gesamte Gruppe zu finalisieren. Wende dich am besten an einen Admininstrator";
+    //echo "<script type='text/javascript'>alert('$message');</script>";
+  }
+}else{
+  
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+}
+    
+
+?> 
