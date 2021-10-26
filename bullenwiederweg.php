@@ -1,0 +1,1 @@
+<?php header("Location: /website_datachange/edit_website_bullerei.php?action=take_online"); ?>
