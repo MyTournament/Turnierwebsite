@@ -74,9 +74,8 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
 ?>
 
 <!-- ########################## -->
-<!-- ########  Apfel  ######### -->
+<!-- ########  HEADER  ######### -->
 <!-- ########################## -->
-<!-- dasdas -->
 <header id="header"> 
     <div > <!-- class="logo" -->
         <img src="images/hermann_logo/pilsener.png" width="200" height=auto border="10" alt="Home">
