@@ -20,6 +20,9 @@ if($sperrung == 1){
 include_once 'website_functionalities/load_website.php';
 $website_array = determine_domain_id($conn);
 $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
+if ($websiteId == null){
+    echo "WEBSITE nicht gefunden";
+}
 
 ?>
 
@@ -133,7 +136,7 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
     </div>
     <div class="content">
         <div class="inner">
-            <?php cmsPrintSection($siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+            <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
         </div>
     </div>
     <nav>
@@ -186,13 +189,13 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
             <?php //ANMELDUNG
             if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
                 echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
-                cmsPrintSection($siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); // ANMELDEFRIST
+                cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); // ANMELDEFRIST
             }else if($turnier_phase_ID == 12){ //WARTELISTE
                 echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
                 echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
                 echo "<br/><br/>";
             } ?>
-            <?php //cmsPrintSection($siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+            <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
             
             
             
@@ -211,9 +214,9 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
 <article id="changecontent">
     <h2>Content ändern</h2>
     <p></p>
-    <?php //cmsPrintSection($siteID, $TurnierID, 3, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 3, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <?php changeContent($conn, $TurnierID, $_POST['contentID'], $_POST['content'], $_POST['content_style_tag'], $_POST['function'], $_POST['content_order_in_group']); ?>
-    <?php cmsPrintSection($siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
@@ -222,27 +225,27 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
     <h2>Content hinzufügen</h2>
     <p></p>
     <?php addContent($_POST['contentID'], $TurnierID); ?>
-    <?php cmsPrintSection($siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="allgemeine_info">
-    <?php cmsPrintSection($siteID, $TurnierID, 4, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 4, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#info" class="button">Zurück</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="map">
-    <?php cmsPrintSection($siteID, $TurnierID, 6, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 6, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#info" class="button">Zurück</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- REGELN -->
 <article id="regeln">
-    <?php cmsPrintSection($siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
@@ -252,14 +255,14 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
     <?php //ANMELDUNG
     if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
         echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
-        cmsPrintSection($siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); // ANMELDEFRIST
+        cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); // ANMELDEFRIST
     }else if($turnier_phase_ID == 12){ //WARTELISTE
         echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
         echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
     }else{
         echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
     } ?>
-    <?php cmsPrintSection($siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>                 
@@ -299,21 +302,21 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
 </article>
 <!-- SPIELPLAN ÜBERSICHT -->                       
 <article id="spielplan">
-    <?php cmsPrintSection($siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- SPIELPLAN GRUPPEN -->
 <article id="gruppen">
-    <?php cmsPrintSection($siteID, $TurnierID, 28, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 28, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#teams" class="button">Zurück zu den Teams</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- GRUPPENPHASE - SPIELPLAN -->
 <article id="gruppenphase">
-    <?php cmsPrintSection($siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <?php //printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> 
     <a href="#spielplan" class="button">Zurück zur Übersicht</a>  
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
@@ -321,70 +324,70 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
 </article>
 <!-- Punktetabelle -->
 <article id="punktetabelle">
-    <?php cmsPrintSection($siteID, $TurnierID, 12, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->                      
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 12, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->                      
     <a href="#gruppenphase" class="button">Zurück zum Spielplan</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>  
 </article>
 <!-- KO-Phase -->
 <article id="kophase">
-    <?php cmsPrintSection($siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->   
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->   
     <a href="#spielplan" class="button">Zurück zur Übersicht</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>  
 </article>
 <!-- Turnierbaum -->
 <article id="turnierbaum">
-    <?php cmsPrintSection($siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->   
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->   
     <a href="#kophase" class="button">Zurück zur KO-Phase</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>  
 </article>
 <!-- IMPRESSUM -->
 <article id="impressum">
-    <?php cmsPrintSection($siteID, $TurnierID, 14, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 14, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- datenschutzerklärung -->
 <article id="datenschutzerklaerung">
-    <?php cmsPrintSection($siteID, $TurnierID, 17, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 17, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="info">
-    <?php cmsPrintSection($siteID, $TurnierID, 15, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 15, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- ZEITPLAN -->
 <article id="zeitplan">
-    <?php cmsPrintSection($siteID, $TurnierID, 20, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 20, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
     <a href="#info" class="button">Zurück</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- FAQ -->
 <article id="faq">
-    <?php cmsPrintSection($siteID, $TurnierID, 21, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 21, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
     <a href="#info" class="button">Zurück</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- PLATZHALTER -->
 <article id="platzhalter">
-    <?php cmsPrintSection($siteID, $TurnierID, 16, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 16, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
     <a href="/" class="button">Zurück zur Startseite</a>
     <h5><br/></h5>  
 </article>
 
 <!-- schiedsrichter*innen -->
 <article id="schiedsrichterinnen">
-    <?php cmsPrintSection($siteID, $TurnierID, 24, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 24, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#info" class="button">Zurück</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
@@ -392,7 +395,7 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
 
 <!-- schiedsrichter*innen -->
 <article id="REDACTED_simulator">
-    <?php cmsPrintSection($siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
@@ -420,14 +423,14 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
 
 <!-- SIEGER_INNEN TREPPE -->
 <article id="sieger_innen_treppe">
-    <?php cmsPrintSection($siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- SIEGER_INNEN TREPPE -->
 <article id="rangliste">
-    <?php cmsPrintSection($siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
@@ -580,7 +583,7 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
     <p></br></p>
     <p></br></p>
 
-    <?php cmsPrintSection($siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href='#rangliste' class='button primary'>Rangliste</a>
     <a id="bookmark-this" href="#" title="Bookmark This Page">Bookmark This Page</a>
 
@@ -706,11 +709,11 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
 <!-- ########################## -->  
 <footer id="footer">
     <!--SIEGER*INNEN_TREPPE-->
-    <?php cmsPrintSection($siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> 
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> 
 
     <!-- Lädt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  -->
     
-    <?php cmsPrintSection($siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
 </footer>
 
 </div>
