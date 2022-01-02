@@ -49,38 +49,30 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
             }
         </script>
 
-<!-- Additionally, include jQuery (necessary for the bookmark script) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Additionally, include jQuery (necessary for the bookmark script) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	</head>
-	<body class="is-preload">
+<body class="is-preload">
 
 <!-- Wrapper -->
 <div id="wrapper">
 
 <?php
-    console.log("WebsiteId: " + $websiteId);
-
+    echo "<script>console.log('WebsiteId: ' + $websiteId)</script>";
     include_once 'website_functionalities/countdown.php';
-
-    //TEST-MODUS
-    include_once 'website_functionalities/test_turnier_mode.php';
-    
+    include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus
     include_once 'database/db_update.php'; //Wichtig dass das nach Test-Modus-Abfrage kommt damit das mit aktualisierter TurnierID passiert
     try{
         db_update($conn, $TurnierID); //db_update.php AUSFÜHREN
     }catch (Exception $e) {
         $message = $e->getMessage();
         print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***$message*** ###</i>";
-    }catch (Throwable $e) { //ALLES WAS NICHT SCHON VORHER ABGEFANGEN WIRD
+    }catch (Throwable $e) { //Alles was nicht schon vorher abgefangen wird
         print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***unbekannter Fehler*** ###</i>";
     }
-
-    
-      
     foreach (glob("website_print_functions/*.php") as $filename){
         include_once $filename;
     }
-
     $siteID = 1; // SITE ID (Für CMS)
 
     $gameEditMode = 0; //
