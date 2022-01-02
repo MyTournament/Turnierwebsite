@@ -1,14 +1,9 @@
 <?php
-//header("Location: /home.php");
-
-//##################################################################
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 
 include_once 'variables.php'; //Variablen einbinden (Turniernummer) //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 
-
-//##################################################################
 
 //BULLEREI KOMMT
 $sqlWebsite = 'SELECT * FROM `System_Website` WHERE id = '. $websiteId .' ORDER BY ID';
@@ -26,20 +21,9 @@ include_once 'website_functionalities/load_website.php';
 $website_array = determine_domain_id($conn);
 $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
 
-
 ?>
 
 <!DOCTYPE HTML>
-<!--
- _____ _                  _                       _____                      _       ___   _ _  __     
-/  ___| |                | |                     |  ___|                    | |     /   | | (_)/ _|    
-\ `--.| |_ ___ _ __ _ __ | |__  _   _ _ __ __ _  | |____  ___ __   ___  _ __| |_   / /| | | |_| |_ ___ 
- `--. \ __/ _ \ '__| '_ \| '_ \| | | | '__/ _` | |  __\ \/ / '_ \ / _ \| '__| __| / /_| | | | |  _/ _ \
-/\__/ / ||  __/ |  | | | | |_) | |_| | | | (_| | | |___>  <| |_) | (_) | |  | |_  \___  | | | | ||  __/
-\____/ \__\___|_|  |_| |_|_.__/ \__,_|_|  \__, | \____/_/\_\ .__/ \___/|_|   \__|     |_/ |_|_|_| \___|
-                                           __/ |           | |                                         
-                                          |___/            |_|                                         
--->
 <html>
 	<head>
 		<title>Blankiball Bierball Turnier</title>
@@ -74,19 +58,12 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
 <div id="wrapper">
 
 <?php
-    echo "$websiteId";
-
-
+    console.log("WebsiteId: " + $websiteId);
 
     include_once 'website_functionalities/countdown.php';
 
     //TEST-MODUS
     include_once 'website_functionalities/test_turnier_mode.php';
-
-     //##################################################################
-    //IMPORT PHP-DOCS
-    //echo " ".__DIR__." ";
-    // /REDACTED/website/
     
     include_once 'database/db_update.php'; //Wichtig dass das nach Test-Modus-Abfrage kommt damit das mit aktualisierter TurnierID passiert
     try{
@@ -103,13 +80,6 @@ $websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain
     foreach (glob("website_print_functions/*.php") as $filename){
         include_once $filename;
     }
-
-    //##################################################################
-
-    //include_once 'functions/table_print_functions.php';
-    //include_once 'functions/cms_print_functions.php'; //CONTENT MANAGEMENT FUNKTIONEN EINBINDEN
-    //include_once 'functions/cms_change_functions.php';
-    //include_once 'functions/formular_print_functions.php';
 
     $siteID = 1; // SITE ID (Für CMS)
 
