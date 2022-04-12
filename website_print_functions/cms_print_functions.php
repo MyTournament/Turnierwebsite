@@ -1,5 +1,14 @@
 <?php 
-    function cmsPrintSection($siteID, $TurnierID, $section, $conn, $LoggedIn, $gameEditMode, $testTurnierMode){
+    function cmsPrintSection($websiteId, $siteID, $TurnierID, $section, $conn, $LoggedIn, $gameEditMode, $testTurnierMode){
+        //SITE
+        //checken ob es eine Site mit dieser ID gibt
+        $sqlW = 'SELECT * FROM System_Website WHERE id = '. $websiteId .'';
+        $resultW = $conn->query($sqlW);
+        //wenn es die Site noch nicht gibt -> erstellen
+        if (empty ($rowW = $resultW->fetch_assoc())){
+            //TODO: 
+        }
+        
         //SITE
         //checken ob es eine Site mit dieser ID gibt
         $sqlSite = 'SELECT * FROM CMS_Content_Site WHERE CMS_Content_Site.id = '. $siteID .'';
