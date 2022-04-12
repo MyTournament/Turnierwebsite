@@ -511,7 +511,7 @@
                 <div></div>
             </div>
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
-                <div></div>
+                <div style='position:absolute; left: 20px'>"; if($platzierungen[2] != "platzhalter"){$x=$platzierungen[2];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
                 <div style='background-color:red'></div>
                 <div style='background-color:red'><h1>2. &#10026;</h1></div>
             </div>
