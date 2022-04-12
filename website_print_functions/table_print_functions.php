@@ -500,8 +500,8 @@
         <br/><br/>
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
-        <div class='wrapper'>
-            <div style='display:grid'>
+        <div style='display:grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: minimax(100px, auto)'>
+            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr; grid-column: 1/4; grid-row: 1/3'>
                 <div style='grid-column: 1/2'>test</div>
                 <div style='grid-column: 1/2'>test</div>
                 <div style='grid-column: 1/2'>test</div>
