@@ -518,56 +518,15 @@
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
                 <div style='background-color:red'><h1>3. &#10026;</h1></div>
                 <div style='background-color:red'></div>
-                <div style='background-color:red'><h1>2. &#10026;</h1></div>
+                <div style='background-color:red'></div>
             </div>
 
 
-            <div style='display:grid; grid-template-columns: 1fr'>
-                <div>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
-            </div>
-            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
-                <div></div>
-                <div style='background-color:red'><h1>1. &#10026;</h1></div>
-                <div>"; if($platzierungen[1] != "platzhalter"){$x=$platzierungen[1];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"erererererererererererer</div>
-            </div>
-            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
-                <div>"; if($platzierungen[2] != "platzhalter"){$x=$platzierungen[2];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
-                <div style='background-color:red'><h1>1. &#10026;</h1></div>
-                <div style='background-color:red'><h1>2. &#10026;</h1></div>
-            </div>
+            
         </div> 
 
 
-        <table style='text-align: center;'>
-            <thead>
-                <tr>
-                    <td style='background-color:transparent'></td>
-                    <td width='100%' style='background-color:transparent'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</td>
-                    <td style='background-color:transparent'></td>
-                </tr>
-                <tr>
-                    <td style='background-color:transparent'></td>
-                    <td style='background-color:red'><h1>1. &#10026;</h1></td>
-                    <td style='background-color:transparent'>"; if($platzierungen[1] != "platzhalter"){$x=$platzierungen[1];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</td>
-                </tr>
-                <tr>
-                    <td style='background-color:transparent'>"; if($platzierungen[2] != "platzhalter"){$x=$platzierungen[2];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</td>
-                    <td style='background-color:red'> </td>
-                    <td style='background-color:red'><h1>2. &#10026;</h1></td>
-                </tr>
-                <tr>
-                    <td style='background-color:red'><h1>3. &#10026;</h1></td>
-                    <td rowspan='3' style='background-color:red'><!--<img src='images/hermann_logo/export.png' width='90em' height=auto alt='Blankiball Sieger*innen-Treppe'>--></td>
-                    <td style='background-color:red'> </td>
-                </tr>
-                <tr>
-                    <td style='background-color:red'></br></td>
-                    <td style='background-color:red'></br></td>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        
         <br/>
         <a href='#rangliste' class='button primary'>Gesamte Platzierung</a>
         <br/><br/><br/>
