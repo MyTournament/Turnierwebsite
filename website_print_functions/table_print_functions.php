@@ -534,7 +534,7 @@
                 <div style='background-color:red'><h1>1. &#10026;</h1></div>
                 <div style='background-color:red'><h1>2. &#10026;</h1></div>
             </div>
-        </div>
+        </div> 
 
 
         <table style='text-align: center;'>
