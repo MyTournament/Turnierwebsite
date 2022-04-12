@@ -501,9 +501,11 @@
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
         <div class='wrapper'>
-            <div style='grid-column: 1/2'>test</div>
-            <div style='grid-column: 1/2'>test</div>
-            <div style='grid-column: 1/2'>test</div>
+            <div style='display:grid'>
+                <div style='grid-column: 1/2'>test</div>
+                <div style='grid-column: 1/2'>test</div>
+                <div style='grid-column: 1/2'>test</div>
+            </div>
         </div>
 
 
