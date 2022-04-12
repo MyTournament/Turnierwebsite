@@ -680,7 +680,7 @@
                     
                                         //SONDERFALL: FINALE GEWINNERTEAMS MARKIEREN
                                         if($ko_finallevel==2){ 
-                                            echo "<script>console.log('ko finallevel ist 2')</script>";
+                                            //echo "<script>console.log('ko finallevel ist 2')</script>";
                                             if($gewinnerTeam1ID == 0 || $verliererTeam1ID == 0){ //NUr die Endplatzierung vergeben wenn die neuen Nachfolgerteams schon gefunden sind
                                                 setTeamEndplatzierung($conn, $TurnierID, $fk_heimteam, 0);
                                                 setTeamEndplatzierung($conn, $TurnierID, $fk_auswaertsteam, 0);
@@ -692,7 +692,7 @@
                                         }
                                         //SONDERFALL: SPIEL UM PLATZ 3 GEWINNERTEAM MARKIEREN
                                         if($ko_finallevel==1){ 
-                                            echo "<script>console.log('ko finallevel ist 1')</script>";
+                                            //echo "<script>console.log('ko finallevel ist 1')</script>";
                                             if($gewinnerTeam1ID == 0 || $verliererTeam1ID == 0){ //NUr die Endplatzierung vergeben wenn die neuen Nachfolgerteams schon gefunden sind
                                                 setTeamEndplatzierung($conn, $TurnierID, $fk_heimteam, 0);
                                                 setTeamEndplatzierung($conn, $TurnierID, $fk_auswaertsteam, 0);
