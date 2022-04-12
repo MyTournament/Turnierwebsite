@@ -501,7 +501,7 @@
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
         <div>
-            <div'>
+            <div>
                 <div style='position: absolute; left: 80px'>test123</div>
             </div>
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
