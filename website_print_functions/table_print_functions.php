@@ -500,24 +500,24 @@
         <br/><br/>
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
-        <div style='max-width:1000px; align-items: center'>
+        <div style='align-items: center'> <!-- max-width:1000px; -->
             <div style='display:grid; grid-template-columns: 1fr'>
                 <div></div>
                 <div style='position:relative;'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
-            <div style='max-width:1000px; display:grid; grid-template-columns: 1fr 1fr 1fr'>
+            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
                 <div></div>
                 <div style='background-color:red'><h1>1. &#10026;</h1></div>
                 <div></div>
                 <div style='position:absolute; right: 2%'>"; if($platzierungen[1] != "platzhalter"){$x=$platzierungen[1];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
-            <div style='max-width:1000px; display:grid; grid-template-columns: 1fr 1fr 1fr'>
+            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
                 <div></div>
                 <div style='background-color:red'></div>
                 <div style='background-color:red'><h1>2. &#10026;</h1></div>
                 <div style='position:absolute; left: 2%;'>"; if($platzierungen[2] != "platzhalter"){$x=$platzierungen[2];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
-            <div style='max-width:1000px; display:grid; grid-template-columns: 1fr 1fr 1fr'>
+            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
                 <div style='background-color:red'><h1>3. &#10026;</h1></div>
                 <div style='background-color:red'></div>
                 <div style='background-color:red'></div>
