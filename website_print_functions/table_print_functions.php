@@ -502,6 +502,7 @@
         <br/><br/>
         <div>
             <div style='display:grid; grid-template-columns: 1fr'>
+                <div></div>
                 <div style='position:absolute; align-items: center;'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
