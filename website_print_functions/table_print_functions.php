@@ -501,6 +501,26 @@
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
         <div>
+            <div'>
+                <div style='position: absolute; left: 80px'>test</div>
+            </div>
+            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
+                <div></div>
+                <div style='background-color:red'><h1>1. &#10026;</h1></div>
+                <div></div>
+            </div>
+            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
+                <div></div>
+                <div style='background-color:red'></div>
+                <div style='background-color:red'><h1>2. &#10026;</h1></div>
+            </div>
+            <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
+                <div style='background-color:red'><h1>3. &#10026;</h1></div>
+                <div style='background-color:red'></div>
+                <div style='background-color:red'><h1>2. &#10026;</h1></div>
+            </div>
+
+
             <div style='display:grid; grid-template-columns: 1fr'>
                 <div>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
