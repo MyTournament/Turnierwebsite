@@ -504,7 +504,7 @@
             <thead>
                 <tr>
                     <td style='background-color:transparent'></td>
-                    <td width="100%" style='background-color:transparent'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</td>
+                    <td width='100%' style='background-color:transparent'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</td>
                     <td style='background-color:transparent'></td>
                 </tr>
                 <tr>
