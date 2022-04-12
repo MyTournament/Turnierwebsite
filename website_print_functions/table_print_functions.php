@@ -501,11 +501,11 @@
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
         <div>
-            <div>
+            <div style='display:grid; grid-template-columns: 1fr'>
                 <div style='position:absolute; text-align:center'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
-                <div style='position:absolute; text-align:rigth'>"; if($platzierungen[1] != "platzhalter"){$x=$platzierungen[1];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
+                <div style='position:absolute; text-align:right'>"; if($platzierungen[1] != "platzhalter"){$x=$platzierungen[1];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
                 <div></div>
                 <div style='background-color:red'><h1>1. &#10026;</h1></div>
                 <div></div>
