@@ -498,7 +498,7 @@
         //class='table' class='th-text-center' 
         echo"
         <br/><br/>
-        <h2>Die Ergebnisse stehen fest!</h2>
+        <h2>Die Ergebnisse stehen fest!!</h2>
         <br/><br/>
         <table style='text-align: center;'>
             <thead>
