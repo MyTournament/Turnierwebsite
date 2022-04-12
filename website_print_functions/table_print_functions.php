@@ -509,13 +509,13 @@
                 <div></div>
                 <div style='background-color:red'><h1>1. &#10026;</h1></div>
                 <div></div>
-                <div style='position:absolute; right: 5px'>"; if($platzierungen[1] != "platzhalter"){$x=$platzierungen[1];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
+                <div style='position:absolute; right: 2%'>"; if($platzierungen[1] != "platzhalter"){$x=$platzierungen[1];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
                 <div></div>
                 <div style='background-color:red'></div>
                 <div style='background-color:red'><h1>2. &#10026;</h1></div>
-                <div style='position:absolute; left: 5px;'>"; if($platzierungen[2] != "platzhalter"){$x=$platzierungen[2];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
+                <div style='position:absolute; left: 2%;'>"; if($platzierungen[2] != "platzhalter"){$x=$platzierungen[2];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr'>
                 <div style='background-color:red'><h1>3. &#10026;</h1></div>
