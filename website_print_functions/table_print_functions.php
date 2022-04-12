@@ -502,9 +502,9 @@
         <br/><br/>
         <div style='display:grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: minimax(100px, auto)'>
             <div style='display:grid; grid-template-columns: 1fr 1fr 1fr; grid-column: 1/4; grid-row: 1/3'>
-                <div style='grid-column: 1/2'>test</div>
-                <div style='grid-column: 1/2'>test</div>
-                <div style='grid-column: 1/2'>test</div>
+                <div>test</div>
+                <div>test</div>
+                <div>test</div>
             </div>
         </div>
 
