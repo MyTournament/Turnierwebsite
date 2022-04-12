@@ -500,6 +500,13 @@
         <br/><br/>
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
+        <div class='wrapper'>
+            <div style='grid-column: 1/2'>test</div>
+            <div style='grid-column: 1/2'>test</div>
+            <div style='grid-column: 1/2'>test</div>
+        </div>
+
+
         <table style='text-align: center;'>
             <thead>
                 <tr>
