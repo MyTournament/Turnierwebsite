@@ -498,13 +498,13 @@
         //class='table' class='th-text-center' 
         echo"
         <br/><br/>
-        <h2>Die Ergebnisse stehen fest!!</h2>
+        <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
         <table style='text-align: center;'>
             <thead>
                 <tr>
                     <td style='background-color:transparent'></td>
-                    <td style='background-color:transparent'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</td>
+                    <td width="100%" style='background-color:transparent'>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</td>
                     <td style='background-color:transparent'></td>
                 </tr>
                 <tr>
