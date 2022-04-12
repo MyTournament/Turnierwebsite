@@ -500,7 +500,7 @@
         <br/><br/>
         <h2>Die Ergebnisse stehen fest!</h2>
         <br/><br/>
-        <div style='display:grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: minimax(100px, auto)'>
+        <div>
             <div style='display:grid; grid-template-columns: 1fr'>
                 <div>"; if($platzierungen[0] != "platzhalter"){$x=$platzierungen[0];echo "<h3>$x</h3>";}else{echo "<h3><i>noch nicht bestimmt</i></h3>";} echo"</div>
             </div>
