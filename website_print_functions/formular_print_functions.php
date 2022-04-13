@@ -322,7 +322,7 @@ function printBullereiKommt($conn, $websiteId){
     <div>
         <div class="field half">
             <input type="checkbox" id="bullerei" name="bullerei" unchecked>
-            <label for="bullerei">Ich bin mir sicher, dass ich mir die Polizei nicht einbilde.</label>
+            <label for="bullerei">Ich bin mir sicher, dass ich mir *was auch immer* nicht einbilde.</label>
         </div>
     </div>
     <p></br></p>
