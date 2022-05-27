@@ -2,7 +2,7 @@
 //https://REDACTED.de/website_functionalities/generate_team_certificate/generate_team_certificate.php
 
 require('fpdf184/fpdf.php');
-/*  
+  
 class PDF extends FPDF {
   
     // Page header
@@ -49,7 +49,7 @@ class PDF extends FPDF {
   
 // Instantiation of FPDF class
 $pdf = new PDF();
-  
+/*  
 // Define alias for number of pages
 $pdf->AliasNbPages();
 $pdf->AddPage();
@@ -183,9 +183,9 @@ if($teamId != NULL){
 for($i = 1; $i <= 30; $i++)
 $pdf->Cell(0, 10, 'line number ' . $i, 0, 1);
 
-
+*/
 
 
 $pdf->Output();
-*/
+
 ?>
