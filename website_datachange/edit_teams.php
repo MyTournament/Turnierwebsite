@@ -41,12 +41,12 @@ include_once 'edit_interface.php';
 
 				$bn = "unknown";
 				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
-				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['mail']));
+				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail']));
 			}
 		else{
 			$bn = "unknown";
 			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
-			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['mail']));
+			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail']));
 		}
 			
 		$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
@@ -74,13 +74,13 @@ include_once 'edit_interface.php';
 		mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 		//an Team
-		$fromEmail = "kummerkasten@blankiball.de";
-		$team_mail = $_POST['mail']
+		/*$fromEmail = "kummerkasten@blankiball.de";
+		$team_mail = $_POST['Mail']
 		$name = $_POST['Teamname'];
 		$message = "";
 		$message .= $infoVomAngemeldetenTeam;
 		$message .= "Bei Fragen oder Wünschen, schreib uns gern einfach eine Mail!"
-		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet! ".$name, $message);
+		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet: ".$name, $message);*/
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];
