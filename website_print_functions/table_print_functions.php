@@ -993,6 +993,20 @@
 
     function history_auswahl($conn, $TurnierID, $gameEditMode, $action, $test_turnier_id){
         //TEST-MODUS
+
+        //VERGANGENE TURNIERE
+        $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 1 ORDER BY order_on_website, id DESC';
+        $result = $conn->query($sql);
+        $history = array();
+        $index = 1;
+        while ($row = $result->fetch_assoc()) {
+            $turnierID = $row['id'];
+            $turnierName = $row['name'];
+            $history[$index] = array($index, $turnierID, $turnierName);
+            $index++;
+            //break; //nur erstes Turnier wird das aktuelle Turnier
+        }
+
         include_once 'variables.php';
         if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
             echo"
