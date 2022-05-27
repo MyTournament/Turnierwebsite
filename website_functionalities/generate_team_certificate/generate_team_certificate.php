@@ -71,6 +71,7 @@ include_once '../../variables.php';
 
 $teamId = $_GET['teamId'];
 if($teamId != NULL){
+    /*
     $sql = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId .'';
     $result = $conn->query($sql);
     while (!empty($row = $result->fetch_assoc())) {
@@ -114,7 +115,7 @@ if($teamId != NULL){
     }else{
         //echo "<p><i>Noch keiner Gruppe zugeteilt</i></p>";
     }
-    /*
+    
     $siege = 0; //für SIEGESQUOTE
     $niederlagen = 0;
     $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
