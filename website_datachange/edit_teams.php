@@ -69,7 +69,7 @@ include_once 'edit_interface.php';
 		$fromEmail = "kummerkasten@REDACTED.de";
 		$name = $_POST['Teamname'];
 		$message = "";
-		$message += $infoVomAngemeldetenTeam;
+		$message .= $infoVomAngemeldetenTeam;
 		mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 		//an Team
@@ -78,7 +78,7 @@ include_once 'edit_interface.php';
 		$team_mail = $_POST['mail']
 		$name = $_POST['Teamname'];
 		$message = "";
-		$message += $infoVomAngemeldetenTeam;
+		$message .= $infoVomAngemeldetenTeam;
 		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet! ".$name, $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
