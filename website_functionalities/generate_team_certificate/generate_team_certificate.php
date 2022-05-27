@@ -65,9 +65,9 @@ $pdf->Cell(0, 10, 'Vielen dank fuer deine Teilnahme am:' , 0, 1, 'C');
 $pdf->SetFont('Courier','B',18);
 $pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2021' , 0, 1, 'C');
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
-
-include_once '../../database/db_connection.php';
 /*
+include_once '../../database/db_connection.php';
+
 include_once '../../variables.php';
 
 $teamId = $_GET['teamId'];
