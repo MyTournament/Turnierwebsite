@@ -160,6 +160,7 @@ if ($websiteId == null){
                 }
             ?>
             <li><a href="#pausenraum">🏓 Pausenraum</a></li>
+            <li><a href="#history">📗 Vergangene Turniere</a></li>
             
         </ul>
     </nav>
