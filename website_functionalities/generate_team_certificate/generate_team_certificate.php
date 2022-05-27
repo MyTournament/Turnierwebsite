@@ -179,8 +179,8 @@ if($teamId != NULL){
 }
 
 
-for($i = 1; $i <= 30; $i++)
-$pdf->Cell(0, 10, 'line number ' . $i, 0, 1);
+//for($i = 1; $i <= 30; $i++)
+//$pdf->Cell(0, 10, 'line number ' . $i, 0, 1);
 
 
 
