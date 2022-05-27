@@ -57,7 +57,7 @@ $pdf->AddPage();
 $str = iconv('UTF-8', 'windows-1252', $str);
 utf8_decode();
 
-
+/*
 
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 $pdf->SetFont('Courier','',14);
@@ -71,7 +71,7 @@ include_once '../../variables.php';
 
 $teamId = $_GET['teamId'];
 if($teamId != NULL){
-    /*
+    
     $sql = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId .'';
     $result = $conn->query($sql);
     while (!empty($row = $result->fetch_assoc())) {
@@ -172,11 +172,11 @@ if($teamId != NULL){
     $pdf->Image('hermann_unterschrift.png',85,242,40);
     $pdf->Cell(0, 10, '', 0, 1, 'C');
     $pdf->Cell(0, 10, 'Hermann Blankenstein', 0, 1, 'C');
-    */
+    
 
 
 }
-
+*/
 
 
 /* 
