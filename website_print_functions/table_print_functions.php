@@ -997,7 +997,7 @@
         echo"
         <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
         <form method='post' action='#'>
-            <select name='test_turnier_id'>
+            <select name='history_turnier_id'>
                 <option value='0'><i>$TurnierName</i></option>";
                 
                 foreach ($history as &$value){
