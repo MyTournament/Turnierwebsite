@@ -49,7 +49,7 @@ class PDF extends FPDF {
   
 // Instantiation of FPDF class
 $pdf = new PDF();
-  /*
+  
 // Define alias for number of pages
 $pdf->AliasNbPages();
 $pdf->AddPage();
@@ -57,7 +57,7 @@ $pdf->AddPage();
 $str = iconv('UTF-8', 'windows-1252', $str);
 utf8_decode();
 
-
+/*
 
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 $pdf->SetFont('Courier','',14);
