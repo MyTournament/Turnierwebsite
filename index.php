@@ -403,7 +403,11 @@ if ($websiteId == null){
 
 <!-- schiedsrichter*innen -->
 <article id="history">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 31, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <h2>Vergangene Turniere</h2>
+    <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
+    <?php history_auswahl($history, $TurnierName); ?>
+    <a href="http://2020.blankiball.de/" class="button">Hier geht's zur alten Website</a>
+    <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
