@@ -17,7 +17,8 @@
         <table class='th-text-center'> <!-- class='withBorderCollapse'  -->
             <thead style='background-color:#7700FF;'>
                 <tr>
-                    <td style='color:white; text-align: center;'>Du befindest dich in der History-Ansicht! ($TurnierName)</td> <!-- #7700FF -->
+                    <td style='color:white; text-align: center;'>Du befindest dich in der History-Ansicht ($TurnierName)</td> <!-- #7700FF -->
+                    <td style='color:white; text-align: center;'><i>Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.</i></td> <!-- #7700FF -->
                 </tr>
             </thead>
             <tbody>
