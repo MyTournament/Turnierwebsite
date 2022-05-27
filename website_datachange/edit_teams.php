@@ -74,13 +74,13 @@ include_once 'edit_interface.php';
 		mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 		//an Team
-		$fromEmail = "kummerkasten@REDACTED.de";
+		/*$fromEmail = "kummerkasten@REDACTED.de";
 		$team_mail = $_POST['Mail']
 		$name = $_POST['Teamname'];
 		$message = "";
 		$message .= $infoVomAngemeldetenTeam;
 		$message .=  "\r\n" . "Bei Fragen oder Wünschen, schreib uns gern einfach eine Mail!";
-		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet: ".$name, $message);
+		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet: ".$name, $message);*/
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];
