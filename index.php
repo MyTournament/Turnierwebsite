@@ -159,8 +159,7 @@ if ($websiteId == null){
                     echo"<li class='button disabled'><a href='#spielplan'>🎯 Spielplan</a></li>";
                 }
             ?>
-            <li><a href="#pausenraum">🏓 Pausenraum</a></li>
-            <li><a href="#history">📗 Vergangene Turniere</a></li>
+            <li><a href="#pausenraum">🏓 Pausenraum</a></li> 
             
         </ul>
     </nav>
