@@ -57,12 +57,12 @@ $pdf->AddPage();
 $str = iconv('UTF-8', 'windows-1252', $str);
 utf8_decode();
 
-/*
+
 
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
-$pdf->SetFont('Courier','',14);
+//$pdf->SetFont('Courier','',14);
 $pdf->Cell(0, 10, 'Vielen dank fuer deine Teilnahme am:' , 0, 1, 'C');
-$pdf->SetFont('Courier','B',18);
+//$pdf->SetFont('Courier','B',18);
 $pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2021' , 0, 1, 'C');
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 
@@ -182,7 +182,7 @@ if($teamId != NULL){
 for($i = 1; $i <= 30; $i++)
 $pdf->Cell(0, 10, 'line number ' . $i, 0, 1);
 
-*/
+
 
 
 $pdf->Output();
