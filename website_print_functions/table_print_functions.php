@@ -995,7 +995,6 @@
         //TEST-MODUS
         //if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
         echo"
-        <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
         <form method='post' action='#'>
             <select name='history_turnier_id'>
                 <option value='0'><i>$TurnierName</i></option>";
