@@ -406,7 +406,8 @@ if ($websiteId == null){
     <h1>Vergangene Turniere</h1>
     <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
-    <a href="http://2020.blankiball.de/" class="button primary">Hier geht's zur alten Website</a>
+    <p>Hier geht's zur alten Website (2017-2020)</p>
+    <a href="http://2020.blankiball.de/" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
