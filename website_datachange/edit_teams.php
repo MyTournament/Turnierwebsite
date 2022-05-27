@@ -77,9 +77,13 @@ include_once 'edit_interface.php';
 		$fromEmail = "kummerkasten@REDACTED.de";
 		$team_mail = $_POST['Mail'];
 		$name = $_POST['Teamname'];
-		$message = "";
+		if($turnier_phase_ID==12){ // Falls Warteliste
+			$message = "Leider sind die Plaetze des Turniers vorläufig voll. Dein Team wurde der Warteliste hinzugefuegt und kann eventuell noch nachrücken. Falls Plätze frei werden, sagen wir euch Bescheid.";
+		}else{
+			$message = "Dein Team wurde erfolgreich für das Turnier registriert!";
+		}
 		$message .= $infoVomAngemeldetenTeam;
-		$message .=  "\r\n" . "Bei Fragen oder Wünschen, schreib uns gern einfach eine Mail!";
+		$message .=  "\r\n" . "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
 		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet: ".$name, $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
