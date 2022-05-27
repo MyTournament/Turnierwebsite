@@ -63,9 +63,10 @@ include_once 'edit_interface.php';
 		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'];
 		$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'];
 
+		include_once '../website_functionalities/send_mail.php';
+
 		//PER MAIL VERSENDEN
 		//an kummerkasten
-		include_once '../website_functionalities/send_mail.php';
 		$fromEmail = "kummerkasten@blankiball.de";
 		$name = $_POST['Teamname'];
 		$message = "";
@@ -73,12 +74,12 @@ include_once 'edit_interface.php';
 		mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 		//an Team
-		include_once '../website_functionalities/send_mail.php';
 		$fromEmail = "kummerkasten@blankiball.de";
 		$team_mail = $_POST['mail']
 		$name = $_POST['Teamname'];
 		$message = "";
 		$message .= $infoVomAngemeldetenTeam;
+		$message .= "Bei Fragen oder Wünschen, schreib uns gern einfach eine Mail!"
 		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet! ".$name, $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
