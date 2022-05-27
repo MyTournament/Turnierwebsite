@@ -78,13 +78,13 @@ include_once 'edit_interface.php';
 		$team_mail = $_POST['Mail'];
 		$name = $_POST['Teamname'];
 		if($turnier_phase_ID==12){ // Falls Warteliste
-			$message = "Leider sind die Plaetze des Turniers vorläufig voll. Dein Team wurde der Warteliste hinzugefuegt und kann eventuell noch nachrücken. Falls Plätze frei werden, sagen wir euch Bescheid.";
+			$message = "Leider sind die Plaetze des Turniers vorlaeufig voll. Dein Team wurde der Warteliste hinzugefuegt und kann eventuell noch nachruecken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
 		}else{
 			$message = "Dein Team wurde erfolgreich für das Turnier registriert!";
 		}
 		$message .= $infoVomAngemeldetenTeam;
 		$message .=  "\r\n" . "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
-		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet: ".$name, $message);
+		mail_att($team_mail, $fromEmail, "Ich bin kein spam lel", $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];
