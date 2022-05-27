@@ -144,7 +144,6 @@ if ($websiteId == null){
             <li><a href="#info">📚 Info</a></li>
             <li><a href="#regeln">👮🏽‍♀️ Regeln</a></li>
             <li><a href="#teams">👨‍👧‍👧 Teams</a></li>
-            abc
             <?php 
             //Aktuelle Turnierphase herausfinden - erstmal ID
                 $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
@@ -163,6 +162,7 @@ if ($websiteId == null){
             <li><a href="#pausenraum">🏓 Pausenraum</a></li> 
             
         </ul>
+        testestets
     </nav>
     <div class="content">
         <div class="inner">
