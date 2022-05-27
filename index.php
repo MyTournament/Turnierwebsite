@@ -401,6 +401,14 @@ if ($websiteId == null){
     <p></br></p>
 </article>
 
+<!-- schiedsrichter*innen -->
+<article id="history">
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 31, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <a href="#" class="button">Zurück zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p>
+</article>
+
 
 <!-- ###################################################################################################################################################################################################################################### -->
 <!-- ######################################################################################## Kein CMS #################################################################################################################################### -->
