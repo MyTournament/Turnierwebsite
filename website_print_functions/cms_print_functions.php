@@ -82,12 +82,6 @@
             $sql = 'SELECT CMS_Content.id as ContentID, CMS_Content.content as ContentContent, CMS_Content.style_tag as StyleTag, CMS_Content.fk_function, CMS_Content.order_in_group FROM CMS_Content, CMS_Content_Group WHERE CMS_Content.fk_group = CMS_Content_Group.id AND CMS_Content_Group.fk_section = '. $section .' AND CMS_Content_Group.id= '. $groupID .' ORDER BY CMS_Content_Group.order_in_section ASC, CMS_Content.order_in_group ASC';
             $result = $conn->query($sql);
 
-            if($test_turnier_id==0){ //Fall: normales Turnier
-                echo "<form action='website_datachange/edit_content.php' method='POST' onSubmit='return checkAGB5()'>";
-            }else{ //Testturniere
-                echo "<form action='website_datachange/edit_content.php?test_turnier_id=$test_turnier_id' method='POST' onSubmit='return checkAGB5()'>";
-            }
-
             while ($row = $result->fetch_assoc()) {
                 $content_id=$row["ContentID"];
                 $content_style_tag=$row["StyleTag"];
@@ -144,14 +138,7 @@
                             <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;' class='height: 1px;' name='content' value='' class='button primary'>&#8595;+</button>
                             <input type='hidden' name='contentID' value='$content_id'/>
                         </form> ";
-                        //echo "<$content_style_tag>$content_text</$content_style_tag>";
-
-                        echo"    
-                        <div class='field'>
-                            <textarea type='text' id='changecontent1' name='content' placeholder='Inhalt'  rows='10' style='color: white'>$content_text</textarea> 
-                        </div>
-                        ";
-
+                        echo "<$content_style_tag>$content_text</$content_style_tag>";
                         echo "<hr style='border-top: 3px solid green;margin: 0 0 0 0;'>";
                     }else{
                         if($content_style_tag){
@@ -166,33 +153,5 @@
             }
             echo "</$group_style_tag>";
         }
-
-        if ($LoggedIn) { 
-            echo"</select>
-            <h5><br/></h5>
-            <p>Bitte bestätige noch einmal deine Anmeldedaten:</p>
-            <input type='text' id='changecontent_Login_bn' name='bn' class='Eingabe' placeholder='Dein Team-Kürzel' style='color: white' required>
-            <input type='password' id='changecontent_Login_pw' name='pw' class='Eingabe' placeholder='Dein Team-Passwort' style='color: white' required>
-            <h5><br/></h5>                                 
-            <script type='text/javascript'>
-                function checkAGB5() {
-                    if (document.getElementById('demo-human-changecontent').checked) {
-                        return true;
-                    }
-                    alert('Du musst unten noch das Häkchen setzen, du Hermann!');
-                    return false;
-                }
-            </script>  
-            <div>
-                <div class='field half'>
-                    <input type='checkbox' id='demo-human-changecontent' name='demo-human-changecontent' unchecked>
-                    <label for='demo-human-changecontent'>Ich verstehe, dass gelöschte oder veränderte Elemente nicht wiederhergestellt werden können.</label>
-                </div>
-            </div>
-            <h5><br/></h5>
-                <input type='submit' name='action' value='Ändern'/>
-            </form>
-            ";
-            }
     }
 ?>
