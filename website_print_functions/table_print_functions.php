@@ -993,10 +993,11 @@
 
     function history_auswahl($conn, $TurnierID, $gameEditMode, $action, $test_turnier_id){
         //TEST-MODUS
-        include_once 'website_functionalities/test_turnier_mode.php';
+        include_once '../website_functionalities/test_turnier_mode.php';
         if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
-            echo"<form method='post' action='#'>
-            <button  name='content' class='button primary'>Testmodus starten</button> 
+            echo"
+            <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
+            <form method='post' action='#'>
             <select name='test_turnier_id'>
                 <option value='0'><i>$TurnierName</i></option>";
                 
@@ -1007,6 +1008,7 @@
                 }
                 echo"
             </select>
+            <button  name='content' class='button primary'>Zum Turnier</button> 
             <!-- <input type='hidden' name='test_turnier_id' value='1'/> -->
             <input type='hidden' name='bn' value='$bn'/>
             <input type='hidden' name='pw' value='$pw'/>
