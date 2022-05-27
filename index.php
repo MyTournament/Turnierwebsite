@@ -403,10 +403,10 @@ if ($websiteId == null){
 
 <!-- schiedsrichter*innen -->
 <article id="history">
-    <h2>Vergangene Turniere</h2>
-    <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
+    <h1>Vergangene Turniere</h1>
+    <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
-    <a href="http://2020.blankiball.de/" class="button">Hier geht's zur alten Website</a>
+    <a href="http://2020.blankiball.de/" class="button primary">Hier geht's zur alten Website</a>
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
