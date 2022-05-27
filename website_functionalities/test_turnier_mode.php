@@ -14,18 +14,28 @@
         $TurnierID = $history[$history_turnier_id][1]; //kommt aus variables.php
         $TurnierName = $history[$history_turnier_id][2];
         echo "
-            <div style='background-color:#7700FF; text-align: center;'>
-                <h3>History</p>
-                <h2>$TurnierName</h2>
-                <i> Du befindest dich in der History-Ansicht. 
-                Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
-                Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.
-                <br/><br/>
-                <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
-                    <button style='color:white; background-color:#5600b8;' class='button'>History verlassen</button>   
-                </form>
-                <br/>
-            </div> <!-- #7700FF -->
+        <table class='th-text-center'> <!-- class='withBorderCollapse'  -->
+            <thead style='background-color:#7700FF;'>
+                <tr>
+                    <td style='color:white; text-align: center;'>
+                        <h3>History</p>
+                        <h2>$TurnierName</h2>
+                        <i> Du befindest dich in der History-Ansicht. 
+                        Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
+                        Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.
+                    </td> <!-- #7700FF -->
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style='text-align: center;'>
+                        <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
+                            <button style='color:white; background-color:#7700FF;' class='button'>History verlassen</button>   
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         "; 
         //echo "<script>console.log('TurnierID: $TurnierID')</script>";
         // button -> name='content'              
