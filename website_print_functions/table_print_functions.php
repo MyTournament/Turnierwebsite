@@ -1008,7 +1008,6 @@
                 echo"
             </select>
             <button  name='content' class='button primary'>Zum Turnier</button> 
-            <!-- <input type='hidden' name='test_turnier_id' value='1'/> -->
             <input type='hidden' name='bn' value='$bn'/>
             <input type='hidden' name='pw' value='$pw'/>
         </form>";
