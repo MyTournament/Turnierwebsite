@@ -991,10 +991,8 @@
         return "<a href='?spielerId=$spielerId#spielerinfo_login'>$name</a>";
     }
 
-    function history_auswahl($conn, $TurnierID, $gameEditMode, $action, $test_turnier_id){
+    function history_auswahl($history, $TurnierName){
         //TEST-MODUS
-
-        include_once '../variables.php';
         //if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
         echo"
         <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
