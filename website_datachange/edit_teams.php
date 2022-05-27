@@ -40,13 +40,13 @@ include_once 'edit_interface.php';
 				}
 
 				$bn = "unknown";
-				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password) VALUES (?, ?, ?, ?)";
-				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort']));
+				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
+				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['mail']));
 			}
 		else{
 			$bn = "unknown";
-			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password) VALUES (?, ?, ?, ?)";
-			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort']));
+			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
+			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['mail']));
 		}
 			
 		$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
@@ -54,12 +54,32 @@ include_once 'edit_interface.php';
 		myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
 		myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
 
+		//Text für beide Mails vorbereiten
+		$infoVomAngemeldetenTeam = "";
+		$infoVomAngemeldetenTeam += "Teamname: " + $_POST['Teamname'];
+		$infoVomAngemeldetenTeam += "Team-Kürzel: " + $_POST['Kuerzel'];
+		$infoVomAngemeldetenTeam += "Spieler 1: " + $_POST['Spieler1'] + Telefonnummer: $_POST['tel1'];
+		$infoVomAngemeldetenTeam += "Spieler 1: " + $_POST['Spieler2'] + Telefonnummer: $_POST['tel2'];
+		$infoVomAngemeldetenTeam += "Spieler 1: " + $_POST['Spieler3'] + Telefonnummer: $_POST['tel3'];
+		$infoVomAngemeldetenTeam += "Team-Passwort: " + $_POST['Passwort'];
+
 		//PER MAIL VERSENDEN
+		//an kummerkasten
 		include_once '../website_functionalities/send_mail.php';
 		$fromEmail = "kummerkasten@REDACTED.de";
 		$name = $_POST['Teamname'];
 		$message = "";
+		$message += $infoVomAngemeldetenTeam;
 		mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
+
+		//an Team
+		include_once '../website_functionalities/send_mail.php';
+		$fromEmail = "kummerkasten@REDACTED.de";
+		$team_mail = $_POST['mail']
+		$name = $_POST['Teamname'];
+		$message = "";
+		$message += $infoVomAngemeldetenTeam;
+		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet! ".$name, $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];
