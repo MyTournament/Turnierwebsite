@@ -114,7 +114,7 @@ if($teamId != NULL){
     }else{
         //echo "<p><i>Noch keiner Gruppe zugeteilt</i></p>";
     }
-
+    /*
     $siege = 0; //für SIEGESQUOTE
     $niederlagen = 0;
     $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
@@ -171,7 +171,7 @@ if($teamId != NULL){
     $pdf->Image('hermann_unterschrift.png',85,242,40);
     $pdf->Cell(0, 10, '', 0, 1, 'C');
     $pdf->Cell(0, 10, 'Hermann Blankenstein', 0, 1, 'C');
-
+    */
 
 
 }
