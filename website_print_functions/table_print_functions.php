@@ -995,10 +995,10 @@
         //TEST-MODUS
 
         include_once 'variables.php';
-        if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
-            echo"
-            <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
-            <form method='post' action='#'>
+        //if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
+        echo"
+        <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website</p>
+        <form method='post' action='#'>
             <select name='test_turnier_id'>
                 <option value='0'><i>$TurnierName</i></option>";
                 
@@ -1014,6 +1014,6 @@
             <input type='hidden' name='bn' value='$bn'/>
             <input type='hidden' name='pw' value='$pw'/>
         </form>";
-        }
+        //}
     }
 ?>

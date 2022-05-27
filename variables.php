@@ -1,6 +1,5 @@
 <?php
     $websiteId = 1; //Wird nie geändert! Diese Website wird immer immer die Website mit der Id 1 bleiben, auch in den Folgejahren
-    echo"test";
     //TurnierIDs aus der DB abfragen
     include_once 'database/db_connection.php'; //Datenbanklogin
 
@@ -24,12 +23,11 @@
         $testTurnierName = $row['name'];
         $testTurniere[$index] = array($index, $testTurnierID, $testTurnierName);
         $index++;
-        //break; //nur erstes Turnier wird das aktuelle Turnier
     }
 
 
     //VERGANGENE TURNIERE
-    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 1 ORDER BY order_on_website, id DESC';
+    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND (type = 1 OR type = 3) ORDER BY order_on_website, id DESC';
     $result = $conn->query($sql);
     $history = array();
     $index = 1;
@@ -38,7 +36,6 @@
         $turnierName = $row['name'];
         $history[$index] = array($index, $turnierID, $turnierName);
         $index++;
-        //break; //nur erstes Turnier wird das aktuelle Turnier
     }
     
 //TODO: gesamten Db-Abschnitt hier läschen, nachdem Jonas auf die neue Datei umgestellt hat
