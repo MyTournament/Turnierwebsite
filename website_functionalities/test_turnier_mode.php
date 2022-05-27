@@ -25,7 +25,7 @@
                         Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.
                         <\br><\br>
                         <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
-                            <button style='color:white;' class='button'>History verlassen</button>   
+                            <button style='color:white; background-color:#5600b8;' class='button'>History verlassen</button>   
                         </form>
                     </td> <!-- #7700FF -->
                 </tr>
