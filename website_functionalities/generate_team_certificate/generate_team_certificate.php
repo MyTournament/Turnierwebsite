@@ -2,7 +2,7 @@
 //https://REDACTED.de/website_functionalities/generate_team_certificate/generate_team_certificate.php
 
 require('fpdf184/fpdf.php');
-  
+/*  
 class PDF extends FPDF {
   
     // Page header
@@ -40,9 +40,9 @@ class PDF extends FPDF {
         $this->SetFont('Arial','I',8);
           
         // Page number
-        /*$this->Cell(0,10,'Page ' . 
-            $this->PageNo() . '/{nb}',0,0,'C');
-            */
+        //$this->Cell(0,10,'Page ' . 
+        //   $this->PageNo() . '/{nb}',0,0,'C');
+            
         $this->Cell(0,10,'Blankiball e.V. - no rights reserved',0,0,'C');   
     }
 }
@@ -57,7 +57,7 @@ $pdf->AddPage();
 $str = iconv('UTF-8', 'windows-1252', $str);
 utf8_decode();
 
-/*
+
 
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 $pdf->SetFont('Courier','',14);
@@ -183,9 +183,9 @@ if($teamId != NULL){
 for($i = 1; $i <= 30; $i++)
 $pdf->Cell(0, 10, 'line number ' . $i, 0, 1);
 
-*/
+
 
 
 $pdf->Output();
-  
+*/
 ?>
