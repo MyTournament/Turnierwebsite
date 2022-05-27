@@ -154,7 +154,7 @@ if($teamId != NULL){
     //ENDPLATZIERUNG
     $pdf->Cell(0, 10, '' , 0, 1, 'C');
     $pdf->SetFont('Times','',14);
-    $pdf->Cell(0, 10, 'Sie erreichten den Platz', 0, 1, 'C');
+    $pdf->Cell(0, 10, 'Das Team erreichte den Platz', 0, 1, 'C');
 
     $pdf->SetFont('Courier','B',14);
     $pdf->Cell(0, 10, $endplatzierung, 0, 1, 'C');
