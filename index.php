@@ -162,7 +162,6 @@ if ($websiteId == null){
             <li><a href="#pausenraum">🏓 Pausenraum</a></li> 
             
         </ul>
-        testestets
     </nav>
     <div class="content">
         <div class="inner">
