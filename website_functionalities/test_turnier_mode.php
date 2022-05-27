@@ -30,7 +30,7 @@
                 <tr>
                     <td style='text-align: center;'>
                         <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
-                            <button style='background-color:#7700FF;' class='button primary'>History verlassen</button>   
+                            <button style='color:white; background-color:#7700FF;' class='button primary'>History verlassen</button>   
                         </form>
                     </td>
                 </tr>
