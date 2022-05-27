@@ -164,6 +164,10 @@
                 }
                 
             }
+            echo "</$group_style_tag>";
+        }
+
+        if ($LoggedIn) { 
             echo"</select>
             <h5><br/></h5>
             <p>Bitte bestätige noch einmal deine Anmeldedaten:</p>
@@ -189,7 +193,6 @@
                 <input type='submit' name='action' value='Ändern'/>
             </form>
             ";
-            echo "</$group_style_tag>";
-        }
+            }
     }
 ?>
