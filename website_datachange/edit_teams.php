@@ -56,11 +56,11 @@ include_once 'edit_interface.php';
 
 		//Text für beide Mails vorbereiten
 		$infoVomAngemeldetenTeam = "";
-		$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'];
-		$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'];
-		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'];
-		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'];
-		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'];
+		$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
+		$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'] . "\r\n";
+		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'] . "\r\n";
+		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . "\r\n";
+		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'] . "\r\n";
 		$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'];
 
 		include_once '../website_functionalities/send_mail.php';
@@ -74,13 +74,13 @@ include_once 'edit_interface.php';
 		mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 		//an Team
-		/*$fromEmail = "kummerkasten@REDACTED.de";
+		$fromEmail = "kummerkasten@REDACTED.de";
 		$team_mail = $_POST['Mail']
 		$name = $_POST['Teamname'];
 		$message = "";
 		$message .= $infoVomAngemeldetenTeam;
-		$message .= "Bei Fragen oder Wünschen, schreib uns gern einfach eine Mail!"
-		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet: ".$name, $message);*/
+		$message .=  "\r\n" . "Bei Fragen oder Wünschen, schreib uns gern einfach eine Mail!";
+		mail_att($team_mail, $fromEmail, "Team erfolgreich angemeldet: ".$name, $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];
