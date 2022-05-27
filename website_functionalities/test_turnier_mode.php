@@ -18,10 +18,11 @@
             <thead style='background-color:#7700FF;'>
                 <tr>
                     <td style='color:white; text-align: center;'>
-                        Du befindest dich in der History-Ansicht ($TurnierName) <br>
-                        
-                        <i>Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
-                        Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.</i>
+                        <h3>History</p>
+                        <h2>$TurnierName</h2>
+                        <i> Du befindest dich in der History-Ansicht. 
+                        Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
+                        Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.
                     </td> <!-- #7700FF -->
                 </tr>
             </thead>
