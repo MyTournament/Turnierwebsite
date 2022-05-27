@@ -1,6 +1,6 @@
 <?php
     $websiteId = 1; //Wird nie geändert! Diese Website wird immer immer die Website mit der Id 1 bleiben, auch in den Folgejahren
-
+    echo"test";
     //TurnierIDs aus der DB abfragen
     include_once 'database/db_connection.php'; //Datenbanklogin
 
