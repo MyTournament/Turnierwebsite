@@ -27,11 +27,19 @@
         //break; //nur erstes Turnier wird das aktuelle Turnier
     }
 
-    /*
-    //TODO: History mit den restlichen Turnieren
+
+    //VERGANGENE TURNIERE
+    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 1 ORDER BY order_on_website, id DESC';
+    $result = $conn->query($sql);
+    $history = array();
+    $index = 1;
     while ($row = $result->fetch_assoc()) {
-        //zur History hinzufügen
-    }*/
+        $turnierID = $row['id'];
+        $turnierName = $row['name'];
+        $history[$index] = array($index, $turnierID, $turnierName);
+        $index++;
+        //break; //nur erstes Turnier wird das aktuelle Turnier
+    }
     
 //TODO: gesamten Db-Abschnitt hier läschen, nachdem Jonas auf die neue Datei umgestellt hat
     /*
