@@ -138,7 +138,39 @@
                             <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;' class='height: 1px;' name='content' value='' class='button primary'>&#8595;+</button>
                             <input type='hidden' name='contentID' value='$content_id'/>
                         </form> ";
-                        echo "<$content_style_tag>$content_text</$content_style_tag>";
+                        //echo "<$content_style_tag>$content_text</$content_style_tag>";
+                        if($function){ //Fall, dass aktuell eine Function ausgewählt ist
+                            //aktuelle Function als erstes anzeigen
+                            $sqlFunction = 'SELECT * FROM `CMS_Function` WHERE id = '. $function .' ORDER BY id';
+                            $resultFunction = $conn->query($sqlFunction);
+                            while (!empty ($rowFunction = $resultFunction->fetch_assoc())) {
+                                $functionId = $rowFunction['id'];
+                                $functionName = $rowFunction['name'];
+                                $functionDescription = $rowFunction['description'];
+                                echo "<option value=$functionId>#aktuell: $functionName ($functionDescription)</option>";					
+                            }
+                            echo "<option value='NULL'><i>###keine Function###</i></option>";
+                            //restliche Functions anzeigen
+                            $sqlFunction = 'SELECT * FROM `CMS_Function` WHERE NOT id = '. $function .' ORDER BY id';
+                            $resultFunction = $conn->query($sqlFunction);
+                            while (!empty ($rowFunction = $resultFunction->fetch_assoc())) {
+                                $functionId = $rowFunction['id'];
+                                $functionName = $rowFunction['name'];
+                                $functionDescription = $rowFunction['description'];
+                                echo "<option value=$functionId>$functionName ($functionDescription)</option>";					
+                            }
+                        }else{ //Fall, dass aktuell keine Function ausgewählt ist
+                            echo "<option value='NULL'><i>###keine Function###</i></option>";
+                            $sqlFunction = 'SELECT * FROM `CMS_Function` ORDER BY id';
+                            $resultFunction = $conn->query($sqlFunction);
+                            while (!empty ($rowFunction = $resultFunction->fetch_assoc())) {
+                                $functionId = $rowFunction['id'];
+                                $functionName = $rowFunction['name'];
+                                $functionDescription = $rowFunction['description'];
+                                echo "<option value=$functionId>$functionName ($functionDescription)</option>";					
+                            } 
+                        }
+                        
                         echo "<hr style='border-top: 3px solid green;margin: 0 0 0 0;'>";
                     }else{
                         if($content_style_tag){
