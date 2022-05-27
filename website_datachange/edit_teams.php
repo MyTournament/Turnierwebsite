@@ -58,9 +58,9 @@ include_once 'edit_interface.php';
 		$infoVomAngemeldetenTeam = "";
 		$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'];
 		$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'];
-		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . Telefonnummer: $_POST['tel1'];
-		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler2'] . Telefonnummer: $_POST['tel2'];
-		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler3'] . Telefonnummer: $_POST['tel3'];
+		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'];
+		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'];
+		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'];
 		$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'];
 
 		//PER MAIL VERSENDEN
