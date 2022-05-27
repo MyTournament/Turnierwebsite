@@ -83,8 +83,8 @@ include_once 'edit_interface.php';
 			$message = "Dein Team wurde erfolgreich für das Turnier registriert!";
 		}
 		$message .= $infoVomAngemeldetenTeam;
-		$message .=  "\r\n" . "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
-		mail_att($team_mail, $fromEmail, "Ich bin kein spam lel", $message);
+		$message .=  "\r\n \r\n" . "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
+		mail_att($team_mail, $fromEmail, "Teamregistrierung", $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];
