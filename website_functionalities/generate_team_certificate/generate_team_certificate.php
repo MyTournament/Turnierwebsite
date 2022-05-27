@@ -53,9 +53,9 @@ $pdf = new PDF();
 // Define alias for number of pages
 $pdf->AliasNbPages();
 $pdf->AddPage();
-/*
+
 $str = iconv('UTF-8', 'windows-1252', $str);
-utf8_decode();
+//utf8_decode();
 
 
 
@@ -65,7 +65,7 @@ $pdf->Cell(0, 10, 'Vielen dank fuer deine Teilnahme am:' , 0, 1, 'C');
 //$pdf->SetFont('Courier','B',18);
 $pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2021' , 0, 1, 'C');
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
-
+/*
 include_once '../../database/db_connection.php';
 
 include_once '../../variables.php';
