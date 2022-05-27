@@ -36,6 +36,18 @@
                 </tr>
             </tbody>
         </table>
+        <!-- <div style='background-color:#7700FF; text-align: center;'>
+                <h3>History</p>
+                <h2>$TurnierName</h2>
+                <i> Du befindest dich in der History-Ansicht. 
+                Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
+                Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.
+                <br/><br/>
+                <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
+                    <button style='color:white; background-color:#5600b8;' class='button'>History verlassen</button>   
+                </form>
+                <br/>
+            </div>-->
         "; 
         //echo "<script>console.log('TurnierID: $TurnierID')</script>";
         // button -> name='content'              
