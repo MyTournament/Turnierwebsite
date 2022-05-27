@@ -77,13 +77,14 @@ if($teamId != NULL){
     $result = $conn->query($sql);
     while (!empty($row = $result->fetch_assoc())) {
         $teamName = $row['name'];
+        $teamKuerzel = $row['kuerzel'];
         $gruppeId = $row['fk_gruppe'];
         $endplatzierung = $row['endplatzierung'];
 
         $pdf->SetFont('Times','',14);
         $pdf->Cell(0, 10, 'Zertifikat ausgestellt fuer das Team:' , 0, 1, 'C');
         $pdf->SetFont('Courier','B',14);
-        $pdf->Cell(0, 10, $teamName , 0, 1, 'C');
+        $pdf->Cell(0, 10, $teamName . ' (' .$teamKuerzel. ')' , 0, 1, 'C');
     }
 
     $pdf->Cell(0, 10, '' , 0, 1, 'C');
