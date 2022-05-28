@@ -37,9 +37,9 @@
                     </tbody>
                 </table>
             </div>
-            <div style='position:absolute; top: 0'>
+            <div style='position:absolute; top: 2px; right: 2px;'>
                 <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
-                    <button style='color:white; background-color:#7700FF;' class='button'>History verlassen</button>   
+                    <button style='color:white; background-color:#7700FF;' class='button'>✖️ History verlassen</button>   
                 </form>
             </div>
         </div>
