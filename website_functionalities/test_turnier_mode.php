@@ -14,7 +14,7 @@
         $TurnierID = $history[$history_turnier_id][1]; //kommt aus variables.php
         $TurnierName = $history[$history_turnier_id][2];
         echo "
-        <div>
+        <div style='position: relative;top: 0'>
             <div style='position:relative'>
                 <table class='th-text-center'> <!-- class='withBorderCollapse'  -->
                     <thead style='background-color:#7700FF;'>
