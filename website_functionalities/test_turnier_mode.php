@@ -17,9 +17,10 @@
         <div style='background-color:#7700FF;'>
         <!--<div style='color:white; text-align: right;'>-->
             <div style='text-align: center;position:fixed; top: 2px; right: 2px;'>
-                <!--<form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>-->    
+                <!--<form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'> 
                     <button href='/' style='color:white; background-color:#7700FF;' class='button'><p>🚶 Leave 🚶‍♀️</p></button>   
-                <!--</form>-->
+                </form>-->
+                <a href='/' class='button' style='color:white; background-color:#7700FF;'><p>🚶 Leave 🚶‍♀️</p></a>  
             </div>
         <!--</div>-->
         <div style='color:white; text-align: center;'>
