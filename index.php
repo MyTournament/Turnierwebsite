@@ -423,7 +423,6 @@ if ($websiteId == null){
             <p> Du befindest dich in der History-Ansicht. 
             Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
             Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.</p>
-            </br>
             <p>Zum verlassen des History-Modus, klicke oben rechts auf "Leave".</p>
             <a href="#" class="button">Ok</a>
             <p></br></p>
