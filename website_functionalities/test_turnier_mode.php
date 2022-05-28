@@ -56,22 +56,27 @@
         $TurnierID = $testTurniere[$test_turnier_id][1]; //kommt aus variables.php
         $TurnierName = $testTurniere[$test_turnier_id][2];
         echo "
-        <table class='th-text-center'> <!-- class='withBorderCollapse'  -->
-            <thead style='background-color:#7700FF;'>
-                <tr>
-                    <td style='color:white; text-align: center;'>Du befindest dich aktuell im Testmodus! ($TurnierName)</td> <!-- #7700FF -->
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style='text-align: center;'>
-                        <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
-                            <button style='background-color:#7700FF;' class='button primary'>Testmodus verlassen</button>   
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div>
+            <table class='th-text-center'> <!-- class='withBorderCollapse'  -->
+                <thead style='background-color:#7700FF;'>
+                    <tr>
+                        <td style='color:white; text-align: center;'>Du befindest dich aktuell im Testmodus! ($TurnierName)</td> <!-- #7700FF -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style='text-align: center;'>
+                            
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style='position: relative'>
+                <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
+                    <button style='background-color:#7700FF;' class='button primary'>Testmodus verlassen</button>   
+                </form>
+            </div>
+        </div>
         "; 
         //echo "<script>console.log('TurnierID: $TurnierID')</script>";
         // button -> name='content'              
