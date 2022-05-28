@@ -26,6 +26,8 @@
                                     </form>
                                 <!--</div>-->
                             </td> <!-- #7700FF -->
+                        </tr>
+                        <tr>
                             <td style='color:white; text-align: center;'>
                                 <h3>History</p>
                                 <h2>$TurnierName</h2>
