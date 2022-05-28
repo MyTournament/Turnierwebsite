@@ -414,6 +414,27 @@ if ($websiteId == null){
     <p></br></p>
 </article>
 
+<!-- schiedsrichter*innen -->
+<article id="history_info">
+    <div style='background-color:#7700FF;'>
+        <div style='color:white; text-align: right;'>
+            <!--<div style='text-align: center;position:absolute; top: 2px; right: 2px;'>-->
+                <form style='color:#00FF00;margin: 0 0 0 0;' method='post' action='/'>      
+                    <button style='color:white; background-color:#7700FF;' class='button'>🚶 History verlassen 🚶‍♀️</button>   
+                </form>
+            <!--</div>-->
+        </div> <!-- #7700FF -->   
+        <div style='color:white; text-align: center;'>
+            <h3>History</p>
+            <h2>$TurnierName</h2>
+            <i> Du befindest dich in der History-Ansicht. 
+            Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
+            Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.
+        </div> <!-- #7700FF -->
+        <a href="#" class="button">Ok</a>
+    </div>
+</article>
+
 
 <!-- ###################################################################################################################################################################################################################################### -->
 <!-- ######################################################################################## Kein CMS #################################################################################################################################### -->
