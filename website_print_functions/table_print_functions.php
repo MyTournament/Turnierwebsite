@@ -995,7 +995,7 @@
         //TEST-MODUS
         //if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
         echo"
-        <form method='post' action='#'>
+        <form method='post' action='#history_info'>
             <select name='history_turnier_id'>
                 <option value='0'><i>$TurnierName</i></option>";
                 
