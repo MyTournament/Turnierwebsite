@@ -419,7 +419,7 @@ if ($websiteId == null){
     <div style='background-color:#7700FF;'>
         <div style='color:white; text-align: center;'>
             </br>
-            <h2>History</h2>
+            <h1>History</h1>
             <p> Du befindest dich in der History-Ansicht. 
             Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
             Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.</p>
