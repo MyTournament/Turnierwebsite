@@ -1,8 +1,8 @@
 <?php
-$dbhost = 'rdbms.strato.de';
-$dbuser = 'U4247673';
-$dbpassword = 'mtFcGzpgrVDsk1Ffs69h';
-$dbname = 'DB4247673';
+$db_server = "rdbms.strato.de";
+$db_username = "dbu1612112";
+$db_password = "HF?A=k%CWdDxc*8Jr4()bmF";
+$db_name = "dbs4154474";
 /*
 //NORMALE DATEI
 $dumpfile = "db_backups/" . $dbname . "_" . date("Y-m-d_H-i-s") . ".sql";
