@@ -20,12 +20,12 @@ $dumpfile = '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna/database/d
 //echo "Start dump\n";
 passthru("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname | gzip -c  > $dumpfile");
 //echo "-- Dump completed -- ";
-$sql = 'SELECT * FROM `System_Website`';
+/*$sql = 'SELECT * FROM `System_Website`';
 $result = $conn->query($sql);
 while ($row = $result->fetch_assoc()) {
     $name = $row['name'];
     echo "-- Backup erstellt für website" + $name;
-}
+}*/
 ////echo $dumpfile;
 
 
@@ -88,6 +88,6 @@ function deleteFilesFromDirectory($ordnername){
     }
 }
 //Funktionsaufruf - Directory immer mit endendem / angeben
-deleteFilesFromDirectory("/mnt/web508/d1/34/510124634/htdocs/REDACTED/website/database/db_backups/");
+//deleteFilesFromDirectory("/mnt/web508/d1/34/510124634/htdocs/REDACTED/website/database/db_backups/");
 
 ?>
