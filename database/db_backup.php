@@ -1,8 +1,8 @@
 <?php
-$dbhost = 'REDACTED';
-$dbuser = 'REDACTED';
-$dbpassword = 'REDACTED';
-$dbname = 'REDACTED';
+$db_server = "REDACTED";
+$db_username = "REDACTED";
+$db_password = "REDACTED";
+$db_name = "REDACTED";
 /*
 //NORMALE DATEI
 $dumpfile = "db_backups/" . $dbname . "_" . date("Y-m-d_H-i-s") . ".sql";
