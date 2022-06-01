@@ -18,7 +18,7 @@ $dumpfile = '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna/database/d
 //Pfad nicht relativ sondern von backstage.php aus!
 
 //echo "Start dump\n";
-passthru("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname | gzip -c  > $dumpfile");
+exec("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname | gzip -c  > $dumpfile");
 //echo "-- Dump completed -- ";
 /*$sql = 'SELECT * FROM `System_Website`';
 $result = $conn->query($sql);
