@@ -14,7 +14,7 @@ exec("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname > $
 */
 
 //ZIP DATEI
-$dumpfile = 'db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
+$dumpfile = '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna/database/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
 //Pfad nicht relativ sondern von backstage.php aus!
 
 //echo "Start dump\n";
