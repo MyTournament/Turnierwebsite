@@ -14,11 +14,11 @@ exec("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname > $
 */
 
 //ZIP DATEI
-$dumpfile = '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna/database/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
+$dumpfile = '/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
 //Pfad nicht relativ sondern von backstage.php aus!
 
 //echo "Start dump\n";
-passthru("mysqldump -u $dbuser --password=$dbpassword --host=$dbhost $dbname | gzip  > $dumpfile");
+passthru("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname | gzip -c  > $dumpfile");
 //echo "-- Dump completed -- ";
 /*$sql = 'SELECT * FROM `System_Website`';
 $result = $conn->query($sql);
