@@ -22,7 +22,7 @@ $pw = $_POST['pw'];
 //##########################################################
 //LOGIN
 include_once 'login_interface.php';
-$rights = get_rights_of_user($conn, $TurnierID, $bn, $pw);
+$rights = get_rights_of_user($conn, $TurnierID, $bn, $pw, $begegnungId);
 
 
 

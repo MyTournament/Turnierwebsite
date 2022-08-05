@@ -1,5 +1,5 @@
 <?php
-function get_rights_of_user($conn, $TurnierID, $bn, $pw){
+function get_rights_of_user($conn, $TurnierID, $bn, $pw, $begegnungId){
   //LOGIN
   //$bn = $_POST['bn'];
   //$pw = $_POST['pw'];
@@ -11,7 +11,7 @@ function get_rights_of_user($conn, $TurnierID, $bn, $pw){
   $spielGehoertZuTeam = 0; //false
   $teamBearbeitungsrecht = 0;
   while ( !empty( $rowLogin = $resultLogin->fetch_assoc() ) ){
-      $successfulLogin = 2;
+      $successfulLogin = 1;
       $teamBearbeitungsrecht = $rowLogin["bearbeitungsrechte"];
       //echo "<script>console.log('Du bist eingeloggt als Team.')</script>";
       //checken ob Begegnung zu Team-Kürzel passt, das sich eingeloggt hat
