@@ -1,8 +1,8 @@
 <?php
-$dbhost = 'rdbms.strato.de';
-$dbuser = 'U4247673';
-$dbpassword = 'mtFcGzpgrVDsk1Ffs69h';
-$dbname = 'DB4247673';
+$dbhost = "rdbms.strato.de";
+$dbuser = "dbu1612112";
+$dbpassword = "HF?A=k%CWdDxc*8Jr4()bmF";
+$dbname = "dbs4154474";
 /*
 //NORMALE DATEI
 $dumpfile = "db_backups/" . $dbname . "_" . date("Y-m-d_H-i-s") . ".sql";
@@ -14,12 +14,18 @@ exec("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname > $
 */
 
 //ZIP DATEI
-$dumpfile = '/mnt/web508/d1/34/510124634/htdocs/blankiball/website/database/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
+$dumpfile = '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna/database/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
 //Pfad nicht relativ sondern von backstage.php aus!
 
 //echo "Start dump\n";
 passthru("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname | gzip -c  > $dumpfile");
 //echo "-- Dump completed -- ";
+/*$sql = 'SELECT * FROM `System_Website`';
+$result = $conn->query($sql);
+while ($row = $result->fetch_assoc()) {
+    $name = $row['name'];
+    echo "-- Backup erstellt für website" + $name;
+}*/
 ////echo $dumpfile;
 
 
@@ -82,6 +88,6 @@ function deleteFilesFromDirectory($ordnername){
     }
 }
 //Funktionsaufruf - Directory immer mit endendem / angeben
-deleteFilesFromDirectory("/mnt/web508/d1/34/510124634/htdocs/blankiball/website/database/db_backups/");
+//deleteFilesFromDirectory("/mnt/web508/d1/34/510124634/htdocs/blankiball/website/database/db_backups/");
 
 ?>

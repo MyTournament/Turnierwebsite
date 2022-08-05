@@ -53,13 +53,14 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
 }
 
 //DB_UPDATE
-include_once '/mnt/web508/d1/34/510124634/htdocs/blankiball/website/database/db_update.php';
+//TODO: den Part hier wieder includen
+/*include_once '/mnt/web508/d1/34/510124634/htdocs/blankiball/website/database/db_update.php';
 try{
     db_update($conn, $TurnierID);
 }catch(Throwable $e){
     //do nothing
     //the error will be sent when index.php is loaded, db_update gets executed then too
-}
+}*/
 
 //TODO: BACKUP
 //include_once '/mnt/web508/d1/34/510124634/htdocs/blankiball/website/database/db_backup.php';

@@ -40,13 +40,13 @@ include_once 'edit_interface.php';
 				}
 
 				$bn = "unknown";
-				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password) VALUES (?, ?, ?, ?)";
-				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort']));
+				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
+				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail']));
 			}
 		else{
 			$bn = "unknown";
-			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password) VALUES (?, ?, ?, ?)";
-			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort']));
+			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
+			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail']));
 		}
 			
 		$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
@@ -54,12 +54,39 @@ include_once 'edit_interface.php';
 		myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
 		myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
 
-		//PER MAIL VERSENDEN
+
+		//Text für beide Mails vorbereiten
+		$infoVomAngemeldetenTeam = "";
+		$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
+		$infoVomAngemeldetenTeam .= "Team-Kuerzel: " . $_POST['Kuerzel'] . "\r\n";
+		$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'] . "\r\n \r\n";
+		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'] . " \r\n \r\n";
+		$infoVomAngemeldetenTeam .= "Spieler 2: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . " \r\n \r\n";
+		$infoVomAngemeldetenTeam .= "Spieler 3: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'] . " \r\n \r\n";
+
 		include_once '../website_functionalities/send_mail.php';
+
+		//PER MAIL VERSENDEN
+		//an kummerkasten
 		$fromEmail = "kummerkasten@blankiball.de";
 		$name = $_POST['Teamname'];
 		$message = "";
+		$message .= $infoVomAngemeldetenTeam;
 		mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
+
+		//an Team
+		$fromEmail = "kummerkasten@blankiball.de";
+		$team_mail = $_POST['Mail'];
+		$name = $_POST['Teamname'];
+		if($turnier_phase_ID==12){ // Falls Warteliste
+			$message = "Leider sind die Plaetze des Turniers vorlaeufig voll. Dein Team wurde der Warteliste hinzugefuegt und kann eventuell noch nachruecken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
+		}else{
+			$message = "Dein Team wurde erfolgreich fuer das Blankiball-Turnier registriert! \r\n \r\n";
+		}
+		$message .= "Hier kannst du noch einmal deine Angaben ueberpruefen. (Umlaute und Emojis werden eventuell nicht richtig dargestellt -> gerade wenn du welche im Passwort haben solltest, wird dein Passwort hier moeglicherweise falsch angezeigt, funktioniert aber in der urspruenglichen Version) \r\n \r\n";
+		$message .= $infoVomAngemeldetenTeam;
+		$message .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
+		mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];

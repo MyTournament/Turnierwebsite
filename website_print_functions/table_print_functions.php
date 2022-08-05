@@ -990,4 +990,26 @@
         }
         return "<a href='?spielerId=$spielerId#spielerinfo_login'>$name</a>";
     }
+
+    function history_auswahl($history, $TurnierName){
+        //TEST-MODUS
+        //if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
+        echo"
+        <form method='post' action='#history_info'>
+            <select name='history_turnier_id'>
+                <option value='0'><i>$TurnierName</i></option>";
+                
+                foreach ($history as &$value){
+                    $index = $value[0];
+                    $tName = $value[2];
+                    echo "<option value=$index>$tName</option>";
+                }
+                echo"
+            </select>
+            <button  name='content' class='button primary'>Zum Turnier</button> 
+            <input type='hidden' name='bn' value='$bn'/>
+            <input type='hidden' name='pw' value='$pw'/>
+        </form>";
+        //}
+    }
 ?>
