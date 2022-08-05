@@ -173,16 +173,16 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     }
     ?>
     <input type="text" id="teamname" name="Teamname" class="Eingabe" placeholder="Dein legendärer Teamname &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="spieler1" name="Spieler1" class="Eingabe" placeholder="1. Bierballer*in &#9733;" style="color: white" required><br/>
-    <input type="text" id="tel1" name="tel1" class="Eingabe" placeholder="1. Telefonnummer &#9733;" style="color: white" required><br/>
-    <input type="text" id="spieler2" name="Spieler2" class="Eingabe" placeholder="2. Bierballer*in &#9733;" style="color: white" required><br/>
-    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer" style="color: white"><br/>
-    <input type="text" id="spieler3" name="Spieler3" class="Eingabe" placeholder="3. Bierballer*in &#9733;" style="color: white" required><br/>
-    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer" style="color: white"><br/>
+    <input type="text" id="spieler1" name="Spieler1" class="Eingabe" placeholder="1. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
+    <input type="text" id="tel1" name="tel1" class="Eingabe" placeholder="1. Telefonnummer &#9733;" style="color: white" maxlength="40" required><br/>
+    <input type="text" id="spieler2" name="Spieler2" class="Eingabe" placeholder="2. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
+    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer" style="color: white" maxlength="40"><br/>
+    <input type="text" id="spieler3" name="Spieler3" class="Eingabe" placeholder="3. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
+    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer" style="color: white" maxlength="40"><br/>
     <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
     <p></br></p>
     <h4>E-Mail</h4>
-    <p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten.</p>
+    <p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
     <input type="text" id="mail" name="Mail" class="Eingabe" placeholder="Mail-Adresse &#9733;" style="color: white" required><br/>
     </br>
     <h4>Kürzel* & Passwort</h4>
