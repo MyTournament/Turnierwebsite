@@ -17,13 +17,24 @@ $flaschen2 = $_POST['Flaschen2'];
 $action = $_POST['action'];
 //echo "<script>console.log('Action: $action')</script>";
 
+$bn = $_POST['bn'];
+$pw = $_POST['pw'];
 //##########################################################
 //LOGIN
 include_once 'login_interface.php';
+$rights = get_rights_of_user($conn, $TurnierID, $bn, $pw, $begegnungId);
+
+
+
+$successfulLogin = $rights["team_rights"]["successfulLogin"];
+$spielGehoertZuTeam = $rights["team_rights"]["spielGehoertZuTeam"];
+$teamBearbeitungsrecht = $rights["team_rights"]["teamBearbeitungsrecht"];
+
+$accountDarfSpieleBearbeiten = $rights["account_rights"]["rechte_alle_spiele"];
 //##########################################################
 
 if ($action == 'Ändern') {
-  if($successfulLogin == 1 || ($successfulLogin == 2 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+  if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sql = "UPDATE `Turnier_Spiel` SET `biereheimteam` = ?, `biereauswaertsteam` = ? WHERE `Turnier_Spiel`.`id` = ?;";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($flaschen1, $flaschen2, $spielID));
     
@@ -67,7 +78,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if ($action == 'Löschen'){
-  if($successfulLogin == 1){ //Account-Login
+  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $sql = "DELETE FROM `Turnier_Spiel` WHERE `Turnier_Spiel`.`id` = ?;";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($spielID));
 
@@ -111,7 +122,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Eintragen'){
-  if($successfulLogin == 1 || ($successfulLogin == 2 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+  if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sql = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
     
@@ -139,7 +150,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Finalisieren'){
-  if($successfulLogin == 1 || ($successfulLogin == 2 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+  if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE id = ?";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId));
     
@@ -167,7 +178,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Unfinalisieren'){
-  if($successfulLogin == 1){ //Account-Login
+  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $sql = "UPDATE Turnier_Begegnung SET `status` = 1, fk_siegerteam = NULL WHERE id = ?";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId));
     
@@ -194,7 +205,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Gruppe_Finalisieren'){
-  if($successfulLogin == 1){ //Account-Login
+  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $groupId = $_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
@@ -222,7 +233,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Gruppe_Uninalisieren'){
-  if($successfulLogin == 1){ //Account-Login
+  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $groupId = $_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = 1 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
@@ -260,6 +271,5 @@ if ($action == 'Ändern') {
     }
 
 }
-    
 
 ?> 

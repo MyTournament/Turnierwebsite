@@ -32,7 +32,7 @@ if ($websiteId == null){
 		<title>Blankiball Bierball Turnier</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <meta name="description" content="Merke dir - Sternburg Bier | 06.09. - 12.09.21">
+        <meta name="description" content="Merke dir - Sternburg Bier | 05.09. - 10.09.22">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
@@ -187,7 +187,10 @@ if ($websiteId == null){
             </script> 
             <!-- "Sep 26, 2022 14:00:00" -->
             <?php //ANMELDUNG
-            if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
+            if($turnier_phase_ID == 1){
+                echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
+                cmsPrintSection($websiteId, $siteID, $TurnierID, 32, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); // ANMELDEFRIST
+            }else if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
                 echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
                 cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); // ANMELDEFRIST
             }else if($turnier_phase_ID == 12){ //WARTELISTE
@@ -403,10 +406,32 @@ if ($websiteId == null){
 
 <!-- schiedsrichter*innen -->
 <article id="history">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 31, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <h1>Vergangene Turniere</h1>
+    <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
+    <?php history_auswahl($history, $TurnierName); ?>
+    <p>Hier geht's zur alten Website (2017-2020)</p>
+    <a href="http://2020.REDACTED.de/" class="button primary">Alte Website (2017-2020)</a>
+    <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
+</article>
+
+<!-- schiedsrichter*innen -->
+<article id="history_info">
+    <div style='background-color:#7700FF;'>
+        <div style='color:white; text-align: center;'>
+            </br>
+            <h1>History</h1>
+            <p> Du befindest dich in der History-Ansicht. 
+            Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
+            Alle sonstigen Infos bleiben aber die vom aktuellen Turnier.</p>
+            <p>Zum verlassen des History-Modus, klicke oben rechts auf "Leave".</p>
+            <a href="#" class="button">Ok</a>
+            <p></br></p>
+        </div> <!-- #7700FF -->
+        
+    </div>
 </article>
 
 
@@ -665,13 +690,18 @@ if ($websiteId == null){
 <article id="logincheck_success">
     <div style='text-align: center'>  
         </br>  
-        <h2>Dein Team wurde erfolgreich angemeldet!</h2>                    
-        <h3>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei!</h3>
-        <p>... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest</p>
+        <h2>Dein Team wurde erfolgreich angemeldet!</h2>  
+        </br>
+        <h3><a href="https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE">💓Unterstütze uns💓</a></h3>
+        <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
+        <a class="button" style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a>    
+        </br></br></br>
+        <h3><img src="images/icon/whatsapp.png" width="20" height="20" border="5" alt="Home"> Komm in die Gruppe</h3>
+        <p>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei! (... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest)</p>
         <ul class="actions stacked">
-            <li><a class="button" style='background-color: green' href='https://chat.whatsapp.com/CY9qU6l0PsCCaUVT9kx81O'>Offizielle Whatsapp Gruppe</a></li>
-            <li><a class="button" style='background-color: green' href='https://chat.whatsapp.com/HjSpKYv7FH28hqStjuXIhV'>Chat-Gruppe</a></li>
-            <li><a class="button" style='background-color: blue' href='https://t.me/joinchat/1yfnu49yuYo0OGEy'>Telegram-Gruppe</a></li>
+            <li><a class="button" style='background-color: green' href='https://chat.whatsapp.com/ByCbEWtIw5kLK4Rn15nHML'>Offizielle Whatsapp Gruppe</a></li>
+            <li><a class="button" style='background-color: green' href='https://chat.whatsapp.com/Hfrml4jy6WeLb0xw0wLWy5'>Chat-Gruppe</a></li>
+            <li><a class="button" style='background-color: blue' href='https://t.me/+Ez2xl_6Rm6gzYjBi'>Telegram-Gruppe</a></li>
             </br>
             <li><a class="button" href='#'>Zurück zur Startseite</a></li>
         </ul>
