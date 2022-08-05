@@ -40,9 +40,9 @@ class PDF extends FPDF {
         $this->SetFont('Arial','I',8);
           
         // Page number
-        /*$this->Cell(0,10,'Page ' . 
-            $this->PageNo() . '/{nb}',0,0,'C');
-            */
+        //$this->Cell(0,10,'Page ' . 
+        //   $this->PageNo() . '/{nb}',0,0,'C');
+            
         $this->Cell(0,10,'Blankiball e.V. - no rights reserved',0,0,'C');   
     }
 }
@@ -55,7 +55,7 @@ $pdf->AliasNbPages();
 $pdf->AddPage();
 
 $str = iconv('UTF-8', 'windows-1252', $str);
-utf8_decode();
+//utf8_decode();
 
 
 
@@ -63,25 +63,28 @@ $pdf->Cell(0, 10, '' , 0, 1, 'C');
 $pdf->SetFont('Courier','',14);
 $pdf->Cell(0, 10, 'Vielen dank fuer deine Teilnahme am:' , 0, 1, 'C');
 $pdf->SetFont('Courier','B',18);
-$pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2021' , 0, 1, 'C');
+$pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2022' , 0, 1, 'C');
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 
 include_once '../../database/db_connection.php';
+
 include_once '../../variables.php';
 
 $teamId = $_GET['teamId'];
 if($teamId != NULL){
+    
     $sql = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId .'';
     $result = $conn->query($sql);
     while (!empty($row = $result->fetch_assoc())) {
         $teamName = $row['name'];
+        $teamKuerzel = $row['kuerzel'];
         $gruppeId = $row['fk_gruppe'];
         $endplatzierung = $row['endplatzierung'];
 
         $pdf->SetFont('Times','',14);
         $pdf->Cell(0, 10, 'Zertifikat ausgestellt fuer das Team:' , 0, 1, 'C');
         $pdf->SetFont('Courier','B',14);
-        $pdf->Cell(0, 10, $teamName , 0, 1, 'C');
+        $pdf->Cell(0, 10, $teamName . ' (' .$teamKuerzel. ')' , 0, 1, 'C');
     }
 
     $pdf->Cell(0, 10, '' , 0, 1, 'C');
@@ -114,7 +117,7 @@ if($teamId != NULL){
     }else{
         //echo "<p><i>Noch keiner Gruppe zugeteilt</i></p>";
     }
-
+    
     $siege = 0; //für SIEGESQUOTE
     $niederlagen = 0;
     $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
@@ -151,7 +154,7 @@ if($teamId != NULL){
     //ENDPLATZIERUNG
     $pdf->Cell(0, 10, '' , 0, 1, 'C');
     $pdf->SetFont('Times','',14);
-    $pdf->Cell(0, 10, 'Sie erreichten den Platz', 0, 1, 'C');
+    $pdf->Cell(0, 10, 'Das Team erreichte den Platz', 0, 1, 'C');
 
     $pdf->SetFont('Courier','B',14);
     $pdf->Cell(0, 10, $endplatzierung, 0, 1, 'C');
@@ -171,20 +174,18 @@ if($teamId != NULL){
     $pdf->Image('hermann_unterschrift.png',85,242,40);
     $pdf->Cell(0, 10, '', 0, 1, 'C');
     $pdf->Cell(0, 10, 'Hermann Blankenstein', 0, 1, 'C');
-
+    
 
 
 }
 
 
+//for($i = 1; $i <= 30; $i++)
+//$pdf->Cell(0, 10, 'line number ' . $i, 0, 1);
 
-/* 
-for($i = 1; $i <= 30; $i++)
-$pdf->Cell(0, 10, 'line number ' . $i, 0, 1);
 
-*/
 
 
 $pdf->Output();
-  
+
 ?>
