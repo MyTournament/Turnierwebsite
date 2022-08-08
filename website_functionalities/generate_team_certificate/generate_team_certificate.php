@@ -120,36 +120,12 @@ if($teamId != NULL){
     
     $siege = 0; //für SIEGESQUOTE
     $niederlagen = 0;
-    $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
+    $sql = 'SELECT * FROM Turnier_Team WHERE `id` = ' . $teamId . ';';
     $result = $conn->query($sql);
     while (!empty($row = $result->fetch_assoc())) {
-        $begegnungId = $row['id'];
-        $heimteamID=$row["fk_heimteam"];
-        $auswaertsteamID=$row["fk_auswaertsteam"];        
-        //SIEGESQUOTE AUSRECHNEN
-            $sqlSiegesquote = 'SELECT * FROM `Turnier_Spiel` WHERE fk_begegnung = ' . $begegnungId . ' ORDER BY ID';
-            $resultSiegesquote = $conn->query($sqlSiegesquote); 
-            while ($rowSiegesquote = $resultSiegesquote->fetch_assoc()) {
-                $biereheimteam = $rowSiegesquote['biereheimteam'];
-                $biereauswaertsteam = $rowSiegesquote['biereauswaertsteam'];
-
-                if($teamId == $heimteamID){
-                    if($biereheimteam > $biereauswaertsteam){
-                        $siege++;
-                    }else if($biereheimteam < $biereauswaertsteam){
-                        $niederlagen++;
-                    }
-                }else if($teamId == $auswaertsteamID){
-                    if($biereheimteam > $biereauswaertsteam){
-                        $niederlagen++;
-                    }else if($biereheimteam < $biereauswaertsteam){
-                        $siege++;
-                    }
-                }
-            }
+        $siegesquote = $row['siegesquote'];
     }
-    $siegesquote = ($siege/($siege+$niederlagen))*100;
-
+    
 
     //ENDPLATZIERUNG
     $pdf->Cell(0, 10, '' , 0, 1, 'C');

@@ -27,7 +27,125 @@
             }
         }
     }
-    function setTeamEndplatzierung($conn, $TurnierID, $TeamId, $endplatzierung){
+    function setTeamPlatziertLevel($conn, $TurnierID, $TeamId, $ko_finallevel){
+        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `platziert_level` = '$ko_finallevel' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+        if ( $stmt === false ){
+            throw new Exception('platziert_level konnte nicht gesetzt werden.');
+        }
+        $stmt->execute();
+    }
+    function setSiegesQuote($conn, $TurnierID, $TeamId){
+        //AUSRECHNEN
+        $siege = 0; //für SIEGESQUOTE
+        $niederlagen = 0;
+        $siegesquote = 0;
+        $sqlBeg = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $TeamId . ' OR fk_auswaertsteam = ' . $TeamId . ') ORDER BY id';
+        $resultBeg = $conn->query($sqlBeg);
+        while (!empty($rowBeg = $resultBeg->fetch_assoc())) {
+            $begegnungId = $rowBeg['id'];
+            $heimteamID=$rowBeg["fk_heimteam"];
+            $auswaertsteamID=$rowBeg["fk_auswaertsteam"];        
+            //SIEGESQUOTE AUSRECHNEN
+            $sqlSiegesquote = 'SELECT * FROM `Turnier_Spiel` WHERE fk_begegnung = ' . $begegnungId . ' ORDER BY ID';
+            $resultSiegesquote = $conn->query($sqlSiegesquote); 
+            while ($rowSiegesquote = $resultSiegesquote->fetch_assoc()) {
+                $biereheimteam = $rowSiegesquote['biereheimteam'];
+                $biereauswaertsteam = $rowSiegesquote['biereauswaertsteam'];
+
+                if($TeamId == $heimteamID){
+                    if($biereheimteam > $biereauswaertsteam){
+                        $siege++;
+                    }else if($biereheimteam < $biereauswaertsteam){
+                        $niederlagen++;
+                    }
+                }else if($TeamId == $auswaertsteamID){
+                    if($biereheimteam > $biereauswaertsteam){
+                        $niederlagen++;
+                    }else if($biereheimteam < $biereauswaertsteam){
+                        $siege++;
+                    }
+                }
+            }
+        }
+        if($siege+$niederlagen != 0){
+            $siegesquote = ($siege/($siege+$niederlagen))*100;
+        }else{
+            $siegesquote = 0;
+        }
+        
+
+        //IN DB SCHREIBEN
+        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `siegesquote` = '$siegesquote' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+        if ( $stmt === false ){
+            throw new Exception('siegesquote konnte nicht gesetzt werden.');
+        }
+        $stmt->execute();
+    }
+    function setAllEndplatzierungen($conn, $TurnierID){
+        //zählen wie viele Teams es gibt
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY ID';
+        $resultTeamZeile = $conn->query($sqlTeam);
+        $teamZaehler = 0;
+        while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
+            $teamZaehler++;
+        }
+        $platzierung = $teamZaehler;
+        //GRUPPENPHASE
+        $sql = 'SELECT * FROM Turnier_Team WHERE (platziert_level = 0 OR platziert_level = NULL) AND fk_turnier = '. $TurnierID .' ORDER BY siegesquote DESC';
+        $result = $conn->query($sql);
+        while (!empty($row = $result->fetch_assoc())) {
+            $TeamId = $row['id'];
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            if ( $stmt === false ){
+                throw new Exception('siegesquote konnte nicht gesetzt werden.');
+            }
+            $stmt->execute();
+            $stmt->close();
+            //Zähler
+            $platzierung--;
+        }
+
+        //KO-PHASE außer Finale und Spiel um Platz 3
+        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level > 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
+        $result = $conn->query($sql);
+        while (!empty($row = $result->fetch_assoc())) {
+            $TeamId = $row['id'];
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            if ( $stmt === false ){
+                throw new Exception('siegesquote konnte nicht gesetzt werden.');
+            }
+            $stmt->execute();
+            //Zähler
+            $platzierung--;
+        }
+        //Spiel um Platz 3
+        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
+        $result = $conn->query($sql);
+        while (!empty($row = $result->fetch_assoc())) {
+            $TeamId = $row['id'];
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            if ( $stmt === false ){
+                throw new Exception('siegesquote konnte nicht gesetzt werden.');
+            }
+            $stmt->execute();
+            //Zähler
+            $platzierung--;
+        }
+        //Finale
+        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
+        $result = $conn->query($sql);
+        while (!empty($row = $result->fetch_assoc())) {
+            $TeamId = $row['id'];
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            if ( $stmt === false ){
+                throw new Exception('siegesquote konnte nicht gesetzt werden.');
+            }
+            $stmt->execute();
+            //Zähler
+            $platzierung--;
+        }
+    }
+    /*function setTeamEndplatzierung($conn, $TurnierID, $TeamId, $endplatzierung){
         //FALL: Zurücksetzen oder TOP 3
         if(is_numeric($endplatzierung)){ //is_numeric($endplatzierung) ->FÜR DEN FALL DASS 1, 2 oder 3 für die TOP 3 übergeben wird ODER dass 0 übergeben wird || $endplatzierung==0 || $endplatzierung=='NULL'
             //Platzierung updaten
@@ -43,7 +161,7 @@
             $teamZaehler = 0;
             while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
                 $teamZaehler++;
-            }
+            }*/
             //zählen wie viele Teams schon eine Platzierung bekommen haben
             /*$sqlTeam = 'SELECT * FROM `Team` WHERE fk_turnier = ' . $TurnierID . ' AND endplatzierung > 0 ORDER BY endplatzierung';
             $resultTeamZeile = $conn->query($sqlTeam);
@@ -55,7 +173,7 @@
             if($endplatzierung<0){
                 $endplatzierung=0;
             }*/
-            $endplatzierung = $teamZaehler;
+            /*$endplatzierung = $teamZaehler;
             while($endplatzierung>3){
                 //gucken ob diese Platzierung schon vergeben ist
                 $bool = 0;
@@ -78,7 +196,7 @@
             }
             
         }
-    }
+    }*/
     function calculateTheWinnerAndWriteInDatabase($conn, $TurnierID, $rowBegegnung){ //Gewinnerteam berechnen
         $FlaschenZaehlerTeam1 = 0;
         $PunkteZaehlerTeam1 = 0;
@@ -575,21 +693,21 @@
                             }
                         }
                         //Falls nicht final -> Endplatzierungen wieder freimachen
-                        if($allebegegnungenInGruppeFinal == 0){
+                        /*if($allebegegnungenInGruppeFinal == 0){
                             $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc';
                             $resultRausgeflogen = $conn->query($sqlRausgeflogen);
                             while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
                                 $verliererTeam1ID = $rowRausgeflogen['id'];
-                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, 0);
+                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, $ko_finallevel);
                             }
 
                             $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeNextID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc';
                             $resultRausgeflogen = $conn->query($sqlRausgeflogen);
                             while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
                                 $verliererTeam1ID = $rowRausgeflogen['id'];
-                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, 0);
+                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, $ko_finallevel);
                             }
-                        }
+                        }*/
 
                         //Nur erstellen wenn gerade eben berechnet wurde dass alle Begegnungen in beiden Gruppen final sind
                         if($allebegegnungenInGruppeFinal == 1){
@@ -607,7 +725,7 @@
                             $resultRausgeflogen = $conn->query($sqlRausgeflogen);
                             while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
                                 $verliererTeam1ID = $rowRausgeflogen['id'];
-                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, "stringdereinfachnurdafuerdaistdamitdiefunctionselbstdenplatzberechnet");
+                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
                             }
 
                             //Erste Finalstufe erstellen (könnte zB Viertel- oder Achtelfinale sein)
@@ -682,11 +800,11 @@
                                         if($ko_finallevel==2){ 
                                             //echo "<script>console.log('ko finallevel ist 2')</script>";
                                             if($gewinnerTeam1ID == 0 || $verliererTeam1ID == 0){ //NUr die Endplatzierung vergeben wenn die neuen Nachfolgerteams schon gefunden sind
-                                                setTeamEndplatzierung($conn, $TurnierID, $fk_heimteam, 0);
-                                                setTeamEndplatzierung($conn, $TurnierID, $fk_auswaertsteam, 0);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $fk_heimteam, $ko_finallevel);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $fk_auswaertsteam, $ko_finallevel);
                                             }else{
-                                                setTeamEndplatzierung($conn, $TurnierID, $gewinnerTeam1ID, 1);
-                                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, 2);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $gewinnerTeam1ID, $ko_finallevel);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, $ko_finallevel);
                                             }
                                             continue;
                                         }
@@ -694,11 +812,11 @@
                                         if($ko_finallevel==1){ 
                                             //echo "<script>console.log('ko finallevel ist 1')</script>";
                                             if($gewinnerTeam1ID == 0 || $verliererTeam1ID == 0){ //NUr die Endplatzierung vergeben wenn die neuen Nachfolgerteams schon gefunden sind
-                                                setTeamEndplatzierung($conn, $TurnierID, $fk_heimteam, 0);
-                                                setTeamEndplatzierung($conn, $TurnierID, $fk_auswaertsteam, 0);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $fk_heimteam, $ko_finallevel);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $fk_auswaertsteam, $ko_finallevel);
                                             }else{
-                                                setTeamEndplatzierung($conn, $TurnierID, $gewinnerTeam1ID, 3);
-                                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, 4);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $gewinnerTeam1ID, $ko_finallevel);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, $ko_finallevel);
                                             }
                                             continue;
                                         }
@@ -726,15 +844,15 @@
                                         }
                                         else if($ko_finallevel>3){ //endplatzierung nur vergeben wenn gerade nicht schon fürs FInale und SPiel um Platz 3 erstellt wird, weil alle die im Halbfinale waren eh nochmal spielen werden
                                             if($verliererTeam1ID == 0){ //Nur die Endplatzierung vergeben wenn die neuen Nachfolgerteams schon gefunden sind
-                                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, 0);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, $ko_finallevel);
                                             }else{
-                                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, "string");
+                                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, $ko_finallevel);
                                             }
                                             
                                             if($verliererTeam2ID == 0){
-                                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam1ID, 0);
+                                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, $ko_finallevel);
                                             } else{
-                                                setTeamEndplatzierung($conn, $TurnierID, $verliererTeam2ID, "string");
+                                                setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam2ID, $ko_finallevel);
                                             }                                    
                                         }
                                     }
@@ -858,6 +976,19 @@
                     throw new Exception('Begegnungen konnten nicht als Final-Veraltet markiert werden.');
                 }
                 $stmtFinalVeralteteBegegnung->execute();
+
+
+                //Siegesquoten ausrechnen und eintragen
+                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID;
+                $resultTeam = $conn->query($sqlTeam);
+                while (!empty( $rowTeam = $resultTeam->fetch_assoc() ) ){
+                    $TeamId = $rowTeam['id'];
+                    setSiegesQuote($conn, $TurnierID, $TeamId);
+                }
+
+
+                //PLATZIERUNGEN
+                setAllEndplatzierungen($conn, $TurnierID);
 
                 //TODO: Für Gruppenphase alle Begegnungen mit 1 Spiel und für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
                 //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
