@@ -16,7 +16,7 @@ function determine_domain_id($conn){
     $tld = $matches['tld'];
 
     $domain_to_be_loaded = NULL;
-    if($subdomain != NULL && $subdomain != ''){
+    if($subdomain != NULL && $subdomain != '' && $subdomain != 'dev'){
         $domain_to_be_loaded = $subdomain;
         $is_subdomain = 1;
     }else{
