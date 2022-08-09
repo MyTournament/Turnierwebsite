@@ -990,23 +990,6 @@
                 
                 //PLATZIERUNGEN
                 setAllEndplatzierungen($conn, $TurnierID);
-                
-                //TODO: Für Gruppenphase alle Begegnungen mit 1 Spiel und für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
-                //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
-                //-ab finaler Begegnung kann auch kein Spiel mehr dazu eingetragen werden
-                //-final kann nur noch von Admins gelöscht oder geändert werden 
-                //-erst wenn Begegnung final, wird nächste Finalstufe berechnet
-                //-bis halbe stunde nach eintragen noch ändern können
-                
-                // Begegnungen aus Turnieren mit Gruppenphase mit Hin- und Rückspiel, die genau ein Spiel haben, und in der Gruppenphase sind, finalisieren  
-                if ($schalterDreieck == 2){
-                    $stmtSetFinalBegegnungenWithSingleSpielAndInGruppenphase = $conn->prepare('UPDATE Turnier_Begegnung AS begegnung SET `status` = 5 WHERE `status` = 1 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .') AND (SELECT COUNT(id) FROM Turnier_Spiel WHERE fk_begegnung = begegnung.id) = 1');
-                    if ( $stmtSetFinalBegegnungenWithSingleSpielAndInGruppenphase === false ){
-                        throw new Exception('Begegnungen aus der Gruppenphase, die ein Spiel haben, konnten nicht als Final markiert werden.');
-                    }
-                    $stmtSetFinalBegegnungenWithSingleSpielAndInGruppenphase->execute();
-                }
-                
 
                 //TODO:s für php-script was im Hintergrund läuft: Darauf achten dass es keine Kürzel doppelt gibt - ist fürs eintragen wichtig
 
