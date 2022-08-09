@@ -500,7 +500,7 @@
                                             );
                                 }
                             }else{
-                                $anlegen = 1; //Wenn Schalter so steht dass alles befpllt werden soll wird $anlegen einfach auf 1 gesetzt
+                                $anlegen = 1; //Wenn Schalter so steht dass alles befüllt werden soll wird $anlegen einfach auf 1 gesetzt
                             }
                             if($anlegen == 1){
                                 if($TeamZeileID == $TeamSpalteID){
@@ -531,6 +531,7 @@
 
             
                 //PUNKTE FÜR PUNKTETABELLE DER GRUPPENPHASE BERECHNEN
+                // TODO Priorität der Sortierung: Punkte -> direkter Vergleich -> Bierdifferenz -> meiste eigenen getrunkenen Biere  
                 $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ')'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
                 $resultGruppe = $conn->query($sqlGruppe);
                 while ($rowGruppe = $resultGruppe->fetch_assoc()) {
@@ -976,8 +977,8 @@
                     throw new Exception('Begegnungen konnten nicht als Final-Veraltet markiert werden.');
                 }
                 $stmtFinalVeralteteBegegnung->execute();
-
-
+                
+                
                 //Siegesquoten ausrechnen und eintragen
                 $sqlTeam = 'SELECT * FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID;
                 $resultTeam = $conn->query($sqlTeam);
@@ -985,18 +986,27 @@
                     $TeamId = $rowTeam['id'];
                     setSiegesQuote($conn, $TurnierID, $TeamId);
                 }
-
-
+                
+                
                 //PLATZIERUNGEN
                 setAllEndplatzierungen($conn, $TurnierID);
-
+                
                 //TODO: Für Gruppenphase alle Begegnungen mit 1 Spiel und für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
                 //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
                 //-ab finaler Begegnung kann auch kein Spiel mehr dazu eingetragen werden
                 //-final kann nur noch von Admins gelöscht oder geändert werden 
                 //-erst wenn Begegnung final, wird nächste Finalstufe berechnet
                 //-bis halbe stunde nach eintragen noch ändern können
-            
+                
+                // Begegnungen aus Turnieren mit Gruppenphase mit Hin- und Rückspiel, die genau ein Spiel haben, und in der Gruppenphase sind, finalisieren  
+                if ($schalterDreieck == 2){
+                    $stmtSetFinalBegegnungenWithSingleSpielAndInGruppenphase = $conn->prepare('UPDATE Turnier_Begegnung AS begegnung SET `status` = 5 WHERE `status` = 1 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .') AND (SELECT COUNT(id) FROM Turnier_Spiel WHERE fk_begegnung = begegnung.id) = 1');
+                    if ( $stmtSetFinalBegegnungenWithSingleSpielAndInGruppenphase === false ){
+                        throw new Exception('Begegnungen aus der Gruppenphase, die ein Spiel haben, konnten nicht als Final markiert werden.');
+                    }
+                    $stmtSetFinalBegegnungenWithSingleSpielAndInGruppenphase->execute();
+                }
+                
 
                 //TODO:s für php-script was im Hintergrund läuft: Darauf achten dass es keine Kürzel doppelt gibt - ist fürs eintragen wichtig
 
