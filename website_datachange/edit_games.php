@@ -133,7 +133,7 @@ if ($action == 'Ändern') {
     //-erst wenn Begegnung final, wird nächste Finalstufe berechnet
     //-bis halbe stunde nach eintragen noch ändern können
 
-    // TODO Check if its Gruppenphase and both sides of Gruppenphasendreieck are used
+    // TODO fix 500 server error
     $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ?";
     $stmt = myDb_execute($conn, $TurnierID, $bn, $sqlGetNurOberesDreieckInGruppenphase, $TurnierID);
     $result = $stmt->get_result();
