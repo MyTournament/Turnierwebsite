@@ -164,6 +164,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <h1>Melde dein Team an</h1>
     <h3 style='color: green'>Teams bestehen immer aus genau 3 Spieler*innen!</h3>
     <p>Gib deine Telefonnummer an um Teil der Blankiball-Whatsapp-Gruppe zu werden. Bitte gebt <b>mindestens eine Nummer pro Team</b> an, damit wir euch erreichen können.</p>
+    <p>Achtung: Der Name deines Teams und die Namen aller Mitspieler*innen werden auf der Website öffentlich für jede Person einsehbar sein. Die Telefonnummern werden zwar nicht direkt auf der Website veröffentlicht, es wird aber eine Whatsapp/Telegram/Signal-Gruppe mit allen Turnierteilnehmer*innen erstellt. In der Gruppe werden für alle anderen Personen alle Nummern sichtbar sein. Bitte gib deine Nummer nur ein, wenn du damit einverstanden bist. Fragt am besten auch eure Teammitglieder*innen ob sie damit einverstanden sind.</p> 
     <p>&#9733; = required</p>
     <?php
     if($test_turnier_id==0){ //Fall: normales Turnier
