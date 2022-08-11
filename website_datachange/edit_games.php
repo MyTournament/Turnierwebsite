@@ -133,9 +133,9 @@ if ($action == 'Ändern') {
     //-erst wenn Begegnung final, wird nächste Finalstufe berechnet
     //-bis halbe stunde nach eintragen noch ändern können
 
-    // TODO fix 500 server error
     $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ?";
-    $stmt = myDb_execute($conn, $TurnierID, $bn, $sqlGetNurOberesDreieckInGruppenphase, $TurnierID);
+
+    $stmt = myDb_execute($conn, $TurnierID, $bn, $sqlGetNurOberesDreieckInGruppenphase, array($TurnierID));
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $nurOberesDreieck = $row['nurOberesDreieckInGruppenphase'];
