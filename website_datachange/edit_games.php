@@ -4,11 +4,6 @@ include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
 //##########################################################
 
-// DEBUGGING TEMPLATE
-// $debug_message = "This is a debug message!";
-// $log_file = "./my-debug.log";
-// error_log($debug_message, 3, $log_file);
-
 //Variablen speichern
 $TurnierID = $_POST['TurnierID'];
 //echo "<script>console.log('TurnierID: $TurnierID')</script>";
@@ -158,7 +153,6 @@ if ($action == 'Ändern') {
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
     }
-
     //echo "<script>console.log('Das Spiel wurde erfolgreich eingetragen. $successfulLogin $spielGehoertZuTeam')</script>";
   }else{ //Team-Login
     
