@@ -4,6 +4,11 @@ include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
 //##########################################################
 
+// DEBUGGING TEMPLATE
+// $debug_message = "This is a debug message!";
+// $log_file = "./my-debug.log";
+// error_log($debug_message, 3, $log_file);
+
 //Variablen speichern
 $TurnierID = $_POST['TurnierID'];
 //echo "<script>console.log('TurnierID: $TurnierID')</script>";
@@ -126,7 +131,7 @@ if ($action == 'Ändern') {
     $sqlInsertSpiel = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
     myDb_execute($conn, $TurnierID, $bn, $sqlInsertSpiel, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
     
-    //TODO: Für Gruppenphase alle Begegnungen mit 1 Spiel und für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
+    //TODO: Für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
     //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
     //-ab finaler Begegnung kann auch kein Spiel mehr dazu eingetragen werden
     //-final kann nur noch von Admins gelöscht oder geändert werden 
@@ -141,7 +146,8 @@ if ($action == 'Ändern') {
     $nurOberesDreieck = $row['nurOberesDreieckInGruppenphase'];
 
     if ($nurOberesDreieck === 2){
-      $sqlFinalizeBegegnung = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE id = ?";
+      // Aktuelle Begegnung auf Status 5 setzen, wenn diese Begegnung jetzt genau ein Spiel hat. (Begegnungen mit 2 oder mehr Spielen werden also nicht verändert, hier wird von bewusstem Handeln von Admins ausgegangen)
+      $sqlFinalizeBegegnung = "UPDATE Turnier_Begegnung AS begegnung SET `status` = 5 WHERE id = ? AND 1 = (SELECT COUNT(id) FROM Turnier_Spiel WHERE fk_begegnung = begegnung.id) ";
       myDb_execute($conn, $TurnierID, $bn, $sqlFinalizeBegegnung, array($begegnungId));
     }
 
