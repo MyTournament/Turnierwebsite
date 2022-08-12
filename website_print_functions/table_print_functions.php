@@ -561,20 +561,17 @@
     }
 
     function printEditModeStuff($conn, $TurnierID, $gameEditMode, $action, $test_turnier_id){
-        $debug_message = "Value of \$action variable: ".$action."\n";
-        $log_file_path = substr(stream_resolve_include_path("index.php"), 0, -strlen("index.php"))."debug.log";
-        error_log($debug_message, 3, $log_file_path);
         if($gameEditMode == 1){
             echo "<h2 style='color:#00FF00'>Bearbeitungsmodus</h2>";
             echo "<ul class='alt'>";
             echo "<li style='color:#00FF00'><button style='background-color:#7700FF;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' class='button primary'>+</button> Über die Plus-Buttons kannst du neue Spielstände hinzufügen.</li>";
             //echo "<li style='color:#00FF00'><button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>3:0</button> Ein Spielstand ist nicht korrekt? Dann tippe einfach auf ihn, gib das Passwort deines Teams ein und ändere oder lösche den Spielstand.</li>";
             
-            // TODO move those single line SELECT statements to a central method, that gives back the object from result...->fetch_object()
+            // TODO move those single line SELECT statements to a central method, that gives back the array from result...->fetch_assoc(). So we can reuse it in the whole code.
             $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ". $TurnierID;
             $resultNurOberesDreieck = $conn->query($sqlGetNurOberesDreieckInGruppenphase);
-            $rowNurOberesDreieck = $resultNurOberesDreieck->fetch_object();
-            $nurOberesDreieck = $rowNurOberesDreieck->nurOberesDreieckInGruppenphase;
+            $rowNurOberesDreieck = $resultNurOberesDreieck->fetch_assoc();
+            $nurOberesDreieck = $rowNurOberesDreieck['nurOberesDreieckInGruppenphase'];
             
             if($nurOberesDreieck === 1 || $action === "#kophase") { 
                     echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Sobald ihr alle Spiele gegen ein bestimmtes Team eingetragen habt müsst ihr noch einmal das grüne Häkchen anklicken, damit die Website weiß, dass sie auf keine Spiele mehr warten muss und schon die Teams schon für die kommenden Spiele berechnen kann.</li>";}
