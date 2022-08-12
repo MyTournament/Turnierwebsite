@@ -576,10 +576,20 @@
             error_log("\$sqlGetNurOberesDreieckInGruppenphase: ".$sqlGetNurOberesDreieckInGruppenphase."\n", 3, $log_file_path);
             $resultNurOberesDreieck = $conn->query($sqlGetNurOberesDreieckInGruppenphase);
             error_log("\$resultNurOberesDreieck: ".$resultNurOberesDreieck."\n", 3, $log_file_path);
-            $rowNurOberesDreieck = $resultNurOberesDreieck->fetch_object();
-            error_log("\$rowNurOberesDreieck: ".$rowNurOberesDreieck."\n", 3, $log_file_path);
-            $nurOberesDreieck = $rowNurOberesDreieck['nurOberesDreieckInGruppenphase'];
+            while($rowNurOberesDreieck = $resultNurOberesDreieck->fetch_assoc()){
+                error_log("\$rowNurOberesDreieck: ".$rowNurOberesDreieck."\n", 3, $log_file_path);
+                $nurOberesDreieck = $rowNurOberesDreieck['nurOberesDreieckInGruppenphase'];
+            }
             error_log("\$nurOberesDreieck: ".$nurOberesDreieck."\n", 3, $log_file_path);
+            
+            // $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ". $TurnierID;
+            // error_log("\$sqlGetNurOberesDreieckInGruppenphase: ".$sqlGetNurOberesDreieckInGruppenphase."\n", 3, $log_file_path);
+            // $resultNurOberesDreieck = $conn->query($sqlGetNurOberesDreieckInGruppenphase);
+            // error_log("\$resultNurOberesDreieck: ".$resultNurOberesDreieck."\n", 3, $log_file_path);
+            // $rowNurOberesDreieck = $resultNurOberesDreieck->fetch_object();
+            // error_log("\$rowNurOberesDreieck: ".$rowNurOberesDreieck."\n", 3, $log_file_path);
+            // $nurOberesDreieck = $rowNurOberesDreieck['nurOberesDreieckInGruppenphase'];
+            // error_log("\$nurOberesDreieck: ".$nurOberesDreieck."\n", 3, $log_file_path);
             
             if($nurOberesDreieck === 1 || $action === "#kophase"){
                 echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Sobald ihr alle Spiele gegen ein bestimmtes Team eingetragen habt müsst ihr noch einmal das grüne Häkchen anklicken, damit die Website weiß, dass sie auf keine Spiele mehr warten muss und schon die Teams schon für die kommenden Spiele berechnen kann.</li>";
