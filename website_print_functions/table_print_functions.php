@@ -570,11 +570,22 @@
             echo "<li style='color:#00FF00'><button style='background-color:#7700FF;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' class='button primary'>+</button> Über die Plus-Buttons kannst du neue Spielstände hinzufügen.</li>";
             //echo "<li style='color:#00FF00'><button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>3:0</button> Ein Spielstand ist nicht korrekt? Dann tippe einfach auf ihn, gib das Passwort deines Teams ein und ändere oder lösche den Spielstand.</li>";
             
-            // if($nurObereHälfte === 1 || $koPhase === 1){
-                echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> SSSSSSobald ihr alle Spiele gegen ein bestimmtes Team eingetragen habt, müsst ihr noch einmal das grüne Häkchen anklicken, damit die Website weiß, dass sie auf keine Spiele mehr warten muss und schon die Teams schon für die kommenden Spiele berechnen kann.</li>";
-            // } else {
+            
 
-            // }
+            $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ". $TurnierID;
+            $resultNurOberesDreieck = $conn->query($sqlGetNurOberesDreieckInGruppenphase);
+            while($rowNurOberesDreieck = $resultNurOberesDreieck->fetch_assoc()){
+                $nurOberesDreieck = $rowNurOberesDreieck['nurOberesDreieckInGruppenphase'];
+            }
+            // $nurOberesDreieck = 2;
+            
+            if($nurOberesDreieck === 1 || $action === "#kophase"){
+                echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Sobald ihr alle Spiele gegen ein bestimmtes Team eingetragen habt müsst ihr noch einmal das grüne Häkchen anklicken, damit die Website weiß, dass sie auf keine Spiele mehr warten muss und schon die Teams schon für die kommenden Spiele berechnen kann.</li>";
+                error_log("normaler Text ausgegeben!", 3, $log_file_path);
+            } else {
+                echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Mit diesen Buttons tragt ihr ein, dass ein Spiel ergebnislos bleibt, also bspw. nicht stattfinden kann. </li>";
+                error_log("neuer Text für Hin- und Rückspielturniere ausgegeben!", 3, $log_file_path);
+            }
             echo "<li style='color:#00FF00'><button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&#9733;</button> Dieser Button zeigt an, dass ein Spiel als final markiert wurde. Solltet ihr nachträglich doch noch ein Spiel eintragen wollen, könnt ihr euch an einen Administrator wenden.</li>";
             echo "<li style='color:#00FFFF'><img src='images/icon/telegram.png' width='20' height='20' border='5' alt='Home'> Das ist dir alles viel zu kompliziert? Dann ist der <a href='https://telegram.me/blankiballbot'>offizielle Blankiball-Bot</a> was für dich!</li>";
             //grey: #888888
