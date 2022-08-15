@@ -134,7 +134,6 @@ if ($action == 'Ändern') {
     //-bis halbe stunde nach eintragen noch ändern können
 
     $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ?";
-
     $stmt = myDb_execute($conn, $TurnierID, $bn, $sqlGetNurOberesDreieckInGruppenphase, array($TurnierID));
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
