@@ -147,7 +147,7 @@ include_once 'database/traffic_analytics.php';
             <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
         </div>
     </div>
-    <button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>
+    <!--<button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>-->
     <nav>
         <ul>
             <li><a href="#info">📚 Info</a></li>
