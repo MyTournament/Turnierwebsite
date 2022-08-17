@@ -43,8 +43,41 @@ include_once 'database/traffic_analytics.php';
         <meta name="description" content="Merke dir - Sternburg Bier | 05.09. - 10.09.22">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
+        <meta name="keywords" content="REDACTED, bierball, turnier, flunkyball, bier" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
         <link href="images/icon/logo_export_icon/transparent/favicon-96x96.png" rel="shortcut icon" type="image/png">
+        
+         <!-- für Galerie -->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
+        <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
+        <link href='http://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
+        
+        <noscript>
+            <style>
+                .es-carousel ul {
+                    display: block;
+                }
+            </style>
+        </noscript>
+        <script id="img-wrapper-tmpl" type="text/x-jquery-tmpl">
+            <div class="rg-image-wrapper">
+                {{if itemsCount > 1}}
+                <div class="rg-image-nav">
+                    <a href="#" class="rg-image-nav-prev">Previous Image</a>
+                    <a href="#" class="rg-image-nav-next">Next Image</a>
+                </div>
+                {{/if}}
+                <div class="rg-image"></div>
+                <div class="rg-loading"></div>
+                <div class="rg-caption-wrapper">
+                    <div class="rg-caption" style="display:none;">
+                        <p></p>
+                    </div>
+                </div>
+            </div>
+        </script>
+        <!--Ende Galerie -->
 
         <!-- HOME SCREEN LINK -->
         <!--<link rel="stylesheet" href="css/addtohomescreen.css">-->
@@ -420,6 +453,76 @@ include_once 'database/traffic_analytics.php';
     <p></br></p>
 </article>
 
+<article id="galerie">
+    
+    <!-- Galerie -->
+    <section id="galerie" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <div class="rules">
+                    <h2>Galerie</h2>
+                    <p>Ihr habt coole Bilder vom Turnier? Schickt sie uns! </p>
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+
+        <div class="header">
+ 
+            </span>
+            <div class="clr"></div>
+        </div><!-- header -->
+        <div class="content">
+<!--            <h1>Nice Pics</h1> -->
+            <div id="rg-gallery" class="rg-gallery">
+                <div class="rg-thumbs">
+                    <!-- Elastislide Carousel Thumbnail Viewer -->
+                    <div class="es-carousel-wrapper">
+                        <div class="es-nav">
+                            <span class="es-nav-prev">Previous</span>
+                            <span class="es-nav-next">Next</span>
+                        </div>
+                        <div class="es-carousel">
+                            <ul>
+                                <li><a href="#"><img src="images/galerie/thumbs/1.jpg" data-large="images/galerie/1.jpg" alt="image01" data-description="From off a hill whose concave womb reworded" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/2.jpg" data-large="images/galerie/2.jpg" alt="image02" data-description="A plaintful story from a sistering vale" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/3.JPG" data-large="images/galerie/3.JPG" alt="image03" data-description="A plaintful story from a sistering vale" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/4.jpg" data-large="images/galerie/4.jpg" alt="image04" data-description="My spirits to attend this double voice accorded" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/5.jpg" data-large="images/galerie/5.jpg" alt="image05" data-description="And down I laid to list the sad-tuned tale" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/6.jpg" data-large="images/galerie/6.jpg" alt="image06" data-description="Ere long espied a fickle maid full pale" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/7.jpg" data-large="images/galerie/7.jpg" alt="image07" data-description="Tearing of papers, breaking rings a-twain" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/8.jpg" data-large="images/galerie/8.jpg" alt="image08" data-description="Storming her world with sorrow's wind and rain" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/9.jpg" data-large="images/galerie/9.jpg" alt="image09" data-description="Upon her head a platted hive of straw" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/10.jpg" data-large="images/galerie/10.jpg" alt="image10" data-description="Which fortified her visage from the sun" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/11.jpg" data-large="images/galerie/11.jpg" alt="image11" data-description="Whereon the thought might think sometime it saw" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/12.jpg" data-large="images/galerie/12.jpg" alt="image12" data-description="The carcass of beauty spent and done" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/13.jpg" data-large="images/galerie/13.jpg" alt="image13" data-description="Time had not scythed all that youth begun" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/14.jpg" data-large="images/galerie/14.jpg" alt="image14" data-description="Nor youth all quit; but, spite of heaven's fell rage" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/15.jpg" data-large="images/galerie/15.jpg" alt="image15" data-description="Some beauty peep'd through lattice of sear'd age" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/16.jpg" data-large="images/galerie/16.jpg" alt="image16" data-description="Oft did she heave her napkin to her eyne" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/17.jpg" data-large="images/galerie/17.jpg" alt="image17" data-description="Which on it had conceited characters" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/18.jpg" data-large="images/galerie/18.jpg" alt="image18" data-description="Laundering the silken figures in the brine" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/19.jpg" data-large="images/galerie/19.jpg" alt="image19" data-description="That season'd woe had pelleted in tears" /></a></li>
+                                <li><a href="#"><img src="images/galerie/thumbs/20.jpg" data-large="images/galerie/20.jpg" alt="image20" data-description="And often reading what contents it bears" /></a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- End Elastislide Carousel Thumbnail Viewer -->
+                </div><!-- rg-thumbs -->
+            </div><!-- rg-gallery -->
+            <p class="sub"></p>
+        </div><!-- content -->
+    </div><!-- container -->
+    
+    <a href="#info" class="button">Zurück</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p>
+</article>
+
 <!-- schiedsrichter*innen -->
 <article id="history">
     <h1>Vergangene Turniere</h1>
@@ -785,6 +888,13 @@ include_once 'database/traffic_analytics.php';
 <script src="assets/js/breakpoints.min.js"></script>
 <script src="assets/js/util.js"></script>
 <script src="assets/js/main.js"></script>
+
+<!-- GALERIE -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="assets/js/gallery/jquery.tmpl.min.js"></script>
+<script type="text/javascript" src="assets/js/gallery/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="assets/js/gallery/jquery.elastislide.js"></script>
+<script type="text/javascript" src="assets/js/gallery/gallery.js"></script>
 
 <!-- ########################## -->
 <!-- ########  COOKIES  ######### -->
