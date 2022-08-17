@@ -97,7 +97,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                     <ul class='height: 100px;'>
                         <!-- <li><a href='/'>Startseite</a></li> -->
                         <li><a href='#info'>Infos</a></li>
-                        <li><a href='#letzte_aenderung'>Verlauf</a></li>
+                        <li><a href='#verlauf'>Verlauf</a></li>
                         <li><a href='#daten_bearbeiten'>Edit Data</a></li>
                     </ul>
                 </nav>  
@@ -143,6 +143,21 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                     <h5><br /></h5>  
                 </div>
             </article>
+
+            
+            <article id='verlauf'>
+                <div style='text-align: center'> 
+                    <h2>Verlauf</h2> <!--class='major'-->
+                    <a href='#traffic' class='button primary'>Traffic</a>
+                    <br/><br/>
+                    <a href='#letzte_aenderung' class='button primary'>DB-Verlauf</a>
+                    <h5><br/></h5>
+                    <h5><br/></h5>
+                    <a href='#' class='button'>Zurück</a>
+                    <h5><br /></h5>  
+                </div>
+            </article>
+
 
         <!-- ########  Begegnungen bearbeiten  ######### -->
             <article id='begegnungen_bearbeiten'>
@@ -501,7 +516,32 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
             <h5><br /></h5>  
         </article>
 
-        
+        <!-- ########################## -->
+        <!-- ########  Traffic  ######### -->
+        <!-- ########################## -->
+        <article id='traffic'>
+            <a href='#' class='button'>Zurück</a>
+            <h5><br /></h5>
+            <h2>Website-Traffic</h2> <!--class='major'-->
+            <p>Hier werden Website-Funktionalitäten getrackt.</p>"; 
+            $sql = 'SELECT * FROM `System_Traffic` ORDER BY id desc';
+            $result = $conn->query($sql);
+            while ($row = $result->fetch_assoc()) {
+                $traffic_timestamp = $row['timestamp'];
+                $traffic_who = $row['fk_who'];
+                $traffic_kategorie_Id = $row['fk_kategorie'];
+                    $sqlKat = 'SELECT * FROM `System_Traffic_Kategorien` WHERE id = '.$traffic_kategorie_Id.' ORDER BY id desc';
+                    $resultKat = $conn->query($sqlKat);
+                    while ($rowKat = $resultKat->fetch_assoc()) {
+                        $traffic_kategorie = $rowKat['name'];
+                    }
+                $traffic_text = $row['text'];
+                echo"<hr>";
+                echo"<p><b>$traffic_kategorie </b> $traffic_who $traffic_text ($traffic_timestamp)</p>";
+            }
+            echo"<a href='#' class='button'>Zurück</a>
+            <h5><br /></h5>  
+        </article>
 
         <!-- ########################## -->
         <!-- ########  CHANGETEAM  ######### -->
