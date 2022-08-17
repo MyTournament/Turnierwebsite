@@ -28,6 +28,10 @@ if ($websiteId == null){
     echo "WEBSITE nicht gefunden";
 }
 
+//TRAFFIC
+include_once 'database/traffic_analytics.php';
+
+
 ?>
 
 <!DOCTYPE HTML>
@@ -143,10 +147,11 @@ if ($websiteId == null){
             <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
         </div>
     </div>
+    <button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>
     <nav>
         <ul>
             <li><a href="#info">📚 Info</a></li>
-            <li><a href="#regeln">👮🏽‍♀️ Regeln</a></li>
+            <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">👮🏽‍♀️ Regeln</a></li>
             <li><a href="#teams">👨‍👧‍👧 Teams</a></li>
             <?php 
             //Aktuelle Turnierphase herausfinden - erstmal ID
@@ -158,7 +163,7 @@ if ($websiteId == null){
 
                 //SPIELPLAN
                 if($turnier_phase_ID == 4 ||$turnier_phase_ID == 5 || $turnier_phase_ID == 7 || $turnier_phase_ID == 9 || $turnier_phase_ID == 11){
-                    echo"<li><a href='#spielplan'>🎯 Spielplan</a></li>";
+                    echo"<li><a href='#spielplan' onclick='insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich den Spielplan angesehen');'>🎯 Spielplan</a></li>";
                 }else{
                     echo"<li class='button disabled'><a href='#spielplan'>🎯 Spielplan</a></li>";
                 }
