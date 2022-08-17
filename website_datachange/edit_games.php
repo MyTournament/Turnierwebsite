@@ -123,9 +123,28 @@ if ($action == 'Ändern') {
   }
 }else if($action == 'Eintragen'){
   if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
-    $sql = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
-    myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
+    $sqlInsertSpiel = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
+    myDb_execute($conn, $TurnierID, $bn, $sqlInsertSpiel, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
     
+    //TODO: Für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
+    //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
+    //-ab finaler Begegnung kann auch kein Spiel mehr dazu eingetragen werden
+    //-final kann nur noch von Admins gelöscht oder geändert werden 
+    //-erst wenn Begegnung final, wird nächste Finalstufe berechnet
+    //-bis halbe stunde nach eintragen noch ändern können
+
+    $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ?";
+    $stmt = myDb_execute($conn, $TurnierID, $bn, $sqlGetNurOberesDreieckInGruppenphase, array($TurnierID));
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $nurOberesDreieck = $row['nurOberesDreieckInGruppenphase'];
+
+    if ($nurOberesDreieck === 2){
+      // Aktuelle Begegnung auf Status 5 setzen, wenn diese Begegnung jetzt genau ein Spiel hat. (Begegnungen mit 2 oder mehr Spielen werden also nicht verändert, hier wird von bewusstem Handeln von Admins ausgegangen)
+      $sqlFinalizeBegegnung = "UPDATE Turnier_Begegnung AS begegnung SET `status` = 5 WHERE id = ? AND 1 = (SELECT COUNT(id) FROM Turnier_Spiel WHERE fk_begegnung = begegnung.id) ";
+      myDb_execute($conn, $TurnierID, $bn, $sqlFinalizeBegegnung, array($begegnungId));
+    }
+
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
@@ -133,7 +152,6 @@ if ($action == 'Ändern') {
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
     }
-
     //echo "<script>console.log('Das Spiel wurde erfolgreich eingetragen. $successfulLogin $spielGehoertZuTeam')</script>";
   }else{ //Team-Login
     
