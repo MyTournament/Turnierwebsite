@@ -14,6 +14,7 @@ exec("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname > $
 */
 
 //ZIP DATEI
+// TODO keinen absoluten Pfad benutzen, sondern dynamisch Pfad zu db_backups abrufen. Dadurch kann die Website in verschiedenen Umgebungen laufen. (https://stackoverflow.com/questions/7835948/include-once-relative-path-in-php)
 $dumpfile = '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna/database/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
 //Pfad nicht relativ sondern von backstage.php aus!
 
@@ -88,6 +89,7 @@ function deleteFilesFromDirectory($ordnername){
     }
 }
 //Funktionsaufruf - Directory immer mit endendem / angeben
+// TODO keinen absoluten Pfad benutzen, sondern dynamisch Pfad zu db_backups abrufen. Dadurch kann die Website in verschiedenen Umgebungen laufen. (https://stackoverflow.com/questions/7835948/include-once-relative-path-in-php)
 //deleteFilesFromDirectory("/mnt/web508/d1/34/510124634/htdocs/REDACTED/website/database/db_backups/");
 
 ?>
