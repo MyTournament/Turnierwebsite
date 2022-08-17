@@ -163,7 +163,8 @@ include_once 'database/traffic_analytics.php';
 
                 //SPIELPLAN
                 if($turnier_phase_ID == 4 ||$turnier_phase_ID == 5 || $turnier_phase_ID == 7 || $turnier_phase_ID == 9 || $turnier_phase_ID == 11){
-                    echo"<li><a href='#spielplan' onclick='insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich den Spielplan angesehen');'>🎯 Spielplan</a></li>";
+                    echo"<li><a href='#spielplan' >🎯 Spielplan</a></li>";
+                    //onclick='"insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich den Spielplan angesehen');"
                 }else{
                     echo"<li class='button disabled'><a href='#spielplan'>🎯 Spielplan</a></li>";
                 }
