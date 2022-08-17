@@ -414,6 +414,12 @@ include_once 'database/traffic_analytics.php';
     <p></br></p>
 </article>
 
+<article id="telefonjoker">
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 33, $conn, $edit_content_mode, $gameEditMode, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p>
+</article>
+
 <!-- schiedsrichter*innen -->
 <article id="history">
     <h1>Vergangene Turniere</h1>
