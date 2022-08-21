@@ -173,7 +173,7 @@ include_once 'database/traffic_analytics.php';
 <header id="header"> 
     <div > <!-- class="logo" -->
         <!-- <img src="images/icon/sterni1.png" width="70" height="70" border="10" alt="Home"> -->
-        <img src="images/hermann_logo/hanf_radler.png" width="150" height=auto border="10" alt="Home">
+        <img src="images/sterni_logo/logo_sterni.png" width="150" height=auto border="10" alt="Home">
     </div>
     <div class="content">
         <div class="inner">
