@@ -11,7 +11,7 @@
             $sql = 'SELECT * FROM Turnier_Team WHERE id = ' . $teamId . ' ORDER BY id';
             $result = $conn->query($sql);
             $teamName = " ";
-            while (!empty($row = $result->fetch_assoc())) {
+            if (!empty($row = $result->fetch_assoc())) {
                 $teamName = $row['name'];
                 $teamKuerzel = $row['kuerzel'];
                 $gruppeId = $row['fk_gruppe'];
@@ -21,7 +21,6 @@
             //TEAMMITGLIEDER RAUSFINDEN
             $sql = 'SELECT * FROM Turnier_Spieler_in WHERE fk_team = ' . $teamId . ' ORDER BY id';
             $result = $conn->query($sql);
-            $spielerName = " ";
             echo "<ul class='alt'>";
             $zaehler = 1;
             while (!empty($row = $result->fetch_assoc())) {
@@ -32,18 +31,18 @@
             }
             echo "</ul>";
             echo "<br/>";
-
+            
             echo "<h2>Gruppe</h2>";
             if($gruppeId != NULL){
                 $sql = 'SELECT * FROM Turnier_Gruppe WHERE id = ' . $gruppeId . ' ORDER BY id';
                 $result = $conn->query($sql);
                 $gruppenName = " ";
-                while (!empty($row = $result->fetch_assoc())) {
+                if (!empty($row = $result->fetch_assoc())) {
                     $gruppenName = $row['name'];
                 }
                 echo "<p><b>$gruppenName</b></p>";
             }else{
-                echo "<p><i>Noch keiner Gruppe zugeteilt</i></p>";
+                echo "<p><i>noch keiner Gruppe zugeteilt</i></p>";
             }
             
             
@@ -71,66 +70,69 @@
                 $heimteamID=$row["fk_heimteam"];
                 $auswaertsteamID=$row["fk_auswaertsteam"];
                 $ko_finallevel=$row["ko_finallevel"];
+
                 //Namen der Teams finden
                 //Team 1
                 $sqlTeam1 = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $heimteamID . ' ORDER BY ID';
                 $result1 = $conn->query($sqlTeam1); 
-                while ($rowTeam1 = $result1->fetch_assoc()) {
-                    $heimteam = $rowTeam1["name"];
-                    //$heimteamkuerzel = $rowTeam1["kuerzel"];
-                    $teamId1 = $rowTeam1["id"];
-                }
+                $rowTeam1 = $result1->fetch_assoc();
+                $heimteam = $rowTeam1["name"];
+                //$heimteamkuerzel = $rowTeam1["kuerzel"];
+                $teamId1 = $rowTeam1["id"];
                 //Team 2
                 $sqlTeam2 = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $auswaertsteamID . ' ORDER BY ID';
-                $result2 = $conn->query($sqlTeam2); 
-                while ($rowTeam2 = $result2->fetch_assoc()) {
-                    $auswaertsteam = $rowTeam2["name"];
-                    //$auswaertsteamkuerzel = $rowTeam2["kuerzel"];
-                    $teamId2 = $rowTeam2["id"];
-                }	
-
+                $result2 = $conn->query($sqlTeam2);
+                $rowTeam2 = $result2->fetch_assoc();
+                $auswaertsteam = $rowTeam2["name"];
+                //$auswaertsteamkuerzel = $rowTeam2["kuerzel"];
+                $teamId2 = $rowTeam2["id"];
+                
+                
                 //FINALLLEVEL
                 $sqlFinallevel = 'SELECT * FROM `Turnier_KO_Finallevel` WHERE id = ' . $ko_finallevel . ' ORDER BY ID';
                 $resultFinallevel = $conn->query($sqlFinallevel); 
-                while ($rowFinallevel = $resultFinallevel->fetch_assoc()) {
-                    $finallevel_name = $rowFinallevel["name"];
-                }
+                $rowFinallevel = $resultFinallevel->fetch_assoc();
+                $finallevel_name = $rowFinallevel["name"];
                 echo "<td>$finallevel_name</td>"; //Heimteam kommt ganz links hin
-
+                
                 //Ausgeben
                 echo "<td>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
                 
                 //Spiele zu den Begegnungen finden
                 $status = $row['status']; //HERAUSFINDEN OB BEGEGNUNG FINAL
-                printGames($TurnierID, $conn, $begegnungId, $gameEditMode, $status);
+                printGames($TurnierID, $conn, $begegnungId, 0, $status);
                 
                 echo "</td><td>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td></tr><tr>"; //Auswärtsteam kommt ganz rechts hin		
                 $zaehler++;
 
                 //SIEGESQUOTE AUSRECHNEN
                     
-                    $sqlSiegesquote = 'SELECT * FROM `Turnier_Spiel` WHERE fk_begegnung = ' . $begegnungId . ' ORDER BY ID';
-                    $resultSiegesquote = $conn->query($sqlSiegesquote); 
-                    while ($rowSiegesquote = $resultSiegesquote->fetch_assoc()) {
-                        $biereheimteam = $rowSiegesquote['biereheimteam'];
-                        $biereauswaertsteam = $rowSiegesquote['biereauswaertsteam'];
-
-                        if($teamId == $heimteamID){
-                            if($biereheimteam > $biereauswaertsteam){
-                                $siege++;
-                            }else if($biereheimteam < $biereauswaertsteam){
-                                $niederlagen++;
-                            }
-                        }else if($teamId == $auswaertsteamID){
-                            if($biereheimteam > $biereauswaertsteam){
-                                $niederlagen++;
-                            }else if($biereheimteam < $biereauswaertsteam){
-                                $siege++;
-                            }
+                $sqlSiegesquote = 'SELECT * FROM `Turnier_Spiel` WHERE fk_begegnung = ' . $begegnungId . ' ORDER BY ID';
+                $resultSiegesquote = $conn->query($sqlSiegesquote); 
+                while ($rowSiegesquote = $resultSiegesquote->fetch_assoc()) {
+                    $biereheimteam = $rowSiegesquote['biereheimteam'];
+                    $biereauswaertsteam = $rowSiegesquote['biereauswaertsteam'];
+                    
+                    if($teamId == $heimteamID){
+                        if($biereheimteam > $biereauswaertsteam){
+                            $siege++;
+                        }else if($biereheimteam < $biereauswaertsteam){
+                            $niederlagen++;
+                        }
+                    }else if($teamId == $auswaertsteamID){
+                        if($biereheimteam > $biereauswaertsteam){
+                            $niederlagen++;
+                        }else if($biereheimteam < $biereauswaertsteam){
+                            $siege++;
                         }
                     }
+                }
             }
-            $siegesquote = ($siege/($siege+$niederlagen))*100;
+            if ($siege + $niederlagen == 0){
+                $siegesquote = NULL;
+            } else {
+                $siegesquote = ($siege/($siege+$niederlagen))*100;
+            }
 
             echo"   </tr>
                 </tbody>
@@ -138,7 +140,11 @@
             echo "<br/>";
 
             echo "<h2>Siegesquote</h2>";
-            echo "<p><b>$siegesquote %</b></p>";
+            if($siegesquote!=NULL){
+                echo "<p><b>$siegesquote %</b></p>";
+            }else{
+                echo "<p><i>noch keine Spiele gespielt</i></p>";
+            }
             echo "<br/>";
 
             echo "<h2>Endplatzierung</h2>";
@@ -151,7 +157,7 @@
             echo "<br/>";
             echo "<a href='/website_functionalities/generate_team_certificate/generate_team_certificate.php?teamId=$teamId' class='button primary'>Teamzertifikat zum Drucken</a>";
             echo "<br/>";
-
+            
             echo "<br/>";
         }
         
@@ -336,7 +342,7 @@
             //echo "$recursiveTree";
 
             //SQL-ABFRAGE IN (doppeltes) ARRAY SCHREIBEN
-            $treeArray = [$eins][$zwei]; //Array erstellen
+            $treeArray = array(); //Array erstellen
             //array_push($treeArray, "test");
             //$treeArray[] = "test";
             //$treeArray[] = "abc";
@@ -1016,8 +1022,8 @@
                 echo"
             </select>
             <button  name='content' class='button primary'>Zum Turnier</button> 
-            <input type='hidden' name='bn' value='$bn'/>
-            <input type='hidden' name='pw' value='$pw'/>
+            <input type='hidden' name='bn' value=''/>
+            <input type='hidden' name='pw' value=''/>
         </form>";
         //}
     }
