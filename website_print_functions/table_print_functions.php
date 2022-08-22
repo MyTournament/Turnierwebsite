@@ -43,7 +43,7 @@
                 }
                 echo "<p><b>$gruppenName</b></p>";
             }else{
-                echo "<p><i>Noch keiner Gruppe zugeteilt</i></p>";
+                echo "<p><i>noch keiner Gruppe zugeteilt</i></p>";
             }
             
             
@@ -129,8 +129,11 @@
                             }
                         }
                     }
+            if ($siege + $niederlagen == 0){
+                $siegesquote = NULL;
+            } else {
+                $siegesquote = ($siege/($siege+$niederlagen))*100;
             }
-            $siegesquote = ($siege/($siege+$niederlagen))*100;
 
             echo"   </tr>
                 </tbody>
@@ -138,7 +141,11 @@
             echo "<br/>";
 
             echo "<h2>Siegesquote</h2>";
-            echo "<p><b>$siegesquote %</b></p>";
+            if($siegesquote!=NULL){
+                echo "<p><b>$siegesquote %</b></p>";
+            }else{
+                echo "<p><i>noch keine Spiele gespielt</i></p>";
+            }
             echo "<br/>";
 
             echo "<h2>Endplatzierung</h2>";
