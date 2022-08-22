@@ -100,7 +100,7 @@
                 
                 //Spiele zu den Begegnungen finden
                 $status = $row['status']; //HERAUSFINDEN OB BEGEGNUNG FINAL
-                printGames($TurnierID, $conn, $begegnungId, $gameEditMode, $status);
+                printGames($TurnierID, $conn, $begegnungId, 0, $status);
                 
                 echo "</td><td>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td></tr><tr>"; //Auswärtsteam kommt ganz rechts hin		
                 $zaehler++;
@@ -342,7 +342,7 @@
             //echo "$recursiveTree";
 
             //SQL-ABFRAGE IN (doppeltes) ARRAY SCHREIBEN
-            $treeArray = [$eins][$zwei]; //Array erstellen
+            $treeArray = array(); //Array erstellen
             //array_push($treeArray, "test");
             //$treeArray[] = "test";
             //$treeArray[] = "abc";
@@ -1022,8 +1022,8 @@
                 echo"
             </select>
             <button  name='content' class='button primary'>Zum Turnier</button> 
-            <input type='hidden' name='bn' value='$bn'/>
-            <input type='hidden' name='pw' value='$pw'/>
+            <input type='hidden' name='bn' value=''/>
+            <input type='hidden' name='pw' value=''/>
         </form>";
         //}
     }
