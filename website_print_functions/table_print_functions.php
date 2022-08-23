@@ -140,7 +140,7 @@
             echo "<br/>";
 
             echo "<h2>Siegesquote</h2>";
-            if($siegesquote!=NULL){
+            if($siegesquote !== NULL){
                 echo "<p><b>$siegesquote %</b></p>";
             }else{
                 echo "<p><i>noch keine Spiele gespielt</i></p>";
@@ -148,7 +148,7 @@
             echo "<br/>";
 
             echo "<h2>Endplatzierung</h2>";
-            if($endplatzierung!=NULL && $endplatzierung!=0){
+            if($endplatzierung !== NULL && $endplatzierung !== 0){
                 echo "<p><b>$endplatzierung</b></p>";
             }else{
                 echo "<p><i>noch nicht bestimmt</i></p>";
