@@ -61,8 +61,6 @@
                 </thead>
                 <tbody>
                     <tr>";
-            $siege = 0; //für SIEGESQUOTE
-            $niederlagen = 0;
             $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
             $result = $conn->query($sql);
             while (!empty($row = $result->fetch_assoc())) {
@@ -104,35 +102,12 @@
                 
                 echo "</td><td>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td></tr><tr>"; //Auswärtsteam kommt ganz rechts hin		
                 $zaehler++;
+            }
 
-                //SIEGESQUOTE AUSRECHNEN
-                    
-                $sqlSiegesquote = 'SELECT * FROM `Turnier_Spiel` WHERE fk_begegnung = ' . $begegnungId . ' ORDER BY ID';
-                $resultSiegesquote = $conn->query($sqlSiegesquote); 
-                while ($rowSiegesquote = $resultSiegesquote->fetch_assoc()) {
-                    $biereheimteam = $rowSiegesquote['biereheimteam'];
-                    $biereauswaertsteam = $rowSiegesquote['biereauswaertsteam'];
-                    
-                    if($teamId == $heimteamID){
-                        if($biereheimteam > $biereauswaertsteam){
-                            $siege++;
-                        }else if($biereheimteam < $biereauswaertsteam){
-                            $niederlagen++;
-                        }
-                    }else if($teamId == $auswaertsteamID){
-                        if($biereheimteam > $biereauswaertsteam){
-                            $niederlagen++;
-                        }else if($biereheimteam < $biereauswaertsteam){
-                            $siege++;
-                        }
-                    }
-                }
-            }
-            if ($siege + $niederlagen == 0){
-                $siegesquote = NULL;
-            } else {
-                $siegesquote = ($siege/($siege+$niederlagen))*100;
-            }
+            $sqlSiegesquote = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $teamId . ' ORDER BY ID';
+            $resultSiegesquote = $conn->query($sqlSiegesquote); 
+            $rowSiegesquote = $resultSiegesquote->fetch_assoc();
+            $siegesquote = $rowSiegesquote['siegesquote'];
 
             echo"   </tr>
                 </tbody>
