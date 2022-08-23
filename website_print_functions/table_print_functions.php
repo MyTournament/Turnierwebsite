@@ -116,7 +116,7 @@
 
             echo "<h2>Siegesquote</h2>";
             if($siegesquote !== NULL){
-                echo "<p><b>$siegesquote %</b></p>";
+                echo "<p><b>".round($siegesquote)." %</b></p>";
             }else{
                 echo "<p><i>noch keine Spiele gespielt</i></p>";
             }
