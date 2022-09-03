@@ -63,7 +63,7 @@
         }*/
         $vCard .= "BEGIN:VCARD\r\n";
         $vCard .= "VERSION:3.0\r\n";
-        $vCard .= "FN:" . $spielername . "🏆 ($turnierJahr)\r\n";
+        $vCard .= "FN:" . $spielername . "🏆 (BB$turnierJahr)\r\n";
         $vCard .= "ORG: " . $turnierName . "\r\n";
         $vCard .= "TITLE: ". $teamname . " (" . $teamkuerzel . ")\r\n";
 
