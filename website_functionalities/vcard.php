@@ -52,6 +52,7 @@
         $resultTurnier = $conn->query($sqlTurnier);
         while ($rowTurnier = $resultTurnier->fetch_assoc()) {
             $turnierName = $rowTurnier['name'];
+            $turnierJahr = $rowTurnier['jahr'];
         }
       /*if($image!=""){ 
             $getPhoto               = file_get_contents($image);
@@ -62,7 +63,7 @@
         }*/
         $vCard .= "BEGIN:VCARD\r\n";
         $vCard .= "VERSION:3.0\r\n";
-        $vCard .= "FN:" . $spielername . "🏆\r\n";
+        $vCard .= "FN:" . $spielername . "🏆 ($turnierJahr)\r\n";
         $vCard .= "ORG: " . $turnierName . "\r\n";
         $vCard .= "TITLE: ". $teamname . " (" . $teamkuerzel . ")\r\n";
 
