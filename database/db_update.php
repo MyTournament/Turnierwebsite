@@ -121,25 +121,16 @@
         
         //Spiel um Platz 3
         //--------------------
-        $log_file_path = substr(stream_resolve_include_path("index.php"), 0, -strlen("index.php"))."debug.log";
 
         //Teams aus "Spiel um Platz 3" ermitteln
         $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
         $result = $conn->query($sql);
         $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
-            $debug_message = "row['id']: " . $row['id'] . "\n";
-            error_log($debug_message, 3, $log_file_path);
             $team_ids[] = $row['id'];
         }
-        // DEBUGGING TEMPLATE
-        $debug_message = "team_ids[0]: " . $team_ids[0] . " | team_ids[1]: " . $team_ids[1] . "\n";
-        error_log($debug_message, 3, $log_file_path);
         
-        if (!empty($team_ids)){
-            $debug_message = "team_id not empty!\n";
-            error_log($debug_message, 3, $log_file_path);
-            
+        if (!empty($team_ids)){            
             //Gewinner- und Verliererteam ermitteln
             $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 1 AND (fk_heimteam = ' . $team_ids[0] . ' OR fk_heimteam = ' . $team_ids[1] . ')';
             $result = $conn->query($sql);
