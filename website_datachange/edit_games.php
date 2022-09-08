@@ -140,8 +140,8 @@ if ($action == 'Ändern') {
     $nurOberesDreieck = $row['nurOberesDreieckInGruppenphase'];
 
     if ($nurOberesDreieck === 2){
-      // Aktuelle Begegnung auf Status 5 setzen, wenn diese Begegnung jetzt genau ein Spiel hat. (Begegnungen mit 2 oder mehr Spielen werden also nicht verändert, hier wird von bewusstem Handeln von Admins ausgegangen)
-      $sqlFinalizeBegegnung = "UPDATE Turnier_Begegnung AS begegnung SET `status` = 5 WHERE id = ? AND 1 = (SELECT COUNT(id) FROM Turnier_Spiel WHERE fk_begegnung = begegnung.id) ";
+      // Aktuelle Begegnung auf Status 5 setzen, wenn diese Begegnung eine Gruppenbegegnung ist und jetzt genau ein Spiel hat. (Begegnungen mit 2 oder mehr Spielen werden also nicht verändert, hier wird von bewusstem Handeln von Admins ausgegangen)
+      $sqlFinalizeBegegnung = "UPDATE Turnier_Begegnung AS begegnung SET `status` = 5 WHERE id = ? AND ko_finallevel = 0 AND 1 = (SELECT COUNT(id) FROM Turnier_Spiel WHERE fk_begegnung = begegnung.id) ";
       myDb_execute($conn, $TurnierID, $bn, $sqlFinalizeBegegnung, array($begegnungId));
     }
 
