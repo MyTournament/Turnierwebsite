@@ -67,7 +67,7 @@
                 }
             }
         }
-        if($siege+$niederlagen != 0){ // nur wenn das Team schon gespielt hat
+        if($siege+$niederlagen != 0){ // nur wenn das Team schon gespielt hat 
             $siegesquote = ($siege/($siege+$niederlagen))*100;
             //IN DB SCHREIBEN
             $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `siegesquote` = '$siegesquote' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
@@ -89,6 +89,7 @@
         }
         $platzierung = $teamZaehler;
         //GRUPPENPHASE
+        //--------------------
         $sql = 'SELECT * FROM Turnier_Team WHERE (platziert_level = 0 OR platziert_level = NULL) AND fk_turnier = '. $TurnierID .' ORDER BY siegesquote DESC';
         $result = $conn->query($sql);
         while (!empty($row = $result->fetch_assoc())) {
@@ -103,8 +104,9 @@
             $platzierung--;
         }
 
-        //KO-PHASE außer Finale und Spiel um Platz 3
-        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level > 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
+        //KO-PHASE außer "Finale" und "Spiel um Platz 3" und "Halbfinale"
+        //--------------------
+        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level > 3 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
         $result = $conn->query($sql);
         while (!empty($row = $result->fetch_assoc())) {
             $TeamId = $row['id'];
@@ -116,32 +118,88 @@
             //Zähler
             $platzierung--;
         }
+        
         //Spiel um Platz 3
+        //--------------------
+
+        //Teams aus "Spiel um Platz 3" ermitteln
         $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
         $result = $conn->query($sql);
+        $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
-            $TeamId = $row['id'];
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
-            if ( $stmt === false ){
-                throw new Exception('siegesquote konnte nicht gesetzt werden.');
-            }
-            $stmt->execute();
-            //Zähler
-            $platzierung--;
+            $team_ids[] = $row['id'];
         }
+        
+        //Gewinner- und Verliererteam ermitteln
+        $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 1 AND (fk_heimteam = ' . $team_ids[0] . ' OR fk_heimteam = ' . $team_ids[1] . ')';
+        $result = $conn->query($sql);
+        if (!empty($row = $result->fetch_assoc())) {
+            $winner_team_id = $row['fk_siegerteam'];
+            if ($winner_team_id === $team_ids[0]){
+                $loser_team_id = $team_ids[1];
+            } else {
+                $loser_team_id = $team_ids[0];
+            }
+        }
+
+        // Verliererteam: Platzierung setzen 
+        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+        if ( $stmt === false ){
+            throw new Exception('siegesquote konnte nicht gesetzt werden.');
+        }
+        $stmt->execute();
+        //Zähler
+        $platzierung--;
+        
+        // Gewinnerteam: Platzierung setzen 
+        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+        if ( $stmt === false ){
+            throw new Exception('siegesquote konnte nicht gesetzt werden.');
+        }
+        $stmt->execute();
+        //Zähler
+        $platzierung--;
+        
         //Finale
+        //--------------------
+
+        //Teams aus "Finale" ermitteln
         $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
         $result = $conn->query($sql);
+        $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
-            $TeamId = $row['id'];
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
-            if ( $stmt === false ){
-                throw new Exception('siegesquote konnte nicht gesetzt werden.');
-            }
-            $stmt->execute();
-            //Zähler
-            $platzierung--;
+            $team_ids[] = $row['id'];
         }
+        
+        //Gewinner- und Verliererteam ermitteln
+        $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND (fk_heimteam = ' . $team_ids[0] . ' OR fk_heimteam = ' . $team_ids[1] . ')';
+        $result = $conn->query($sql);
+        if (!empty($row = $result->fetch_assoc())) {
+            $winner_team_id = $row['fk_siegerteam'];
+            if ($winner_team_id === $team_ids[0]){
+                $loser_team_id = $team_ids[1];
+            } else {
+                $loser_team_id = $team_ids[0];
+            }
+        }
+
+        // Verliererteam: Platzierung setzen 
+        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+        if ( $stmt === false ){
+            throw new Exception('siegesquote konnte nicht gesetzt werden.');
+        }
+        $stmt->execute();
+        //Zähler
+        $platzierung--;
+        
+        // Gewinnerteam: Platzierung setzen 
+        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+        if ( $stmt === false ){
+            throw new Exception('siegesquote konnte nicht gesetzt werden.');
+        }
+        $stmt->execute();
+        //Zähler
+        $platzierung--;
     }
     /*function setTeamEndplatzierung($conn, $TurnierID, $TeamId, $endplatzierung){
         //FALL: Zurücksetzen oder TOP 3
