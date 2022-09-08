@@ -5,8 +5,8 @@ include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das v
 include_once 'variables.php'; //Variablen einbinden (Turniernummer) //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 
 // DEBUGGING TEMPLATE
-// $debug_message = "This is a debug message!\n";
 // $log_file_path = substr(stream_resolve_include_path("index.php"), 0, -strlen("index.php"))."debug.log";
+// $debug_message = "This is a debug message!\n";
 // error_log($debug_message, 3, $log_file_path);
 
 //BULLEREI KOMMT

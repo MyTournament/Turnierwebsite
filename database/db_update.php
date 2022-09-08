@@ -67,19 +67,17 @@
                 }
             }
         }
-        if($siege+$niederlagen != 0){
+        if($siege+$niederlagen != 0){ // nur wenn das Team schon gespielt hat
             $siegesquote = ($siege/($siege+$niederlagen))*100;
-        }else{
-            $siegesquote = 0;
+            //IN DB SCHREIBEN
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `siegesquote` = '$siegesquote' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            if ( $stmt === false ){
+                throw new Exception('siegesquote konnte nicht gesetzt werden.');
+            }
+            $stmt->execute();
         }
         
 
-        //IN DB SCHREIBEN
-        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `siegesquote` = '$siegesquote' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
-        if ( $stmt === false ){
-            throw new Exception('siegesquote konnte nicht gesetzt werden.');
-        }
-        $stmt->execute();
     }
     function setAllEndplatzierungen($conn, $TurnierID){
         //zählen wie viele Teams es gibt

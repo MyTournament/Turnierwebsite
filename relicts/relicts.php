@@ -411,8 +411,6 @@ $stmt->bind_param($fk_random);*/
 
 
 <h6 style="color: white"><br /></h6>
-    <h3><a style="color: white;font-size:15px;" href="https://telegram.me/blankiballbot"><img src="images/icon/telegram.png" width="20" height="20" border="5" alt="Home"> Der Blankiball-Telegram Bot<br/></a></h3>
-    <h6 style="color: white"><br /></h6>
     <h3><a style="color: white;font-size:15px;" href="https://open.spotify.com/user/11129583931/playlist/3K13BWkhzAVwHdRM2F6P8Z">Der offizielle S<img src="images/icon/spoti.png" width="15" height="15" border="5" alt="Home">undtrack zum Turnier<br/></a></h3>
     <h6 style="color: white"><br /></h6>
     <img src="images/icon/insta.png" width="20" height="20" border="0" alt="Home">
