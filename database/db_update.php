@@ -671,7 +671,29 @@
                                         $ko_position = $zaehlerGerade;
                                         $zaehlerGerade++;
                                     }*/
-                                
+                            //13 24 57 68
+                            //1; 2->3; 3->2; 4; 5; 6->7; 7->6; 8
+                            //TODO: Das hier ist aktuell nur für den Fall programmiert, dass das hier ein Achtelfinale ist
+                            $ko_position_team1 = 0;
+                            $ko_position_team2 = 0;
+                            switch ($zaehlerForKoPosition) {
+                                case 1:
+                                    $ko_position_team1 = 1;
+                                    $ko_position_team2 = 3;
+                                    break;
+                                case 3:
+                                    $ko_position_team1 = 2;
+                                    $ko_position_team2 = 4;
+                                    break;
+                                case 5:
+                                    $ko_position_team1 = 5;
+                                    $ko_position_team2 = 7;
+                                    break;
+                                case 7:
+                                    $ko_position_team1 = 6;
+                                    $ko_position_team2 = 8;
+                                    break;                         
+                            }
 
                             $gruppeID = $rowGruppe["id"];
                             $turnierposition_for_ko = $rowGruppe["turnierposition_for_ko"];
@@ -807,7 +829,7 @@
                                 $resultKOBegegnung = $conn->query($sqlKOBegegnung);
                                 //Wenn es keine gibt, dann einfügen
                                 if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
-                                    $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team1Gruppe1ID, $team2Gruppe2ID, NULL, $ko_finallevel, $zaehlerForKoPosition, 1);"); //(?, ?, ?, ?, ?, ?, ?)
+                                    $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team1Gruppe1ID, $team2Gruppe2ID, NULL, $ko_finallevel, $ko_position_team1, 1);"); //(?, ?, ?, ?, ?, ?, ?)
                                     //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
                                     if ( $stmt === false ){
                                         throw new Exception('Eine Begegnung der ersten Finalstufe konnte nicht erstellt werden.');
@@ -815,7 +837,7 @@
                                     $stmt->execute();
                                 }else{ //Wenn Begegnung schon existiert, dann muss der veraltet-Status geupdated werden
                                     //TODO: Auch Fall bedenken, dass es zwei gleiche Begegnungen gibt, dann würden hier beide als nicht unnötig markiert werden. -> Gibts da ne Lösung? - Theoretisch werden ja eigentlich nie zwei gleiche Begegnungen erstellt?
-                                    $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $zaehlerForKoPosition .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team1Gruppe1ID .' AND fk_auswaertsteam = '. $team2Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
+                                    $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_position_team1 .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team1Gruppe1ID .' AND fk_auswaertsteam = '. $team2Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
                                     if ( $stmtNichtVeralteteBegegnung === false ){
                                         throw new Exception('Veraltet-Status der ersten Finalstufe konnte nicht geupdated werden.');
                                     }
@@ -828,7 +850,7 @@
                                 $resultKOBegegnung = $conn->query($sqlKOBegegnung);
                                 //Wenn es keine gibt, dann einfügen
                                 if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
-                                    $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team2Gruppe1ID, $team1Gruppe2ID, NULL, $ko_finallevel, $zaehlerForKoPosition+1, 1);"); //(?, ?, ?, ?, ?, ?, ?)
+                                    $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team2Gruppe1ID, $team1Gruppe2ID, NULL, $ko_finallevel, $ko_position_team2, 1);"); //(?, ?, ?, ?, ?, ?, ?)
                                     //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
                                     if ( $stmt === false ){
                                         throw new Exception('Eine Begegnung der ersten Finalstufe konnte nicht erstellt werden.');
@@ -836,7 +858,7 @@
                                     $stmt->execute();
                                 }else{ //Wenn Begegnung schon existiert, dann muss der veraltet-Status geupdated werden
                                     //TODO: Auch Fall bedenken, dass es zwei gleiche Begegnungen gibt, dann würden hier beide als nicht unnötig markiert werden. -> Gibts da ne Lösung? - Theoretisch werden ja eigentlich nie zwei gleiche Begegnungen erstellt?
-                                    $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $zaehlerForKoPosition+1 .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team2Gruppe1ID .' AND fk_auswaertsteam = '. $team1Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
+                                    $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_position_team2 .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team2Gruppe1ID .' AND fk_auswaertsteam = '. $team1Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
                                     if ( $stmtNichtVeralteteBegegnung === false ){
                                         throw new Exception('Veraltet-Status der ersten Finalstufe konnte nicht geupdated werden.');
                                     }
@@ -921,6 +943,22 @@
                                     //Neue Turnierbaumposition berechnen
                                     $ko_turnierbaumposition_alt = $rowBegegnung['ko_turnierbaumposition'];
                                     $ko_turnierbaumposition = ($ko_turnierbaumposition_alt / 2); //Neue Turnierbaumposition ist die alte der zweiten Begegnung durch 2
+                                    if($ko_finallevel_next == 4){ // FALLS GRAD FÜR VIERTELFINALE ERSTELLT WIRD
+                                        switch ($ko_turnierbaumposition) {
+                                            case 1:
+                                                $ko_turnierbaumposition = 1;
+                                                break;
+                                            case 2:
+                                                $ko_turnierbaumposition = 3;
+                                                break;
+                                            case 3:
+                                                $ko_turnierbaumposition = 2;
+                                                break;
+                                            case 4:
+                                                $ko_turnierbaumposition = 4;
+                                                break;                         
+                                        }
+                                    }
                                     //Gewinnerteam herausfinden
                                     if($rowBegegnung['fk_siegerteam'] == $rowBegegnung['fk_heimteam']){
                                         $gewinnerTeam2ID = $rowBegegnung['fk_heimteam'];
