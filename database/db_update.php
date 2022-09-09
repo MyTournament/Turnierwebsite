@@ -90,7 +90,7 @@
         $platzierung = $teamZaehler;
         //GRUPPENPHASE
         //--------------------
-        $sql = 'SELECT * FROM Turnier_Team WHERE (platziert_level = 0 OR platziert_level = NULL) AND fk_turnier = '. $TurnierID .' ORDER BY siegesquote DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE (platziert_level = 0 OR platziert_level = NULL) AND fk_turnier = '. $TurnierID .' ORDER BY siegesquote ASC';
         $result = $conn->query($sql);
         while (!empty($row = $result->fetch_assoc())) {
             $TeamId = $row['id'];
@@ -106,7 +106,7 @@
 
         //KO-PHASE außer "Finale" und "Spiel um Platz 3" und "Halbfinale"
         //--------------------
-        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level > 3 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level > 3 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC';
         $result = $conn->query($sql);
         while (!empty($row = $result->fetch_assoc())) {
             $TeamId = $row['id'];
@@ -123,7 +123,7 @@
         //--------------------
 
         //Teams aus "Spiel um Platz 3" ermitteln
-        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC';
         $result = $conn->query($sql);
         $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
@@ -162,7 +162,7 @@
         //--------------------
 
         //Teams aus "Finale" ermitteln
-        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC';
         $result = $conn->query($sql);
         $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
