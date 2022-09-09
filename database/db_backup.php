@@ -3,6 +3,11 @@ $dbhost = "rdbms.strato.de";
 $dbuser = "dbu1612112";
 $dbpassword = "HF?A=k%CWdDxc*8Jr4()bmF";
 $dbname = "dbs4154474";
+
+//Gibt Pfad von Server aus:
+//echo getcwd();
+
+
 /*
 //NORMALE DATEI
 $dumpfile = "db_backups/" . $dbname . "_" . date("Y-m-d_H-i-s") . ".sql";
@@ -15,11 +20,11 @@ exec("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname > $
 
 //ZIP DATEI
 // TODO keinen absoluten Pfad benutzen, sondern dynamisch Pfad zu db_backups abrufen. Dadurch kann die Website in verschiedenen Umgebungen laufen. (https://stackoverflow.com/questions/7835948/include-once-relative-path-in-php)
-$dumpfile = 'https://blankiball.de/database/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
+$dumpfile = '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna-dev/database/db_backups/' . $dbname . '_' . date("Y-m-d_H-i-s") . '.sql.gz';
 //Pfad nicht relativ sondern von backstage.php aus!
 
 //echo "Start dump\n";
-//passthru("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname | gzip -c  > $dumpfile");
+passthru("mysqldump --user=$dbuser --password=$dbpassword --host=$dbhost $dbname | gzip -c  > $dumpfile");
 passthru("mysqldump -u $dbuser -p $dbpassword -h $dbhost $dbname > gzip -c  > dump.sql");
 
 //echo "-- Dump completed -- ";
