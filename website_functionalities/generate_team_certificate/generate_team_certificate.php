@@ -45,7 +45,7 @@ class PDF extends FPDF {
         //$this->Cell(0,10,'Page ' . 
         //   $this->PageNo() . '/{nb}',0,0,'C');
             
-        $this->Cell(0,10,'Blankiball e.V. - no rights reserved',0,0,'C');   
+        $this->Cell(0,10,'Blankiball k.e.V. - no rights reserved',0,0,'C');   
     }
 }
   
