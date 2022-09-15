@@ -56,14 +56,15 @@ $pdf = new PDF();
 $pdf->AliasNbPages();
 $pdf->AddPage();
 
-$str = iconv('UTF-8', 'windows-1252', $str);
+//$str = iconv('UTF-8', 'windows-1252', $str);
+$txt = iconv('utf-8', 'cp1252', $txt);
 //utf8_decode();
 
 
 
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 $pdf->SetFont('Courier','',14);
-$pdf->Cell(0, 10, 'Vielen dank fuer deine Teilnahme am:' , 0, 1, 'C');
+$pdf->Cell(0, 10, 'Vielen Dank für deine Teilnahme am:' , 0, 1, 'C');
 $pdf->SetFont('Courier','B',18);
 $pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2022' , 0, 1, 'C');
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
@@ -148,7 +149,12 @@ if($teamId != NULL){
     $pdf->Cell(0, 10, 'mit einer unglaublichen Siegesquote von', 0, 1, 'C');
 
     $pdf->SetFont('Courier','B',14);
-    $pdf->Cell(0, 10, $siegesquote . ' %', 0, 1, 'C');
+    
+    if($siegesquote !== NULL){
+        $pdf->Cell(0, 10, round($siegesquote) . ' %', 0, 1, 'C');
+    }else{
+        $pdf->Cell(0, 10, "noch keine Spiele gespielt", 0, 1, 'C');
+    }
 
     //HERMANN BLANKENSTEIN
     $pdf->Cell(0, 10, '', 0, 1, 'C');

@@ -551,7 +551,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
             <h2>Teams bearbeiten</h2>
             <p>Hier kannst du jedes Attribut der Teams ändern, also zum Beispiel Gruppe oder auch Bearbeitungsrechte für die Website.</p>";
 
-            printGroupsAsTable($TurnierID, $conn, $LoggedIn, 0);
+            printGroupsAsTable($TurnierID, $conn, $LoggedIn, 0, 0);
 
             echo "<form action='website_datachange/edit_teams.php' method='POST' onSubmit='return checkAGBchangeTeam()'>
             <div class='field'>

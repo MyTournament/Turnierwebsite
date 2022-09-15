@@ -1,5 +1,5 @@
 <?php 
-    function cmsPrintSection($websiteId, $siteID, $TurnierID, $section, $conn, $LoggedIn, $gameEditMode, $testTurnierMode){
+    function cmsPrintSection($websiteId, $siteID, $TurnierID, $section, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $testTurnierMode){
         //SITE
         //checken ob es eine Site mit dieser ID gibt
         $sqlW = 'SELECT * FROM System_Website WHERE id = '. $websiteId .'';
@@ -117,7 +117,7 @@
                         echo "<hr style='border-top: 3px solid green;margin: 0 0 0 0;'>";
                     }else{
                         //echo "Funktionsausführung aus DB: $function<br>";
-                        call_user_func($function, $TurnierID, $conn, $LoggedIn, $gameEditMode, $testTurnierMode);
+                        call_user_func($function, $TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $testTurnierMode);
                         //call_user_func(helloHermann($TurnierID, $conn, $LoggedIn));
                     }
                 }else{ //FALL CONTENT
