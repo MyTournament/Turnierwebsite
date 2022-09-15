@@ -64,7 +64,7 @@ $txt = iconv('utf-8', 'cp1252', $txt);
 
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 $pdf->SetFont('Courier','',14);
-$pdf->Cell(0, 10, 'Vielen Dank für deine Teilnahme am:' , 0, 1, 'C');
+$pdf->Cell(0, 10, 'Vielen Dank fuer deine Teilnahme am:' , 0, 1, 'C');
 $pdf->SetFont('Courier','B',18);
 $pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2022' , 0, 1, 'C');
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
