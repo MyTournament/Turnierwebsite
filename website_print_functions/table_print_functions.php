@@ -1,5 +1,5 @@
 <?php
-    function helloHermann($TurnierID, $conn, $LoggedIn, $gameEditMode){
+    function helloHermann($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         $test = "baum";
         echo "Hallo Hermann $test";
         echo "$TurnierID";
@@ -215,7 +215,7 @@
         
     }
 
-    function printTeams($TurnierID, $conn, $LoggedIn, $gameEditMode){
+    function printTeams($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY ID'; //WHERE Freischaltung = 1
         $resultTeam = $conn->query($sqlTeam);
         $zeahler = 1;
@@ -244,7 +244,7 @@
             echo "<li>$ausgabeString</li>";
         }
     }
-    function printSchiedsrichterInnen($TurnierID, $conn, $LoggedIn, $gameEditMode){
+    function printSchiedsrichterInnen($TurnierID, $conn, $LoggedIn, $gameEditMode,$expertenmodus){
         echo"
         <ul class='alt'>";
         $sql = 'SELECT * FROM `System_Benutzer_in` WHERE fk_rechte <= 20 ORDER BY id ASC';
@@ -255,7 +255,7 @@
         }
         echo"</ul>";
     }
-    function printGroupsAsTable($TurnierID, $conn, $LoggedIn, $gameEditMode){
+    function printGroupsAsTable($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         echo"<table class='withBorderCollapse'>
                 <thead>
                     <tr>
@@ -283,7 +283,7 @@
         echo "</tbody>
         </table>";
     }
-    function printTurnierbaum($TurnierID, $conn, $LoggedIn, $gameEditMode){
+    function printTurnierbaum($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         //Start-Finalstufe rausfinden
         $sql = 'SELECT * FROM Turnier_Main WHERE id = ' . $TurnierID;
         $result_sql = $conn->query($sql);
@@ -457,7 +457,7 @@
         }
     }
 
-    function trigger_sieger_innen_treppe($TurnierID, $conn, $LoggedIn, $gameEditMode){
+    function trigger_sieger_innen_treppe($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         $platzierungen = []; //Array erstellen
         $zeahler = 0;
         while($zeahler<3){
@@ -513,7 +513,7 @@
         ";
     }
 
-    function print_platzierungen($TurnierID, $conn, $LoggedIn, $gameEditMode){
+    function print_platzierungen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         echo "<ul class='alt'>";
         $platzierungsZaehler = 1;
         $limit = 0;
@@ -541,7 +541,7 @@
         
     }
 
-    function printEditModeStuff($conn, $TurnierID, $gameEditMode, $action, $test_turnier_id){
+    function printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, $action, $test_turnier_id){
         if($gameEditMode == 1){
             echo "<h2 style='color:#00FF00'>Bearbeitungsmodus</h2>";
             echo "<ul class='alt'>";
@@ -560,9 +560,28 @@
             echo "<li style='color:#00FF00'><button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&#9733;</button> Dieser Button zeigt an, dass ein Spiel als final markiert wurde. Solltet ihr nachträglich doch noch ein Spiel eintragen wollen, könnt ihr euch an einen Administrator wenden.</li>";
             //grey: #888888
             echo "</ul>";
+            if(!$expertenmodus){
+                echo "
+                    <form style='color:#00FF00' method='post' action=?test_turnier_id=$test_turnier_id$action>      
+                        <button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>E</button>
+                        <p>Expertenmodus</p>  
+                        <input type='hidden' name='gameEditMode' value='1'/>
+                        <input type='hidden' name='expertenmodus' value='1'/>
+                    </form>
+                ";
+            }else{
+                echo "
+                    <form style='color:#00FF00' method='post' action=?test_turnier_id=$test_turnier_id$action>      
+                        <button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>V</button>
+                        <p>Expertenmodus verlassen</p>  
+                    </form>
+                    <input type='hidden' name='gameEditMode' value='1'/>
+                    <input type='hidden' name='expertenmodus' value='0'/>
+                ";
+            }
             echo "
             <form style='color:#00FF00' method='post' action=?test_turnier_id=$test_turnier_id$action>      
-                <button  style='background-color:green;' name='content' class='button primary'>Bearbeitungsmodus verlassen</button>     
+                <button  style='background-color:green;' name='content' class='button primary'>Bearbeitungsmodus verlassen</button>  
                 <input type='hidden' name='gameEditMode' value='0'/>
             </form> ";    
         }else{
@@ -687,10 +706,10 @@
         }
     }
 
-    function printSpielplanGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $test_turnier_id){
+    function printSpielplanGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
         try {
             //Button, mit dem man den Bearbeitungsmodus starten kann
-            printEditModeStuff($conn, $TurnierID, $gameEditMode, "#gruppenphase", $test_turnier_id);
+            printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#gruppenphase", $test_turnier_id);
             
             $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id';
             $resultGruppe = $conn->query($sqlGruppe);
@@ -795,7 +814,7 @@
         }
     }
 
-    function printPunktetabelleGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $test_turnier_id){
+    function printPunktetabelleGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
         $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id';
         $resultGruppe = $conn->query($sqlGruppe);
         while ($rowGruppe = $resultGruppe->fetch_assoc()) {
@@ -839,9 +858,9 @@
         } 
     }
 
-    function printKO_PhaseTabellen($TurnierID, $conn, $LoggedIn, $gameEditMode, $test_turnier_id){
+    function printKO_PhaseTabellen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
         //Button, mit dem man den Bearbeitungsmodus starten kann
-        printEditModeStuff($conn, $TurnierID, $gameEditMode, "#kophase", $test_turnier_id);
+        printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#kophase", $test_turnier_id);
         
         //$start_ko_finallevel herausfinden
         $sql = 'SELECT * FROM Turnier_Main WHERE id = ' . $TurnierID;
@@ -945,11 +964,23 @@
                             //}	*/
                             //Ausgeben
                             if($siegerteam == $auswaertsteamID){
-                                echo "</td><td style='background-color:green;word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td></tr><tr>"; //Auswärtsteam kommt ganz rechts hin
+                                echo "</td><td style='background-color:green;word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td>"; //Auswärtsteam kommt ganz rechts hin
                             }else{
-                                echo "</td><td style='word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td></tr><tr>"; //Auswärtsteam kommt ganz rechts hin
+                                echo "</td><td style='word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td>"; //Auswärtsteam kommt ganz rechts hin
                             }
-                            		
+
+                            //EXPERTENMODUS: Begegnungen sperren
+                            if($expertenmodus==1){
+                                echo "<td style='word-wrap: break-word;'>
+                                <form method='post' action='#begegnung_verwalten' style='margin: 0 0 0 0;'>
+                                    <button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>Sperren</button>
+                                    <input type='hidden' name='begegnungId' value='<?php echo $begegnungId ?>'/>
+                                </form>
+                                </td>
+                                ";
+                            }
+                            
+                            echo "</tr><tr>";
                         }
             echo"   </tr>
                 </tbody>
