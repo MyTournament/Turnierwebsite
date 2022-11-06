@@ -832,19 +832,34 @@ include_once 'database/traffic_analytics.php';
         </br>  
         <h2>Dein Team wurde erfolgreich angemeldet!</h2>  
         </br>
-        <h3><a href="https://paypal.me/blankiball?country.x=DE&locale.x=de_DE">💓Unterstütze uns💓</a></h3>
-        <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
-        <a class="button" style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a>    
-        </br></br></br>
-        <h3><img src="images/icon/whatsapp.png" width="20" height="20" border="5" alt="Home"> Komm in die Gruppe</h3>
-        <p>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei! (... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest)</p>
-        <ul class="actions stacked">
-            <li><a class="button" style='background-color: green' href='https://chat.whatsapp.com/ByCbEWtIw5kLK4Rn15nHML'>Offizielle Whatsapp Gruppe</a></li>
-            <li><a class="button" style='background-color: green' href='https://chat.whatsapp.com/Hfrml4jy6WeLb0xw0wLWy5'>Chat-Gruppe</a></li>
-            <li><a class="button" style='background-color: blue' href='https://t.me/+Ez2xl_6Rm6gzYjBi'>Telegram-Gruppe</a></li>
-            </br>
-            <li><a class="button" href='#'>Zurück zur Startseite</a></li>
-        </ul>
+        <?php 
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $link_solibeitrag = $rowTurnier['link_solibeitrag'];
+                $link_whatsapp_info = $rowTurnier['link_whatsapp_info'];
+                $link_whatsapp_chat = $rowTurnier['link_whatsapp_chat'];
+                $link_telegram = $rowTurnier['link_telegram'];
+            }
+            echo"<h3><a href=$link_solibeitrag>💓Unterstütze uns💓</a></h3>";
+            echo"
+            <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
+            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a>    
+            </br></br></br>
+            <h3><img src='images/icon/whatsapp.png' width='20' height='20' border='5' alt='Home'> Komm in die Gruppe</h3>
+            <p>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei! (... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest)</p>
+            <ul class='actions stacked'>
+                <li><a class='button' style='background-color: green' href=$link_whatsapp_info>Offizielle Whatsapp Gruppe</a></li>
+                <li><a class='button' style='background-color: green' href=$link_whatsapp_chat>Chat-Gruppe</a></li>
+                <li><a class='button' style='background-color: blue' href=$link_telegram>Telegram-Gruppe</a></li>
+                </br>
+                <li><a class='button' href='#'>Zurück zur Startseite</a></li>
+            </ul>
+            ";
+            
+        ?>
+        
+        
     </div>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
