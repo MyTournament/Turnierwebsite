@@ -919,9 +919,9 @@
                             }	
                             //Ausgeben
                             if($siegerteam == $heimteamID){
-                                echo "<td>$ko_turnierbaumposition.</td><td style='background-color:green;word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
+                                echo "<td>$ko_turnierbaumposition. <p style='font-size: 10px'>#$begegnungId</p></td><td style='background-color:green;word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
                             }else{
-                                echo "<td>$ko_turnierbaumposition.</td><td style='word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
+                                echo "<td>$ko_turnierbaumposition. <p style='font-size: 10px'>#$begegnungId</p></td><td style='word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
                             }
                             
                             
