@@ -40,7 +40,7 @@ include_once 'database/traffic_analytics.php';
 		<title>Blankiball Bierball Turnier</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <meta name="description" content="Merke dir - Sternburg Bier | 05.09. - 10.09.22">
+        <meta name="description" content="Berlins größtes Bierball-Turnier">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
         <meta name="keywords" content="blankiball, bierball, turnier, flunkyball, bier" />
