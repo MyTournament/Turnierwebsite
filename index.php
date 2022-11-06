@@ -179,7 +179,19 @@ include_once 'database/traffic_analytics.php';
     </div>
     <div class="content">
         <div class="inner">
-            <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+            <?php 
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $anzeige_datum = $rowTurnier['anzeige_datum'];
+                $anzeige_titel = $rowTurnier['anzeige_titel'];
+                $anzeige_subtitel = $rowTurnier['anzeige_subtitel'];
+            }
+            echo"<h2>$anzeige_datum</h2>";
+            echo"<h1>$anzeige_titel</h1>";
+            echo"<p>$anzeige_subtitel</p>";
+            ?>
+            <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
         </div>
     </div>
     <!--<button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>-->
