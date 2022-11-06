@@ -935,11 +935,17 @@ include_once 'database/traffic_analytics.php';
 <!-- ########################## -->
 <!-- ########  COOKIES  ######### -->
 <!-- ########################## -->  
-<?php include_once 'assets/js/cookies.js';?>
+<?php include_once 'assets/js/snow.js';?>
+<script type="text/javascript">
+    startSnow();
+</script>
 
+<!--
+<?php /* include_once 'assets/js/cookies.js'; */?>
 <script type="text/javascript" id="cookieinfo"
 src="/assets/js/cookieinfo.min.js" data-linkmsg="Zeig mir diese 'Cookies' &#9733;" data-moreinfo="javascript:start()" data-onclick="javascript:start()" data-expires="1min Wartezeit bis die Cookies gelöscht werden. Zu verändern in der .js Datei">
-</script>          
+</script>  -->        
+
 
 
 <!-- BOOK MARK SCRIPT 

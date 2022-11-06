@@ -6,7 +6,7 @@
 * Last updated Nov 9th, 05' by DD. This notice must stay intact for use
 ******************************************/
     //Configure below to change URL path to the snow image
-    var snowsrc="images/icon/cookie.png"
+    var snowsrc="images/icon/snowflake.png"
     // Configure below to change number of snow to render
     var no = 20;
     // Configure whether snow should disappear after x seconds (0=never):
@@ -16,7 +16,7 @@
     //0 before start, after that 1
     var startbool=0;
     var size=50;
-    function start(){
+    function startSnow(){
     startbool=1;
     cookie_init();
     }
@@ -54,7 +54,7 @@
     for (i = 0; i < no; ++ i) {
         
     dx[i] = 0;                        // set coordinate variables
-    xp[i] = Math.random()*(doc_width-80);  // set position variables
+    xp[i] = (Math.random()*(doc_width-110))+30;  // set position variables
     yp[i] = Math.random()*doc_height;
     am[i] = Math.random()*20;         // set amplitude variables
     stx[i] = 0.02 + Math.random()/10; // set step variables
