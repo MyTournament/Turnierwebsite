@@ -60,20 +60,26 @@ $pdf->AddPage();
 $txt = iconv('utf-8', 'cp1252', $txt);
 //utf8_decode();
 
-
-
-$pdf->Cell(0, 10, '' , 0, 1, 'C');
-$pdf->SetFont('Courier','',14);
-$pdf->Cell(0, 10, 'Vielen Dank fuer deine Teilnahme am:' , 0, 1, 'C');
-$pdf->SetFont('Courier','B',18);
-$pdf->Cell(0, 10, 'BLANKIBALL-TURNIER 2022' , 0, 1, 'C');
-$pdf->Cell(0, 10, '' , 0, 1, 'C');
-
 include_once '../../database/db_connection.php';
 
 include_once '../../variables.php';
 
 $teamId = $_GET['teamId'];
+
+$sql = 'SELECT * FROM Turnier_Main, Turnier_Team WHERE Turnier_Team.fk_turnier = '. $teamId .'';
+$result = $conn->query($sql);
+while (!empty($row = $result->fetch_assoc())) {
+    $turnierName = $row['name'];
+}
+
+$pdf->Cell(0, 10, '' , 0, 1, 'C');
+$pdf->SetFont('Courier','',14);
+$pdf->Cell(0, 10, 'Vielen Dank fuer deine Teilnahme am:' , 0, 1, 'C');
+$pdf->SetFont('Courier','B',21);
+$pdf->Cell(0, 10, $turnierName , 0, 1, 'C');
+$pdf->Cell(0, 10, '' , 0, 1, 'C');
+
+
 if($teamId != NULL){
     
     $sql = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId .'';
