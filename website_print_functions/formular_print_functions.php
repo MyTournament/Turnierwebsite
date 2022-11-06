@@ -192,6 +192,15 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required><br/>
     <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required><br/>
     <h5><br/></h5>
+    <h4>Woher hast du von uns erfahren? (Freiwillig)</h4>
+    <select name='woher_erfahren'>
+        <option value='...'><i>...</i></option>
+        <option value='Freund*innen'><i>Freund*innen</i></option>
+        <option value='Social Media'><i>Social Media</i></option>
+        <option value='Google bzw. andere Suchmaschine'><i>Google bzw. andere Suchmaschine</i></option>
+        <option value='Sonstiges'><i>Sonstiges</i></option>
+    </select>
+    <h5><br/></h5>
     <title>[ untitled ]</title>                                
     <script type="text/javascript">
         function checkAGB() {

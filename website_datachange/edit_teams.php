@@ -40,13 +40,13 @@ include_once 'edit_interface.php';
 				}
 
 				$bn = "unknown";
-				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
-				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail']));
+				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
+				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
 			}
 		else{
 			$bn = "unknown";
-			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail) VALUES (?, ?, ?, ?, ?)";
-			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail']));
+			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
+			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
 		}
 			
 		$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
