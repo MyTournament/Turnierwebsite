@@ -206,6 +206,7 @@ include_once 'database/traffic_analytics.php';
                 $resultTurnier = $conn->query($sqlTurnier);
                 while ($rowTurnier = $resultTurnier->fetch_assoc()) {
                     $turnier_phase_ID = $rowTurnier['fk_turnier_phase'];
+                    $schnee = $rowTurnier['schnee'];
                 }
 
                 //SPIELPLAN
@@ -935,16 +936,19 @@ include_once 'database/traffic_analytics.php';
 <!-- ########################## -->
 <!-- ########  COOKIES  ######### -->
 <!-- ########################## -->  
-<?php include_once 'assets/js/snow.js';?>
-<script type="text/javascript">
-    startSnow();
-</script>
-
-<!--
-<?php /* include_once 'assets/js/cookies.js'; */?>
-<script type="text/javascript" id="cookieinfo"
-src="/assets/js/cookieinfo.min.js" data-linkmsg="Zeig mir diese 'Cookies' &#9733;" data-moreinfo="javascript:start()" data-onclick="javascript:start()" data-expires="1min Wartezeit bis die Cookies gelöscht werden. Zu verändern in der .js Datei">
-</script>  -->        
+<?php
+if($schnee==1){
+    include_once 'assets/js/snow.js';
+    echo '<script type="text/javascript">',
+        'startSnow();',
+     '</script>';
+}else{
+    include_once 'assets/js/cookies.js';
+    echo "<script type='text/javascript' id='cookieinfo'
+    src='/assets/js/cookieinfo.min.js' data-linkmsg='Zeig mir diese Cookies &#9733;' data-moreinfo='javascript:start()' data-onclick='javascript:start()' data-expires='1min Wartezeit bis die Cookies gelöscht werden. Zu verändern in der .js Datei'>
+    </script>";
+}
+?>
 
 
 
