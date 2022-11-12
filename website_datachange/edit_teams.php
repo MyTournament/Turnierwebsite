@@ -72,7 +72,7 @@ include_once 'edit_interface.php';
 		$name = $_POST['Teamname'];
 		$message = "";
 		$message .= $infoVomAngemeldetenTeam;
-		mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
+		
 
 		//an Team
 		$fromEmail = "kummerkasten@blankiball.de";
@@ -86,7 +86,10 @@ include_once 'edit_interface.php';
 		$message2 .= "Hier kannst du noch einmal deine Angaben ueberpruefen. (Umlaute und Emojis werden eventuell nicht richtig dargestellt - gerade wenn du welche im Passwort haben solltest, wird dein Passwort hier moeglicherweise falsch angezeigt, funktioniert aber in der urspruenglichen Version) \r\n \r\n";
 		$message2 .= $infoVomAngemeldetenTeam;
 		$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
+		
+		//Versenden
 		mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
+		mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];
