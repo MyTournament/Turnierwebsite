@@ -79,13 +79,13 @@ include_once 'edit_interface.php';
 		$team_mail = $_POST['Mail'];
 		$name = $_POST['Teamname'];
 		if($turnier_phase_ID==12){ // Falls Warteliste
-			$message = "Leider sind die Plaetze des Turniers vorlaeufig voll. Dein Team wurde der Warteliste hinzugefuegt und kann eventuell noch nachruecken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
+			$message2 = "Leider sind die Plaetze des Turniers vorlaeufig voll. Dein Team wurde der Warteliste hinzugefuegt und kann eventuell noch nachruecken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
 		}else{
-			$message = "Dein Team wurde erfolgreich fuer das Blankiball-Turnier registriert! \r\n \r\n";
+			$message2 = "Dein Team wurde erfolgreich fuer das Blankiball-Turnier registriert! \r\n \r\n";
 		}
-		$message .= "Hier kannst du noch einmal deine Angaben ueberpruefen. (Umlaute und Emojis werden eventuell nicht richtig dargestellt - gerade wenn du welche im Passwort haben solltest, wird dein Passwort hier moeglicherweise falsch angezeigt, funktioniert aber in der urspruenglichen Version) \r\n \r\n";
-		$message .= $infoVomAngemeldetenTeam;
-		$message .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
+		$message2 .= "Hier kannst du noch einmal deine Angaben ueberpruefen. (Umlaute und Emojis werden eventuell nicht richtig dargestellt - gerade wenn du welche im Passwort haben solltest, wird dein Passwort hier moeglicherweise falsch angezeigt, funktioniert aber in der urspruenglichen Version) \r\n \r\n";
+		$message2 .= $infoVomAngemeldetenTeam;
+		$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
 		mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
