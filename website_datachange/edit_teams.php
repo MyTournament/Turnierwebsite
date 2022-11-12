@@ -83,7 +83,7 @@ include_once 'edit_interface.php';
 		}else{
 			$message = "Dein Team wurde erfolgreich fuer das Blankiball-Turnier registriert! \r\n \r\n";
 		}
-		$message .= "Hier kannst du noch einmal deine Angaben ueberpruefen. (Umlaute und Emojis werden eventuell nicht richtig dargestellt -> gerade wenn du welche im Passwort haben solltest, wird dein Passwort hier moeglicherweise falsch angezeigt, funktioniert aber in der urspruenglichen Version) \r\n \r\n";
+		$message .= "Hier kannst du noch einmal deine Angaben ueberpruefen. (Umlaute und Emojis werden eventuell nicht richtig dargestellt - gerade wenn du welche im Passwort haben solltest, wird dein Passwort hier moeglicherweise falsch angezeigt, funktioniert aber in der urspruenglichen Version) \r\n \r\n";
 		$message .= $infoVomAngemeldetenTeam;
 		$message .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
 		mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
