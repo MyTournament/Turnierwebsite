@@ -87,7 +87,7 @@ include_once 'edit_interface.php';
 		$message2 .= $infoVomAngemeldetenTeam;
 		$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
 		
-		//Versenden
+		//Beide Mails versenden
 		mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
 		mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
