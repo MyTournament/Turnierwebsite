@@ -31,7 +31,6 @@ if ($websiteId == null){
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
 
-
 ?>
 
 <!DOCTYPE HTML>
