@@ -58,7 +58,7 @@ include_once 'edit_interface.php';
 		//Text für beide Mails vorbereiten
 		$infoVomAngemeldetenTeam = "";
 		$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
-		$infoVomAngemeldetenTeam .= "Team-Kuerzel: " . $_POST['Kuerzel'] . "\r\n";
+		$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'] . "\r\n";
 		$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'] . "\r\n \r\n";
 		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'] . " \r\n \r\n";
 		$infoVomAngemeldetenTeam .= "Spieler 2: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . " \r\n \r\n";
@@ -68,25 +68,45 @@ include_once 'edit_interface.php';
 
 		//PER MAIL VERSENDEN
 		//an kummerkasten
-		$fromEmail = "kummerkasten@REDACTED.de";
+		//$fromEmail = "kummerkasten@REDACTED.de";
 		$name = $_POST['Teamname'];
 		$message = "";
 		$message .= $infoVomAngemeldetenTeam;
-		mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
+		$message = wordwrap($message, 70, "\r\n");
+		$header = 'From: Blankiball Bierball Turnier <kummerkasten@REDACTED.de>' . "\r\n" .
+			'Reply-To: Blankiball Bierball Turnier <kummerkasten@REDACTED.de>' . "\r\n" .
+			'X-Mailer: PHP/' . phpversion();
+		//Verschicken
+		mail("kummerkasten@REDACTED.de", "Teamregistrierung Blankiball-Turnier", $message, $header);
+		
 
 		//an Team
-		$fromEmail = "kummerkasten@REDACTED.de";
-		$team_mail = $_POST['Mail'];
+		//$fromEmail = "kummerkasten@REDACTED.de";
+		$empfaenger = $_POST['Mail'];
 		$name = $_POST['Teamname'];
 		if($turnier_phase_ID==12){ // Falls Warteliste
-			$message = "Leider sind die Plaetze des Turniers vorlaeufig voll. Dein Team wurde der Warteliste hinzugefuegt und kann eventuell noch nachruecken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
+			$message2 = "Leider sind die Plaetze des Turniers vorläufig voll. Dein Team wurde der Warteliste hinzugefügt und kann eventuell noch nachrücken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
 		}else{
-			$message = "Dein Team wurde erfolgreich fuer das Blankiball-Turnier registriert! \r\n \r\n";
+			$message2 = "Dein Team wurde erfolgreich für das Blankiball-Turnier registriert! \r\n \r\n";
 		}
-		$message .= "Hier kannst du noch einmal deine Angaben ueberpruefen. (Umlaute und Emojis werden eventuell nicht richtig dargestellt -> gerade wenn du welche im Passwort haben solltest, wird dein Passwort hier moeglicherweise falsch angezeigt, funktioniert aber in der urspruenglichen Version) \r\n \r\n";
-		$message .= $infoVomAngemeldetenTeam;
-		$message .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
-		mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
+		$message2 .= "Hier kannst du noch einmal deine Angaben überprüfen und hast euer Team-Passwort auch nochmal zum Abspeichern. \r\n \r\n";
+		$message2 .= $infoVomAngemeldetenTeam;
+		$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
+
+		// Verschicken
+		$betreff = 'Der Betreff';
+		//$nachricht = "Zeile 1\r\nZeile 2\r\nZeile 3";
+		// Falls eine Zeile der Nachricht mehr als 70 Zeichen enthälten könnte,
+		// sollte wordwrap() benutzt werden
+		$message2 = wordwrap($message2, 70, "\r\n");
+		$header = 'From: Blankiball <kummerkasten@REDACTED.de>' . "\r\n" .
+			'Reply-To: Blankiball <kummerkasten@REDACTED.de>' . "\r\n" .
+			'X-Mailer: PHP/' . phpversion();
+		mail($empfaenger, 'Deine Blankiball-Anmeldung', $message2, $header);
+		
+		//Beide Mails versenden
+		//mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
+		//mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 		$test_turnier_id = $_GET['test_turnier_id'];

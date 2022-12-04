@@ -31,7 +31,6 @@ if ($websiteId == null){
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
 
-
 ?>
 
 <!DOCTYPE HTML>
@@ -457,6 +456,14 @@ include_once 'database/traffic_analytics.php';
 <!-- schiedsrichter*innen -->
 <article id="REDACTED_simulator">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <a href="#" class="button">Zurück zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p>
+</article>
+
+<!-- Merch -->
+<article id="merch">
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 34, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
