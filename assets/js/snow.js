@@ -81,7 +81,7 @@
             yp[i] += sty[i];
         if (yp[i] > doc_height-50) {
         xp[i] = Math.random()*(doc_width-am[i]-30);
-        yp[i] = 0;
+        yp[i] = 60;
         stx[i] = 0.02 + Math.random()/10;
         sty[i] = 0.7 + Math.random();
         }
