@@ -200,6 +200,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
         <option value='Google bzw. andere Suchmaschine'><i>Google bzw. andere Suchmaschine</i></option>
         <option value='Sonstiges'><i>Sonstiges</i></option>
     </select>
+    <div class="h-captcha" data-sitekey="f3591a3b-4fdc-490c-99b0-a0b84ba5d938"></div>
     <h5><br/></h5>
     <title>[ untitled ]</title>                                
     <script type="text/javascript">
