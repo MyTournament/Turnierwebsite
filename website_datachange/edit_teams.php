@@ -19,108 +19,135 @@ include_once 'edit_interface.php';
 
 	$action = $_POST['action'];
 
+
 	if($action == 'Anmelden'){
-		$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
+		
+		$SECRET_KEY = "f3591a3b-4fdc-490c-99b0-a0b84ba5d938";    # replace with your secret key
+		$VERIFY_URL = "https://hcaptcha.com/siteverify";
+		# Retrieve token from post data with key 'h-captcha-response'.
+		$token = request.POST_DATA['h-captcha-response'];
+		# Build payload with secret key and token.
+		$data = { 'secret': $SECRET_KEY, 'response': $token };
+		# Make POST request with data payload to hCaptcha API endpoint.
+		$response = http.post(url=$VERIFY_URL, data=$data);
+		# Parse JSON from response. Check for success or error codes.
+		$response_json = JSON.parse(response.content);
+		$success = response_json['success'];
+		/*
+		{
+			"success": true|false,     // is the passcode valid, and does it meet security criteria you specified, e.g. sitekey?
+			"challenge_ts": timestamp, // timestamp of the challenge (ISO format yyyy-MM-dd'T'HH:mm:ssZZ)
+			"hostname": string,        // the hostname of the site where the challenge was solved
+			"credit": true|false,      // optional: whether the response will be credited
+			"error-codes": [...]       // optional: any error codes
+			"score": float,            // ENTERPRISE feature: a score denoting malicious activity.
+			"score_reason": [...]      // ENTERPRISE feature: reason(s) for score.
+		}
+		*/
+		if($success){
 
-		//SONDERFALL: WARTELISTE
-			//Aktuelle Turnierphase herausfinden - erstmal ID
-			$sqlPhase = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
-			$resultPhase = $conn->query($sqlPhase);
-			while ($rowPhase = $resultPhase->fetch_assoc()) {
-				$turnier_phase_ID = $rowPhase['fk_turnier_phase'];
-			}
-			//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfügen
-			//Warteliste finden
-			if($turnier_phase_ID==12){
-				$warteliste_ID = 6; //Auffangbecken
-				$sqlWarteliste = 'SELECT * FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .' ORDER BY ID';
-				$resultWarteliste = $conn->query($sqlWarteliste);
-				while ($rowWarteliste = $resultWarteliste->fetch_assoc()) {
-					$warteliste_ID = $rowWarteliste['id'];
+			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
+
+			//SONDERFALL: WARTELISTE
+				//Aktuelle Turnierphase herausfinden - erstmal ID
+				$sqlPhase = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+				$resultPhase = $conn->query($sqlPhase);
+				while ($rowPhase = $resultPhase->fetch_assoc()) {
+					$turnier_phase_ID = $rowPhase['fk_turnier_phase'];
 				}
+				//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfügen
+				//Warteliste finden
+				if($turnier_phase_ID==12){
+					$warteliste_ID = 6; //Auffangbecken
+					$sqlWarteliste = 'SELECT * FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .' ORDER BY ID';
+					$resultWarteliste = $conn->query($sqlWarteliste);
+					while ($rowWarteliste = $resultWarteliste->fetch_assoc()) {
+						$warteliste_ID = $rowWarteliste['id'];
+					}
 
+					$bn = "unknown";
+					$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
+					$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
+				}
+			else{
 				$bn = "unknown";
-				$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
-				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
+				$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
+				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
 			}
-		else{
-			$bn = "unknown";
-			$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
-			$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
-		}
+				
+			$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
+			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
+			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
+			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
+
+
+			//Text für beide Mails vorbereiten
+			$infoVomAngemeldetenTeam = "";
+			$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
+			$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'] . "\r\n";
+			$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'] . "\r\n \r\n";
+			$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'] . " \r\n \r\n";
+			$infoVomAngemeldetenTeam .= "Spieler 2: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . " \r\n \r\n";
+			$infoVomAngemeldetenTeam .= "Spieler 3: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'] . " \r\n \r\n";
+
+			include_once '../website_functionalities/send_mail.php';
+
+			//PER MAIL VERSENDEN
+			//an kummerkasten
+			//$fromEmail = "kummerkasten@blankiball.de";
+			$name = $_POST['Teamname'];
+			$message = "";
+			$message .= $infoVomAngemeldetenTeam;
+			$message = wordwrap($message, 70, "\r\n");
+			$header = 'From: Blankiball Bierball Turnier <kummerkasten@blankiball.de>' . "\r\n" .
+				'Reply-To: Blankiball Bierball Turnier <kummerkasten@blankiball.de>' . "\r\n" .
+				'X-Mailer: PHP/' . phpversion();
+			//Verschicken
+			mail("kummerkasten@blankiball.de", "Teamregistrierung Blankiball-Turnier", $message, $header);
 			
-		$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
-		myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
-		myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
-		myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
 
-
-		//Text für beide Mails vorbereiten
-		$infoVomAngemeldetenTeam = "";
-		$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
-		$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'] . "\r\n";
-		$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'] . "\r\n \r\n";
-		$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'] . " \r\n \r\n";
-		$infoVomAngemeldetenTeam .= "Spieler 2: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . " \r\n \r\n";
-		$infoVomAngemeldetenTeam .= "Spieler 3: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'] . " \r\n \r\n";
-
-		include_once '../website_functionalities/send_mail.php';
-
-		//PER MAIL VERSENDEN
-		//an kummerkasten
-		//$fromEmail = "kummerkasten@blankiball.de";
-		$name = $_POST['Teamname'];
-		$message = "";
-		$message .= $infoVomAngemeldetenTeam;
-		$message = wordwrap($message, 70, "\r\n");
-		$header = 'From: Blankiball Bierball Turnier <kummerkasten@blankiball.de>' . "\r\n" .
-			'Reply-To: Blankiball Bierball Turnier <kummerkasten@blankiball.de>' . "\r\n" .
-			'X-Mailer: PHP/' . phpversion();
-		//Verschicken
-		mail("kummerkasten@blankiball.de", "Teamregistrierung Blankiball-Turnier", $message, $header);
-		
-
-		//an Team
-		//$fromEmail = "kummerkasten@blankiball.de";
-		$empfaenger = $_POST['Mail'];
-		$name = $_POST['Teamname'];
-		if($turnier_phase_ID==12){ // Falls Warteliste
-			$message2 = "Leider sind die Plaetze des Turniers vorläufig voll. Dein Team wurde der Warteliste hinzugefügt und kann eventuell noch nachrücken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
-		}else{
-			$message2 = "Dein Team wurde erfolgreich für das Blankiball-Turnier registriert! \r\n \r\n";
-		}
-		$message2 .= "Hier kannst du noch einmal deine Angaben überprüfen und hast euer Team-Passwort auch nochmal zum Abspeichern. \r\n \r\n";
-		$message2 .= $infoVomAngemeldetenTeam;
-		$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
-
-		// Verschicken
-		$betreff = 'Der Betreff';
-		//$nachricht = "Zeile 1\r\nZeile 2\r\nZeile 3";
-		// Falls eine Zeile der Nachricht mehr als 70 Zeichen enthälten könnte,
-		// sollte wordwrap() benutzt werden
-		$message2 = wordwrap($message2, 70, "\r\n");
-		$header = 'From: Blankiball <kummerkasten@blankiball.de>' . "\r\n" .
-			'Reply-To: Blankiball <kummerkasten@blankiball.de>' . "\r\n" .
-			'X-Mailer: PHP/' . phpversion();
-		mail($empfaenger, 'Deine Blankiball-Anmeldung', $message2, $header);
-		
-		//Beide Mails versenden
-		//mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
-		//mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
-
-		//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
-		$test_turnier_id = $_GET['test_turnier_id'];
-		if($test_turnier_id==NULL){
-			if($turnier_phase_ID==12){ //WARTELISTE
-				header("Location: /#vielendankfuerdeineanmeldung_warteliste");
+			//an Team
+			//$fromEmail = "kummerkasten@blankiball.de";
+			$empfaenger = $_POST['Mail'];
+			$name = $_POST['Teamname'];
+			if($turnier_phase_ID==12){ // Falls Warteliste
+				$message2 = "Leider sind die Plaetze des Turniers vorläufig voll. Dein Team wurde der Warteliste hinzugefügt und kann eventuell noch nachrücken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
 			}else{
-				header("Location: /#vielendankfuerdeineanmeldung");
+				$message2 = "Dein Team wurde erfolgreich für das Blankiball-Turnier registriert! \r\n \r\n";
 			}
-		}else{
-			if($turnier_phase_ID==12){ //WARTELISTE
-				header("Location: /?test_turnier_id=$test_turnier_id#vielendankfuerdeineanmeldung_warteliste");
+			$message2 .= "Hier kannst du noch einmal deine Angaben überprüfen und hast euer Team-Passwort auch nochmal zum Abspeichern. \r\n \r\n";
+			$message2 .= $infoVomAngemeldetenTeam;
+			$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
+
+			// Verschicken
+			$betreff = 'Der Betreff';
+			//$nachricht = "Zeile 1\r\nZeile 2\r\nZeile 3";
+			// Falls eine Zeile der Nachricht mehr als 70 Zeichen enthälten könnte,
+			// sollte wordwrap() benutzt werden
+			$message2 = wordwrap($message2, 70, "\r\n");
+			$header = 'From: Blankiball <kummerkasten@blankiball.de>' . "\r\n" .
+				'Reply-To: Blankiball <kummerkasten@blankiball.de>' . "\r\n" .
+				'X-Mailer: PHP/' . phpversion();
+			mail($empfaenger, 'Deine Blankiball-Anmeldung', $message2, $header);
+			
+			//Beide Mails versenden
+			//mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
+			//mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
+
+			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				if($turnier_phase_ID==12){ //WARTELISTE
+					header("Location: /#vielendankfuerdeineanmeldung_warteliste");
+				}else{
+					header("Location: /#vielendankfuerdeineanmeldung");
+				}
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#vielendankfuerdeineanmeldung");
+				if($turnier_phase_ID==12){ //WARTELISTE
+					header("Location: /?test_turnier_id=$test_turnier_id#vielendankfuerdeineanmeldung_warteliste");
+				}else{
+					header("Location: /?test_turnier_id=$test_turnier_id#vielendankfuerdeineanmeldung");
+				}
 			}
 		}
 
