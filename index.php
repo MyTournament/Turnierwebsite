@@ -51,6 +51,9 @@ include_once 'database/traffic_analytics.php';
         <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
         <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
         <link href='http://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
+
+        <!-- für Captcha -->
+        <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
         
         <noscript>
             <style>
@@ -650,7 +653,10 @@ include_once 'database/traffic_analytics.php';
                 <label for="message">Deine Nachricht</label>
                 <textarea name="message" id="message" rows="4" required></textarea>
             </div>
+            <br/><br/>
+            <div class="h-captcha" data-sitekey="REDACTED"></div>
         </div>
+        
         <ul class="actions">
             <li><input type="submit" value="Nachricht senden" class="primary"/></li>
             <input type="hidden" name="action" value="send_message"/>
