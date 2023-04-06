@@ -27,7 +27,7 @@
 
 
     //VERGANGENE TURNIERE
-    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 3 ORDER BY order_on_website, id DESC';
+    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 3 ORDER BY order_on_website DESC, id DESC';
     $result = $conn->query($sql);
     $history = array();
     $index = 1;
