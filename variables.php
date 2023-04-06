@@ -4,7 +4,7 @@
     include_once 'database/db_connection.php'; //Datenbanklogin
 
     //AKTUELLES TURNIER
-    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 1 ORDER BY order_on_website';
+    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 1 ORDER BY order_on_website DESC';
     $result = $conn->query($sql);
     $TurnierID = 0; //Platzhalter - nur für den Fall dass es kein passendes Turnier gibt
     while ($row = $result->fetch_assoc()) {
