@@ -365,7 +365,22 @@ include_once 'database/traffic_analytics.php';
 </article>
 <!-- SPIELPLAN ÜBERSICHT -->                       
 <article id="spielplan">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <!-- Check if Excel is been used -->
+    <?php
+    $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+    $resultTurnier = $conn->query($sqlTurnier);
+    while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+        $use_excel = $rowTurnier['use_excel'];
+        $excel_link = $rowTurnier['excel_link'];
+    }
+    ?>
+    <?php 
+    if($use_excel==0):
+        cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); 
+    else:
+        echo"<h1>Der Spielplan <img src='images/icon/sterni1.png' width='40' height='40' border='10' alt='Home'></h1>
+        <iframe loading='lazy' width='100%' height='600' frameborder='0' scrolling='no' src='$excel_link' async></iframe>";
+    ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
