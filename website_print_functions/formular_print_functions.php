@@ -166,12 +166,13 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <ul>
         <li>3 Spieler*innen pro Team</li>
         <li>Mindestens eine Telefonnummer angeben, damit wir euch erreichen können</li>
+        <li>Bitte eure <b>richtigen Namen</b> verwenden, damit wir wissen, wer ihr seid</li>
     </ul>
     <!--<h3 style='color: green'>Teams bestehen immer aus genau 3 Spieler*innen!</h3>
     <p>Gib deine Telefonnummer an um Teil der Blankiball-Whatsapp-Gruppe zu werden. Bitte gebt <b>mindestens eine Nummer pro Team</b> an, damit wir euch erreichen können.</p>
     <p>Achtung: Der Name deines Teams und die Namen aller Mitspieler*innen werden auf der Website öffentlich für jede Person einsehbar sein. Die Telefonnummern werden zwar nicht direkt auf der Website veröffentlicht, es wird aber eine Whatsapp/Telegram/Signal-Gruppe mit allen Turnierteilnehmer*innen erstellt. In der Gruppe werden für alle anderen Personen alle Nummern sichtbar sein. Bitte gib deine Nummer nur ein, wenn du damit einverstanden bist. Fragt am besten auch eure Teammitglieder*innen ob sie damit einverstanden sind.</p> 
     -->
-    <p>&#9733; = required</p>
+    <p>&#9733; = Pflichtfeld</p>
     <?php
     if($test_turnier_id==0){ //Fall: normales Turnier
         echo "<form action='website_datachange/edit_teams.php' method='POST' onSubmit='return checkAGB()'>";
@@ -183,10 +184,10 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <input type="text" id="spieler1" name="Spieler1" class="Eingabe" placeholder="1. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
     <input type="text" id="tel1" name="tel1" class="Eingabe" placeholder="1. Telefonnummer &#9733;" style="color: white" maxlength="40" required><br/>
     <input type="text" id="spieler2" name="Spieler2" class="Eingabe" placeholder="2. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer" style="color: white" maxlength="40"><br/>
+    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer &#9733;" style="color: white" maxlength="40" required><br/>
     <input type="text" id="spieler3" name="Spieler3" class="Eingabe" placeholder="3. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer" style="color: white" maxlength="40"><br/>
-    <h5>Die Einträge dürfen nicht länger als 20 Buchstaben sein.</h5>
+    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer &#9733;" style="color: white" maxlength="40" required><br/>
+    <i>Die Einträge dürfen nicht länger als 20 Buchstaben sein.</i>
     <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
     <p></br></p>
     
