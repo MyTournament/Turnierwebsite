@@ -215,7 +215,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <div class="h-captcha" data-sitekey="f3591a3b-4fdc-490c-99b0-a0b84ba5d938"></div>
     <h5><br/></h5>
 
-    <div textalign='center'>
+    <div style='textalign:center'>
         <h1>Wichtig!</h1>
         <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
         <p>➡️ Überweisen per <b>Paypal an kummerkasten@blankiball.de</b> ⬅️</p>
