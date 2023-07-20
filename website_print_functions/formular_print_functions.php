@@ -162,9 +162,15 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <title>Adressbuch</title>
     <div id="LogIn">
     <h1>Melde dein Team an</h1>
-    <h3 style='color: green'>Teams bestehen immer aus genau 3 Spieler*innen!</h3>
+    <p>Kurz das wichtigste:</p>
+    <ul>
+        <li>3 Spieler*innen pro Team</li>
+        <li>Mindestens eine Telefonnummer angeben, damit wir euch erreichen können</li>
+    </ul>
+    <!--<h3 style='color: green'>Teams bestehen immer aus genau 3 Spieler*innen!</h3>
     <p>Gib deine Telefonnummer an um Teil der Blankiball-Whatsapp-Gruppe zu werden. Bitte gebt <b>mindestens eine Nummer pro Team</b> an, damit wir euch erreichen können.</p>
     <p>Achtung: Der Name deines Teams und die Namen aller Mitspieler*innen werden auf der Website öffentlich für jede Person einsehbar sein. Die Telefonnummern werden zwar nicht direkt auf der Website veröffentlicht, es wird aber eine Whatsapp/Telegram/Signal-Gruppe mit allen Turnierteilnehmer*innen erstellt. In der Gruppe werden für alle anderen Personen alle Nummern sichtbar sein. Bitte gib deine Nummer nur ein, wenn du damit einverstanden bist. Fragt am besten auch eure Teammitglieder*innen ob sie damit einverstanden sind.</p> 
+    -->
     <p>&#9733; = required</p>
     <?php
     if($test_turnier_id==0){ //Fall: normales Turnier
@@ -183,14 +189,19 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <h5>Die Einträge dürfen nicht länger als 20 Buchstaben sein.</h5>
     <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
     <p></br></p>
-    <h4>E-Mail</h4>
-    <p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
-    <input type="text" id="mail" name="Mail" class="Eingabe" placeholder="Mail-Adresse &#9733;" style="color: white" required><br/>
-    </br>
+    
     <h4>Kürzel* & Passwort</h4>
-    <p>*Wähle Kürzel deines Teamnamens (2-4 Buchstaben) und ein Passwort/PIN-Code. Das Kürzel wird im Spielplan als Abkürzung benutzt und später kann dein Team mit Kürzel & Passwort auf der Website die Ergebnisse eintragen. Wichtig: Bitte nutze <b>wirklich wirklich kein Passwort, was du woanders schon benutzt</b> weil unsere Website nicht komplett sicher ist. Und außerdem brauchen alle deine Teammitglieder das Passwort.</p>
+    <!--<p>*Wähle Kürzel deines Teamnamens (2-4 Buchstaben) und ein Passwort/PIN-Code. Das Kürzel wird im Spielplan als Abkürzung benutzt und später kann dein Team mit Kürzel & Passwort auf der Website die Ergebnisse eintragen. Wichtig: Bitte nutze <b>wirklich wirklich kein Passwort, was du woanders schon benutzt</b> weil unsere Website nicht komplett sicher ist. Und außerdem brauchen alle deine Teammitglieder das Passwort.</p>-->
+    <p>Mit dem Passwort könnt ihr später eure Turnierergebnisse eintragen!</p>
     <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required><br/>
     <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required><br/>
+    <br/>
+    <h4>E-Mail</h4>
+    <!--<p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
+    -->
+    <i>An die Mail bekommt ihr eure Team-Daten gesendet.</i>
+    
+    <input type="text" id="mail" name="Mail" class="Eingabe" placeholder="Mail-Adresse &#9733;" style="color: white" required><br/>
     <h5><br/></h5>
     <h4>Woher hast du von uns erfahren? (Freiwillig)</h4>
     <select name='woher_erfahren'>
@@ -201,6 +212,13 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
         <option value='Sonstiges'><i>Sonstiges</i></option>
     </select>
     <div class="h-captcha" data-sitekey="f3591a3b-4fdc-490c-99b0-a0b84ba5d938"></div>
+    <h5><br/></h5>
+
+    <h3>Wichtig!</h3>
+    <p>Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt!</p>
+    <p>➡️ Überweisen per <b>Paypal an kummerkasten@blankiball.de</b> ⬅️</p>
+
+
     <h5><br/></h5>
     <title>[ untitled ]</title>                                
     <script type="text/javascript">
