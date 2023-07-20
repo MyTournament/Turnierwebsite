@@ -162,7 +162,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <title>Adressbuch</title>
     <div id="LogIn">
     <h1>Melde dein Team an</h1>
-    <p>Kurz das wichtigste:</p>
+    <h3>Kurz das wichtigste:</h3>
     <ul>
         <li>3 Spieler*innen pro Team</li>
         <li>Mindestens eine Telefonnummer angeben, damit wir euch erreichen können</li>
@@ -214,8 +214,8 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <div class="h-captcha" data-sitekey="REDACTED"></div>
     <h5><br/></h5>
 
-    <h3>Wichtig!</h3>
-    <p>Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt!</p>
+    <h1>Wichtig!</h1>
+    <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
     <p>➡️ Überweisen per <b>Paypal an kummerkasten@REDACTED.de</b> ⬅️</p>
 
 
