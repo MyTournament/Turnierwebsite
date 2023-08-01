@@ -822,6 +822,12 @@ include_once 'database/traffic_analytics.php';
         </br>
         <button value="Anmelden" type="submit">Anmelden</button>
         </form>
+
+        </br></br></br>
+        <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
+        <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+        <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+        
     </div>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
@@ -877,7 +883,7 @@ include_once 'database/traffic_analytics.php';
             */
             echo"<h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>";
             echo"
-            <p>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname) Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+            <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
             <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a> ";
             
             
