@@ -156,6 +156,8 @@ include_once 'edit_interface.php';
 					header("Location: /?test_turnier_id=$test_turnier_id#vielendankfuerdeineanmeldung");
 				}
 			}
+		}else{
+			echo "Du Keck, du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...";
 		}
 
 	}else { //Alles was nicht Team registrieren ist braucht Login
