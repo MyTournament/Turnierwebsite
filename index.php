@@ -889,11 +889,11 @@ include_once 'database/traffic_analytics.php';
             
             echo "</br></br></br>
             <h3><img src='images/icon/whatsapp.png' width='20' height='20' border='5' alt='Home'> Komm in die Gruppe</h3>
-            <p>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei! (... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest)</p>
+            <p>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei um alle Turnier-Infos rechtzeitig mitzubekommen!</p> <!-- (... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest)-->
             <ul class='actions stacked'>
                 <li><a class='button' style='background-color: green' href=$link_whatsapp_info>Offizielle Whatsapp Gruppe</a></li>
                 <!--<li><a class='button' style='background-color: green' href=$link_whatsapp_chat>Chat-Gruppe</a></li>-->
-                <li><a class='button' style='background-color: blue' href=$link_telegram>Telegram-Gruppe</a></li>
+                <!--<li><a class='button' style='background-color: blue' href=$link_telegram>Telegram-Gruppe</a></li>-->
                 </br>
                 <li><a class='button' href='#'>Zurück zur Startseite</a></li>
             </ul>
