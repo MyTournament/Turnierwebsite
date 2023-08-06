@@ -201,7 +201,7 @@ include_once 'database/traffic_analytics.php';
         <ul>
             <li><a href="#info">📚 Info</a></li>
             <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">👮🏽‍♀️ Regeln</a></li>
-            <li><a href="#teams">👨‍👧‍👧 Teams</a></li>
+            <li class='button disabled'><a href='#teams'>👨‍👧‍👧 Teams</a></li>
             <?php 
             //Aktuelle Turnierphase herausfinden - erstmal ID
                 $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
