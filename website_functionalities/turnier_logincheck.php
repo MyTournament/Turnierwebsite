@@ -23,6 +23,6 @@ setcookie('turnier-loggedin', $TurnierLoggedIn, $expiration, '/');
 $conn->close();
 
 // Perform the redirection
-header("Location: http://dev.blankiball.de/#" . $NextSec);
+header("Location: https://blankiball.de/#" . $NextSec);
 exit();
 ?>
