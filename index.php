@@ -316,16 +316,33 @@ include_once 'database/traffic_analytics.php';
 <!-- TEAMS -->
 <article id="teams">
     <?php //ANMELDUNG
-    if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
-        echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
-        cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
-    }else if($turnier_phase_ID == 12){ //WARTELISTE
-        echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
-        echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
+    // Login check
+    $loggedInValue = False;
+    if (isset($_COOKIE['turnier-loggedin'])) {
+        $loggedInValue = $_COOKIE['turnier-loggedin'];
+    }
+
+    if($loggedInValue){
+        if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
+            echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
+            cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
+        }else if($turnier_phase_ID == 12){ //WARTELISTE
+            echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
+            echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
+        }else{
+            echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
+        }
+    
+        cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) 
     }else{
-        echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
-    } ?>
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+        // login form
+        echo "<form action='website_functionalities/turnier_logincheck.php' method='POST'>";
+        echo "<input type='password' class='Eingabe' name='pw' placeholder='password' style='color: white' required>";
+        echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
+        echo "<input type='hidden' name='NextSection' value='teams'/>";
+        echo "</form>";
+    }
+    ?> 
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>                 
@@ -365,23 +382,40 @@ include_once 'database/traffic_analytics.php';
 </article>
 <!-- SPIELPLAN ÜBERSICHT -->                       
 <article id="spielplan">
-    <!-- Check if Excel is been used -->
+    <!-- Lgin check und Spielplan-Anzeige -->
     <?php
-    $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
-    $resultTurnier = $conn->query($sqlTurnier);
-    while ($rowTurnier = $resultTurnier->fetch_assoc()) {
-        $use_excel = $rowTurnier['use_excel'];
-        $excel_link = $rowTurnier['excel_link'];
+    // Login check
+    $loggedInValue = False;
+    if (isset($_COOKIE['turnier-loggedin'])) {
+        $loggedInValue = $_COOKIE['turnier-loggedin'];
+    }
+
+    if($loggedInValue){
+        // Check if Excel is been used
+        $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+        $resultTurnier = $conn->query($sqlTurnier);
+        while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+            $use_excel = $rowTurnier['use_excel'];
+            $excel_link = $rowTurnier['excel_link'];
+        }
+    
+        if($use_excel==0){
+            cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);  // ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS)
+        }else{
+            echo"<h1>Der Spielplan <img src='images/icon/sterni1.png' width='40' height='40' border='10' alt='Home'></h1>
+            <iframe loading='lazy' width='100%' height='600' frameborder='0' scrolling='no' src='$excel_link' async></iframe>";
+        }
+
+    }else{
+        // login form
+        echo "<form action='website_functionalities/turnier_logincheck.php' method='POST'>";
+        echo "<input type='password' class='Eingabe' name='pw' placeholder='password' style='color: white' required>";
+        echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
+        echo "<input type='hidden' name='NextSection' value='spielplan'/>";
+        echo "</form>";
     }
     ?>
-    <?php 
-    if($use_excel==0){
-        cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); 
-    }else{
-        echo"<h1>Der Spielplan <img src='images/icon/sterni1.png' width='40' height='40' border='10' alt='Home'></h1>
-        <iframe loading='lazy' width='100%' height='600' frameborder='0' scrolling='no' src='$excel_link' async></iframe>";
-    }?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <a href='#' class='button'>Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
