@@ -814,6 +814,18 @@
                                     $verliererTeam1ID = $rowRausgeflogen['id'];
                                     setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
                                 }
+                                
+                                //Nächste Gruppe
+                                //zählen wie viele Teams in Gruppe
+                                $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeNextID .' AND fk_turnier = '. $TurnierID .' ORDER BY gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele asc';
+                                $resultRausgeflogen = $conn->query($sqlRausgeflogen);
+                                $counter = 0;
+                                while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
+                                    $counter++;
+                                }
+                                //LIMIT IST counter-2 weil 2 Teams weiterkommen
+                                $counter=$counter-2;
+                                //allen Teams, die rausgefolgen sind eine Platzierung zuweisen
                                 $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeNextID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
                                 $resultRausgeflogen = $conn->query($sqlRausgeflogen);
                                 while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
