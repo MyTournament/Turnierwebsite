@@ -15,6 +15,10 @@
     class Database{
 
         // specify your own database credentials
+        /*private $db_server = "REDACTED";
+        private $db_username = "REDACTED";
+        private $db_password = "REDACTED";
+        private $db_name = "REDACTED";*/
         private $db_server = "REDACTED";
         private $db_username = "REDACTED";
         private $db_password = "REDACTED";
