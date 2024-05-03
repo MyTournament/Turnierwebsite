@@ -7,7 +7,7 @@ name: 🚀 Deploy website on push
 jobs:
   web-deploy:
     name: 🎉 Deploy
-    runs-on: linux
+    runs-on: self-hosted
     steps:
     - name: 🚚 Get latest code
       uses: actions/checkout@v2
