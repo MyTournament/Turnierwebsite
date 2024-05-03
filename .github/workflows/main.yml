@@ -15,7 +15,7 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@4.1.0
       with:
-        server: ftp.strato.de
-        username: sftp_edit@trinkhalm-designs.de
-        password: ${{ secrets.ftp_password }}
-        server-dir: Turnierwebsite/tourna/
+        server: REDACTED
+        username: REDACTED
+        password: ${{ secrets.REDACTED_netcup }}
+        server-dir: var/www/REDACTED/Turnierwebsite/tourna
