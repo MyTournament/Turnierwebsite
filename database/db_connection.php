@@ -20,8 +20,8 @@
         private $db_password = "HF?A=k%CWdDxc*8Jr4()bmF";
         private $db_name = "dbs4154474";*/
         private $db_server = "45.9.63.16";
-        private $db_username = "phpmyadmin";
-        private $db_password = "1HD2h28Hd";
+        private $db_username = "backenduser";
+        private $db_password = "239wdjSjDEd21";
         private $db_name = "blankiball";
         
         public $PDOconn;
