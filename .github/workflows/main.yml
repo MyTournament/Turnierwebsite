@@ -18,4 +18,4 @@ jobs:
         server: REDACTED
         username: REDACTED
         password: ${{ secrets.REDACTED_netcup }}
-        server-dir: /var/www/REDACTED/Turnierwebsite/tourna/
+        server-dir: /var/www/html/REDACTED/Turnierwebsite/tourna/
