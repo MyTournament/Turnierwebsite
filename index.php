@@ -21,12 +21,12 @@ if($sperrung == 1){
 }
 
 
-//include_once 'website_functionalities/load_website.php';
-//$website_array = determine_domain_id($conn);
-$websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
-/*if ($websiteId == null){
+include_once 'website_functionalities/load_website.php';
+$website_array = determine_domain_id($conn);
+$websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
+if ($websiteId == null){
     echo "WEBSITE nicht gefunden";
-}*/
+}
 
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
@@ -106,7 +106,7 @@ include_once 'database/traffic_analytics.php';
 <?php
     echo "<script>console.log('WebsiteId: ' + $websiteId)</script>";
     include_once 'website_functionalities/countdown.php';
-    //include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus //TODO: WIEDER NUTZEN
+    include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus
     include_once 'database/db_update.php'; //Wichtig dass das nach Test-Modus-Abfrage kommt damit das mit aktualisierter TurnierID passiert
     try{
         db_update($conn, $TurnierID); //db_update.php AUSFÜHREN
@@ -123,16 +123,13 @@ include_once 'database/traffic_analytics.php';
 
     $gameEditMode = 0; //
     $expertenmodus = 0;
-    //$gameEditMode = $_POST['gameEditMode']; //TODO: WIEDER NUTZEN
-    //$expertenmodus = $_POST['expertenmodus']; //TODO: WIEDER NUTZEN
+    $gameEditMode = $_POST['gameEditMode'];
+    $expertenmodus = $_POST['expertenmodus'];
 
     //ANMELDUNG FÜR CMS
-    $bn = ''; //$_POST["bn"]; //TODO: WIEDER NUTZEN
-    $pw = ''; //$_POST["pw"]; //TODO: WIEDER NUTZEN
-
-	$test_turnier_id = 0; //TODO: temporäre Lösung
+    $bn = $_POST["bn"];
+    $pw = $_POST["pw"];
     
-	$edit_content_mode = False;
     $LoggedInWithCMSorHigher = False;
         foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 5") as $row) {
             if ($bn == $row["Benutzername"] && $pw == $row["Passwort"]) {
@@ -606,7 +603,7 @@ include_once 'database/traffic_analytics.php';
     <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
     <p>Hier geht's zur alten Website (2017-2020)</p>
-    <a href="http://2020.REDACTED.de/" class="button primary">Alte Website (2017-2020)</a>
+    <a href="http://old.REDACTED.de/REDACTED/AlteWebsites/website_2018_bis_2020" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
