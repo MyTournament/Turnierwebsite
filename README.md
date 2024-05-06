@@ -11,3 +11,4 @@ sudo setfacl -R -m u:REDACTED:rwx /var/www
 ### Alte Websites
 sudo nano /etc/apache2/sites-available/000-default.conf
 -> Funktioniert aber irgendwie hier nicht (Das File ist schon fur http, aber klappt trotzdem nicht)
+sudo systemctl restart apache2
