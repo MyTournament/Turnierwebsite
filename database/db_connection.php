@@ -12,6 +12,7 @@
         die("Connection failed: " . $conn->connect_error);
     }
     */
+    
     class Database{
 
         // specify your own database credentials
@@ -27,13 +28,14 @@
         public $PDOconn;
 
         public function getConnectionMySQLi(){ //Für Website
+            
             // Create connection
             $mysqliconn = new mysqli($this->db_server, $this->db_username, $this->db_password,$this->db_name);
             // Check connection
             if ($mysqliconn->connect_error) {
                 die("Connection failed: " . $mysqliconn->connect_error);
             }
-
+            
             // Will NOT affect $mysqli->real_escape_string();
             $mysqliconn->query("SET NAMES utf8mb4");
 
@@ -44,9 +46,10 @@
             $mysqliconn->set_charset('utf8mb4');
 
             // But, this will NOT affect it (UTF-8 vs utf8mb4) -- don't use dashes here
-            $mysqliconn->set_charset('UTF-8');
+            //$mysqliconn->set_charset('UTF-8');
 
             return $mysqliconn;
+            
         }
         
 
