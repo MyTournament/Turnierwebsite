@@ -2,3 +2,7 @@ ErrorDocument 401 /assets/fehlerseite401.php
 ErrorDocument 402 /assets/fehlerseite402.php
 ErrorDocument 403 /assets/fehlerseite403.php
 ErrorDocument 404 /assets/fehlerseite404.php
+
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule (.*) https://REDACTED.de
