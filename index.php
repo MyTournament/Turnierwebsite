@@ -603,7 +603,7 @@ include_once 'database/traffic_analytics.php';
     <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
     <p>Hier geht's zur alten Website (2017-2020)</p>
-    <a href="http://old.REDACTED.de/AlteBlankiballWebsites/website_2018_bis_2020/" class="button primary">Alte Website (2017-2020)</a>
+    <a href="https://old.REDACTED.de/website_2018_bis_2020/" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
