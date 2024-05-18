@@ -226,9 +226,8 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
                 }else{
                     echo"<li class='button disabled'><a href='#spielplan'>🎯 Spielplan</a></li>";
                 }
-            ?>
-            <li><a href="#pausenraum">🏓 Pausenraum</a></li> 
-            
+            ?>    
+            <li><a href="https://www.paypal.com/paypalme/blankiball?country.x=DE&locale.x=de_DE">❤ Spenden</a></li>        
         </ul>
     </nav>
     <div class="content">
@@ -825,6 +824,9 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
     <a href='#register_account' class='button primary'>Registrieren</a>
 
     <p></br></p>
+    
+    <a href="#pausenraum">🏓 Pausenraum</a>
+
     <p></br></p>
 
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
