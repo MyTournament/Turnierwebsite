@@ -4,8 +4,6 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
     //echo "NEUE DB-INTERFACE-AUSFUEHRUNG";
     //echo "<br/><br/>SQL: \"$sql\" <br/>";
     $stmt = $conn->prepare($sql);
-
-    echo"<script>console.log('myDb_execute Checkpoint 1')</script>";
     
     //zählen wie viele Parameter ich habe
     $argCount = count($argArray); //weil erster Parameter ja der sql Befehl ist
@@ -21,7 +19,6 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
     $stmt->bind_param($types, ...$argArray); //This is called "argument unpacking", and is available since PHP 5.6
     $stmt->execute();
 
-    echo"<script>console.log('myDb_execute Checkpoint 2')</script>";
 
     // TODO andere antwort, falls sql befehl auf der db fehlschlägt 
 
@@ -42,14 +39,12 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
         //echo "<br/>DB_VERLAUF:<br/>";
         //echo "content: \"$content\"<br/>";
 
-        echo"<script>console.log('myDb_execute Checkpoint 3')</script>";
 
         $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, content, fk_website) VALUES (?, ?, ?)');
         $paramArr = [$bn, $content, 1];
         $stmtDbVerlauf->bind_param("sss", ...$paramArr);
         $stmtDbVerlauf->execute();
 
-        echo"<script>console.log('myDb_execute Checkpoint 4')</script>";
 
         //echo "<br/>";
         //printf("SQL: Datenaetze eingefuegt: %d.\n", $stmt->affected_rows); //echo "<br/>";
