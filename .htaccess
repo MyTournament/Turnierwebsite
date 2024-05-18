@@ -1,11 +1,4 @@
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{HTTPS} off
-    RewriteRule ^(.*)$ https://REDACTED.de/$1 [L,R=301]
-</IfModule>
-    
-
 ErrorDocument 401 /assets/fehlerseite404.php
 ErrorDocument 402 /assets/fehlerseite404.php
 ErrorDocument 403 /assets/fehlerseite404.php
