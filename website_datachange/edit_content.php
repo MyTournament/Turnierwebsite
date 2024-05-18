@@ -1,5 +1,6 @@
 <?php
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+
 $test_turnier_id = $_GET['test_turnier_id'];
 if($test_turnier_id==NULL){
     header("Location: /");
@@ -85,11 +86,14 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     $content = $_POST['content'];
     $content_style_tag = $_POST['content_style_tag'];
     $function = $_POST['function'];
+    if($function == "NULL"){$function = NULL;}
     $content_order_in_group = $_POST['content_order_in_group'];
 
-    echo "<script>console.log('contentID: $contentID')</script>";
     echo "<script>console.log('content: $content')</script>";
+    echo "<script>console.log('content_style_tag: $content_style_tag')</script>";
     echo "<script>console.log('function: $function')</script>";
+    echo "<script>console.log('content_order_in_group: $content_order_in_group')</script>";
+    echo "<script>console.log('contentID: $contentID')</script>";
 
     $action = $_POST['action'];
     echo "<script>console.log('Action: $action')</script>";
@@ -97,7 +101,10 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     
     if ($action == 'Ändern') {
       $sql = "UPDATE CMS_Content SET content = ?, style_tag = ?, fk_function = ?, order_in_group = ? WHERE CMS_Content.id = ?;";
-      myDb_execute($conn, $TurnierID, $bn, $sql, array($content, $content_style_tag, $function, $content_order_in_group, $contentID));
+      echo "<script>console.log('Checkpoint 1, Benutzername: $bn')</script>";
+      $argArray = [$content, $content_style_tag, $function, $content_order_in_group, $contentID]; // array($content, $content_style_tag, $function, $content_order_in_group, $contentID)
+      myDb_execute($conn, $TurnierID, $bn, $sql, $argArray);
+      echo "<script>console.log('Checkpoint 2')</script>";
     }else if ($action == 'Löschen'){
       $sql = "DELETE FROM CMS_Content WHERE CMS_Content.id = ?;";
       myDb_execute($conn, $TurnierID, $bn, $sql, array($contentID));
