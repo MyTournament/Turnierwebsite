@@ -37,6 +37,7 @@ if($successfulLogin == 1){
     }
 
     if($action == 'new_location'){
+        echo "<script>console.log($accountId)</script>";
         $sql = "INSERT INTO Pausenraum_Location (name, description, autor) VALUES (?, ?, ?)";
         myDb_execute($conn, $TurnierID, $bn, $sql, array($name, $description, $accountId));
 
