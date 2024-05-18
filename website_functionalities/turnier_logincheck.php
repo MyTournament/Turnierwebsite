@@ -23,6 +23,6 @@ setcookie('turnier-loggedin', $TurnierLoggedIn, $expiration, '/');
 $conn->close();
 
 // Perform the redirection
-header("Location: https://REDACTED.de/#" . $NextSec);
+header("Location: /#" . $NextSec);
 exit();
 ?>

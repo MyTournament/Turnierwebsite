@@ -23,14 +23,21 @@ if($sperrung == 1){
 
 include_once 'website_functionalities/load_website.php';
 $website_array = determine_domain_id($conn);
-$websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
+$websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
 if ($websiteId == null){
     echo "WEBSITE nicht gefunden";
 }
 
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
+insert_traffic($conn, $websiteId, 'anonym', 3 , ' hat die Website besucht');
 
+$sqlAnzahlWebsiteBesuche = 'SELECT * FROM `System_Traffic` WHERE fk_kategorie = 3 AND fk_website = '. $websiteId .' ORDER BY ID';
+$restultAnzahlWebsiteBesuche = $conn->query($sqlAnzahlWebsiteBesuche);
+$anzahlWebsiteBesuche = 0;
+while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
+    $anzahlWebsiteBesuche+=1;
+}
 ?>
 
 <!DOCTYPE HTML>
@@ -177,6 +184,7 @@ include_once 'database/traffic_analytics.php';
 <header id="header"> 
     <div > <!-- class="logo" -->
         <!-- <img src="images/icon/sterni1.png" width="70" height="70" border="10" alt="Home"> -->
+        <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
         <img src="images/sterni_logo/logo_sterni.png" width="150" height=auto border="10" alt="Home">
     </div>
     <div class="content">
