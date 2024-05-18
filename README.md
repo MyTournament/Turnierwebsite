@@ -5,6 +5,7 @@ Einrichtung analog zu Trinkspielapp https://github.com/richardbendler/Trinkspiel
 
 ### Lokale Entwicklungsumgebung
 https://www.easyphp.org/documentation/devserver/getting-started.php
+Um die Website letztendlich zu öffnen, muss die Index ausgewählt werden, nicht einfach auf REDACTED geklickt werden.
 
 
 ### Code auf Server laden
