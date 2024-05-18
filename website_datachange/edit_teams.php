@@ -51,7 +51,7 @@ include_once 'edit_interface.php';
 		$responseData = json_decode($response); 
         
 		// If reCAPTCHA response is valid 
-		if($responseData->success){
+		if(true){//$responseData->success){ //TODO: wieder einkommentieren
 
 			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
 
@@ -77,15 +77,19 @@ include_once 'edit_interface.php';
 					$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
 				}
 			else{
+				echo"<script>console.log($turnier_phase_ID)</script>";
 				$bn = "unknown";
 				$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
+				echo"<script>console.log('Checkpoint 1')</script>";
 				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
+				echo"<script>console.log('Checkpoint 2')</script>";
 			}
-				
+			
 			$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
 			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
 			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
 			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
+			
 
 
 			//Text für beide Mails vorbereiten
