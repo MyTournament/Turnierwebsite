@@ -678,7 +678,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <!-- BULLEREI KOMMT -->
 <article id='bullerei_kommt'>
     <div style='text-align: center'> 
-        <?php printBullereiKommt($conn, $websiteId) ?>
+        <?php printBullereiKommt($conn, $websiteId, $TurnierID) ?>
         <a href='#' class='button'>Zurück</a>
         <h5><br /></h5>  
     </div>
