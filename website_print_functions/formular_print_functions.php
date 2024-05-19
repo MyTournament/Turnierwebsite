@@ -336,7 +336,7 @@ function printSpielerInfoLogin($TurnierID, $conn, $spielerId){
     <?php
 }
 
-function printBullereiKommt($conn, $websiteId){
+function printBullereiKommt($conn, $websiteId, $TurnierID){
     ?>
     <title>Adressbuch</title>
     <div id="LogIn">
@@ -366,6 +366,7 @@ function printBullereiKommt($conn, $websiteId){
     <p></br></p>
     <input type='hidden' name='action' value='take_offline'/>
     <?php echo "<input type='hidden' name='websiteId' value='$websiteId'/>"; ?>
+    <?php echo "<input type='hidden' name='TurnierID' value='$TurnierID'/>"; ?>
     <p><button id="btn_login_Bullerei" value="Absenden" type="submit">Website offline nehmen</button></p>
     </form>
     <?php
