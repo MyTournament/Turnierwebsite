@@ -5,7 +5,7 @@ include_once '../database/db_connection.php';
 
 $NextSec = $_POST["NextSection"];
 $TurnierID = $_POST["TurnierID"];
-$Passwort = $_POST["pw"];
+$Passwort = $_POST["turnier_pw"];
 
 // checken ob turnierID und pw zusammenpassen per DB abfrage
 $res = $conn->query("SELECT * FROM Turnier_Main WHERE id = '$TurnierID'");

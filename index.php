@@ -343,11 +343,18 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) 
     }else{
         // login form
-        echo "<form action='website_functionalities/turnier_logincheck.php' method='POST'>";
-        echo "<input type='password' class='Eingabe' name='pw' placeholder='password' style='color: white' required>";
-        echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
-        echo "<input type='hidden' name='NextSection' value='teams'/>";
-        echo "</form>";
+        echo "<div style='color:white; text-align: center;'>";
+            echo "<h2>Turnierpasswort</h2>";
+            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
+            echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
+            echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
+            echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
+            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
+            echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
+            echo "<input type='hidden' name='NextSection' value='teams'/>";
+            echo "</br><input type='submit' value='Login'>";
+            echo "</form>";
+        echo "</div>";
     }
     ?> 
     <a href="#" class="button">Zurück zur Startseite</a>
@@ -415,11 +422,19 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 
     }else{
         // login form
-        echo "<form action='website_functionalities/turnier_logincheck.php' method='POST'>";
-        echo "<input type='password' class='Eingabe' name='pw' placeholder='password' style='color: white' required>";
-        echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
-        echo "<input type='hidden' name='NextSection' value='spielplan'/>";
         echo "</form>";
+        echo "<div style='color:white; text-align: center;'>";
+            echo "<h2>Turnierpasswort</h2>";
+            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
+            echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
+            echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
+            echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
+            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
+            echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
+            echo "<input type='hidden' name='NextSection' value='spielplan'/>";
+            echo "</br><input type='submit' value='Login'>";
+            echo "</form>";
+        echo "</div>";
     }
     ?>
     <a href='#' class='button'>Zurück zur Startseite</a>
