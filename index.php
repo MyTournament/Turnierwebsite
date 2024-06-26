@@ -184,7 +184,6 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <header id="header"> 
     <div > <!-- class="logo" -->
         <!-- <img src="images/icon/sterni1.png" width="70" height="70" border="10" alt="Home"> -->
-        <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
         <img src="images/sterni_logo/logo_sterni.png" width="150" height=auto border="10" alt="Home">
     </div>
     <div class="content">
@@ -782,7 +781,12 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 
 <!-- LOGIN - FÜR WORDPRESS -->
 <article id="login">
-<title>Adressbuch</title>
+<title>Backstage-Login</title>
+    <h2>Anzahl Websitebesuche</h2>
+    <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
+
+    <p></br></p> 
+    
     <h2>Testmodus</h2>
     <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmous läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
     <form method='post' action='#'>
