@@ -10,7 +10,7 @@ $Benutzername = $_POST["bn"];
 $Passwort = $_POST["pw"];
 
 $LoggedIn = False;
-foreach ($conn->query("SELECT * FROM Turnier_Team WHERE fk_turnier = '$TurnierID'") as $row) {
+foreach ($conn->query("SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID'") as $row) {
     if ($Benutzername == $row["kuerzel"] && $Passwort == $row["password"]) {
         $LoggedIn = True;
     }
@@ -22,7 +22,7 @@ foreach ($conn->query("SELECT * FROM Turnier_Team WHERE fk_turnier = '$TurnierID
     while ($rowWarteliste = $resultWarteliste->fetch_assoc()) {
         $warteliste_ID = $rowWarteliste['id'];
     }
-    foreach ($conn->query("SELECT * FROM Turnier_Team WHERE fk_warteliste = '$warteliste_ID'") as $row) {
+    foreach ($conn->query("SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_warteliste = '$warteliste_ID'") as $row) {
         if ($Benutzername == $row["kuerzel"] && $Passwort == $row["password"]) {
             $LoggedIn = True;
         }

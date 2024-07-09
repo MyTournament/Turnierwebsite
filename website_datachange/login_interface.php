@@ -6,7 +6,7 @@ function get_rights_of_user($conn, $TurnierID, $bn, $pw, $begegnungId){
   $successfulLogin = 0; //false
 
   //FALL: Team-Login -> Bearbeitungsrechte nur für eigene Begegnungen
-  $sqlLogin = "SELECT * FROM `Turnier_Team` WHERE kuerzel = '$bn' AND `password` = '$pw' ORDER BY ID";
+  $sqlLogin = "SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND kuerzel = '$bn' AND `password` = '$pw' ORDER BY ID";
   $resultLogin = $conn->query($sqlLogin);
   $spielGehoertZuTeam = 0; //false
   $teamBearbeitungsrecht = 0;
@@ -15,7 +15,7 @@ function get_rights_of_user($conn, $TurnierID, $bn, $pw, $begegnungId){
       $teamBearbeitungsrecht = $rowLogin["bearbeitungsrechte"];
       //echo "<script>console.log('Du bist eingeloggt als Team.')</script>";
       //checken ob Begegnung zu Team-Kürzel passt, das sich eingeloggt hat
-      $sql = "SELECT * FROM Turnier_Team, Turnier_Begegnung WHERE Turnier_Begegnung.id = '$begegnungId' AND ((Turnier_Begegnung.fk_heimteam IN (SELECT id FROM Turnier_Team WHERE kuerzel = '$bn' AND `password` = '$pw')) OR (Turnier_Begegnung.fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE kuerzel = '$bn' AND `password` = '$pw')))"; // AND fk_turnier = '$TurnierID'
+      $sql = "SELECT * FROM Turnier_Team, Turnier_Begegnung WHERE Turnier_Team.geloescht = 0 AND Turnier_Begegnung.id = '$begegnungId' AND ((Turnier_Begegnung.fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND kuerzel = '$bn' AND `password` = '$pw')) OR (Turnier_Begegnung.fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND kuerzel = '$bn' AND `password` = '$pw')))"; // AND fk_turnier = '$TurnierID'
       $result = $conn->query($sql);
       while ( !empty( $row = $result->fetch_assoc() ) ){
         $spielGehoertZuTeam = 1;

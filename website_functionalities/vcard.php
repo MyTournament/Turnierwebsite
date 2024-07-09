@@ -30,7 +30,7 @@
   if($spielerId != NULL){
     $sqlTelefon = 'SELECT * FROM `Turnier_Spieler_in` WHERE id = '. $spielerId .' ORDER BY ID';
   }else{
-    $sqlTelefon = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .') ORDER BY ID';
+    $sqlTelefon = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ID';
   }
 
   
@@ -40,7 +40,7 @@
       $telefonnummer = $rowTelefon['telefonnummer'];
       $teamID = $rowTelefon['fk_team'];
 
-      $sqlTeamname = 'SELECT * FROM `Turnier_Team` WHERE id = '. $teamID .'';
+      $sqlTeamname = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $teamID .'';
       $resultTeamname = $conn->query($sqlTeamname);
       while ($rowTeamname = $resultTeamname->fetch_assoc()) {
         $teamname = $rowTeamname['name'];

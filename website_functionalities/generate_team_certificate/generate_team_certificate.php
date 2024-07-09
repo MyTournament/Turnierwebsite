@@ -66,7 +66,7 @@ include_once '../../variables.php';
 
 $teamId = $_GET['teamId'];
 
-$sql = 'SELECT * FROM Turnier_Main, Turnier_Team WHERE Turnier_Team.fk_turnier = '. $teamId .'';
+$sql = 'SELECT * FROM Turnier_Main, Turnier_Team WHERE Turnier_Team.geloescht = 0 AND Turnier_Team.fk_turnier = '. $teamId .'';
 $result = $conn->query($sql);
 while (!empty($row = $result->fetch_assoc())) {
     $turnierName = $row['name'];
@@ -82,7 +82,7 @@ $pdf->Cell(0, 10, '' , 0, 1, 'C');
 
 if($teamId != NULL){
     
-    $sql = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId .'';
+    $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $teamId .'';
     $result = $conn->query($sql);
     while (!empty($row = $result->fetch_assoc())) {
         $teamName = $row['name'];
@@ -135,7 +135,7 @@ if($teamId != NULL){
     
     $siege = 0; //für SIEGESQUOTE
     $niederlagen = 0;
-    $sql = 'SELECT * FROM Turnier_Team WHERE `id` = ' . $teamId . ';';
+    $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND `id` = ' . $teamId . ';';
     $result = $conn->query($sql);
     while (!empty($row = $result->fetch_assoc())) {
         $siegesquote = $row['siegesquote'];
