@@ -258,7 +258,7 @@ function printTeamAbmelden($conn, $TurnierID){
     <select name='Team_zum_abmelden' id='teams_waehlen' >
         <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Team wählen</i></option>";
         <?php
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id';
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY id';
         $resultTeam = $conn->query($sqlTeam);
         while ($rowTeam = $resultTeam->fetch_assoc()) {
             $teamId = $rowTeam['id'];

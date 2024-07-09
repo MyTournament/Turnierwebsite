@@ -225,7 +225,7 @@ if ($action == 'Ändern') {
 }else if($action == 'Gruppe_Finalisieren'){
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $groupId = $_POST['groupId'];
-    $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?)";
+    $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
@@ -253,7 +253,7 @@ if ($action == 'Ändern') {
 }else if($action == 'Gruppe_Uninalisieren'){
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $groupId = $_POST['groupId'];
-    $sql = "UPDATE Turnier_Begegnung SET `status` = 1 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_gruppe = ?)";
+    $sql = "UPDATE Turnier_Begegnung SET `status` = 1 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID

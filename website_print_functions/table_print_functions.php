@@ -8,7 +8,7 @@
     function printTeamInfo($TurnierID, $conn, $teamId){ //NICHT IM CMS
         //Teamnamen herausfinden
         if($teamId != NULL){
-            $sql = 'SELECT * FROM Turnier_Team WHERE id = ' . $teamId . ' ORDER BY id';
+            $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = ' . $teamId . ' ORDER BY id';
             $result = $conn->query($sql);
             $teamName = " ";
             if (!empty($row = $result->fetch_assoc())) {
@@ -71,14 +71,14 @@
 
                 //Namen der Teams finden
                 //Team 1
-                $sqlTeam1 = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $heimteamID . ' ORDER BY ID';
+                $sqlTeam1 = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $heimteamID . ' ORDER BY ID';
                 $result1 = $conn->query($sqlTeam1); 
                 $rowTeam1 = $result1->fetch_assoc();
                 $heimteam = $rowTeam1["name"];
                 //$heimteamkuerzel = $rowTeam1["kuerzel"];
                 $teamId1 = $rowTeam1["id"];
                 //Team 2
-                $sqlTeam2 = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $auswaertsteamID . ' ORDER BY ID';
+                $sqlTeam2 = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $auswaertsteamID . ' ORDER BY ID';
                 $result2 = $conn->query($sqlTeam2);
                 $rowTeam2 = $result2->fetch_assoc();
                 $auswaertsteam = $rowTeam2["name"];
@@ -104,7 +104,7 @@
                 $zaehler++;
             }
 
-            $sqlSiegesquote = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $teamId . ' ORDER BY ID';
+            $sqlSiegesquote = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $teamId . ' ORDER BY ID';
             $resultSiegesquote = $conn->query($sqlSiegesquote); 
             $rowSiegesquote = $resultSiegesquote->fetch_assoc();
             $siegesquote = $rowSiegesquote['siegesquote'];
@@ -183,7 +183,7 @@
             }
             echo "<h1>$spielerName</h1>";
             //TEAM RAUSFINDEN
-            $sql = 'SELECT * FROM Turnier_Team WHERE id = ' . $fk_team . ' ORDER BY id';
+            $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = ' . $fk_team . ' ORDER BY id';
             $result = $conn->query($sql);
             $teamName = " ";
             while (!empty($row = $result->fetch_assoc())) {
@@ -216,7 +216,7 @@
     }
 
     function printTeams($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY ID'; //WHERE Freischaltung = 1
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID'; //WHERE Freischaltung = 1
         $resultTeam = $conn->query($sqlTeam);
         $zeahler = 1;
         
@@ -272,7 +272,7 @@
             $groupId= $rowGroup['id'];
             echo"<td>Gruppe <b>$groupName</b>:</td>";
             //Teams zur Gruppe finden
-            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = '.$groupId.' ORDER BY ID'; //WHERE Freischaltung = 1
+            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = '.$groupId.' ORDER BY ID'; //WHERE Freischaltung = 1
             $resultTeam = $conn->query($sqlTeam);
             while ($rowTeam = $resultTeam->fetch_assoc()) {
                 $teamId= $rowTeam['id'];
@@ -330,7 +330,7 @@
                 $zaehlerForKoPosition = 1;
                 while($zaehlerForKoPosition < pow(2,($ko_finallevel-2))+1){ //Zähler bis zu 2^x (x=Finalstufe, zB Stufe 4 hat 2^(4-1)=8 ) ||| -2 weil ja 2 und nicht 1 das Finale ist
                     //Begegnung (eine) finden, die zum Zähler passt + restliche Bed. (zB der vorherigen  Stufe & des aktuellen Turniers)
-                    $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC'; //AND NOT fk_siegerteam = NULL 
+                    $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC'; //AND NOT fk_siegerteam = NULL 
                     $resultBegegnung = $conn->query($sqlBegegnung);
                     $siegerGefunden = false;
                     $zumindestBegegnungGefunden = false;
@@ -340,7 +340,7 @@
                             $teamId = $rowBegegnung['fk_siegerteam'];
                             //Namen zur ID finden
                             if($teamId != NULL){
-                                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId .'';
+                                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $teamId .'';
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $teamId = $rowTeam['id'];
@@ -363,7 +363,7 @@
                             $teamId1 = $rowBegegnung['fk_heimteam'];
                             //Namen zur ID finden
                             if($teamId1 != NULL){
-                                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId1 .'';
+                                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $teamId1 .'';
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $teamId = $rowTeam['id'];
@@ -377,7 +377,7 @@
                             $teamId2 = $rowBegegnung['fk_auswaertsteam'];
                             //Namen zur ID finden
                             if($teamId2 != NULL){
-                                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE id = '. $teamId2 .'';
+                                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $teamId2 .'';
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $teamId = $rowTeam['id'];
@@ -462,7 +462,7 @@
         $zeahler = 0;
         while($zeahler<3){
             $actPlatzierung = $zeahler+1;
-            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND endplatzierung > 0 AND endplatzierung = '.$actPlatzierung.' ORDER BY endplatzierung ASC'; //AND NOT endplatzierung = NULL
+            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND endplatzierung > 0 AND endplatzierung = '.$actPlatzierung.' ORDER BY endplatzierung ASC'; //AND NOT endplatzierung = NULL
             $resultTeam = $conn->query($sqlTeam);
             $platzierungen[$zeahler] = "platzhalter";
             while (!empty($rowTeam = $resultTeam->fetch_assoc())) {
@@ -518,14 +518,14 @@
         $platzierungsZaehler = 1;
         $limit = 0;
         //zählen wie viele Teams es gibt
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY ID';
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
         $resultTeamZeile = $conn->query($sqlTeam);
         while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
             $limit++;
         }
         while($platzierungsZaehler <= $limit){
             $teamName = "<i>noch nicht bestimmt</i>";
-            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND endplatzierung = '. $platzierungsZaehler .' ORDER BY endplatzierung DESC'; //AND NOT endplatzierung = NULL
+            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND endplatzierung = '. $platzierungsZaehler .' ORDER BY endplatzierung DESC'; //AND NOT endplatzierung = NULL
             $resultTeam = $conn->query($sqlTeam);
             while (!empty($rowTeam = $resultTeam->fetch_assoc())) {
                 //$endplatzierung = $resultTeam['endplatzierung'];
@@ -618,14 +618,14 @@
             $auswaertsteamId=$rowTeams['fk_auswaertsteam'];
         }
         //Heimteam-Namen herausfinden
-        $sqlHeimteam = 'SELECT * FROM Turnier_Team WHERE id = '. $heimteamId .';';
+        $sqlHeimteam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $heimteamId .';';
         $resultHeimteam = $conn->query($sqlHeimteam);
         while ( !empty( $rowHeimteam = $resultHeimteam->fetch_assoc() ) ){
             $heimteam=$rowHeimteam['kuerzel'];
             
         }
         //Auswärtsteam-Namen herausfinden
-        $sqlAusw = 'SELECT * FROM Turnier_Team WHERE id = '. $auswaertsteamId .';';
+        $sqlAusw = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $auswaertsteamId .';';
         $resultAusw = $conn->query($sqlAusw);
         while ( !empty( $rowAusw = $resultAusw->fetch_assoc() ) ){
             $auswaertsteam=$rowAusw['kuerzel'];
@@ -742,7 +742,7 @@
                         <tr>
                             <th />";
                             // Erste Zeile füllen
-                            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY ID';
+                            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY ID';
                             $resultTeam = $conn->query($sqlTeam);
                             if($schalterDreieck == 1 && $loescheErsteZeileUndSpalte == 1){
                                 $rowTeam = $resultTeam->fetch_assoc(); //Falls Schalter = 1 soll erste Spalte gekickt werden
@@ -833,7 +833,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                    <?php $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
+                    <?php $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
                     $resultTeamZeile = $conn->query($sqlTeam);
                     while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
                         $name=$rowTeamZeile["name"];
@@ -891,7 +891,7 @@
                 <tbody>
                     <tr>";
                         // Erst alle Begegnungen des aktuellen Turniers (Heim oder Auswärtsspiel) filtern und dann dazu die passenden Spiele suchen
-                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
+                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
                         $resultBegegnung = $conn->query($sqlBegegnung);
                         while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Gegegnung gibt
                             //IDs der Teams speichern
@@ -902,7 +902,7 @@
                             $siegerteam=$rowBegegnung["fk_siegerteam"];
                             //Namen der Teams finden
                             //Team 1
-                            $sqlTeam1 = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $heimteamID . ' ORDER BY ID';
+                            $sqlTeam1 = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $heimteamID . ' ORDER BY ID';
                             $result1 = $conn->query($sqlTeam1); 
                             while ($rowTeam1 = $result1->fetch_assoc()) {
                                 $heimteam = $rowTeam1["name"];
@@ -910,7 +910,7 @@
                                 $teamId1 = $rowTeam1["id"];
                             }
                             //Team 2
-                            $sqlTeam2 = 'SELECT * FROM `Turnier_Team` WHERE id = ' . $auswaertsteamID . ' ORDER BY ID';
+                            $sqlTeam2 = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $auswaertsteamID . ' ORDER BY ID';
                             $result2 = $conn->query($sqlTeam2); 
                             while ($rowTeam2 = $result2->fetch_assoc()) {
                                 $auswaertsteam = $rowTeam2["name"];
@@ -991,7 +991,7 @@
 
     function printKuerzelWithLink($conn, $teamId){
         //KÜRZEL HERAUSFINDEN
-        $sql = 'SELECT * FROM Turnier_Team WHERE id = ' . $teamId . ' ORDER BY id';
+        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = ' . $teamId . ' ORDER BY id';
         $result = $conn->query($sql);
         $teamKuerzel = " ";
         while (!empty($row = $result->fetch_assoc())) {
