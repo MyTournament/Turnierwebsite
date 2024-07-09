@@ -200,7 +200,7 @@ include_once 'edit_interface.php';
 					//myDb_execute($conn, $TurnierID, $bn, $sql, array($teamId));
 	
 					//$sql = "DELETE FROM Team WHERE id = ?";
-					$sql = "UPDATE Turnier_Team SET fk_turnier = 5 WHERE id = ?"; //das ist das Turnier für abgemeldete Teams
+					$sql = "UPDATE Turnier_Team SET geloescht = 1 WHERE id = ?";
 					myDb_execute($conn, $TurnierID, $bn, $sql, array($teamId));
 					
 					$message = "Deine Abmeldung war erfolgreich!";
