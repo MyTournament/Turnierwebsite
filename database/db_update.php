@@ -654,7 +654,7 @@
                     $resultGruppe = $conn->query($sqlGruppe);
                     
                     //TURNIERBAUMPOSITION
-                        //TODO:Idee: Die Begegnungen werden immer abwechselnd in der ersten und in der zweiten Hälfte des Turnierbaums erstellt, damit Teams, die in gleichen Gruppen waren, erst im Finale wieder matchen können
+                        //Die Begegnungen werden immer abwechselnd in der ersten und in der zweiten Hälfte des Turnierbaums erstellt, damit Teams, die in gleichen Gruppen waren, erst im Finale wieder matchen können
                         $zaehlerForKoPosition = 1;
                         $zaehlerUngerade = 1;
                         $zaehlerGerade = ($anzahl_gruppen/2)+1; //also bei 8 Gruppen -> 5
@@ -673,26 +673,31 @@
                                     }*/
                             //13 24 57 68
                             //1; 2->3; 3->2; 4; 5; 6->7; 7->6; 8
-                            //TODO: Das hier ist aktuell nur für den Fall programmiert, dass das hier ein Achtelfinale ist
+                            
                             $ko_position_team1 = 0;
                             $ko_position_team2 = 0;
-                            switch ($zaehlerForKoPosition) {
-                                case 1:
-                                    $ko_position_team1 = 1;
-                                    $ko_position_team2 = 3;
-                                    break;
-                                case 3:
-                                    $ko_position_team1 = 2;
-                                    $ko_position_team2 = 4;
-                                    break;
-                                case 5:
-                                    $ko_position_team1 = 5;
-                                    $ko_position_team2 = 7;
-                                    break;
-                                case 7:
-                                    $ko_position_team1 = 6;
-                                    $ko_position_team2 = 8;
-                                    break;                         
+                            if ($anzahl_gruppen==2){ //SONDERFALL: Nur zwei Gruppen in Gruppenphase - dann soll natürlich nicht versetzt verteilt werden
+                                $ko_position_team1 = 1;
+                                $ko_position_team2 = 2;
+                            }else{ //FALL: Mehr als zwei Gruppen in Gruppenphase - dann werden Teams versetzt verteilt auf KO-Plätze
+                                switch ($zaehlerForKoPosition) {
+                                    case 1:
+                                        $ko_position_team1 = 1;
+                                        $ko_position_team2 = 3;
+                                        break;
+                                    case 3:
+                                        $ko_position_team1 = 2;
+                                        $ko_position_team2 = 4;
+                                        break;
+                                    case 5:
+                                        $ko_position_team1 = 5;
+                                        $ko_position_team2 = 7;
+                                        break;
+                                    case 7:
+                                        $ko_position_team1 = 6;
+                                        $ko_position_team2 = 8;
+                                        break;                         
+                                }
                             }
 
                             $gruppeID = $rowGruppe["id"];

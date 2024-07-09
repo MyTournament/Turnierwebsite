@@ -1,6 +1,7 @@
 <?php
 //########################
 include_once '../database/db_connection.php';
+include_once '../website_functionalities/test_turnier_mode.php'; //Test-Modus
 //########################
 
 $NextSec = $_POST["NextSection"];
@@ -22,7 +23,30 @@ setcookie('turnier-loggedin', $TurnierLoggedIn, $expiration, '/');
 
 $conn->close();
 
+//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+if($test_turnier_id==0){ //Fall: normales Turnier
+    header("Location: /#");
+}else{ //Testturniere
+    header("Location: /?test_turnier_id=$test_turnier_id#" . $NextSec);
+}
+
+/*$test_turnier_id = $_GET['test_turnier_id'];
+if($test_turnier_id==NULL){
+    $test_turnier_id = $_POST['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#" . $NextSec);
+    }
+}else{
+    header("Location: /?test_turnier_id=$test_turnier_id#" . $NextSec);
+}*/
+
 // Perform the redirection
-header("Location: /#" . $NextSec);
+//header("Location: /#" . $NextSec);
+
+
+
+
 exit();
 ?>
