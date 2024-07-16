@@ -195,8 +195,8 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <h4>Kürzel* & Passwort</h4>
     <!--<p>*Wähle Kürzel deines Teamnamens (2-4 Buchstaben) und ein Passwort/PIN-Code. Das Kürzel wird im Spielplan als Abkürzung benutzt und später kann dein Team mit Kürzel & Passwort auf der Website die Ergebnisse eintragen. Wichtig: Bitte nutze <b>wirklich wirklich kein Passwort, was du woanders schon benutzt</b> weil unsere Website nicht komplett sicher ist. Und außerdem brauchen alle deine Teammitglieder das Passwort.</p>-->
     <p>Mit dem Passwort könnt ihr später eure Turnierergebnisse eintragen!</p>
-    <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required><br/>
-    <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required><br/>
+    <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required autocomplete="username"><br/>
+    <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required autocomplete="current-password"><br/>
     <br/>
     <h4>E-Mail</h4>
     <!--<p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
@@ -204,6 +204,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <i>An die Mail bekommt ihr eure Team-Daten gesendet.</i>
     
     <input type="text" id="mail" name="Mail" class="Eingabe" placeholder="Mail-Adresse &#9733;" style="color: white" required><br/>
+    
     <h5><br/></h5>
     <h4>Woher hast du von uns erfahren? (Freiwillig)</h4>
     <select name='woher_erfahren'>
