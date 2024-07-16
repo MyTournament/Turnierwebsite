@@ -51,7 +51,7 @@ include_once 'edit_interface.php';
 		$responseData = json_decode($response); 
         
 		// If reCAPTCHA response is valid 
-		if(true){//$responseData->success){ //TODO: wieder einkommentieren
+		if($responseData->success){//$responseData->success){ //TODO: wieder einkommentieren
 
 			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
 
@@ -158,7 +158,48 @@ include_once 'edit_interface.php';
 				}
 			}
 		}else{
-			echo "Du Keck, du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...";
+			//echo "Du Keck, du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...";
+			echo '
+				<!DOCTYPE html>
+				<html lang="de">
+				<head>
+					<meta charset="UTF-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Fehlermeldung</title>
+					<style>
+						body {
+							display: flex;
+							justify-content: center;
+							align-items: center;
+							height: 100vh;
+							margin: 0;
+							background-color: #f0f0f0;
+							font-family: Arial, sans-serif;
+						}
+						.message {
+							text-align: center;
+							max-width: 600px;
+							padding: 20px;
+							background-color: #fff;
+							box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+							border-radius: 10px;
+						}
+						.message h1 {
+							font-size: 2em;
+							margin-bottom: 20px;
+						}
+						.message p {
+							font-size: 1.2em;
+						}
+					</style>
+				</head>
+				<body>
+					<div class="message">
+						<h1>Du Keck!</h1>
+						<p>Du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...</p>
+					</div>
+				</body>
+				</html>';
 		}
 
 	}else { //Alles was nicht Team registrieren ist braucht Login
