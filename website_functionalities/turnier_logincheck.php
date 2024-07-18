@@ -25,7 +25,7 @@ $conn->close();
 
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 if($test_turnier_id==0){ //Fall: normales Turnier
-    header("Location: /#");
+    header("Location: /#" . $NextSec);
 }else{ //Testturniere
     header("Location: /?test_turnier_id=$test_turnier_id#" . $NextSec);
 }
