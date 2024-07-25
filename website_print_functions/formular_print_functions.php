@@ -160,12 +160,12 @@
 function printTeamAnmelden($TurnierID, $test_turnier_id){
     ?>
     <title>Adressbuch</title>
-    <div id="LogIn">
+    < id="LogIn">
     <h1>Melde dein Team an</h1>
     <h3>Kurz das wichtigste:</h3>
     <ul>
         <li>3 Spieler*innen pro Team</li>
-        <!--<li><b>10€ Teilnahmegebühr pro Team - nach Anmeldung überweisen per Paypal an kummerkasten@blankiball.de ➡️ Verwendungszweck: *Euer Teamname*</b></li>-->
+        <li><b>10€ Teilnahmegebühr pro Team - nach Anmeldung überweisen per Paypal an @blankiball ➡️ Verwendungszweck: *Euer Teamname*</b></li>
         <li>Mindestens eine Telefonnummer angeben, damit wir euch erreichen können</li>
         <li>Bitte eure <b>richtigen Namen</b> verwenden, damit wir wissen, wer ihr seid</li>
     </ul>
@@ -219,11 +219,11 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <div class="h-captcha" data-sitekey="f3591a3b-4fdc-490c-99b0-a0b84ba5d938"></div>
     <h5><br/></h5>
 
-    <!--<div style='text-align:center;'>
+    <div style='text-align:center;'>
         <h1>Wichtig!</h1>
         <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
-        <p>➡️ Überweisen per <b>Paypal an kummerkasten@blankiball.de mit eurem Teamnamen als Verwendungszweck</b> ⬅️</p>
-    </div>-->
+        <p>➡️ Überweisen per <b>Paypal an @blankiball mit eurem Teamnamen als Verwendungszweck</b> ⬅️</p>
+    </div>
 
     <h5><br/></h5>
     <title>[ untitled ]</title>                                
@@ -236,6 +236,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
         return false;
     }
     </script> 
+
     <div>
         <div class="field half">
             <input type="checkbox" id="human" name="human" unchecked>
