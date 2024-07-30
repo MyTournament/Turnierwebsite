@@ -160,7 +160,7 @@
 function printTeamAnmelden($TurnierID, $test_turnier_id){
     ?>
     <title>Adressbuch</title>
-    < id="LogIn">
+    <id="LogIn">
     <h1>Melde dein Team an</h1>
     <h3>Kurz das wichtigste:</h3>
     <ul>
