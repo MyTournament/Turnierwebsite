@@ -56,8 +56,8 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
          <!-- für Galerie -->
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
-        <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
-        <link href='http://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
+        <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
+        <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
 
         <!-- für Captcha -->
         <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
@@ -1031,7 +1031,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <script src="assets/js/main.js"></script>
 
 <!-- GALERIE -->
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript" src="assets/js/gallery/jquery.tmpl.min.js"></script>
 <script type="text/javascript" src="assets/js/gallery/jquery.easing.1.3.js"></script>
 <script type="text/javascript" src="assets/js/gallery/jquery.elastislide.js"></script>

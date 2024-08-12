@@ -354,7 +354,7 @@
                 //-> kleinstes: 4
                 //-> wenn es min. 3*8=24 Teams gibt, dann 8, dann hätte jede Gruppe 3 Teams
                 //anzahl_gruppen in Datenbank schreiben
-                $sqlTeamZaehlen = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID'; //Teams filtern die keine Gruppe haben
+                /*$sqlTeamZaehlen = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID'; //Teams filtern die keine Gruppe haben
                 $resultTeamZaehlen = $conn->query($sqlTeamZaehlen);
                 $teamZaehler = 0;
                 while (!empty($rowTeamZaehlen = $resultTeamZaehlen->fetch_assoc())) {
@@ -401,7 +401,13 @@
                 if ( $stmt2 === false ){
                     throw new Exception('start_ko_finallevel konnte nicht in die Datenbank geschrieben werden.');
                 }
-                $stmt2->execute();
+                $stmt2->execute();*/
+
+                $sqlanzahl_gruppen = 'SELECT * FROM Turnier_Main WHERE id = ' . $TurnierID . ' ORDER BY id'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
+                $resultanzahl_gruppen = $conn->query($sqlanzahl_gruppen);
+                while ($rowanzahl_gruppen = $resultanzahl_gruppen->fetch_assoc()) {
+                    $anzahl_gruppen_database = $rowanzahl_gruppen['anzahl_gruppen'];
+                }
 
                 //checken ob es schon genug/zu viel Gruppen gibt
                 $sqlGruppenZaehlen = 'SELECT * FROM Turnier_Gruppe WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
@@ -410,8 +416,8 @@
                 while ($rowGruppenZaehlen = $resultGruppenZaehlen->fetch_assoc()) {
                     $gruppenZaehler++;
                 }
-                if($gruppenZaehler<$anzahl_gruppen){ //zu wenig Gruppen -> erstellen
-                    $fehlendeGruppen = $anzahl_gruppen-$gruppenZaehler; //Differenz -> so viele Gruppen fehlen noch
+                if($gruppenZaehler<$anzahl_gruppen_database){ //zu wenig Gruppen -> erstellen
+                    $fehlendeGruppen = $anzahl_gruppen_database-$gruppenZaehler; //Differenz -> so viele Gruppen fehlen noch
                     $gruppennameId = 1;
                     while($fehlendeGruppen>0){
                         //passenden Gruppennamen aus der DB abfragen
@@ -434,8 +440,8 @@
                         $fehlendeGruppen--;
                     }
 
-                }else if($anzahl_gruppen<$gruppenZaehler){ //zu viel Gruppen -> löschen
-                    $zuVieleGruppen = $gruppenZaehler-$anzahl_gruppen; //Differenz -> so viele Gruppen sind zu viel da
+                }else if($anzahl_gruppen_database<$gruppenZaehler){ //zu viel Gruppen -> löschen
+                    $zuVieleGruppen = $gruppenZaehler-$anzahl_gruppen_database; //Differenz -> so viele Gruppen sind zu viel da
                     while($zuVieleGruppen>0){
                         //Gruppen löschen
                         //echo "<script>console.log('###############gruppe löschen############');</script>";
@@ -448,6 +454,7 @@
                         $zuVieleGruppen--;
                     }
                 }else {} //richtige Anzahl an Gruppen -> nichts tun
+                
 
 
         }if($turnier_phase_ID == 5  || $turnier_phase_ID == 11){ //Gruppeneinteilung ODER Debug-Modus
