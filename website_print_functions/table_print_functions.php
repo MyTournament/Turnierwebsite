@@ -130,7 +130,7 @@
             }
 
             echo "<br/>";
-            echo "<a href='/website_functionalities/generate_team_certificate/generate_team_certificate.php?teamId=$teamId' class='button primary'>Teamzertifikat zum Drucken</a>";
+            echo "<a href='/website_functionalities/generate_team_certificate/generate_team_certificate.php?teamId=$teamId&turnierId=$TurnierID' class='button primary'>Teamzertifikat zum Drucken</a>";
             echo "<br/>";
             
             echo "<br/>";
