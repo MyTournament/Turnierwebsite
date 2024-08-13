@@ -19,6 +19,8 @@ class PDF extends FPDF {
           
         // Set font family to Arial bold 
         $this->SetFont('Courier','B',20);
+        //$this->AddFont('DejaVu','','DejaVuSans.ttf');
+        //$this->SetFont('DejaVu','',20);
           
         // Move to the right
         $this->Cell(80);
@@ -58,15 +60,17 @@ $pdf->AddPage();
 
 //$str = iconv('UTF-8', 'windows-1252', $str);
 $txt = iconv('utf-8', 'cp1252', $txt);
-//utf8_decode();
+
+//mb_convert_encoding();
 
 include_once '../../database/db_connection.php';
 
 include_once '../../variables.php';
 
 $teamId = $_GET['teamId'];
+$turnierId = $_GET['turnierId'];
 
-$sql = 'SELECT * FROM Turnier_Main, Turnier_Team WHERE Turnier_Team.geloescht = 0 AND Turnier_Team.fk_turnier = '. $teamId .'';
+$sql = 'SELECT * FROM Turnier_Main WHERE id = '. $turnierId .'';
 $result = $conn->query($sql);
 while (!empty($row = $result->fetch_assoc())) {
     $turnierName = $row['name'];
@@ -74,10 +78,14 @@ while (!empty($row = $result->fetch_assoc())) {
 
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
 $pdf->SetFont('Courier','',14);
-$pdf->Cell(0, 10, 'Vielen Dank fuer deine Teilnahme am:' , 0, 1, 'C');
+$pdf->Cell(0, 10, mb_convert_encoding('Vielen Dank für deine Teilnahme am:', 'Windows-1252', 'UTF-8') , 0, 1, 'C');
 $pdf->SetFont('Courier','B',21);
 $pdf->Cell(0, 10, $turnierName , 0, 1, 'C');
 $pdf->Cell(0, 10, '' , 0, 1, 'C');
+
+$pdf->SetFont('Arial','',12);
+//$pdf->Cell(0,10, mb_convert_encoding("Test mit Umlauten: ÄÖÜ äöü ß"), 0, 1);
+//$pdf->Cell(0,10, mb_convert_encoding("Test mit Umlauten2: ÄÖÜ äöü ß", 'UTF-8', 'UTF-8'), 0, 1);
 
 
 if($teamId != NULL){
@@ -91,9 +99,9 @@ if($teamId != NULL){
         $endplatzierung = $row['endplatzierung'];
 
         $pdf->SetFont('Times','',14);
-        $pdf->Cell(0, 10, 'Zertifikat ausgestellt fuer das Team:' , 0, 1, 'C');
+        $pdf->Cell(0, 10, mb_convert_encoding("Zertifikat ausgestellt für das Team:", 'Windows-1252', 'UTF-8') , 0, 1, 'C');
         $pdf->SetFont('Courier','B',14);
-        $pdf->Cell(0, 10, $teamName . ' (' .$teamKuerzel. ')' , 0, 1, 'C');
+        $pdf->Cell(0, 10, mb_convert_encoding($teamName, 'Windows-1252', 'UTF-8') . ' (' . mb_convert_encoding($teamKuerzel, 'Windows-1252', 'UTF-8'). ')' , 0, 1, 'C');
     }
 
     //TRAFFIC //TODO: WebsiteID hier einfügen
@@ -112,7 +120,7 @@ if($teamId != NULL){
     while (!empty($row = $result->fetch_assoc())) {
         $spielerName = $row['name'];
         $pdf->SetFont('Courier','B',14);
-        $pdf->Cell(0, 10, $spielerName , 0, 1, 'C');
+        $pdf->Cell(0, 10, mb_convert_encoding($spielerName, 'Windows-1252', 'UTF-8') , 0, 1, 'C');
         $zaehler++;
     }
 
