@@ -908,6 +908,41 @@
                             $zaehlerForKoPosition++;
                         }    
 
+                    }else{ //FALL: SCHALTER GELEGT AUF MANUELLE PLATZIERUNG IN ERSTEM KO-LEVEL
+
+                        //Alle Teams die keinen manuellen KO-Platz bekommen, sollen Platzierung bekommen
+                        //Deswegen wird erst geschaut, welche Teams einen KO-Platz haben
+                        $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $start_ko_finallevel . ' AND `status` <> 3 
+                            AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
+                            AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
+                            ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
+                        
+                        $teamsDieWeiterSindArray = array();
+
+                        $resultBegegnung = $conn->query($sqlBegegnung);
+                        while (!empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
+                            $fk_heimteam = $rowBegegnung["fk_heimteam"];
+                            $fk_auswaertsteam = $rowBegegnung["fk_auswaertsteam"];
+
+                            $teamsDieWeiterSindArray[] = $fk_heimteam;
+                            $teamsDieWeiterSindArray[] = $fk_auswaertsteam;
+                        }
+                        
+                        $teamsDieWeiterSindArrayJson = json_encode($teamsDieWeiterSindArray);
+                        echo "<script>console.log('teamsDieWeiterSindArray: " . $teamsDieWeiterSindArrayJson . "' );</script>";
+
+                        //Jetzt allen Teams die kein Teil des Arrays sind eine Platzierung geben
+                        $sqlTeam = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . '';
+                        $resultTeam = $conn->query($sqlTeam);
+                        while (!empty( $rowTeam = $resultTeam->fetch_assoc() ) ){
+                            $team_id = $rowTeam["id"];
+                            if (!in_array($team_id, $teamsDieWeiterSindArray)) {
+                                setTeamPlatziertLevel($conn, $TurnierID, $team_id, 0);
+                                echo "<script>console.log('Team mit der ID ... hat keinen manuellen KO-Platz und bekommt eine Platzierung: " . $team_id . "' );</script>";
+                            }
+                        }
+                        
+
                     }
 
                     
