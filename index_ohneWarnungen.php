@@ -861,9 +861,21 @@ include_once 'database/traffic_analytics.php';
         </form>
 
         </br></br></br>
-        <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
-        <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@blankiball.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-        <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+        <?php
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@blankiball.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+                ";
+            }
+        ?>
+        
         
     </div>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
@@ -918,12 +930,18 @@ include_once 'database/traffic_analytics.php';
             <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
             <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
             */
-            echo"<h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>";
-            echo"
-            <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@blankiball.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a> ";
-            
-            
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@blankiball.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+                ";
+            }
             echo "</br></br></br>
             <h3><img src='images/icon/whatsapp.png' width='20' height='20' border='5' alt='Home'> Komm in die Gruppe</h3>
             <p>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei um alle Turnier-Infos rechtzeitig mitzubekommen!</p> <!-- (... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest)-->
