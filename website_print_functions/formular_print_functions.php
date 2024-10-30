@@ -157,7 +157,7 @@
 
 
 <?php
-function printTeamAnmelden($TurnierID, $test_turnier_id){
+function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     ?>
     <title>Adressbuch</title>
     <id="LogIn">
@@ -165,7 +165,14 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <h3>Kurz das wichtigste:</h3>
     <ul>
         <li>3 Spieler*innen pro Team</li>
-        <li><b>10€ Teilnahmegebühr pro Team - nach Anmeldung überweisen per Paypal an @blankiball ➡️ Verwendungszweck: *Euer Teamname*</b></li>
+        <?php
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <li><b>10€ Teilnahmegebühr pro Team - nach Anmeldung überweisen per Paypal an @blankiball ➡️ Verwendungszweck: *Euer Teamname*</b></li>
+                ";
+            }
+        ?>
+        
         <li>Mindestens eine Telefonnummer angeben, damit wir euch erreichen können</li>
         <li>Bitte eure <b>richtigen Namen</b> verwenden, damit wir wissen, wer ihr seid</li>
     </ul>
@@ -219,11 +226,18 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <div class="h-captcha" data-sitekey="f3591a3b-4fdc-490c-99b0-a0b84ba5d938"></div>
     <h5><br/></h5>
 
-    <div style='text-align:center;'>
-        <h1>Wichtig!</h1>
-        <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
-        <p>➡️ Überweisen per <b>Paypal an @blankiball mit eurem Teamnamen als Verwendungszweck</b> ⬅️</p>
-    </div>
+    <?php
+        if($teilnahmebeitrag == 1){
+            echo "
+                <div style='text-align:center;'>
+                    <h1>Wichtig!</h1>
+                    <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
+                    <p>➡️ Überweisen per <b>Paypal an @blankiball mit eurem Teamnamen als Verwendungszweck</b> ⬅️</p>
+                </div>
+            ";
+        }
+    ?>
+    
 
     <h5><br/></h5>
     <title>[ untitled ]</title>                                
