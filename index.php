@@ -670,7 +670,14 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 
 <!-- ANMELDEN -->
 <article id="anmelden">
-    <?php printTeamAnmelden($TurnierID, $test_turnier_id); ?>
+        <?php
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+        ?>
+    <?php printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag); ?>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
