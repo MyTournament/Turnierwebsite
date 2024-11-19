@@ -23,11 +23,28 @@ setcookie('turnier-loggedin', $TurnierLoggedIn, $expiration, '/');
 
 $conn->close();
 
-//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
-if($test_turnier_id==0){ //Fall: normales Turnier
-    header("Location: /#" . $NextSec);
-}else{ //Testturniere
+$test_turnier_id = 0;
+$test_turnier_id = $_GET["test_turnier_id"];
+if($test_turnier_id == NULL){
+    $test_turnier_id = $_POST["test_turnier_id"];
+}
+$history_turnier_id = 0;
+$history_turnier_id = $_GET["history_turnier_id"];
+if($history_turnier_id == NULL){
+    $history_turnier_id = $_POST["history_turnier_id"];
+}
+
+// Debug-Ausgaben
+echo "<script>console.log('turnier_logincheck | history_turnier_id = ' + $history_turnier_id  + ';')</script>";
+echo "<script>console.log('turnier_logincheck | test_turnier_id = ' + $test_turnier_id + ';')</script>";
+
+// WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+if ($test_turnier_id != 0) { // Fall: normales Turnier
     header("Location: /?test_turnier_id=$test_turnier_id#" . $NextSec);
+} elseif ($history_turnier_id != 0) {
+    header("Location: /?history_turnier_id=$history_turnier_id#" . $NextSec);
+} else { // Testturniere
+    header("Location: /#" . $NextSec);
 }
 
 /*$test_turnier_id = $_GET['test_turnier_id'];
