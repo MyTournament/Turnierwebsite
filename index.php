@@ -351,6 +351,17 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
             echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
             echo "<input type='hidden' name='NextSection' value='teams'/>";
+            
+            echo "<script>console.log('index | history_turnier_id = ' + $history_turnier_id  + ';')</script>";
+            echo "<script>console.log('index | test_turnier_id = ' + $test_turnier_id + ';')</script>";
+            if ($test_turnier_id != NULL) {
+                echo "<input type='hidden' name='test_turnier_id' value='" . $test_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | test_turnier_id = ' + $test_turnier_id  + ';')</script>";
+            }
+            if ($history_turnier_id != NULL) {
+                echo "<input type='hidden' name='history_turnier_id' value='" . $history_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | history_turnier_id = ' + $history_turnier_id + ';')</script>";
+            }
             echo "</br><input type='submit' value='Login'>";
             echo "</form>";
         echo "</div>";
@@ -431,6 +442,18 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
             echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
             echo "<input type='hidden' name='NextSection' value='spielplan'/>";
+
+            echo "<script>console.log('index | history_turnier_id = ' + $history_turnier_id  + ';')</script>";
+            echo "<script>console.log('index | test_turnier_id = ' + $test_turnier_id + ';')</script>";
+            if ($test_turnier_id != NULL) {
+                echo "<input type='hidden' name='test_turnier_id' value='" . $test_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | test_turnier_id = ' + $test_turnier_id  + ';')</script>";
+            }
+            if ($history_turnier_id != NULL) {
+                echo "<input type='hidden' name='history_turnier_id' value='" . $history_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | history_turnier_id = ' + $history_turnier_id + ';')</script>";
+            }
+
             echo "</br><input type='submit' value='Login'>";
             echo "</form>";
         echo "</div>";
