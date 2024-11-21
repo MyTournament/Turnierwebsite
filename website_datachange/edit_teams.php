@@ -74,18 +74,18 @@ include_once 'edit_interface.php';
 
 					$bn = "unknown";
 					$sql = "INSERT INTO Turnier_Team (fk_warteliste, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
-					$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
+					$teamID = myDb_execute($conn, $TurnierID, $bn, "edit_teams.php",$sql, array($warteliste_ID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
 				}
 			else{
 				$bn = "unknown";
 				$sql = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren) VALUES (?, ?, ?, ?, ?, ?)";
-				$teamID = myDb_execute($conn, $TurnierID, $bn, $sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
+				$teamID = myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 2",$sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
 			}
 			
 			$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
-			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
-			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
-			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
+			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 3",$sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
+			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 4",$sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
+			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 5",$sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
 			
 
 
@@ -238,11 +238,11 @@ include_once 'edit_interface.php';
 					//echo "<script type='text/javascript'>alert('$message');</script>";
 				}else if($successfulLogin == 1 || $successfulLogin == 2){ //Account-Login oder Team-Login && Spiel gehört zu Team
 					//$sql = "DELETE FROM Spieler WHERE fk_team = ?";
-					//myDb_execute($conn, $TurnierID, $bn, $sql, array($teamId));
+					//myDb_execute($conn, $TurnierID, $bn, "edit_teams.php x",$sql, array($teamId));
 	
 					//$sql = "DELETE FROM Team WHERE id = ?";
 					$sql = "UPDATE Turnier_Team SET geloescht = 1 WHERE id = ?";
-					myDb_execute($conn, $TurnierID, $bn, $sql, array($teamId));
+					myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 6",$sql, array($teamId));
 					
 					$message = "Deine Abmeldung war erfolgreich!";
 					//echo "<script type='text/javascript'>alert('$message');</script>";
@@ -267,7 +267,7 @@ include_once 'edit_interface.php';
 			$teamId = $_POST['team'];
 			$gruppeId = $_POST['gruppe'];
 			$sql = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, $sql, array($gruppeId, $teamId));
+			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 7",$sql, array($gruppeId, $teamId));
 			
 			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
@@ -280,7 +280,7 @@ include_once 'edit_interface.php';
 		}else if($action == 'rechte_weg'){
 			$teamId = $_POST['team'];
 			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamId));
+			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 8",$sql, array($teamId));
 			
 			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
@@ -293,7 +293,7 @@ include_once 'edit_interface.php';
 		}else if($action == 'rechte_geben'){
 			$teamId = $_POST['team'];
 			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, $sql, array($teamId));
+			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 9",$sql, array($teamId));
 			
 			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];

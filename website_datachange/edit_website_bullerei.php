@@ -31,7 +31,7 @@ if($action == 'take_offline'){
 	}else{
 		$sql = "UPDATE System_Website SET sperrung = ? WHERE id = ?";
 		$argArr = [1, $websiteId];
-		myDb_execute($conn, $TurnierID, $bn, $sql, $argArr);
+		myDb_execute($conn, $TurnierID, $bn, "edit_website_bullerei.php",$sql, $argArr);
 
 		//TODO:
 		//PER MAIL VERSENDEN
@@ -49,7 +49,7 @@ if($action == 'take_offline'){
 
 	$sql = "UPDATE System_Website SET sperrung = ? WHERE id = ?";
 	$argArr = [0, $websiteId];
-	myDb_execute($conn, $TurnierID, $bn, $sql, $argArr);
+	myDb_execute($conn, $TurnierID, $bn, "edit_website_bullerei.php 2",$sql, $argArr);
 
 	//TODO:
 	//PER MAIL VERSENDEN

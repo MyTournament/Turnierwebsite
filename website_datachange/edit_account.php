@@ -12,7 +12,7 @@ echo "<script>console.log('edit_account Checkpoint 2')</script>";
 
 if($action == 'register'){
     $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort, fk_rechte) VALUES (?, ?, ?)";
-    $accountId = myDb_execute($conn, $TurnierID, $bn, $sql, array($bn, $pw, $fk_rechte));
+    $accountId = myDb_execute($conn, $TurnierID, $bn, "edit_account.php", $sql, array($bn, $pw, $fk_rechte));
     //accountId könnte jetzt natürlich noch zurück zur index gegeben werden, damit man direkt eingeloggt ist
     //weiß aber leider nicht wie das geht ohne es im Klartext an die uri zu hängen
 }

@@ -103,11 +103,11 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       $sql = "UPDATE CMS_Content SET content = ?, style_tag = ?, fk_function = ?, order_in_group = ? WHERE CMS_Content.id = ?;";
       echo "<script>console.log('Checkpoint 1, Benutzername: $bn')</script>";
       $argArray = [$content, $content_style_tag, $function, $content_order_in_group, $contentID]; // array($content, $content_style_tag, $function, $content_order_in_group, $contentID)
-      myDb_execute($conn, $TurnierID, $bn, $sql, $argArray);
+      myDb_execute($conn, $TurnierID, $bn, "edit_content.php", $sql, $argArray);
       echo "<script>console.log('Checkpoint 2')</script>";
     }else if ($action == 'Löschen'){
       $sql = "DELETE FROM CMS_Content WHERE CMS_Content.id = ?;";
-      myDb_execute($conn, $TurnierID, $bn, $sql, array($contentID));
+      myDb_execute($conn, $TurnierID, $bn, "edit_content.php 2", $sql, array($contentID));
     }else if ($action == 'Hinzufügen'){
       //Site, Section, Group & order_in_group des vorherigen Objekt rausfinden -> JOIN
       $sql_order_in_group = "SELECT * FROM CMS_Content, CMS_Content_Group, CMS_Content_Section, CMS_Content_Site ";
@@ -125,7 +125,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       $order = makeSpaceInOrder($conn, $contentID, $order_in_group, $group, $section, $site);
       echo "<script>console.log('newOrder: $order, group: $group, section: $section, site: $site, content: $content')</script>";
       $sql = "INSERT INTO CMS_Content (fk_group, order_in_group, content, style_tag) VALUES (?, ?, ?, ?)";
-      myDb_execute($conn, $TurnierID, $bn, $sql, array($group, $order, $content, $content_style_tag));
+      myDb_execute($conn, $TurnierID, $bn, "edit_content.php 3", $sql, array($group, $order, $content, $content_style_tag));
     }
 
 }

@@ -10,19 +10,19 @@ include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
 
 $sql = "INSERT INTO edit_interface_test (name, description, fk_random) VALUES (?, ?, ?)";
-$insert_id = myDb_execute($conn, $TurnierID, $bn, $sql, array($name, $description, $fk_random));
+$insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_interface_test.php",$sql, array($name, $description, $fk_random));
 echo "_INSERT: $insert_id <br/>";
 $sqlType = substr($sql, 0, 6);
 echo "SQL-Type: $sqlType<br/>";
 
 $sql = "UPDATE edit_interface_test SET fk_random = ? WHERE fk_random = ?";
-$insert_id = myDb_execute($conn, $TurnierID, $bn, $sql, array("4", "3"));
+$insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_interface_test.php 2",$sql, array("4", "3"));
 echo "_UPDATE: $insert_id <br/>"; //gibt es nur bei Insert
 $sqlType = substr($sql, 0, 6);
 echo "SQL-Type: $sqlType<br/>";
 
 $sql = "DELETE FROM edit_interface_test WHERE fk_random = ?";
-$insert_id = myDb_execute($conn, $TurnierID, $bn, $sql, array("4"));
+$insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_interface_test.php 3",$sql, array("4"));
 echo "_DELETE: $insert_id <br/>"; //gibt es nur bei Insert
 $sqlType = substr($sql, 0, 6);
 echo "SQL-Type: $sqlType<br/>";
@@ -43,7 +43,7 @@ $query = sprintf("SELECT id, name FROM products ORDER BY name LIMIT 20 OFFSET %d
 $sql = "SELECT * FROM edit_interface_test WHERE name = ?";
 $sqlType = substr($sql, 0, 6);
 echo "SQL-Type: $sqlType<br/>";
-/*$stmt = myDb_execute($conn, $TurnierID, $bn, $sql, array("ich"));
+/*$stmt = myDb_execute($conn, $TurnierID, $bn, "edit_interface_test.php", $sql, array("ich"));
 while ($stmt->fetch()) {
     echo $name.'; ';
 }*/

@@ -36,7 +36,7 @@ $accountDarfSpieleBearbeiten = $rights["account_rights"]["rechte_alle_spiele"];
 if ($action == 'Ändern') {
   if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sql = "UPDATE `Turnier_Spiel` SET `biereheimteam` = ?, `biereauswaertsteam` = ? WHERE `Turnier_Spiel`.`id` = ?;";
-    myDb_execute($conn, $TurnierID, $bn, $sql, array($flaschen1, $flaschen2, $spielID));
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php", $sql, array($flaschen1, $flaschen2, $spielID));
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
@@ -80,7 +80,7 @@ if ($action == 'Ändern') {
 }else if ($action == 'Löschen'){
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $sql = "DELETE FROM `Turnier_Spiel` WHERE `Turnier_Spiel`.`id` = ?;";
-    myDb_execute($conn, $TurnierID, $bn, $sql, array($spielID));
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php 2", $sql, array($spielID));
 
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
@@ -124,7 +124,7 @@ if ($action == 'Ändern') {
 }else if($action == 'Eintragen'){
   if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sqlInsertSpiel = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
-    myDb_execute($conn, $TurnierID, $bn, $sqlInsertSpiel, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php 3",$sqlInsertSpiel, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
     
     //TODO: Für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
     //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
@@ -134,7 +134,7 @@ if ($action == 'Ändern') {
     //-bis halbe stunde nach eintragen noch ändern können
 
     $sqlGetNurOberesDreieckInGruppenphase = "SELECT nurOberesDreieckInGruppenphase FROM Turnier_Main WHERE id = ?";
-    $stmt = myDb_execute($conn, $TurnierID, $bn, $sqlGetNurOberesDreieckInGruppenphase, array($TurnierID));
+    $stmt = myDb_execute($conn, $TurnierID, $bn, "edit_games.php 4",$sqlGetNurOberesDreieckInGruppenphase, array($TurnierID));
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $nurOberesDreieck = $row['nurOberesDreieckInGruppenphase'];
@@ -142,7 +142,7 @@ if ($action == 'Ändern') {
     if ($nurOberesDreieck === 2){
       // Aktuelle Begegnung auf Status 5 setzen, wenn diese Begegnung eine Gruppenbegegnung ist und jetzt genau ein Spiel hat. (Begegnungen mit 2 oder mehr Spielen werden also nicht verändert, hier wird von bewusstem Handeln von Admins ausgegangen)
       $sqlFinalizeBegegnung = "UPDATE Turnier_Begegnung AS begegnung SET `status` = 5 WHERE id = ? AND ko_finallevel = 0 AND 1 = (SELECT COUNT(id) FROM Turnier_Spiel WHERE fk_begegnung = begegnung.id) ";
-      myDb_execute($conn, $TurnierID, $bn, $sqlFinalizeBegegnung, array($begegnungId));
+      myDb_execute($conn, $TurnierID, $bn, "edit_games.php 5",$sqlFinalizeBegegnung, array($begegnungId));
     }
 
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
@@ -170,7 +170,7 @@ if ($action == 'Ändern') {
 }else if($action == 'Finalisieren'){
   if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE id = ?";
-    myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId));
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php 6",$sql, array($begegnungId));
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
@@ -198,7 +198,7 @@ if ($action == 'Ändern') {
 }else if($action == 'Unfinalisieren'){
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $sql = "UPDATE Turnier_Begegnung SET `status` = 1, fk_siegerteam = NULL WHERE id = ?";
-    myDb_execute($conn, $TurnierID, $bn, $sql, array($begegnungId));
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php 7",$sql, array($begegnungId));
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
@@ -226,7 +226,7 @@ if ($action == 'Ändern') {
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $groupId = $_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
-    myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php 8",$sql, array($groupId, $groupId));
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
@@ -254,7 +254,7 @@ if ($action == 'Ändern') {
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
     $groupId = $_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = 1 WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
-    myDb_execute($conn, $TurnierID, $bn, $sql, array($groupId, $groupId));
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php 9",$sql, array($groupId, $groupId));
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];

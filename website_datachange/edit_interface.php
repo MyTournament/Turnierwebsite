@@ -1,5 +1,5 @@
 <?php
-function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
+function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray) {
     //echo "<hr>";
     //echo "NEUE DB-INTERFACE-AUSFUEHRUNG";
     //echo "<br/><br/>SQL: \"$sql\" <br/>";
@@ -44,9 +44,9 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
 
         echo"<script>console.log('myDb_execute Checkpoint 3')</script>";
 
-        $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, content, fk_website) VALUES (?, ?, ?)');
-        $paramArr = [$bn, $content, 1];
-        $stmtDbVerlauf->bind_param("sss", ...$paramArr);
+        $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, ort_auf_website, content, fk_website) VALUES (?, ?, ?, ?)');
+        $paramArr = [$bn, $ort_auf_website, $content, 1];
+        $stmtDbVerlauf->bind_param("ssss", ...$paramArr);
         $stmtDbVerlauf->execute();
 
         echo"<script>console.log('myDb_execute Checkpoint 4')</script>";
