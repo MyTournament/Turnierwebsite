@@ -41,9 +41,9 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <title>Blankiball Bierball Turnier</title>
-        <meta charset="utf-8" />
+	<head>
+		<title>Blankiball Bierball Turnier</title>
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
         <meta name="description" content="Berlins größtes Bierball-Turnier">
         <meta name="author" content="Hermann Blankenstein">
@@ -177,7 +177,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             </div>";
         }
     }
-
+    
 ?>
 
 <header id="header"> 
