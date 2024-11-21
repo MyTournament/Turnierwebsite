@@ -31,14 +31,14 @@ if ($successfulLogin == 0){ //fehlerhafter Login
         echo "<script>console.log('Neue Phase: $phaseID')</script>";
 
         $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
-        $insert_id = myDb_execute($conn, $TurnierID, $bn, $sql, array($phaseID, $TurnierID));
+        $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php",$sql, array($phaseID, $TurnierID));
       }else{ //Nicht genug Rechte
         $message = "Leider hast du nicht die nötigen Rechte, um diese Variable zu bearbeiten. Wende dich an Richard, um mehr Rechte zu erhalten.";
         echo "<script type='text/javascript'>alert('$message');</script>";
 
         $content = "<h5 style='color: red'>Gescheitert wegen fehlenden Rechten:</h5> UPDATE `Turnier_Main` SET `fk_turnier_phase` = '$phaseID' WHERE `id` = '$TurnierID';";
         $sql = "INSERT INTO System_Data_DB_Verlauf (fk_who, content) VALUES (?, ?)";
-        $insert_id = myDb_execute($conn, $TurnierID, $bn, $sql, array($bn, $content));
+        $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 2",$sql, array($bn, $content));
       }
       
       
