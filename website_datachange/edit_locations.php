@@ -27,25 +27,25 @@ if($successfulLogin == 1){
         $location_name = $_POST['location_name'];
 
         $sql = "INSERT INTO Pausenraum_Location_Bewertung (name, description, sterne, fk_location, autor) VALUES (?, ?, ?, ?, ?)";
-        myDb_execute($conn, $TurnierID, $bn, "edit_locations.php",$sql, array($name, $description, $sterne, $fk_location, $accountId));
+        //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: myDb_execute($conn, $TurnierID, $bn, "edit_locations.php",$sql, array($name, $description, $sterne, $fk_location, $accountId));
 
         //STATISTIK
         $typeId = 2;
         $add_text = "für $location_name: $sterne &#9733;";
         $sql = "INSERT INTO Pausenraum_Achievement (fk_account, fk_type, add_text) VALUES (?, ?, ?)";
-        myDb_execute($conn, $TurnierID, $bn, "edit_locations.php 2",$sql, array($accountId, $typeId, $add_text));
+        //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: myDb_execute($conn, $TurnierID, $bn, "edit_locations.php 2",$sql, array($accountId, $typeId, $add_text));
     }
 
     if($action == 'new_location'){
         echo "<script>console.log($accountId)</script>";
         $sql = "INSERT INTO Pausenraum_Location (name, description, autor) VALUES (?, ?, ?)";
-        myDb_execute($conn, $TurnierID, $bn, "edit_locations.php 3",$sql, array($name, $description, $accountId));
+        //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: myDb_execute($conn, $TurnierID, $bn, "edit_locations.php 3",$sql, array($name, $description, $accountId));
 
         //STATISTIK
         $typeId = 6;
         $add_text = ": $name";
         $sql = "INSERT INTO Pausenraum_Achievement (fk_account, fk_type, add_text) VALUES (?, ?, ?)";
-        myDb_execute($conn, $TurnierID, $bn, "edit_locations.php 4",$sql, array($accountId, $typeId, $add_text));
+        //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: myDb_execute($conn, $TurnierID, $bn, "edit_locations.php 4",$sql, array($accountId, $typeId, $add_text));
     }
 
     header("Location: ../#bierball_locations");
