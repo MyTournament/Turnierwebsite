@@ -138,11 +138,9 @@
         
     }
 
+
     function printSpielerInfo($TurnierID, $conn, $spielerId){ //NICHT IM CMS
-        //LOGIN
-        $bn = $_POST['bn'];
-        $pw = $_POST['pw'];
-        $successfulLogin = 0; //false
+
         /*
         //FALL: Team-Login -> Bearbeitungsrechte nur für eigene Begegnungen
         $sqlLogin = "SELECT * FROM `Team` WHERE kuerzel = '$bn' AND password = '$pw' ORDER BY ID";
@@ -162,14 +160,29 @@
             }
         }
         */
-        //FALL: Account-Login -> Bearbeitungsrechte für alle Begegnungen
-        $sqlLoginAccount = "SELECT * FROM `System_Benutzer_in` WHERE Benutzername = '$bn' AND Passwort = '$pw' AND fk_rechte <= 15 ORDER BY ID"; //
-        $resultLoginAccount = $conn->query($sqlLoginAccount);
-        while ( !empty( $rowLoginAccount = $resultLoginAccount->fetch_assoc() ) ){
-            $successfulLogin = 1;
-            $teamBearbeitungsrecht = 1;
-            //echo "<script>console.log('Du bist eingeloggt mit deinem Account und hast damit volle Bearbeitungsrechte.')</script>";
-        }
+        //LOGIN
+            $TurnierID = $_POST['TurnierID'];
+
+            $stmt = $conn->prepare("SELECT * FROM `System_Benutzer_in` ORDER BY ID");
+            $stmt->execute();
+            $benutzerliste = $stmt->get_result();
+            
+            $bn = $_POST['bn'];
+            $pw = $_POST['pw'];
+            $successfulLogin = 0; //false
+            $teamBearbeitungsrecht = 0; // Veraltet?
+            foreach ($benutzerliste as $b){
+                if(
+                    $b['Benutzername'] == $bn and
+                    $b['Passwort'] == $pw and
+                    $b['fk_rechte'] <= 15
+                ){
+                    $successfulLogin = 1;
+                    $teamBearbeitungsrecht = 1;
+                    $rechte = $b['fk_rechte'];
+                }
+            }
+        
 
         //Teamnamen herausfinden
         if($spielerId != NULL && ($successfulLogin == 1 || $successfulLogin == 2)){

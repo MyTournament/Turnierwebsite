@@ -203,28 +203,43 @@ include_once 'edit_interface.php';
 		}
 
 	}else { //Alles was nicht Team registrieren ist braucht Login
-		//LOGIN
-		$bn = $_POST['bn'];
-		$pw = $_POST['pw'];
-		$successfulLogin = 0; //false
-
+		$TurnierID = $_POST['TurnierID'];
 		$teamId = $_POST['Team_zum_abmelden'];
 
+		//LOGIN
+		include_once 'login_interface.php';
+		$bn = $_POST['bn'];
+		$pw = $_POST['pw'];
+
+		//Benutzer
+		$benutzerliste = getBenutzerListe($conn);
+		$successfulLogin = 0; //false
+		while ($row = $benutzerliste->fetch_assoc()) {
+			if(
+				$row['Benutzername'] == $bn and
+				$row['Passwort'] == $pw and
+				$row['fk_rechte'] <= 10
+			){
+				$successfulLogin = 1;
+				$rechte = $row['fk_rechte'];
+			}
+		}
+		//Teams
+		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant
 		//FALL: Team-Login -> Bearbeitungsrechte nur für eigene Begegnungen
-		$sqlLogin = "SELECT * FROM `Turnier_Team` WHERE id = '$teamId' AND kuerzel = '$bn' AND password = '$pw' ORDER BY ID";
-		$resultLogin = $conn->query($sqlLogin);
-		while ( !empty( $rowLogin = $resultLogin->fetch_assoc() ) ){
-			$successfulLogin = 2;
-			//echo "<script>console.log('Du bist eingeloggt mit dem richtigen Team.')</script>";
-		}
-		
-		//FALL: Account-Login -> Bearbeitungsrechte für alle Begegnungen
-		$sqlLoginAccount = "SELECT * FROM `System_Benutzer_in` WHERE Benutzername = '$bn' AND Passwort = '$pw' AND fk_rechte <= 10 ORDER BY ID"; //
-		$resultLoginAccount = $conn->query($sqlLoginAccount);
-		while ( !empty( $rowLoginAccount = $resultLoginAccount->fetch_assoc() ) ){
-			$successfulLogin = 1;
-			//echo "<script>console.log('Du bist eingeloggt mit deinem Account und hast damit volle Bearbeitungsrechte.')</script>";
-		}
+		/*$teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);
+		$successfulLogin = 0; //false
+		while ($row = $teamListeFuerTurnier->fetch_assoc()) {
+			if(
+				$row['kuerzel'] = $bn and
+				$row['password'] == $pw and
+				$row['id'] == $teamId and
+				$row['bearbeitungsrechte'] == 1
+			){
+				$successfulLogin = 2;
+			}
+		}*/
+	
 		
 		
 		if($action == 'Abmelden'){

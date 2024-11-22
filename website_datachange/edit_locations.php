@@ -9,12 +9,15 @@ $TurnierID = $_POST['TurnierID'];
 $successfulLogin = 0; //false
   
 //FALL: Account-Login -> Bearbeitungsrechte für alle Begegnungen
-$sqlLoginAccount = "SELECT * FROM `System_Benutzer_in` WHERE Benutzername = '$bn' AND Passwort = '$pw' AND fk_rechte <= 30 ORDER BY ID"; //
+
+//VERALTET: MÜSSTE AN NEUES LOGIN_INTERFACE.PHP ANGEPASST WERDEN
+
+/*$sqlLoginAccount = "SELECT * FROM `System_Benutzer_in` WHERE Benutzername = '$bn' AND Passwort = '$pw' AND fk_rechte <= 30 ORDER BY ID"; //
 $resultLoginAccount = $conn->query($sqlLoginAccount);
 while ( !empty( $rowLoginAccount = $resultLoginAccount->fetch_assoc() ) ){
     $successfulLogin = 1;
-}
-
+}*/
+/*
 if($successfulLogin == 1){
     $action = $_POST['action'];
     $name = $_POST['name'];
@@ -52,5 +55,5 @@ if($successfulLogin == 1){
 }else{
     header("Location: ../#bierball_locations_bewertungen_hinzufuegen_failure");
 }
-
+*/
 ?>

@@ -14,17 +14,41 @@ if($action == NULL){
 }
 $websiteId = 1; //$_POST['websiteId'];
 if($action == 'take_offline'){
+	$TurnierID = $_POST['TurnierID'];
+
 	//LOGIN
+	include_once 'login_interface.php';
 	$bn = $_POST['bn'];
 	$pw = $_POST['pw'];
-	$TurnierID = $_POST['TurnierID'];
-	$sqlLogin = "SELECT * FROM `System_Benutzer_in` WHERE Benutzername = '$bn' AND Passwort = '$pw' AND fk_rechte <= 5 ORDER BY ID";
-	$resultLogin = $conn->query($sqlLogin);
+
+	//Benutzer
+	$benutzerliste = getBenutzerListe($conn);
 	$successfulLogin = 0; //false
-	while ( !empty( $rowLogin = $resultLogin->fetch_assoc() ) ){
-		$successfulLogin = 1;
-		$rechte = $rowLogin['fk_rechte'];
+	while ($row = $benutzerliste->fetch_assoc()) {
+		if(
+			$row['Benutzername'] == $bn and
+			$row['Passwort'] == $pw and
+			$row['fk_rechte'] <= 5
+		){
+			$successfulLogin = 1;
+			$rechte = $row['fk_rechte'];
+		}
 	}
+	//Teams
+	/*$teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);
+	$successfulLogin = 0; //false
+	while ($row = $teamListeFuerTurnier->fetch_assoc()) {
+		if(
+			$row['kuerzel'] == $bn and
+			$row['password'] == $pw and
+			$row['bearbeitungsrechte'] == 1
+		){
+			$successfulLogin = 1;
+		}
+	}*/
+	
+
+
 	if ($successfulLogin == 0){ //fehlerhafter Login
 		$message = "Login leider nicht erfolgreich! Dein Ergebnis wurde nicht eingetragen. Versuch es gerne noch einmal.";
 		echo "<script type='text/javascript'>alert('$message');</script>";
