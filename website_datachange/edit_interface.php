@@ -44,6 +44,7 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
 
         echo"<script>console.log('myDb_execute Checkpoint 3')</script>";
 
+        //SQL-Befehle werden mit prepare und bind_param ausgeführt. Dies ist der empfohlene Ansatz, um SQL-Injections zu verhindern
         $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, ort_auf_website, content, fk_website) VALUES (?, ?, ?, ?)');
         $paramArr = [$bn, $ort_auf_website, $content, 1];
         $stmtDbVerlauf->bind_param("ssss", ...$paramArr);

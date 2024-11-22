@@ -322,6 +322,7 @@ function printSpielerInfoLogin($TurnierID, $conn, $spielerId){
     <p>Bitte logge dich ein, um mehr Infos zu einem konkreten Spieler zu erhalten. (zum Beispiel die Telefonnummer)</p>
     <h3>Diese Funktion kann nur von Schiedsrichter*innen genutzt werden!</h3>
     <?php
+    $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==0){ //Fall: normales Turnier
         echo "<form action='/?spielerId=$spielerId#spielerinfo' method='POST' onSubmit='return checkAGBspielerinfo()'>";
     }else{ //Testturniere

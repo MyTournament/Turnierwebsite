@@ -7,16 +7,27 @@ include_once 'edit_interface.php';
 //########################
 
 $TurnierID = $_POST['TurnierID'];
+
 //LOGIN
+include_once 'login_interface.php';
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
-$sqlLogin = "SELECT * FROM `System_Benutzer_in` WHERE Benutzername = '$bn' AND Passwort = '$pw' ORDER BY ID";
-$resultLogin = $conn->query($sqlLogin);
+
+//Benutzer
+$benutzerliste = getBenutzerListe($conn);
 $successfulLogin = 0; //false
-while ( !empty( $rowLogin = $resultLogin->fetch_assoc() ) ){
+while ($row = $benutzerliste->fetch_assoc()) {
+  if(
+    $row['Benutzername'] == $bn and
+    $row['Passwort'] == $pw
+  ){
     $successfulLogin = 1;
-    $rechte = $rowLogin['fk_rechte'];
+    $rechte = $row['fk_rechte'];
+  }
 }
+
+
+
 if ($successfulLogin == 0){ //fehlerhafter Login
   $message = "Login leider nicht erfolgreich! Dein Ergebnis wurde nicht eingetragen. Versuch es gerne noch einmal.";
   echo "<script type='text/javascript'>alert('$message');</script>";
