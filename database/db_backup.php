@@ -140,7 +140,7 @@ function cleanupBackups($backupDir, $backupLimits) {
         $timestamp = DateTime::createFromFormat("Ymd_His", $matches[2])->getTimestamp();
         $age = $now - $timestamp;
 
-        echo "<script>console.log('Backup: $file | Timestamp: $timestamp | Alter: $age Sekunden')</script>";
+        //echo "<script>console.log('Backup: $file | Timestamp: $timestamp | Alter: $age Sekunden')</script>";
 
         if ($age < 3600) {
             $groups['hourly'][] = ['file' => $file, 'timestamp' => $timestamp];
@@ -157,7 +157,7 @@ function cleanupBackups($backupDir, $backupLimits) {
         }
     }
 
-    echo "<script>console.log('Gruppierte Backups: " . json_encode($groups) . "')</script>";
+    //echo "<script>console.log('Gruppierte Backups: " . json_encode($groups) . "')</script>";
 
     foreach (['hourly', 'daily', 'weekly'] as $key) {
         // Validierung des Wertes in $backupLimits
