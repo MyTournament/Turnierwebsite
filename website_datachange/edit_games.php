@@ -1,8 +1,10 @@
 <?php
 //##########################################################
 include_once '../database/db_connection.php';
-include_once 'edit_interface.php';
+include_once '../website_datachange/edit_interface.php';
 //##########################################################
+
+echo "<script>console.log('Testausgabe 1')</script>";
 
 //Variablen speichern
 $TurnierID = $_POST['TurnierID'];
@@ -17,11 +19,72 @@ $flaschen2 = $_POST['Flaschen2'];
 $action = $_POST['action'];
 //echo "<script>console.log('Action: $action')</script>";
 
-$bn = $_POST['bn'];
-$pw = $_POST['pw'];
-//##########################################################
+
 //LOGIN
 include_once 'login_interface.php';
+$bn = $_POST['bn'];
+$pw = $_POST['pw'];
+
+//Benutzer
+$benutzerliste = getBenutzerListe($conn);
+$accountDarfSpieleBearbeiten = 0; //false
+while ($row = $benutzerliste->fetch_assoc()) {
+  if(
+    $row['Benutzername'] == $bn and
+    $row['Passwort'] == $pw and
+    $row['fk_rechte'] <= 1
+  ){
+    $accountDarfSpieleBearbeiten = 1;
+  }
+}
+//Teams
+$teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);
+$successfulTeamLogin = 0; //false
+while ($row = $teamListeFuerTurnier->fetch_assoc()) {
+  if(
+    $row['kuerzel'] == $bn and
+    $row['password'] == $pw and
+    $row['bearbeitungsrechte'] == 1
+  ){
+    $successfulTeamLogin = 1;
+  }
+}
+
+
+echo "<script>console.log('Testausgabe 2')</script>";
+
+//Herausfinden ob Spiel zu Team gehört
+$sql = "SELECT * FROM Turnier_Team, Turnier_Begegnung 
+        WHERE Turnier_Team.geloescht = 0 
+          AND Turnier_Begegnung.id = ? 
+          AND (
+              Turnier_Begegnung.fk_heimteam IN (
+                  SELECT id FROM Turnier_Team WHERE geloescht = 0 AND kuerzel = ? AND `password` = ?
+              ) 
+              OR 
+              Turnier_Begegnung.fk_auswaertsteam IN (
+                  SELECT id FROM Turnier_Team WHERE geloescht = 0 AND kuerzel = ? AND `password` = ?
+              )
+          )";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("sssss", $begegnungId, $bn, $pw, $bn, $pw);
+$stmt->execute();
+$result = $stmt->get_result();
+$spielGehoertZuTeam = 0;
+while ($row = $result->fetch_assoc()) {
+    $spielGehoertZuTeam = 1;
+    //echo "<script>console.log('Das Spiel gehört zu deinem Team. Das ist gut.')</script>";
+}
+$stmt->close();
+
+echo "<script>console.log('accountDarfSpieleBearbeiten=$accountDarfSpieleBearbeiten, successfulTeamLogin=$successfulTeamLogin, spielGehoertZuTeam=$spielGehoertZuTeam')</script>";
+
+echo "<script>console.log('Testausgabe 3')</script>";
+
+
+//##########################################################
+//LOGIN
+/*include_once 'login_interface_new_rights_system.php';
 $rights = get_rights_of_user($conn, $TurnierID, $bn, $pw, $begegnungId);
 
 
@@ -32,9 +95,9 @@ $teamBearbeitungsrecht = $rights["team_rights"]["teamBearbeitungsrecht"];
 
 $accountDarfSpieleBearbeiten = $rights["account_rights"]["rechte_alle_spiele"];
 //##########################################################
-
+*/
 if ($action == 'Ändern') {
-  if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+  if($accountDarfSpieleBearbeiten == 1 || ($successfulTeamLogin == 1 && $spielGehoertZuTeam == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sql = "UPDATE `Turnier_Spiel` SET `biereheimteam` = ?, `biereauswaertsteam` = ? WHERE `Turnier_Spiel`.`id` = ?;";
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php", $sql, array($flaschen1, $flaschen2, $spielID));
     
@@ -61,13 +124,13 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         
-    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
-    $test_turnier_id = $_GET['test_turnier_id'];
-    if($test_turnier_id==NULL){
-        header("Location: /#edit_games_failure");
-    }else{
-        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
-    }
+      //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+      $test_turnier_id = $_GET['test_turnier_id'];
+      if($test_turnier_id==NULL){
+          header("Location: /#edit_games_failure");
+      }else{
+          header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+      }
 
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
@@ -122,9 +185,12 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Eintragen'){
-  if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+  if($accountDarfSpieleBearbeiten == 1 || ($successfulTeamLogin == 1 && $spielGehoertZuTeam == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+    echo "<script>console.log('Testausgabe 4')</script>";
     $sqlInsertSpiel = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php 3",$sqlInsertSpiel, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
+    
+    echo "<script>console.log('Testausgabe 5')</script>";
     
     //TODO: Für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
     //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
@@ -145,6 +211,8 @@ if ($action == 'Ändern') {
       myDb_execute($conn, $TurnierID, $bn, "edit_games.php 5",$sqlFinalizeBegegnung, array($begegnungId));
     }
 
+    
+
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
@@ -152,7 +220,7 @@ if ($action == 'Ändern') {
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
     }
-    //echo "<script>console.log('Das Spiel wurde erfolgreich eingetragen. $successfulLogin $spielGehoertZuTeam')</script>";
+    echo "<script>console.log('Das Spiel wurde erfolgreich eingetragen. $successfulLogin $spielGehoertZuTeam')</script>";
   }else{ //Team-Login
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
@@ -168,7 +236,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Finalisieren'){
-  if($accountDarfSpieleBearbeiten == 1 || ($successfulLogin == 1 && $spielGehoertZuTeam == 1 && $teamBearbeitungsrecht == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
+  if($accountDarfSpieleBearbeiten == 1 || ($successfulTeamLogin == 1 && $spielGehoertZuTeam == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     $sql = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE id = ?";
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php 6",$sql, array($begegnungId));
     

@@ -1,8 +1,8 @@
 <?php
-$dbhost = "rdbms.strato.de";
-$dbuser = "dbu1612112";
-$dbpassword = "HF?A=k%CWdDxc*8Jr4()bmF";
-$dbname = "dbs4154474";
+$dbhost = "45.9.63.16";
+$dbuser = "backenduser";
+$dbpassword = "239wdjSjDEd21";
+$dbname = "blankiball";
 
 //Gibt Pfad von Server aus:
 //echo getcwd();
