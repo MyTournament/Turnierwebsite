@@ -3,7 +3,7 @@
 
 $test_turnier_id = $_GET['test_turnier_id'];
 if($test_turnier_id==NULL){
-    header("Location: /");
+    //header("Location: /");
 }else{
     header("Location: /?test_turnier_id=$test_turnier_id");
 }
