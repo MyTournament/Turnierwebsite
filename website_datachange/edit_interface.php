@@ -1,5 +1,11 @@
 <?php
+include_once '../database/db_backup.php';
+
 function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray) {
+    //DATABASE_BACKUP
+    backup_main($conn);
+
+    
     //echo "<hr>";
     //echo "NEUE DB-INTERFACE-AUSFUEHRUNG";
     //echo "<br/><br/>SQL: \"$sql\" <br/>";
@@ -61,6 +67,8 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
         // $stmt -> bind_result($name,$description,$fk_random);
         return $stmt;
     }   
+
+    
 }
 
 //DB_UPDATE
