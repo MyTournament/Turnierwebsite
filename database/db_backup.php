@@ -1,33 +1,33 @@
 <?php
-date_default_timezone_set('Europe/Berlin');
-echo "<script>console.log('Aktuelle PHP-Zeitzone: " . date_default_timezone_get() . "')</script>";
+function backup_main($conn){
+    date_default_timezone_set('Europe/Berlin');
+    echo "<script>console.log('Aktuelle PHP-Zeitzone: " . date_default_timezone_get() . "')</script>";
 
+    //WICHTIG: BERECHTIGUNGEN DER VERZEICHNISSE MÜSSEN STIMMEN (IN TRELLO DOKUMENTIERT)
 
-// Einbindung der db_connection.php für die Datenbankzugangsdaten
-include_once 'db_connection.php';
+    // Konfigurierbares Backup-Limit-Array: Definiert, wie viele Backups pro Zeitperiode behalten werden sollen.
+    $backupLimits = [
+        'hourly' => 100,     // < 1 Stunde - Behalte bis zu 100 Backups, gleichmäßig über die letzten 60 Minuten verteilt.
+        'daily' => 100,      // < 24 Stunden - Behalte bis zu 100 Backups, gleichmäßig über die letzten 24 Stunden verteilt.
+        'weekly' => 100,     // < 7 Tage - Behalte bis zu 100 Backups, gleichmäßig über die letzten 7 Tage verteilt.
+        'monthly' => 3,      // < 1 Jahr - Für Backups älter als 7 Tage, aber jünger als ein Jahr: Behalte 3 Backups pro Tag, gleichmäßig verteilt.
+        'yearly' => 1,       // < 3 Jahre - Für Backups älter als 1 Jahr, aber jünger als 3 Jahre: Behalte 1 Backup pro Monat.
+        'older' => 1         // > 3 Jahre - Für Backups älter als 3 Jahre: Behalte 1 Backup pro Woche (das neueste in jeder Woche).
+    ];
 
-//WICHTIG: BERECHTIGUNGEN DER VERZEICHNISSE MÜSSEN STIMMEN (IN TRELLO DOKUMENTIERT)
-
-// Konfigurierbares Backup-Limit-Array: Definiert, wie viele Backups pro Zeitperiode behalten werden sollen.
-$backupLimits = [
-    'hourly' => 100,     // < 1 Stunde - Behalte bis zu 100 Backups, gleichmäßig über die letzten 60 Minuten verteilt.
-    'daily' => 100,      // < 24 Stunden - Behalte bis zu 100 Backups, gleichmäßig über die letzten 24 Stunden verteilt.
-    'weekly' => 100,     // < 7 Tage - Behalte bis zu 100 Backups, gleichmäßig über die letzten 7 Tage verteilt.
-    'monthly' => 3,      // < 1 Jahr - Für Backups älter als 7 Tage, aber jünger als ein Jahr: Behalte 3 Backups pro Tag, gleichmäßig verteilt.
-    'yearly' => 1,       // < 3 Jahre - Für Backups älter als 1 Jahr, aber jünger als 3 Jahre: Behalte 1 Backup pro Monat.
-    'older' => 1         // > 3 Jahre - Für Backups älter als 3 Jahre: Behalte 1 Backup pro Woche (das neueste in jeder Woche).
-];
-
-// Hauptfunktionalität
-$backupDir = '/var/www/html/blankiball/automatic_db_backups';
-// Backup erstellen und aufräumen
-try {
-    backupDatabase($conn, $backupDir);
-    cleanupBackups($backupDir, $backupLimits);
-} catch (Exception $e) {
-    echo "<script>console.log('Fehler: Datenbankzugangsdaten konnten nicht abgerufen werden.')</script>";
-    die();
+    // Hauptfunktionalität
+    $backupDir = '/var/www/html/blankiball/automatic_db_backups';
+    // Backup erstellen und aufräumen
+    try {
+        backupDatabase($conn, $backupDir);
+        cleanupBackups($backupDir, $backupLimits);
+    } catch (Exception $e) {
+        echo "<script>console.log('Fehler: Datenbankzugangsdaten konnten nicht abgerufen werden.')</script>";
+        die();
+    }
 }
+
+
 
 
 
@@ -140,7 +140,9 @@ function cleanupBackups($backupDir, $backupLimits) {
         $timestamp = DateTime::createFromFormat("Ymd_His", $matches[2])->getTimestamp();
         $age = $now - $timestamp;
 
-        //echo "<script>console.log('Backup: $file | Timestamp: $timestamp | Alter: $age Sekunden')</script>";
+        //Hier würde Pfad mit ausgegeben werden: echo "<script>console.log('Backup: $file | Timestamp: $timestamp | Alter: $age Sekunden')</script>";
+        //echo "<script>console.log('Backup: " . basename($file) . " | Timestamp: $timestamp | Alter: $age Sekunden')</script>";
+
 
         if ($age < 3600) {
             $groups['hourly'][] = ['file' => $file, 'timestamp' => $timestamp];
@@ -157,7 +159,8 @@ function cleanupBackups($backupDir, $backupLimits) {
         }
     }
 
-    //echo "<script>console.log('Gruppierte Backups: " . json_encode($groups) . "')</script>";
+    //Hier würde Pfad mit ausgegeben werden: echo "<script>console.log('Gruppierte Backups: " . json_encode($groups) . "')</script>";
+
 
     foreach (['hourly', 'daily', 'weekly'] as $key) {
         // Validierung des Wertes in $backupLimits
@@ -227,7 +230,8 @@ function evenlyDelete($files, $keep, $group) {
         // Nur Dateien mit einem bestimmten Schritt löschen
         if ($index % $step === 0) {
             unlink($file['file']);
-            echo "<script>console.log('Gelöschtes Backup ($group): {$file['file']}')</script>";
+            //Hier würde Pfad mit ausgegeben werden: echo "<script>console.log('Gelöschtes Backup ($group): {$file['file']}')</script>";
+            echo "<script>console.log('Gelöschtes Backup ($group): " . basename($file['file']) . "')</script>";
             $deleted++;
         }
     }
