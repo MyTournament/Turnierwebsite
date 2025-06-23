@@ -205,12 +205,13 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required autocomplete="username"><br/>
     <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required autocomplete="current-password"><br/>
     <br/>
-    <h4>E-Mail</h4>
-    <!--<p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
-    -->
-    <i>An die Mail bekommt ihr eure Team-Daten gesendet.</i>
+    <!--<h4>E-Mail</h4>
+    <p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
     
-    <input type="text" id="mail" name="Mail" class="Eingabe" placeholder="Mail-Adresse &#9733;" style="color: white" required><br/>
+    <i>An die Mail bekommt ihr eure Team-Daten gesendet.</i>
+    <i>Mit der E-Mail könnt ihr später euer Konto verwalten.</i>
+    
+    <input type="text" id="mail" name="Mail" class="Eingabe" placeholder="Mail-Adresse &#9733;" style="color: white" required><br/>-->
     
     <h5><br/></h5>
     <h4>Woher hast du von uns erfahren? (Freiwillig)</h4>
