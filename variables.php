@@ -14,7 +14,7 @@
     }
 
     //TEST-TURNIERE
-    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 2 ORDER BY jahr DESC, timestamp DESC, order_on_website, id DESC';
+    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 2 ORDER BY id DESC';//jahr DESC, startdatum DESC';//, order_on_website, id DESC';
     $result = $conn->query($sql);
     $testTurniere = array();
     $index = 1;
@@ -27,7 +27,7 @@
 
 
     //VERGANGENE TURNIERE
-    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 3 ORDER BY jahr DESC, order_on_website DESC, id DESC';
+    $sql = 'SELECT * FROM Turnier_Main WHERE fk_website = '. $websiteId .' AND type = 3 ORDER BY startdatum DESC, order_on_website DESC, id DESC';
     $result = $conn->query($sql);
     $history = array();
     $index = 1;

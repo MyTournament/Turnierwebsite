@@ -1,15 +1,18 @@
 <?php
+echo "<script>console.log('edit_account Checkpoint 1')</script>";
 include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
+include_once '../variables.php';
 
 $action = $_POST['action'];
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
 $fk_rechte = '30';
+echo "<script>console.log('edit_account Checkpoint 2')</script>";
 
 if($action == 'register'){
     $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort, fk_rechte) VALUES (?, ?, ?)";
-    $accountId = myDb_execute($conn, $TurnierID, $bn, $sql, array($bn, $pw, $fk_rechte));
+    //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: $accountId = myDb_execute($conn, $TurnierID, $bn, "edit_account.php", $sql, array($bn, $pw, $fk_rechte));
     //accountId könnte jetzt natürlich noch zurück zur index gegeben werden, damit man direkt eingeloggt ist
     //weiß aber leider nicht wie das geht ohne es im Klartext an die uri zu hängen
 }

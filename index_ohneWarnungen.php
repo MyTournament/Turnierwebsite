@@ -21,12 +21,12 @@ if($sperrung == 1){
 }
 
 
-include_once 'website_functionalities/load_website.php';
-$website_array = determine_domain_id($conn);
-$websiteId = $website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
-if ($websiteId == null){
+//include_once 'website_functionalities/load_website.php';
+//$website_array = determine_domain_id($conn);
+$websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
+/*if ($websiteId == null){
     echo "WEBSITE nicht gefunden";
-}
+}*/
 
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
@@ -106,7 +106,7 @@ include_once 'database/traffic_analytics.php';
 <?php
     echo "<script>console.log('WebsiteId: ' + $websiteId)</script>";
     include_once 'website_functionalities/countdown.php';
-    include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus
+    //include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus //TODO: WIEDER NUTZEN
     include_once 'database/db_update.php'; //Wichtig dass das nach Test-Modus-Abfrage kommt damit das mit aktualisierter TurnierID passiert
     try{
         db_update($conn, $TurnierID); //db_update.php AUSFÜHREN
@@ -123,13 +123,16 @@ include_once 'database/traffic_analytics.php';
 
     $gameEditMode = 0; //
     $expertenmodus = 0;
-    $gameEditMode = $_POST['gameEditMode'];
-    $expertenmodus = $_POST['expertenmodus'];
+    //$gameEditMode = $_POST['gameEditMode']; //TODO: WIEDER NUTZEN
+    //$expertenmodus = $_POST['expertenmodus']; //TODO: WIEDER NUTZEN
 
     //ANMELDUNG FÜR CMS
-    $bn = $_POST["bn"];
-    $pw = $_POST["pw"];
+    $bn = ''; //$_POST["bn"]; //TODO: WIEDER NUTZEN
+    $pw = ''; //$_POST["pw"]; //TODO: WIEDER NUTZEN
+
+	$test_turnier_id = 0; //TODO: temporäre Lösung
     
+	$edit_content_mode = False;
     $LoggedInWithCMSorHigher = False;
         foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 5") as $row) {
             if ($bn == $row["Benutzername"] && $pw == $row["Passwort"]) {
@@ -858,9 +861,21 @@ include_once 'database/traffic_analytics.php';
         </form>
 
         </br></br></br>
-        <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
-        <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-        <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+        <?php
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+                ";
+            }
+        ?>
+        
         
     </div>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
@@ -915,12 +930,18 @@ include_once 'database/traffic_analytics.php';
             <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
             <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
             */
-            echo"<h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>";
-            echo"
-            <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a> ";
-            
-            
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+                ";
+            }
             echo "</br></br></br>
             <h3><img src='images/icon/whatsapp.png' width='20' height='20' border='5' alt='Home'> Komm in die Gruppe</h3>
             <p>Tritt jetzt der Blankiball-Whatsapp-Gruppe bei um alle Turnier-Infos rechtzeitig mitzubekommen!</p> <!-- (... oder der Telegram-Gruppe, falls du kein Whatsapp hast oder Whatsapp kacke findest)-->

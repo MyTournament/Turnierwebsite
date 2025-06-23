@@ -14,7 +14,7 @@ include_once '../variables.php';
   //LOGIN
   $loginkuerzel = $_POST['Login_Kuerzel'];
   $loginpasswort = $_POST['Login_Passwort'];
-  $sqlLogin = "SELECT * FROM `Turnier_Team` WHERE kuerzel = '$loginkuerzel' AND password = '$loginpasswort' ORDER BY ID";
+  $sqlLogin = "SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND kuerzel = '$loginkuerzel' AND password = '$loginpasswort' ORDER BY ID";
   $resultLogin = $conn->query($sqlLogin);
   $successfulLogin = 0; //false
   while ( !empty( $rowLogin = $resultLogin->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
@@ -45,7 +45,7 @@ include_once '../variables.php';
               $auswaertsteamID = 0;
               //TeamIDs finden
               //Team 1
-              $sqlTeam1 = "SELECT * FROM `Turnier_Team` WHERE kuerzel = '$heimteamKuerzel' AND fk_turnier = '$TurnierID' ORDER BY ID";
+              $sqlTeam1 = "SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND kuerzel = '$heimteamKuerzel' AND fk_turnier = '$TurnierID' ORDER BY ID";
               $result1 = $conn->query($sqlTeam1);
               while ( !empty( $rowTeam1 = $result1->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
                   $heimteamID = $rowTeam1["id"];
@@ -53,7 +53,7 @@ include_once '../variables.php';
               }
               echo "<script>console.log('Team1 ID: $heimteamID | Kürzel: $heimteamKuerzel')</script>";
               //Team 2
-              $sqlTeam2 = "SELECT * FROM `Turnier_Team` WHERE kuerzel = '$auswaertsteamKuerzel' AND fk_turnier = '$TurnierID' ORDER BY ID";
+              $sqlTeam2 = "SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND kuerzel = '$auswaertsteamKuerzel' AND fk_turnier = '$TurnierID' ORDER BY ID";
               $result2 = $conn->query($sqlTeam2); 
               while ($rowTeam2 = $result2->fetch_assoc()) {
                   $auswaertsteamID = $rowTeam2["id"];

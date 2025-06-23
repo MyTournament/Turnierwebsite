@@ -28,7 +28,7 @@
         }
     }
     function setTeamPlatziertLevel($conn, $TurnierID, $TeamId, $ko_finallevel){
-        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `platziert_level` = '$ko_finallevel' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+        $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `platziert_level` = '$ko_finallevel' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
         if ( $stmt === false ){
             throw new Exception('platziert_level konnte nicht gesetzt werden.');
         }
@@ -70,7 +70,7 @@
         if($siege+$niederlagen != 0){ // nur wenn das Team schon gespielt hat 
             $siegesquote = ($siege/($siege+$niederlagen))*100;
             //IN DB SCHREIBEN
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `siegesquote` = '$siegesquote' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `siegesquote` = '$siegesquote' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
@@ -81,7 +81,7 @@
     }
     function setAllEndplatzierungen($conn, $TurnierID){
         //zählen wie viele Teams es gibt
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY ID';
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
         $resultTeamZeile = $conn->query($sqlTeam);
         $teamZaehler = 0;
         while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
@@ -90,11 +90,11 @@
         $platzierung = $teamZaehler;
         //GRUPPENPHASE
         //--------------------
-        $sql = 'SELECT * FROM Turnier_Team WHERE (platziert_level = 0 OR platziert_level = NULL) AND fk_turnier = '. $TurnierID .' ORDER BY siegesquote ASC, id DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND (platziert_level = 0 OR platziert_level = NULL) AND fk_turnier = '. $TurnierID .' ORDER BY siegesquote ASC, id DESC';
         $result = $conn->query($sql);
         while (!empty($row = $result->fetch_assoc())) {
             $TeamId = $row['id'];
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
@@ -106,11 +106,11 @@
 
         //KO-PHASE außer "Finale" und "Spiel um Platz 3" und "Halbfinale"
         //--------------------
-        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level > 3 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC, id DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level > 3 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC, id DESC';
         $result = $conn->query($sql);
         while (!empty($row = $result->fetch_assoc())) {
             $TeamId = $row['id'];
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
@@ -123,7 +123,7 @@
         //--------------------
 
         //Teams aus "Spiel um Platz 3" ermitteln
-        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC, id DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC, id DESC';
         $result = $conn->query($sql);
         $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
@@ -144,14 +144,14 @@
             }
 
             // Verliererteam: Platzierung setzen 
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 4 WHERE Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 4 WHERE geloescht = 0 AND Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
             $stmt->execute();
             
             // Gewinnerteam: Platzierung setzen 
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 3 WHERE Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 3 WHERE geloescht = 0 AND Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
@@ -162,7 +162,7 @@
         //--------------------
 
         //Teams aus "Finale" ermitteln
-        $sql = 'SELECT * FROM Turnier_Team WHERE platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC';
         $result = $conn->query($sql);
         $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
@@ -183,7 +183,7 @@
             }
 
             // Verliererteam: Platzierung setzen 
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 2 WHERE Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 2 WHERE geloescht = 0 AND Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
@@ -192,7 +192,7 @@
             $platzierung--;
             
             // Gewinnerteam: Platzierung setzen 
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 1 WHERE Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 1 WHERE geloescht = 0 AND Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
@@ -314,6 +314,7 @@
 
 //main
     function db_update($conn, $TurnierID){
+        echo '<script>console.log("TurnierID2: " '.$TurnierID.')</script>';
         // **ERROR HANDLING **
         //try {
         //Aktuelle Turnierphase herausfinden - erstmal ID
@@ -333,7 +334,7 @@
             }
             //Anzahl Teams zählen
             $counter = 0;
-            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = '. $TurnierID .' ORDER BY ID';
+            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .' ORDER BY ID';
             $resultTeam = $conn->query($sqlTeam);
             while ($rowTeam = $resultTeam->fetch_assoc()) {
                 $counter++;
@@ -354,7 +355,7 @@
                 //-> kleinstes: 4
                 //-> wenn es min. 3*8=24 Teams gibt, dann 8, dann hätte jede Gruppe 3 Teams
                 //anzahl_gruppen in Datenbank schreiben
-                $sqlTeamZaehlen = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY ID'; //Teams filtern die keine Gruppe haben
+                /*$sqlTeamZaehlen = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID'; //Teams filtern die keine Gruppe haben
                 $resultTeamZaehlen = $conn->query($sqlTeamZaehlen);
                 $teamZaehler = 0;
                 while (!empty($rowTeamZaehlen = $resultTeamZaehlen->fetch_assoc())) {
@@ -382,7 +383,7 @@
                     $anzahl_gruppen_database = $rowanzahl_gruppen['anzahl_gruppen'];
                 }
                 if($anzahl_gruppen_database!=$anzahl_gruppen){ //falls ungleich, alle Gruppen löschen
-                    $stmtTeams = $conn->prepare("UPDATE `Turnier_Team` SET `fk_gruppe` = NULL WHERE fk_turnier = '$TurnierID';");
+                    $stmtTeams = $conn->prepare("UPDATE `Turnier_Team` SET `fk_gruppe` = NULL WHERE geloescht = 0 AND fk_turnier = '$TurnierID';");
                     if ( $stmtTeams === false ){
                         throw new Exception('Es wurde versucht, alle Gruppen zu löschen. Das ist fehlgeschlagen.');
                     }
@@ -401,7 +402,13 @@
                 if ( $stmt2 === false ){
                     throw new Exception('start_ko_finallevel konnte nicht in die Datenbank geschrieben werden.');
                 }
-                $stmt2->execute();
+                $stmt2->execute();*/
+
+                $sqlanzahl_gruppen = 'SELECT * FROM Turnier_Main WHERE id = ' . $TurnierID . ' ORDER BY id'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
+                $resultanzahl_gruppen = $conn->query($sqlanzahl_gruppen);
+                while ($rowanzahl_gruppen = $resultanzahl_gruppen->fetch_assoc()) {
+                    $anzahl_gruppen_database = $rowanzahl_gruppen['anzahl_gruppen'];
+                }
 
                 //checken ob es schon genug/zu viel Gruppen gibt
                 $sqlGruppenZaehlen = 'SELECT * FROM Turnier_Gruppe WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
@@ -410,8 +417,8 @@
                 while ($rowGruppenZaehlen = $resultGruppenZaehlen->fetch_assoc()) {
                     $gruppenZaehler++;
                 }
-                if($gruppenZaehler<$anzahl_gruppen){ //zu wenig Gruppen -> erstellen
-                    $fehlendeGruppen = $anzahl_gruppen-$gruppenZaehler; //Differenz -> so viele Gruppen fehlen noch
+                if($gruppenZaehler<$anzahl_gruppen_database){ //zu wenig Gruppen -> erstellen
+                    $fehlendeGruppen = $anzahl_gruppen_database-$gruppenZaehler; //Differenz -> so viele Gruppen fehlen noch
                     $gruppennameId = 1;
                     while($fehlendeGruppen>0){
                         //passenden Gruppennamen aus der DB abfragen
@@ -434,8 +441,8 @@
                         $fehlendeGruppen--;
                     }
 
-                }else if($anzahl_gruppen<$gruppenZaehler){ //zu viel Gruppen -> löschen
-                    $zuVieleGruppen = $gruppenZaehler-$anzahl_gruppen; //Differenz -> so viele Gruppen sind zu viel da
+                }else if($anzahl_gruppen_database<$gruppenZaehler){ //zu viel Gruppen -> löschen
+                    $zuVieleGruppen = $gruppenZaehler-$anzahl_gruppen_database; //Differenz -> so viele Gruppen sind zu viel da
                     while($zuVieleGruppen>0){
                         //Gruppen löschen
                         //echo "<script>console.log('###############gruppe löschen############');</script>";
@@ -448,6 +455,7 @@
                         $zuVieleGruppen--;
                     }
                 }else {} //richtige Anzahl an Gruppen -> nichts tun
+                
 
 
         }if($turnier_phase_ID == 5  || $turnier_phase_ID == 11){ //Gruppeneinteilung ODER Debug-Modus
@@ -462,7 +470,7 @@
                 while ($rowGruppenGroessen = $resultGruppenGroessen->fetch_assoc()) {
                     //Teams der Gruppe zählen
                     $gruppe = $rowGruppenGroessen['id'];
-                    $sqlTeamZaehlen = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppe . ' ORDER BY CHAR_LENGTH(name)'; //Teams filtern die keine Gruppe haben
+                    $sqlTeamZaehlen = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppe . ' ORDER BY CHAR_LENGTH(name)'; //Teams filtern die keine Gruppe haben
                     $resultTeamZaehlen = $conn->query($sqlTeamZaehlen);
                     $teamZaehler = 0;
                     while (!empty($rowTeamZaehlen = $resultTeamZaehlen->fetch_assoc())) {
@@ -485,11 +493,11 @@
                 //echo "<script>console.log('Key vom Minimum: " . $key . " ');</script>";
 
                 //TEAMS DEN GRUPPEN ZUORDNEN
-                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe is NULL ORDER BY ID'; //Teams filtern die keine Gruppe haben
+                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe is NULL ORDER BY ID'; //Teams filtern die keine Gruppe haben
                 $resultTeamZeile = $conn->query($sqlTeam);
                 while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
                     $teamID = $rowTeamZeile["id"]; //ID des gefundenen Teams speichern
-                    $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `fk_gruppe` = '$key' WHERE `Turnier_Team`.`id` = '$teamID';");
+                    $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `fk_gruppe` = '$key' WHERE geloescht = 0 AND `Turnier_Team`.`id` = '$teamID';");
                     if ( $stmt === false ){
                         throw new Exception('Teams konnten nicht den Gruppen zugeordnet werden.');
                     }
@@ -508,7 +516,7 @@
             //STATUS SETZEN
                 //Hier wird allen Begegnungen der Status auf 2 (als veraltet vormarkiert) gesetzt, immer wenn eine Begegung im folgenden dann bei einer Berechnung auftaucht, wird der Status auf 1 (nicht veraltet) gesetzt
                 //Am Ende werden dann alle Begegnung mit Status veraltet gelöscht
-                $stmtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET `status` = 2 WHERE `status` = 1 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '$TurnierID')");
+                $stmtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET `status` = 2 WHERE `status` = 1 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID')");
                 if ( $stmtVeralteteBegegnung === false ){
                     throw new Exception('veraltet-Status aller Begegnungen konnte nicht auf TRUE gesetzt werden.');
                 }
@@ -520,7 +528,7 @@
                 $resultGruppe = $conn->query($sqlGruppe);
                 while ($rowGruppe = $resultGruppe->fetch_assoc()) {
                     $array = array(); //WIRD FÜR SCHALTER UNTEN BENÖTIGT
-                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY ID';
+                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY ID';
                     $resultTeamZeile = $conn->query($sqlTeam);
                     while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
                         $resultTeamSpalte = $conn->query($sqlTeam);
@@ -571,7 +579,7 @@
                                         }
                                         $stmtBegegnungGruppenphase->execute();
                                     }else{ //Wenn Begegnung schon existiert, dann muss der Status geupdated werden
-                                        $stmtNichtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET status = 1 WHERE status <> 4 AND status <> 5 AND fk_heimteam = '$TeamZeileID' AND fk_auswaertsteam = '$TeamSpalteID' AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '$TurnierID')");
+                                        $stmtNichtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET status = 1 WHERE status <> 4 AND status <> 5 AND fk_heimteam = '$TeamZeileID' AND fk_auswaertsteam = '$TeamSpalteID' AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID')");
                                         if ( $stmtNichtVeralteteBegegnung === false ){
                                             throw new Exception('veraltet-Status der Gruppenphase konnte nicht geupdated werden.');
                                         }
@@ -586,10 +594,10 @@
             
                 //PUNKTE FÜR PUNKTETABELLE DER GRUPPENPHASE BERECHNEN
                 // TODO Priorität der Sortierung: Punkte -> direkter Vergleich -> Bierdifferenz -> meiste eigenen getrunkenen Biere  
-                $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ')'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
+                $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ')'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
                 $resultGruppe = $conn->query($sqlGruppe);
                 while ($rowGruppe = $resultGruppe->fetch_assoc()) {
-                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY ID';
+                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY ID';
                     $resultTeamZeile = $conn->query($sqlTeam);
                     while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
                     $teamID=$rowTeamZeile["id"];					  
@@ -629,7 +637,7 @@
                             }
                         }			
                     }
-                    $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `gruppenphase_spiele` = '$SpieleZaehler', `gruppenphase_flaschen` = '$FlaschenZaehler', `gruppenphase_punkte` = '$PunkteZaehler' WHERE `Turnier_Team`.`id` = '$teamID';");
+                    $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `gruppenphase_spiele` = '$SpieleZaehler', `gruppenphase_flaschen` = '$FlaschenZaehler', `gruppenphase_punkte` = '$PunkteZaehler' WHERE geloescht = 0 AND `Turnier_Team`.`id` = '$teamID';");
                     if ( $stmt === false ){
                         throw new Exception('Punkte, Flaschen bzw Spiele konnten nicht geupdated werden (Gruppenphase).');
                     }
@@ -648,245 +656,301 @@
                     }
                     $ko_finallevel = $start_ko_finallevel; //Zähler
 
+                
                 //HIER ERSTMAL NUR ERSTE FINALSTUFE
-                    //TODO: WHERE PUNKTE > 0 (damit nicht schon von Anfang an erstellt wird) - BZW. TODO: erst wenn final - in ganzer Gruppe
-                    $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
-                    $resultGruppe = $conn->query($sqlGruppe);
                     
-                    //TURNIERBAUMPOSITION
-                        //TODO:Idee: Die Begegnungen werden immer abwechselnd in der ersten und in der zweiten Hälfte des Turnierbaums erstellt, damit Teams, die in gleichen Gruppen waren, erst im Finale wieder matchen können
-                        $zaehlerForKoPosition = 1;
-                        $zaehlerUngerade = 1;
-                        $zaehlerGerade = ($anzahl_gruppen/2)+1; //also bei 8 Gruppen -> 5
-                    
-                    while ($rowGruppe = $resultGruppe->fetch_assoc()) {
-                        if($zaehlerForKoPosition % 2 == 1){ //immer nur bei den ungeraden Gruppenzahlen diesen Prozess ausführen
-                            //TURNIERBAUMPOSITION
-                                //jetzt richtigen Wert berechnen
-                                    /*$ko_position = 0;
-                                    if($zaehlerForKoPosition % 2 == 1){ //wenn ungerade
-                                        $ko_position = $zaehlerUngerade;
-                                        $zaehlerUngerade++;
-                                    }else{
-                                        $ko_position = $zaehlerGerade;
-                                        $zaehlerGerade++;
-                                    }*/
-                            //13 24 57 68
-                            //1; 2->3; 3->2; 4; 5; 6->7; 7->6; 8
-                            //TODO: Das hier ist aktuell nur für den Fall programmiert, dass das hier ein Achtelfinale ist
-                            $ko_position_team1 = 0;
-                            $ko_position_team2 = 0;
-                            switch ($zaehlerForKoPosition) {
-                                case 1:
+                    //Checken ob die erste Finalstufe manuell angelegt wird oder berechnet werden soll
+                    $sql_einzug_ko_manuell_anlegen = 'SELECT * FROM Turnier_Main WHERE id = '. $TurnierID .'';
+                    $result_einzug_ko_manuell_anlegen = $conn->query($sql_einzug_ko_manuell_anlegen);
+                    while ($row_einzug_ko_manuell_anlegen = $result_einzug_ko_manuell_anlegen->fetch_assoc()) {
+                        $einzug_ko_manuell_anlegen = $row_einzug_ko_manuell_anlegen["einzug_ko_manuell_anlegen"];
+                    }
+                    echo "<script>console.log('TurnierID: " . $TurnierID . "' );</script>";
+                    echo "<script>console.log('einzug_ko_manuell_anlegen: " . $einzug_ko_manuell_anlegen . "' );</script>";
+                    if($einzug_ko_manuell_anlegen==0){
+
+                        //TODO: WHERE PUNKTE > 0 (damit nicht schon von Anfang an erstellt wird) - BZW. TODO: erst wenn final - in ganzer Gruppe
+                        $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
+                        $resultGruppe = $conn->query($sqlGruppe);
+                        
+                        //TURNIERBAUMPOSITION
+                            //Die Begegnungen werden immer abwechselnd in der ersten und in der zweiten Hälfte des Turnierbaums erstellt, damit Teams, die in gleichen Gruppen waren, erst im Finale wieder matchen können
+                            $zaehlerForKoPosition = 1;
+                            $zaehlerUngerade = 1;
+                            $zaehlerGerade = ($anzahl_gruppen/2)+1; //also bei 8 Gruppen -> 5
+                        
+                        while ($rowGruppe = $resultGruppe->fetch_assoc()) {
+                            if($zaehlerForKoPosition % 2 == 1){ //immer nur bei den ungeraden Gruppenzahlen diesen Prozess ausführen
+                                //TURNIERBAUMPOSITION
+                                    //jetzt richtigen Wert berechnen
+                                        /*$ko_position = 0;
+                                        if($zaehlerForKoPosition % 2 == 1){ //wenn ungerade
+                                            $ko_position = $zaehlerUngerade;
+                                            $zaehlerUngerade++;
+                                        }else{
+                                            $ko_position = $zaehlerGerade;
+                                            $zaehlerGerade++;
+                                        }*/
+                                //13 24 57 68
+                                //1; 2->3; 3->2; 4; 5; 6->7; 7->6; 8
+                                
+                                $ko_position_team1 = 0;
+                                $ko_position_team2 = 0;
+                                if ($anzahl_gruppen==2){ //SONDERFALL: Nur zwei Gruppen in Gruppenphase - dann soll natürlich nicht versetzt verteilt werden
                                     $ko_position_team1 = 1;
-                                    $ko_position_team2 = 3;
-                                    break;
-                                case 3:
-                                    $ko_position_team1 = 2;
-                                    $ko_position_team2 = 4;
-                                    break;
-                                case 5:
-                                    $ko_position_team1 = 5;
-                                    $ko_position_team2 = 7;
-                                    break;
-                                case 7:
-                                    $ko_position_team1 = 6;
-                                    $ko_position_team2 = 8;
-                                    break;                         
-                            }
-
-                            $gruppeID = $rowGruppe["id"];
-                            $turnierposition_for_ko = $rowGruppe["turnierposition_for_ko"];
-                            
-                            //Nächste Gruppe finden - damit erster aus aktueller Gruppe mit zweitem aus nächster Gruppe eine Begegnung bekommt
-                            $resultNextGruppe = $conn->query($sqlGruppe);
-                            while ($rowNextGruppe = $resultNextGruppe->fetch_assoc()) {
-                                //Gruppe mit ID 1 höher als der ID der aktuellen Gruppe finden
-                                $gruppeNextID = 0;
-                                if($rowGruppe["turnierposition_for_ko"] != NULL){ //turnierposition_for_ko sollte nur Kriterium sein, wenn sie auch vergeben wurde 
-                                    if($rowNextGruppe["turnierposition_for_ko"] > $turnierposition_for_ko){
-                                        $gruppeNextID = $rowNextGruppe["id"];
-                                        break;
-                                    }
-                                }else{ //Fall dass die turnierposition_for_ko noch nicht manuell vergeben wurde
-                                    if($rowNextGruppe["id"] > $gruppeID){
-                                        $gruppeNextID = $rowNextGruppe["id"];
-                                        break;
+                                    $ko_position_team2 = 2;
+                                }else{ //FALL: Mehr als zwei Gruppen in Gruppenphase - dann werden Teams versetzt verteilt auf KO-Plätze
+                                    switch ($zaehlerForKoPosition) {
+                                        case 1:
+                                            $ko_position_team1 = 1;
+                                            $ko_position_team2 = 3;
+                                            break;
+                                        case 3:
+                                            $ko_position_team1 = 2;
+                                            $ko_position_team2 = 4;
+                                            break;
+                                        case 5:
+                                            $ko_position_team1 = 5;
+                                            $ko_position_team2 = 7;
+                                            break;
+                                        case 7:
+                                            $ko_position_team1 = 6;
+                                            $ko_position_team2 = 8;
+                                            break;                         
                                     }
                                 }
+
+                                $gruppeID = $rowGruppe["id"];
+                                $turnierposition_for_ko = $rowGruppe["turnierposition_for_ko"];
                                 
-                            }
-                            //Alt: falls es keine nächste Gruppe gibt, dann kleinste ID
-                            /*if ($gruppeNextID == 0){
-                                $sqlFirstGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc LIMIT 1';
-                                $resultFirstGruppe = $conn->query($sqlFirstGruppe);
-                                while ($rowFirstGruppe = $resultFirstGruppe->fetch_assoc()) {
-                                    $gruppeNextID = $rowFirstGruppe["id"];
+                                //Nächste Gruppe finden - damit erster aus aktueller Gruppe mit zweitem aus nächster Gruppe eine Begegnung bekommt
+                                $resultNextGruppe = $conn->query($sqlGruppe);
+                                while ($rowNextGruppe = $resultNextGruppe->fetch_assoc()) {
+                                    //Gruppe mit ID 1 höher als der ID der aktuellen Gruppe finden
+                                    $gruppeNextID = 0;
+                                    if($rowGruppe["turnierposition_for_ko"] != NULL){ //turnierposition_for_ko sollte nur Kriterium sein, wenn sie auch vergeben wurde 
+                                        if($rowNextGruppe["turnierposition_for_ko"] > $turnierposition_for_ko){
+                                            $gruppeNextID = $rowNextGruppe["id"];
+                                            break;
+                                        }
+                                    }else{ //Fall dass die turnierposition_for_ko noch nicht manuell vergeben wurde
+                                        if($rowNextGruppe["id"] > $gruppeID){
+                                            $gruppeNextID = $rowNextGruppe["id"];
+                                            break;
+                                        }
+                                    }
+                                    
+                                }
+                                //Alt: falls es keine nächste Gruppe gibt, dann kleinste ID
+                                /*if ($gruppeNextID == 0){
+                                    $sqlFirstGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc LIMIT 1';
+                                    $resultFirstGruppe = $conn->query($sqlFirstGruppe);
+                                    while ($rowFirstGruppe = $resultFirstGruppe->fetch_assoc()) {
+                                        $gruppeNextID = $rowFirstGruppe["id"];
+                                        break;
+                                    }
+                                }else{}*/
+
+                                //Erstes Team der aktuellen Gruppe finden
+                                $sql = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc LIMIT 1';
+                                $result = $conn->query($sql);
+                                //Erstes Team auswählen
+                                $team1Gruppe1ID = 0;
+                                while (!empty($row = $result->fetch_assoc())) {
+                                    $team1Gruppe1ID = $row["id"];
                                     break;
                                 }
-                            }else{}*/
+                                //Zweites Team der aktuellen Gruppe finden
+                                $sql = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
+                                $result = $conn->query($sql);
+                                //Zweites Team auswählen
+                                $zaehler = 0;
+                                $team2Gruppe1ID = 0;
+                                while (!empty($row = $result->fetch_assoc())) {
+                                    if($zaehler == 1){
+                                        $team2Gruppe1ID = $row["id"];
+                                        break;
+                                    }else{
+                                        $zaehler++;
+                                    }
+                                }
 
-                            //Erstes Team der aktuellen Gruppe finden
-                            $sql = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc LIMIT 1';
-                            $result = $conn->query($sql);
-                            //Erstes Team auswählen
-                            $team1Gruppe1ID = 0;
-                            while (!empty($row = $result->fetch_assoc())) {
-                                $team1Gruppe1ID = $row["id"];
-                                break;
-                            }
-                            //Zweites Team der aktuellen Gruppe finden
-                            $sql = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
-                            $result = $conn->query($sql);
-                            //Zweites Team auswählen
-                            $zaehler = 0;
-                            $team2Gruppe1ID = 0;
-                            while (!empty($row = $result->fetch_assoc())) {
-                                if($zaehler == 1){
-                                    $team2Gruppe1ID = $row["id"];
+                                //Erstes Team der nächsten Gruppe finden
+                                $sql = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeNextID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc LIMIT 1';
+                                $result = $conn->query($sql);
+                                //Erstes Team auswählen
+                                $team1Gruppe2ID = 0;
+                                while (!empty($row = $result->fetch_assoc())) {
+                                    $team1Gruppe2ID = $row["id"];
                                     break;
-                                }else{
-                                    $zaehler++;
                                 }
-                            }
+                                //Zweites Team der nächsten Gruppe finden
+                                $sql = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeNextID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
+                                $result = $conn->query($sql);
+                                //Zweites Team auswählen
+                                $zaehler = 0;
+                                $team2Gruppe2ID = 0;
+                                while (!empty($row = $result->fetch_assoc())) {
+                                    if($zaehler == 1){
+                                        $team2Gruppe2ID = $row["id"];
+                                        break;
+                                    }else{
+                                        $zaehler++;
+                                    }
+                                }
 
-                            //Erstes Team der nächsten Gruppe finden
-                            $sql = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeNextID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc LIMIT 1';
-                            $result = $conn->query($sql);
-                            //Erstes Team auswählen
-                            $team1Gruppe2ID = 0;
-                            while (!empty($row = $result->fetch_assoc())) {
-                                $team1Gruppe2ID = $row["id"];
-                                break;
-                            }
-                            //Zweites Team der nächsten Gruppe finden
-                            $sql = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $gruppeNextID . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
-                            $result = $conn->query($sql);
-                            //Zweites Team auswählen
-                            $zaehler = 0;
-                            $team2Gruppe2ID = 0;
-                            while (!empty($row = $result->fetch_assoc())) {
-                                if($zaehler == 1){
-                                    $team2Gruppe2ID = $row["id"];
-                                    break;
-                                }else{
-                                    $zaehler++;
+                                //Herausfinden ob in beiden Gruppen ALLE Spiele gespielt wurden
+                                //-> nur Spiele erstellen wenn alle Spiele in beiden Gruppen gemacht wurden
+                                $allebegegnungenInGruppeFinal = 1; //TRUE
+                                //Aktuelle Gruppe
+                                $sqlFirstBegegnungen = 'SELECT * FROM Turnier_Begegnung, Turnier_Team a, Turnier_Team b WHERE a.geloescht = 0 AND b.geloescht = 0 AND Turnier_Begegnung.status <> 3 AND Turnier_Begegnung.ko_finallevel = 0 AND Turnier_Begegnung.fk_heimteam = a.id AND Turnier_Begegnung.fk_auswaertsteam = b.id AND a.fk_gruppe = '. $gruppeID .' AND b.fk_gruppe = '. $gruppeID .'';
+                                $resultFirstBegegnungen = $conn->query($sqlFirstBegegnungen);
+                                while (!empty($rowFirstBegegnungen = $resultFirstBegegnungen->fetch_assoc())) {
+                                    $begegnungsStatus = $rowFirstBegegnungen['status'];
+                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
+                                        $allebegegnungenInGruppeFinal=0; //FALSE
+                                    }
                                 }
-                            }
-
-                            //Herausfinden ob in beiden Gruppen ALLE Spiele gespielt wurden
-                            //-> nur Spiele erstellen wenn alle Spiele in beiden Gruppen gemacht wurden
-                            $allebegegnungenInGruppeFinal = 1; //TRUE
-                            //Aktuelle Gruppe
-                            $sqlFirstBegegnungen = 'SELECT * FROM Turnier_Begegnung, Turnier_Team a, Turnier_Team b WHERE Turnier_Begegnung.status <> 3 AND Turnier_Begegnung.ko_finallevel = 0 AND Turnier_Begegnung.fk_heimteam = a.id AND Turnier_Begegnung.fk_auswaertsteam = b.id AND a.fk_gruppe = '. $gruppeID .' AND b.fk_gruppe = '. $gruppeID .'';
-                            $resultFirstBegegnungen = $conn->query($sqlFirstBegegnungen);
-                            while (!empty($rowFirstBegegnungen = $resultFirstBegegnungen->fetch_assoc())) {
-                                $begegnungsStatus = $rowFirstBegegnungen['status'];
-                                if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
-                                    $allebegegnungenInGruppeFinal=0; //FALSE
-                                }
-                            }
-                            //Nächste Gruppe
-                            $sqlSecondBegegnungen = 'SELECT * FROM Turnier_Begegnung, Turnier_Team a, Turnier_Team b WHERE Turnier_Begegnung.status <> 3 AND Turnier_Begegnung.ko_finallevel = 0 AND Turnier_Begegnung.fk_heimteam = a.id AND Turnier_Begegnung.fk_auswaertsteam = b.id AND a.fk_gruppe = '. $gruppeNextID .' AND b.fk_gruppe = '. $gruppeNextID .'';
-                            $resultSecondBegegnungen = $conn->query($sqlSecondBegegnungen);
-                            while (!empty($rowSecondBegegnungen = $resultSecondBegegnungen->fetch_assoc())) {
-                                $begegnungsStatus = $rowSecondBegegnungen['status'];
-                                if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
-                                    $allebegegnungenInGruppeFinal=0; //FALSE
-                                }
-                            }
-
-                            //Nur erstellen wenn gerade eben berechnet wurde dass alle Begegnungen in beiden Gruppen final sind
-                            if($allebegegnungenInGruppeFinal == 1){
-                                //zählen wie viele Teams in Gruppe
-                                $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeID .' AND fk_turnier = '. $TurnierID .' ORDER BY gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele asc';
-                                $resultRausgeflogen = $conn->query($sqlRausgeflogen);
-                                $counter = 0;
-                                while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
-                                    $counter++;
-                                }
-                                //LIMIT IST counter-2 weil 2 Teams weiterkommen
-                                $counter=$counter-2;
-                                //allen Teams, die rausgefolgen sind eine Platzierung zuweisen
-                                $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
-                                $resultRausgeflogen = $conn->query($sqlRausgeflogen);
-                                while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
-                                    $verliererTeam1ID = $rowRausgeflogen['id'];
-                                    setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
-                                }
-                                
                                 //Nächste Gruppe
-                                //zählen wie viele Teams in Gruppe
-                                $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeNextID .' AND fk_turnier = '. $TurnierID .' ORDER BY gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele asc';
-                                $resultRausgeflogen = $conn->query($sqlRausgeflogen);
-                                $counter = 0;
-                                while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
-                                    $counter++;
-                                }
-                                //LIMIT IST counter-2 weil 2 Teams weiterkommen
-                                $counter=$counter-2;
-                                //allen Teams, die rausgefolgen sind eine Platzierung zuweisen
-                                $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeNextID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
-                                $resultRausgeflogen = $conn->query($sqlRausgeflogen);
-                                while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
-                                    $verliererTeam1ID = $rowRausgeflogen['id'];
-                                    setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
+                                $sqlSecondBegegnungen = 'SELECT * FROM Turnier_Begegnung, Turnier_Team a, Turnier_Team b WHERE a.geloescht = 0 AND b.geloescht = 0 AND Turnier_Begegnung.status <> 3 AND Turnier_Begegnung.ko_finallevel = 0 AND Turnier_Begegnung.fk_heimteam = a.id AND Turnier_Begegnung.fk_auswaertsteam = b.id AND a.fk_gruppe = '. $gruppeNextID .' AND b.fk_gruppe = '. $gruppeNextID .'';
+                                $resultSecondBegegnungen = $conn->query($sqlSecondBegegnungen);
+                                while (!empty($rowSecondBegegnungen = $resultSecondBegegnungen->fetch_assoc())) {
+                                    $begegnungsStatus = $rowSecondBegegnungen['status'];
+                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
+                                        $allebegegnungenInGruppeFinal=0; //FALSE
+                                    }
                                 }
 
-                                //Erste Finalstufe erstellen (könnte zB Viertel- oder Achtelfinale sein)
+                                //Nur erstellen wenn gerade eben berechnet wurde dass alle Begegnungen in beiden Gruppen final sind
+                                if($allebegegnungenInGruppeFinal == 1){
+                                    //zählen wie viele Teams in Gruppe
+                                    $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = '. $gruppeID .' AND fk_turnier = '. $TurnierID .' ORDER BY gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele asc';
+                                    $resultRausgeflogen = $conn->query($sqlRausgeflogen);
+                                    $counter = 0;
+                                    while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
+                                        $counter++;
+                                    }
+                                    //LIMIT IST counter-2 weil 2 Teams weiterkommen
+                                    $counter=$counter-2;
+                                    //allen Teams, die rausgefolgen sind eine Platzierung zuweisen
+                                    $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = '. $gruppeID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
+                                    $resultRausgeflogen = $conn->query($sqlRausgeflogen);
+                                    while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
+                                        $verliererTeam1ID = $rowRausgeflogen['id'];
+                                        setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
+                                    }
+                                    
+                                    //Nächste Gruppe
+                                    //zählen wie viele Teams in Gruppe
+                                    $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE fk_gruppe = '. $gruppeNextID .' AND fk_turnier = '. $TurnierID .' ORDER BY gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele asc';
+                                    $resultRausgeflogen = $conn->query($sqlRausgeflogen);
+                                    $counter = 0;
+                                    while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
+                                        $counter++;
+                                    }
+                                    //LIMIT IST counter-2 weil 2 Teams weiterkommen
+                                    $counter=$counter-2;
+                                    //allen Teams, die rausgefolgen sind eine Platzierung zuweisen
+                                    $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = '. $gruppeNextID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
+                                    $resultRausgeflogen = $conn->query($sqlRausgeflogen);
+                                    while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
+                                        $verliererTeam1ID = $rowRausgeflogen['id'];
+                                        setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
+                                    }
 
-                                //Erste Konstellation
-                                //Erst gucken ob es schon eine Begegnung gibt
-                                $sqlKOBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam = ' . $team1Gruppe1ID . ' AND fk_auswaertsteam = ' . $team2Gruppe2ID . ' AND ko_finallevel = ' . $ko_finallevel . ' ORDER BY ID'; //NICHT status <> 3 !!!
-                                $resultKOBegegnung = $conn->query($sqlKOBegegnung);
-                                //Wenn es keine gibt, dann einfügen
-                                if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
-                                    $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team1Gruppe1ID, $team2Gruppe2ID, NULL, $ko_finallevel, $ko_position_team1, 1);"); //(?, ?, ?, ?, ?, ?, ?)
-                                    //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
-                                    if ( $stmt === false ){
-                                        throw new Exception('Eine Begegnung der ersten Finalstufe konnte nicht erstellt werden.');
-                                    }
-                                    $stmt->execute();
-                                }else{ //Wenn Begegnung schon existiert, dann muss der veraltet-Status geupdated werden
-                                    //TODO: Auch Fall bedenken, dass es zwei gleiche Begegnungen gibt, dann würden hier beide als nicht unnötig markiert werden. -> Gibts da ne Lösung? - Theoretisch werden ja eigentlich nie zwei gleiche Begegnungen erstellt?
-                                    $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_position_team1 .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team1Gruppe1ID .' AND fk_auswaertsteam = '. $team2Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
-                                    if ( $stmtNichtVeralteteBegegnung === false ){
-                                        throw new Exception('Veraltet-Status der ersten Finalstufe konnte nicht geupdated werden.');
-                                    }
-                                    $stmtNichtVeralteteBegegnung->execute();
-                                }
+                                    //Erste Finalstufe erstellen (könnte zB Viertel- oder Achtelfinale sein)
 
-                                //Zweite Konstellation
-                                //Erst gucken ob es schon eine Begegnung gibt
-                                $sqlKOBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam = ' . $team2Gruppe1ID . ' AND fk_auswaertsteam = ' . $team1Gruppe2ID . ' AND ko_finallevel = ' . $ko_finallevel . ' ORDER BY ID'; //NICHT status <> 3 !!!
-                                $resultKOBegegnung = $conn->query($sqlKOBegegnung);
-                                //Wenn es keine gibt, dann einfügen
-                                if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
-                                    $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team2Gruppe1ID, $team1Gruppe2ID, NULL, $ko_finallevel, $ko_position_team2, 1);"); //(?, ?, ?, ?, ?, ?, ?)
-                                    //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
-                                    if ( $stmt === false ){
-                                        throw new Exception('Eine Begegnung der ersten Finalstufe konnte nicht erstellt werden.');
+                                    //Erste Konstellation
+                                    //Erst gucken ob es schon eine Begegnung gibt
+                                    $sqlKOBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam = ' . $team1Gruppe1ID . ' AND fk_auswaertsteam = ' . $team2Gruppe2ID . ' AND ko_finallevel = ' . $ko_finallevel . ' ORDER BY ID'; //NICHT status <> 3 !!!
+                                    $resultKOBegegnung = $conn->query($sqlKOBegegnung);
+                                    //Wenn es keine gibt, dann einfügen
+                                    if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
+                                        $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team1Gruppe1ID, $team2Gruppe2ID, NULL, $ko_finallevel, $ko_position_team1, 1);"); //(?, ?, ?, ?, ?, ?, ?)
+                                        //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
+                                        if ( $stmt === false ){
+                                            throw new Exception('Eine Begegnung der ersten Finalstufe konnte nicht erstellt werden.');
+                                        }
+                                        $stmt->execute();
+                                    }else{ //Wenn Begegnung schon existiert, dann muss der veraltet-Status geupdated werden
+                                        //TODO: Auch Fall bedenken, dass es zwei gleiche Begegnungen gibt, dann würden hier beide als nicht unnötig markiert werden. -> Gibts da ne Lösung? - Theoretisch werden ja eigentlich nie zwei gleiche Begegnungen erstellt?
+                                        $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_position_team1 .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team1Gruppe1ID .' AND fk_auswaertsteam = '. $team2Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
+                                        if ( $stmtNichtVeralteteBegegnung === false ){
+                                            throw new Exception('Veraltet-Status der ersten Finalstufe konnte nicht geupdated werden.');
+                                        }
+                                        $stmtNichtVeralteteBegegnung->execute();
                                     }
-                                    $stmt->execute();
-                                }else{ //Wenn Begegnung schon existiert, dann muss der veraltet-Status geupdated werden
-                                    //TODO: Auch Fall bedenken, dass es zwei gleiche Begegnungen gibt, dann würden hier beide als nicht unnötig markiert werden. -> Gibts da ne Lösung? - Theoretisch werden ja eigentlich nie zwei gleiche Begegnungen erstellt?
-                                    $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_position_team2 .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team2Gruppe1ID .' AND fk_auswaertsteam = '. $team1Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
-                                    if ( $stmtNichtVeralteteBegegnung === false ){
-                                        throw new Exception('Veraltet-Status der ersten Finalstufe konnte nicht geupdated werden.');
+
+                                    //Zweite Konstellation
+                                    //Erst gucken ob es schon eine Begegnung gibt
+                                    $sqlKOBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam = ' . $team2Gruppe1ID . ' AND fk_auswaertsteam = ' . $team1Gruppe2ID . ' AND ko_finallevel = ' . $ko_finallevel . ' ORDER BY ID'; //NICHT status <> 3 !!!
+                                    $resultKOBegegnung = $conn->query($sqlKOBegegnung);
+                                    //Wenn es keine gibt, dann einfügen
+                                    if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
+                                        $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team2Gruppe1ID, $team1Gruppe2ID, NULL, $ko_finallevel, $ko_position_team2, 1);"); //(?, ?, ?, ?, ?, ?, ?)
+                                        //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
+                                        if ( $stmt === false ){
+                                            throw new Exception('Eine Begegnung der ersten Finalstufe konnte nicht erstellt werden.');
+                                        }
+                                        $stmt->execute();
+                                    }else{ //Wenn Begegnung schon existiert, dann muss der veraltet-Status geupdated werden
+                                        //TODO: Auch Fall bedenken, dass es zwei gleiche Begegnungen gibt, dann würden hier beide als nicht unnötig markiert werden. -> Gibts da ne Lösung? - Theoretisch werden ja eigentlich nie zwei gleiche Begegnungen erstellt?
+                                        $stmtNichtVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_position_team2 .' WHERE status <> 4 AND status <> 5 AND fk_heimteam = '. $team2Gruppe1ID .' AND fk_auswaertsteam = '. $team1Gruppe2ID .' AND ko_finallevel = '. $ko_finallevel .' ORDER BY ID');// AND fk_heimteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Team WHERE fk_turnier = '. $TurnierID .')');
+                                        if ( $stmtNichtVeralteteBegegnung === false ){
+                                            throw new Exception('Veraltet-Status der ersten Finalstufe konnte nicht geupdated werden.');
+                                        }
+                                        $stmtNichtVeralteteBegegnung->execute();
                                     }
-                                    $stmtNichtVeralteteBegegnung->execute();
+                                }else{
+                                    //do nothing
                                 }
-                            }else{
-                                //do nothing
+                            }
+                            $zaehlerForKoPosition++;
+                        }    
+
+                    }else{ //FALL: SCHALTER GELEGT AUF MANUELLE PLATZIERUNG IN ERSTEM KO-LEVEL
+
+                        //Alle Teams die keinen manuellen KO-Platz bekommen, sollen Platzierung bekommen
+                        //Deswegen wird erst geschaut, welche Teams einen KO-Platz haben
+                        $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $start_ko_finallevel . ' AND `status` <> 3 
+                            AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
+                            AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
+                            ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
+                        
+                        $teamsDieWeiterSindArray = array();
+
+                        $resultBegegnung = $conn->query($sqlBegegnung);
+                        while (!empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
+                            $fk_heimteam = $rowBegegnung["fk_heimteam"];
+                            $fk_auswaertsteam = $rowBegegnung["fk_auswaertsteam"];
+
+                            $teamsDieWeiterSindArray[] = $fk_heimteam;
+                            $teamsDieWeiterSindArray[] = $fk_auswaertsteam;
+                        }
+                        
+                        $teamsDieWeiterSindArrayJson = json_encode($teamsDieWeiterSindArray);
+                        echo "<script>console.log('teamsDieWeiterSindArray: " . $teamsDieWeiterSindArrayJson . "' );</script>";
+
+                        //Jetzt allen Teams die kein Teil des Arrays sind eine Platzierung geben
+                        $sqlTeam = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . '';
+                        $resultTeam = $conn->query($sqlTeam);
+                        while (!empty( $rowTeam = $resultTeam->fetch_assoc() ) ){
+                            $team_id = $rowTeam["id"];
+                            if (!in_array($team_id, $teamsDieWeiterSindArray)) {
+                                setTeamPlatziertLevel($conn, $TurnierID, $team_id, 0);
+                                echo "<script>console.log('Team mit der ID ... hat keinen manuellen KO-Platz und bekommt eine Platzierung: " . $team_id . "' );</script>";
                             }
                         }
-                        $zaehlerForKoPosition++;
-                    }    
+                        
+
+                    }
+
+                    
 
                 
                 //RESTLICHE FINALSTUFEN - Für Alle Finalstufen außer der ersten Finalstufe die Begegnungen erstellen
                     //zuerst für alle (übrigen) Begegnungen den Gewinner berechnen und in DB schreiben
-                    $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND ko_finallevel <= '. $ko_finallevel .' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ') ';//ORDER BY ko_turnierbaumposition, id
+                    $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND ko_finallevel <= '. $ko_finallevel .' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ';//ORDER BY ko_turnierbaumposition, id
                     $resultBegegnung = $conn->query($sqlBegegnung);
                     while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
                         calculateTheWinnerAndWriteInDatabase($conn, $TurnierID, $rowBegegnung);
@@ -908,7 +972,7 @@
                                 $verliererTeam1ID = 0;
                                 $verliererTeam2ID = 0;
                             }
-                            $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND status = 5 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
+                            $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND status = 5 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
                             $resultBegegnung = $conn->query($sqlBegegnung);
                             while (!empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
                                 //Checken ob ich das erste oder das zweite Team gefunden habe
@@ -1117,7 +1181,7 @@
             //UNNÖTGE BEGEGNUNGEN werden als final veraltet markiert - gerade bei Finalspielen wichtig
                 //TODO: Darauf achten dass nur unnötige Begegnungen des AKTUELLEN Turniers gelöscht werden
                 //als veraltet vormatierte Begegnungen jetzt als final-veraltet markieren
-                $stmtFinalVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET `status` = 3 WHERE `status` = 2 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .')');
+                $stmtFinalVeralteteBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET `status` = 3 WHERE `status` = 2 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .')');
                 if ( $stmtFinalVeralteteBegegnung === false ){
                     throw new Exception('Begegnungen konnten nicht als Final-Veraltet markiert werden.');
                 }
@@ -1125,7 +1189,7 @@
                 
                 
                 //Siegesquoten ausrechnen und eintragen
-                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID;
+                $sqlTeam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID;
                 $resultTeam = $conn->query($sqlTeam);
                 while (!empty( $rowTeam = $resultTeam->fetch_assoc() ) ){
                     $TeamId = $rowTeam['id'];
