@@ -218,6 +218,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
         <option value='...'><i>...</i></option>
         <option value='Freund*innen'><i>Freund*innen</i></option>
         <option value='Social Media'><i>Social Media</i></option>
+        <option value='Sonstiges'><i>Blankiball-Sticker</i></option>
         <option value='Google bzw. andere Suchmaschine'><i>Google bzw. andere Suchmaschine</i></option>
         <option value='Sonstiges'><i>Sonstiges</i></option>
     </select>
