@@ -61,9 +61,13 @@
     sty[i] = 0.7 + Math.random();     // set step variables
                 if (ie4up||ns6up) {
         if (i == 0) {
-        document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
+            //document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
+            //Jetzt nur noch auf letzter Ebene:
+            document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ 1 +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
         } else {
-        document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
+            //document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
+            //Jetzt nur noch auf letzter Ebene:
+            document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ 1 +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
         }
     }
     }

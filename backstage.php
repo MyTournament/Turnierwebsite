@@ -204,14 +204,14 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                 <select name='Phase' id='phase'>           
                             <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>";
                             //Turnier-Finalstufen finden
-                            $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC';
+                            $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC';
                             $resultBegegnung = $conn->query($sqlBegegnung);
                             while ($rowBegegnung = $resultBegegnung->fetch_assoc()) {
                                 $begegnungID = $rowBegegnung['id'];
                                 $ko_finallevel = $rowBegegnung['ko_finallevel'];
                                 //HEIMTEAM
                                 $fk_heimteam = $rowBegegnung['fk_heimteam'];
-                                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE id = '. $fk_heimteam .'';
+                                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_heimteam .'';
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $team1 = $rowTeam['name'];
@@ -219,7 +219,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                                 }
                                 //AUSWÄRTSTEAM
                                 $fk_auswaertsteam = $rowBegegnung['fk_auswaertsteam'];
-                                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE id = '. $fk_auswaertsteam .'';
+                                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_auswaertsteam .'';
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $team2 = $rowTeam['name'];
@@ -253,7 +253,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
         <!-- BULLEREI KOMMT -->
         <article id='bullerei_kommt'>
             <div style='text-align: center'>";
-                printBullereiKommt($conn, $websiteId);
+                printBullereiKommt($conn, $websiteId, $TurnierID);
                 echo"
                 <a href='#' class='button'>Zurück</a>
                 <h5><br /></h5>  
@@ -277,14 +277,14 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
             <h5><br /></h5>
             <p>Bitte sensibel mit den Daten umgehen! Haben bisher noch nicht mal eine Datenschutzerklärung und keine Lust auf Stress^^</p>
             <h5><br /></h5>";
-            $sqlTelefon = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .') ORDER BY ID DESC';
+            $sqlTelefon = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ID DESC';
             $resultTelefon = $conn->query($sqlTelefon);
             while ($rowTelefon = $resultTelefon->fetch_assoc()) {
                 $spielername = $rowTelefon['name'];
                 $telefonnummer = $rowTelefon['telefonnummer'];
                 $teamID = $rowTelefon['fk_team'];
                 $timestamp = $rowTelefon['timestamp'];
-                    $sqlTeamname = 'SELECT * FROM `Turnier_Team` WHERE id = '. $teamID .'';
+                    $sqlTeamname = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $teamID .'';
                     $resultTeamname = $conn->query($sqlTeamname);
                     while ($rowTeamname = $resultTeamname->fetch_assoc()) {
                         $teamname = $rowTeamname['name'];
@@ -362,7 +362,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
         <article id='warteliste'>
             <h2>Warteliste</h2> <!--class='major'-->";
             
-            $sqlWarteliste = 'SELECT * FROM Turnier_Team WHERE fk_warteliste IN (SELECT id FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .')';
+            $sqlWarteliste = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_warteliste IN (SELECT id FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .')';
             $resultWarteliste = $conn->query($sqlWarteliste);
             $zeahler = 1;
             while ($rowWarteliste = $resultWarteliste->fetch_assoc()) {
@@ -395,7 +395,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
         <article id='teampasswort'>
             <h2>Team-Passwörter</h2> <!--class='major'-->";
             
-            $sqlPasswort = 'SELECT * FROM Turnier_Team WHERE fk_turnier = '. $TurnierID .'';
+            $sqlPasswort = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .'';
             $resultPasswort = $conn->query($sqlPasswort);
             $zeahler = 1;
             while ($rowPasswort = $resultPasswort->fetch_assoc()) {
@@ -558,7 +558,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                 <label for='demo-category'>Team wählen</label>
                 <select name='team' id='teams_waehlen' required>
                     <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Team wählen</i></option>";
-                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id';
+                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY id';
                     $resultTeam = $conn->query($sqlTeam);
                     $zaehler = 1;
                     while ($rowTeam = $resultTeam->fetch_assoc()) {

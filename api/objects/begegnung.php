@@ -66,7 +66,7 @@ class Begegnung{
     
         // query to insert record
         $sql = "UPDATE " . $this->table_name . " SET `status` = ? WHERE id = ?"; // change status of begegnung to given status
-        myDb_execute($this->MySQLiconn, $TurnierID, $changing_team_and_user_tag, $sql, array($this->status, $this->id));
+        myDb_execute($this->MySQLiconn, $TurnierID, $changing_team_and_user_tag, "begegnung.php", $sql, array($this->status, $this->id));
         
         // TODO return false if db command in myDb_execute() was not successfull
         return true;

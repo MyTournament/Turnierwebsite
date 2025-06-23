@@ -1,5 +1,6 @@
 <?php
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+
 $test_turnier_id = $_GET['test_turnier_id'];
 if($test_turnier_id==NULL){
     header("Location: /");
@@ -65,17 +66,32 @@ include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
 //########################
 
+
+
+
+$TurnierID = $_POST['TurnierID'];
+
+
 //LOGIN
+include_once 'login_interface.php';
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
-$TurnierID = $_POST['TurnierID'];
-$sqlLogin = "SELECT * FROM `System_Benutzer_in` WHERE Benutzername = '$bn' AND Passwort = '$pw' AND fk_rechte <= 5 ORDER BY ID";
-$resultLogin = $conn->query($sqlLogin);
+
+//Benutzer
+$benutzerliste = getBenutzerListe($conn);
 $successfulLogin = 0; //false
-while ( !empty( $rowLogin = $resultLogin->fetch_assoc() ) ){
+while ($row = $benutzerliste->fetch_assoc()) {
+  if(
+    $row['Benutzername'] == $bn and
+    $row['Passwort'] == $pw and
+    $row['fk_rechte'] <= 5
+  ){
     $successfulLogin = 1;
-    $rechte = $rowLogin['fk_rechte'];
+    $rechte = $row['fk_rechte'];
+  }
 }
+
+
 if ($successfulLogin == 0){ //fehlerhafter Login
   $message = "Login leider nicht erfolgreich! Dein Ergebnis wurde nicht eingetragen. Versuch es gerne noch einmal.";
   echo "<script type='text/javascript'>alert('$message');</script>";
@@ -85,11 +101,14 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     $content = $_POST['content'];
     $content_style_tag = $_POST['content_style_tag'];
     $function = $_POST['function'];
+    if($function == "NULL"){$function = NULL;}
     $content_order_in_group = $_POST['content_order_in_group'];
 
-    echo "<script>console.log('contentID: $contentID')</script>";
     echo "<script>console.log('content: $content')</script>";
+    echo "<script>console.log('content_style_tag: $content_style_tag')</script>";
     echo "<script>console.log('function: $function')</script>";
+    echo "<script>console.log('content_order_in_group: $content_order_in_group')</script>";
+    echo "<script>console.log('contentID: $contentID')</script>";
 
     $action = $_POST['action'];
     echo "<script>console.log('Action: $action')</script>";
@@ -97,10 +116,13 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     
     if ($action == 'Ändern') {
       $sql = "UPDATE CMS_Content SET content = ?, style_tag = ?, fk_function = ?, order_in_group = ? WHERE CMS_Content.id = ?;";
-      myDb_execute($conn, $TurnierID, $bn, $sql, array($content, $content_style_tag, $function, $content_order_in_group, $contentID));
+      echo "<script>console.log('Checkpoint 1, Benutzername: $bn')</script>";
+      $argArray = [$content, $content_style_tag, $function, $content_order_in_group, $contentID]; // array($content, $content_style_tag, $function, $content_order_in_group, $contentID)
+      myDb_execute($conn, $TurnierID, $bn, "edit_content.php", $sql, $argArray);
+      echo "<script>console.log('Checkpoint 2')</script>";
     }else if ($action == 'Löschen'){
       $sql = "DELETE FROM CMS_Content WHERE CMS_Content.id = ?;";
-      myDb_execute($conn, $TurnierID, $bn, $sql, array($contentID));
+      myDb_execute($conn, $TurnierID, $bn, "edit_content.php 2", $sql, array($contentID));
     }else if ($action == 'Hinzufügen'){
       //Site, Section, Group & order_in_group des vorherigen Objekt rausfinden -> JOIN
       $sql_order_in_group = "SELECT * FROM CMS_Content, CMS_Content_Group, CMS_Content_Section, CMS_Content_Site ";
@@ -118,7 +140,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       $order = makeSpaceInOrder($conn, $contentID, $order_in_group, $group, $section, $site);
       echo "<script>console.log('newOrder: $order, group: $group, section: $section, site: $site, content: $content')</script>";
       $sql = "INSERT INTO CMS_Content (fk_group, order_in_group, content, style_tag) VALUES (?, ?, ?, ?)";
-      myDb_execute($conn, $TurnierID, $bn, $sql, array($group, $order, $content, $content_style_tag));
+      myDb_execute($conn, $TurnierID, $bn, "edit_content.php 3", $sql, array($group, $order, $content, $content_style_tag));
     }
 
 }

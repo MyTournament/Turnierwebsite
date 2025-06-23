@@ -72,7 +72,7 @@ class Spiel{
         // TODO use $this->table_name
         // query to insert record
         $sql = "INSERT INTO Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
-        myDb_execute($this->MySQLiconn, $TurnierID, $this->who_inserted_or_updated_last, $sql, array($this->fk_begegnung, $this->biereheimteam, $this->biereauswaertsteam, $this->who_inserted_or_updated_last));
+        //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: myDb_execute($this->MySQLiconn, $TurnierID, $this->who_inserted_or_updated_last, "spiel.php", $sql, array($this->fk_begegnung, $this->biereheimteam, $this->biereauswaertsteam, $this->who_inserted_or_updated_last));
         
         // TODO return false if creation with myDb_execute() was not successfull
         return true;
@@ -86,7 +86,7 @@ class Spiel{
         // TODO use $this->table_name
         // query to insert record
         $sql = "UPDATE Spiel SET fk_begegnung = ?, biereheimteam = ?, biereauswaertsteam = ?, who_inserted_or_updated_last = ? WHERE id = ?";
-        myDb_execute($this->MySQLiconn, $TurnierID, $this->who_inserted_or_updated_last, $sql, array($this->fk_begegnung, $this->biereheimteam, $this->biereauswaertsteam, $this->who_inserted_or_updated_last, $this->id));
+        //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: myDb_execute($this->MySQLiconn, $TurnierID, $this->who_inserted_or_updated_last, "spiel.php 2", $sql, array($this->fk_begegnung, $this->biereheimteam, $this->biereauswaertsteam, $this->who_inserted_or_updated_last, $this->id));
     
         // TODO return false if creation with myDb_execute() was not successfull
         return true;

@@ -1,6 +1,7 @@
 <?php
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
+//include_once 'database/db_backup.php';
 
 include_once 'variables.php'; //Variablen einbinden (Turniernummer) //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 
@@ -20,24 +21,30 @@ if($sperrung == 1){
     header("Location: /home.php");
 }
 
-
-//include_once 'website_functionalities/load_website.php';
-//$website_array = determine_domain_id($conn);
+include_once 'website_functionalities/load_website.php';
+$website_array = determine_domain_id($conn);
 $websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
-/*if ($websiteId == null){
+if ($websiteId == null){
     echo "WEBSITE nicht gefunden";
-}*/
+}
 
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
+insert_traffic($conn, $websiteId, 'anonym', 3 , ' hat die Website besucht');
 
+$sqlAnzahlWebsiteBesuche = 'SELECT * FROM `System_Traffic` WHERE fk_kategorie = 3 AND fk_website = '. $websiteId .' ORDER BY ID';
+$restultAnzahlWebsiteBesuche = $conn->query($sqlAnzahlWebsiteBesuche);
+$anzahlWebsiteBesuche = 0;
+while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
+    $anzahlWebsiteBesuche+=1;
+}
 ?>
 
 <!DOCTYPE HTML>
 <html>
-	<head>
-		<title>Blankiball Bierball Turnier</title>
-		<meta charset="utf-8" />
+    <head>
+        <title>Blankiball Bierball Turnier</title>
+        <meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
         <meta name="description" content="Berlins größtes Bierball-Turnier">
         <meta name="author" content="Hermann Blankenstein">
@@ -49,8 +56,8 @@ include_once 'database/traffic_analytics.php';
          <!-- für Galerie -->
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
-        <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
-        <link href='http://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
+        <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
+        <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
 
         <!-- für Captcha -->
         <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
@@ -106,7 +113,7 @@ include_once 'database/traffic_analytics.php';
 <?php
     echo "<script>console.log('WebsiteId: ' + $websiteId)</script>";
     include_once 'website_functionalities/countdown.php';
-    //include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus //TODO: WIEDER NUTZEN
+    include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus
     include_once 'database/db_update.php'; //Wichtig dass das nach Test-Modus-Abfrage kommt damit das mit aktualisierter TurnierID passiert
     try{
         db_update($conn, $TurnierID); //db_update.php AUSFÜHREN
@@ -123,16 +130,13 @@ include_once 'database/traffic_analytics.php';
 
     $gameEditMode = 0; //
     $expertenmodus = 0;
-    //$gameEditMode = $_POST['gameEditMode']; //TODO: WIEDER NUTZEN
-    //$expertenmodus = $_POST['expertenmodus']; //TODO: WIEDER NUTZEN
+    $gameEditMode = $_POST['gameEditMode'];
+    $expertenmodus = $_POST['expertenmodus'];
 
     //ANMELDUNG FÜR CMS
-    $bn = ''; //$_POST["bn"]; //TODO: WIEDER NUTZEN
-    $pw = ''; //$_POST["pw"]; //TODO: WIEDER NUTZEN
-
-	$test_turnier_id = 0; //TODO: temporäre Lösung
+    $bn = $_POST["bn"];
+    $pw = $_POST["pw"];
     
-	$edit_content_mode = False;
     $LoggedInWithCMSorHigher = False;
         foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 5") as $row) {
             if ($bn == $row["Benutzername"] && $pw == $row["Passwort"]) {
@@ -174,7 +178,7 @@ include_once 'database/traffic_analytics.php';
             </div>";
         }
     }
-    
+
 ?>
 
 <header id="header"> 
@@ -221,9 +225,8 @@ include_once 'database/traffic_analytics.php';
                 }else{
                     echo"<li class='button disabled'><a href='#spielplan'>🎯 Spielplan</a></li>";
                 }
-            ?>
-            <li><a href="#pausenraum">🏓 Pausenraum</a></li> 
-            
+            ?>    
+            <li><a href="https://www.paypal.com/paypalme/REDACTED?country.x=DE&locale.x=de_DE">❤ Spenden</a></li>        
         </ul>
     </nav>
     <div class="content">
@@ -339,11 +342,29 @@ include_once 'database/traffic_analytics.php';
         cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) 
     }else{
         // login form
-        echo "<form action='website_functionalities/turnier_logincheck.php' method='POST'>";
-        echo "<input type='password' class='Eingabe' name='pw' placeholder='password' style='color: white' required>";
-        echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
-        echo "<input type='hidden' name='NextSection' value='teams'/>";
-        echo "</form>";
+        echo "<div style='color:white; text-align: center;'>";
+            echo "<h2>Turnierpasswort</h2>";
+            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
+            echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
+            echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
+            echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
+            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
+            echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
+            echo "<input type='hidden' name='NextSection' value='teams'/>";
+            
+            echo "<script>console.log('index | history_turnier_id = ' + $history_turnier_id  + ';')</script>";
+            echo "<script>console.log('index | test_turnier_id = ' + $test_turnier_id + ';')</script>";
+            if ($test_turnier_id != NULL) {
+                echo "<input type='hidden' name='test_turnier_id' value='" . $test_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | test_turnier_id = ' + $test_turnier_id  + ';')</script>";
+            }
+            if ($history_turnier_id != NULL) {
+                echo "<input type='hidden' name='history_turnier_id' value='" . $history_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | history_turnier_id = ' + $history_turnier_id + ';')</script>";
+            }
+            echo "</br><input type='submit' value='Login'>";
+            echo "</form>";
+        echo "</div>";
     }
     ?> 
     <a href="#" class="button">Zurück zur Startseite</a>
@@ -411,11 +432,31 @@ include_once 'database/traffic_analytics.php';
 
     }else{
         // login form
-        echo "<form action='website_functionalities/turnier_logincheck.php' method='POST'>";
-        echo "<input type='password' class='Eingabe' name='pw' placeholder='password' style='color: white' required>";
-        echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
-        echo "<input type='hidden' name='NextSection' value='spielplan'/>";
         echo "</form>";
+        echo "<div style='color:white; text-align: center;'>";
+            echo "<h2>Turnierpasswort</h2>";
+            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
+            echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
+            echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
+            echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
+            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
+            echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
+            echo "<input type='hidden' name='NextSection' value='spielplan'/>";
+
+            echo "<script>console.log('index | history_turnier_id = ' + $history_turnier_id  + ';')</script>";
+            echo "<script>console.log('index | test_turnier_id = ' + $test_turnier_id + ';')</script>";
+            if ($test_turnier_id != NULL) {
+                echo "<input type='hidden' name='test_turnier_id' value='" . $test_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | test_turnier_id = ' + $test_turnier_id  + ';')</script>";
+            }
+            if ($history_turnier_id != NULL) {
+                echo "<input type='hidden' name='history_turnier_id' value='" . $history_turnier_id . "'/>";
+                //echo "<script>console.log('index -> formular | history_turnier_id = ' + $history_turnier_id + ';')</script>";
+            }
+
+            echo "</br><input type='submit' value='Login'>";
+            echo "</form>";
+        echo "</div>";
     }
     ?>
     <a href='#' class='button'>Zurück zur Startseite</a>
@@ -606,7 +647,7 @@ include_once 'database/traffic_analytics.php';
     <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
     <p>Hier geht's zur alten Website (2017-2020)</p>
-    <a href="http://2020.REDACTED.de/" class="button primary">Alte Website (2017-2020)</a>
+    <a href="https://2018-20.REDACTED.de" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
@@ -652,7 +693,14 @@ include_once 'database/traffic_analytics.php';
 
 <!-- ANMELDEN -->
 <article id="anmelden">
-    <?php printTeamAnmelden($TurnierID, $test_turnier_id); ?>
+        <?php
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+        ?>
+    <?php printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag); ?>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
@@ -674,7 +722,7 @@ include_once 'database/traffic_analytics.php';
 <!-- BULLEREI KOMMT -->
 <article id='bullerei_kommt'>
     <div style='text-align: center'> 
-        <?php printBullereiKommt($conn, $websiteId) ?>
+        <?php printBullereiKommt($conn, $websiteId, $TurnierID) ?>
         <a href='#' class='button'>Zurück</a>
         <h5><br /></h5>  
     </div>
@@ -763,7 +811,12 @@ include_once 'database/traffic_analytics.php';
 
 <!-- LOGIN - FÜR WORDPRESS -->
 <article id="login">
-<title>Adressbuch</title>
+<title>Backstage-Login</title>
+    <h2>Anzahl Websitebesuche</h2>
+    <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
+
+    <p></br></p> 
+    
     <h2>Testmodus</h2>
     <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmous läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
     <form method='post' action='#'>
@@ -820,6 +873,9 @@ include_once 'database/traffic_analytics.php';
     <a href='#register_account' class='button primary'>Registrieren</a>
 
     <p></br></p>
+    
+    <a href="#pausenraum">🏓 Pausenraum</a>
+
     <p></br></p>
 
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
@@ -861,9 +917,20 @@ include_once 'database/traffic_analytics.php';
         </form>
 
         </br></br></br>
-        <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
-        <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-        <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+        <?php
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+                ";
+            }
+        ?>
         
     </div>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
@@ -918,10 +985,18 @@ include_once 'database/traffic_analytics.php';
             <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
             <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
             */
-            echo"<h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>";
-            echo"
-            <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a> ";
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
+                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
+                ";
+            }
             
             
             echo "</br></br></br>
@@ -1005,7 +1080,7 @@ include_once 'database/traffic_analytics.php';
 <script src="assets/js/main.js"></script>
 
 <!-- GALERIE -->
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript" src="assets/js/gallery/jquery.tmpl.min.js"></script>
 <script type="text/javascript" src="assets/js/gallery/jquery.easing.1.3.js"></script>
 <script type="text/javascript" src="assets/js/gallery/jquery.elastislide.js"></script>

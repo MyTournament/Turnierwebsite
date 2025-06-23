@@ -1,9 +1,17 @@
 <?php
-function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
+include_once '../database/db_backup.php';
+
+function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray) {
+    //DATABASE_BACKUP
+    backup_main($conn);
+
+    
     //echo "<hr>";
     //echo "NEUE DB-INTERFACE-AUSFUEHRUNG";
     //echo "<br/><br/>SQL: \"$sql\" <br/>";
     $stmt = $conn->prepare($sql);
+
+    echo"<script>console.log('myDb_execute Checkpoint 1 $argArray[4]')</script>";
     
     //zählen wie viele Parameter ich habe
     $argCount = count($argArray); //weil erster Parameter ja der sql Befehl ist
@@ -18,6 +26,8 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
     //echo "types: $types<br/>";
     $stmt->bind_param($types, ...$argArray); //This is called "argument unpacking", and is available since PHP 5.6
     $stmt->execute();
+
+    echo"<script>console.log('myDb_execute Checkpoint 2')</script>";
 
     // TODO andere antwort, falls sql befehl auf der db fehlschlägt 
 
@@ -37,9 +47,16 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
         $content .= $values;
         //echo "<br/>DB_VERLAUF:<br/>";
         //echo "content: \"$content\"<br/>";
-        $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, content) VALUES (?, ?)');
-        $stmtDbVerlauf->bind_param("ss", $bn, $content);
+
+        echo"<script>console.log('myDb_execute Checkpoint 3')</script>";
+
+        //SQL-Befehle werden mit prepare und bind_param ausgeführt. Dies ist der empfohlene Ansatz, um SQL-Injections zu verhindern
+        $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, ort_auf_website, content, fk_website) VALUES (?, ?, ?, ?)');
+        $paramArr = [$bn, $ort_auf_website, $content, 1];
+        $stmtDbVerlauf->bind_param("ssss", ...$paramArr);
         $stmtDbVerlauf->execute();
+
+        echo"<script>console.log('myDb_execute Checkpoint 4')</script>";
 
         //echo "<br/>";
         //printf("SQL: Datenaetze eingefuegt: %d.\n", $stmt->affected_rows); //echo "<br/>";
@@ -50,6 +67,8 @@ function myDb_execute($conn, $TurnierID, $bn,  $sql, $argArray) {
         // $stmt -> bind_result($name,$description,$fk_random);
         return $stmt;
     }   
+
+    
 }
 
 //DB_UPDATE

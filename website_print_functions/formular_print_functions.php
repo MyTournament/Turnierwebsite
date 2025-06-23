@@ -157,15 +157,22 @@
 
 
 <?php
-function printTeamAnmelden($TurnierID, $test_turnier_id){
+function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     ?>
     <title>Adressbuch</title>
-    <div id="LogIn">
+    <id="LogIn">
     <h1>Melde dein Team an</h1>
     <h3>Kurz das wichtigste:</h3>
     <ul>
         <li>3 Spieler*innen pro Team</li>
-        <!--<li><b>10€ Teilnahmegebühr pro Team - nach Anmeldung überweisen per Paypal an kummerkasten@REDACTED.de ➡️ Verwendungszweck: *Euer Teamname*</b></li>-->
+        <?php
+            if($teilnahmebeitrag == 1){
+                echo "
+                    <li><b>10€ Teilnahmegebühr pro Team - nach Anmeldung überweisen per Paypal an @REDACTED ➡️ Verwendungszweck: *Euer Teamname*</b></li>
+                ";
+            }
+        ?>
+        
         <li>Mindestens eine Telefonnummer angeben, damit wir euch erreichen können</li>
         <li>Bitte eure <b>richtigen Namen</b> verwenden, damit wir wissen, wer ihr seid</li>
     </ul>
@@ -195,8 +202,8 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <h4>Kürzel* & Passwort</h4>
     <!--<p>*Wähle Kürzel deines Teamnamens (2-4 Buchstaben) und ein Passwort/PIN-Code. Das Kürzel wird im Spielplan als Abkürzung benutzt und später kann dein Team mit Kürzel & Passwort auf der Website die Ergebnisse eintragen. Wichtig: Bitte nutze <b>wirklich wirklich kein Passwort, was du woanders schon benutzt</b> weil unsere Website nicht komplett sicher ist. Und außerdem brauchen alle deine Teammitglieder das Passwort.</p>-->
     <p>Mit dem Passwort könnt ihr später eure Turnierergebnisse eintragen!</p>
-    <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required><br/>
-    <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required><br/>
+    <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required autocomplete="username"><br/>
+    <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required autocomplete="current-password"><br/>
     <br/>
     <h4>E-Mail</h4>
     <!--<p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
@@ -204,12 +211,14 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <i>An die Mail bekommt ihr eure Team-Daten gesendet.</i>
     
     <input type="text" id="mail" name="Mail" class="Eingabe" placeholder="Mail-Adresse &#9733;" style="color: white" required><br/>
+    
     <h5><br/></h5>
     <h4>Woher hast du von uns erfahren? (Freiwillig)</h4>
     <select name='woher_erfahren'>
         <option value='...'><i>...</i></option>
         <option value='Freund*innen'><i>Freund*innen</i></option>
         <option value='Social Media'><i>Social Media</i></option>
+        <option value='Sonstiges'><i>Blankiball-Sticker</i></option>
         <option value='Google bzw. andere Suchmaschine'><i>Google bzw. andere Suchmaschine</i></option>
         <option value='Sonstiges'><i>Sonstiges</i></option>
     </select>
@@ -218,11 +227,18 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
     <div class="h-captcha" data-sitekey="REDACTED"></div>
     <h5><br/></h5>
 
-    <!--<div style='text-align:center;'>
-        <h1>Wichtig!</h1>
-        <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
-        <p>➡️ Überweisen per <b>Paypal an kummerkasten@REDACTED.de mit eurem Teamnamen als Verwendungszweck</b> ⬅️</p>
-    </div>-->
+    <?php
+        if($teilnahmebeitrag == 1){
+            echo "
+                <div style='text-align:center;'>
+                    <h1>Wichtig!</h1>
+                    <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
+                    <p>➡️ Überweisen per <b>Paypal an @REDACTED mit eurem Teamnamen als Verwendungszweck</b> ⬅️</p>
+                </div>
+            ";
+        }
+    ?>
+    
 
     <h5><br/></h5>
     <title>[ untitled ]</title>                                
@@ -235,6 +251,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id){
         return false;
     }
     </script> 
+
     <div>
         <div class="field half">
             <input type="checkbox" id="human" name="human" unchecked>
@@ -258,7 +275,7 @@ function printTeamAbmelden($conn, $TurnierID){
     <select name='Team_zum_abmelden' id='teams_waehlen' >
         <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Team wählen</i></option>";
         <?php
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id';
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY id';
         $resultTeam = $conn->query($sqlTeam);
         while ($rowTeam = $resultTeam->fetch_assoc()) {
             $teamId = $rowTeam['id'];
@@ -306,6 +323,7 @@ function printSpielerInfoLogin($TurnierID, $conn, $spielerId){
     <p>Bitte logge dich ein, um mehr Infos zu einem konkreten Spieler zu erhalten. (zum Beispiel die Telefonnummer)</p>
     <h3>Diese Funktion kann nur von Schiedsrichter*innen genutzt werden!</h3>
     <?php
+    $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==0){ //Fall: normales Turnier
         echo "<form action='/?spielerId=$spielerId#spielerinfo' method='POST' onSubmit='return checkAGBspielerinfo()'>";
     }else{ //Testturniere
@@ -336,7 +354,7 @@ function printSpielerInfoLogin($TurnierID, $conn, $spielerId){
     <?php
 }
 
-function printBullereiKommt($conn, $websiteId){
+function printBullereiKommt($conn, $websiteId, $TurnierID){
     ?>
     <title>Adressbuch</title>
     <div id="LogIn">
@@ -366,6 +384,7 @@ function printBullereiKommt($conn, $websiteId){
     <p></br></p>
     <input type='hidden' name='action' value='take_offline'/>
     <?php echo "<input type='hidden' name='websiteId' value='$websiteId'/>"; ?>
+    <?php echo "<input type='hidden' name='TurnierID' value='$TurnierID'/>"; ?>
     <p><button id="btn_login_Bullerei" value="Absenden" type="submit">Website offline nehmen</button></p>
     </form>
     <?php
