@@ -22,6 +22,7 @@ include_once 'edit_interface.php';
 
 	if($action == 'Anmelden'){
 		//Tut: https://www.codexworld.com/integrate-captcha-checkbox-with-hcaptcha-php/
+		echo "<script>console.log('Step: Anmeldeprozess gestartet')</script>";
 
 		$SECRET_KEY = "0x62d2efE251519B2C6D229442251EbeE6D79E1283";    # replace with your secret key
 		$VERIFY_URL = "https://hcaptcha.com/siteverify";
@@ -34,6 +35,8 @@ include_once 'edit_interface.php';
 			'response' => $token, 
 			'remoteip' => $_SERVER['REMOTE_ADDR'] 
 		); 
+
+		echo "<script>console.log('Step: Initialize cURL request')</script>";
 		// Initialize cURL request 
 		// Make POST request with data payload to hCaptcha API endpoint 
 		$curlConfig = array( 
@@ -47,15 +50,18 @@ include_once 'edit_interface.php';
 		$response = curl_exec($ch); 
 		curl_close($ch); 
 		
+		echo "<script>console.log('Step: json_decode')</script>";
 		// Parse JSON from response. Check for success or error codes 
 		$responseData = json_decode($response); 
         
 		// If reCAPTCHA response is valid 
 		if($responseData->success){//$responseData->success){ //TODO: wieder einkommentieren
+			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
 
 			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
 
 			//SONDERFALL: WARTELISTE
+				echo "<script>console.log('Step: WARTELISTE - Aktuelle Turnierphase herausfinden')</script>";
 				//Aktuelle Turnierphase herausfinden - erstmal ID
 				$sqlPhase = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
 				$resultPhase = $conn->query($sqlPhase);
@@ -64,6 +70,7 @@ include_once 'edit_interface.php';
 				}
 				//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfügen
 				//Warteliste finden
+				echo "<script>console.log('Step: WARTELISTE - Warteliste finden')</script>";
 				if($turnier_phase_ID==12){
 					$warteliste_ID = 6; //Auffangbecken
 					$sqlWarteliste = 'SELECT * FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .' ORDER BY ID';
@@ -82,13 +89,15 @@ include_once 'edit_interface.php';
 				$teamID = myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 2",$sql, array($TurnierID, $_POST['Teamname'], $_POST['Kuerzel'], $_POST['Passwort'], $_POST['Mail'], $_POST['woher_erfahren']));
 			}
 			
+			echo "<script>console.log('Step: SQL vorbereiten')</script>";
 			$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
+			echo "<script>console.log('Step: SQL ausführen')</script>";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 3",$sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 4",$sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 5",$sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
 			
 
-
+			echo "<script>console.log('Step: Text für beide Mails vorbereiten')</script>";
 			//Text für beide Mails vorbereiten
 			$infoVomAngemeldetenTeam = "";
 			$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
@@ -98,9 +107,11 @@ include_once 'edit_interface.php';
 			$infoVomAngemeldetenTeam .= "Spieler 2: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . " \r\n \r\n";
 			$infoVomAngemeldetenTeam .= "Spieler 3: " . $_POST['Spieler3'] . " - Telefonnummer: " . $_POST['tel3'] . " \r\n \r\n";
 
+			echo "<script>console.log('Step: Einbindnen des Mail-Scripts')</script>";
 			include_once '../website_functionalities/send_mail.php';
 
 			//PER MAIL VERSENDEN
+			echo "<script>console.log('Step: PER MAIL VERSENDEN')</script>";
 			//an kummerkasten
 			//$fromEmail = "kummerkasten@blankiball.de";
 			$name = $_POST['Teamname'];
@@ -142,6 +153,7 @@ include_once 'edit_interface.php';
 			//mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
 			//mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
+			echo "<script>console.log('Step: WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID')</script>";
 			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
