@@ -9,23 +9,51 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
     //echo "<hr>";
     //echo "NEUE DB-INTERFACE-AUSFUEHRUNG";
     //echo "<br/><br/>SQL: \"$sql\" <br/>";
-    $stmt = $conn->prepare($sql);
+    /*$stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        die("Fehler beim Prepare: " . $conn->error);
+    }*/
+
 
     echo"<script>console.log('myDb_execute Checkpoint 1 $argArray[4]')</script>";
-    
+    /*
     //zählen wie viele Parameter ich habe
     $argCount = count($argArray); //weil erster Parameter ja der sql Befehl ist
     //echo "Anzahl der Parameter: $argCount <br/>";
 
+    echo"<script>console.log('myDb_execute Checkpoint 1b')</script>";
     //den "ssss"-String erstellen
     $types = "";
     while($argCount>0){
         $types .= "s";
         $argCount--;
     }
+    echo"<script>console.log('myDb_execute Checkpoint 1c')</script>";
     //echo "types: $types<br/>";
-    $stmt->bind_param($types, ...$argArray); //This is called "argument unpacking", and is available since PHP 5.6
-    $stmt->execute();
+    //$stmt->bind_param($types, ...$argArray); //This is called "argument unpacking", and is available since PHP 5.6
+    if (!$stmt->bind_param($types, ...$argArray)) {
+        die("Fehler beim bind_param: " . $stmt->error);
+    }
+    echo"<script>console.log('myDb_execute Checkpoint 1d')</script>";
+
+    //$stmt->execute();
+    if (!$stmt->execute()) {
+        die("execute fehlgeschlagen: " . $stmt->error);
+    }
+        */
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    try {
+        $stmt = $conn->prepare($sql);
+        $argCount = count($argArray);
+        $types = str_repeat("s", $argCount);
+        $stmt->bind_param($types, ...$argArray);
+        $stmt->execute();
+        echo "<script>console.log('myDb_execute Checkpoint 2')</script>";
+    } catch (mysqli_sql_exception $e) {
+        error_log("Fehler bei SQL: " . $e->getMessage());
+        die("SQL-Fehler: " . $e->getMessage());
+    }
+
 
     echo"<script>console.log('myDb_execute Checkpoint 2')</script>";
 
