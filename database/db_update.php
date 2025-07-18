@@ -660,16 +660,18 @@
                 //HIER ERSTMAL NUR ERSTE FINALSTUFE
                     
                     //Checken ob die erste Finalstufe manuell angelegt wird oder berechnet werden soll
+                    //+ herausfinden ob schon fertig angelegt wurde
                     $sql_einzug_ko_manuell_anlegen = 'SELECT * FROM Turnier_Main WHERE id = '. $TurnierID .'';
                     $result_einzug_ko_manuell_anlegen = $conn->query($sql_einzug_ko_manuell_anlegen);
                     while ($row_einzug_ko_manuell_anlegen = $result_einzug_ko_manuell_anlegen->fetch_assoc()) {
                         $einzug_ko_manuell_anlegen = $row_einzug_ko_manuell_anlegen["einzug_ko_manuell_anlegen"];
+                        $einzug_ko_fertig_manuell_angelegt = $row_einzug_ko_manuell_anlegen["einzug_ko_fertig_manuell_angelegt"];
                     }
                     echo "<script>console.log('TurnierID: " . $TurnierID . "' );</script>";
                     echo "<script>console.log('einzug_ko_manuell_anlegen: " . $einzug_ko_manuell_anlegen . "' );</script>";
-                    if($einzug_ko_manuell_anlegen==0){
+                    
+                    if($einzug_ko_manuell_anlegen==0){ //FALL: AUTOMATISCH DIE STARTPOSITIONEN GENERIEREN
 
-                        //TODO: WHERE PUNKTE > 0 (damit nicht schon von Anfang an erstellt wird) - BZW. TODO: erst wenn final - in ganzer Gruppe
                         $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
                         $resultGruppe = $conn->query($sqlGruppe);
                         
@@ -909,39 +911,70 @@
                         }    
 
                     }else{ //FALL: SCHALTER GELEGT AUF MANUELLE PLATZIERUNG IN ERSTEM KO-LEVEL
+                        //Erst Endplatzierungen für rausgeflogene Teams vergeben, sobald alle Startpositionen der KO-Phase vergeben sind
+                        //Erklärung: Hierdrunter gibt es theoretisch das veraltete Kriterium, welches die Platzierung vergibt sobald die Gruppe final ist
+                        //Das Problem hierbei ist, dass wenn der Schalter auf manuellen Startpositionen liegt, dass dann ja erst finalisiert wird und danach die Startpositionen manuell vergeben werden
+                        //Dadurch wbekommen dann schon alle Teams eine Platzierung
+                        //Dadurch ist innerhalb dieser Bedingung hier die zweite Bedingung theoretisch redundant, aber stört auch nicht
+                        //Deswegen: Nur wenn der manuelle zweite Schalter aussagt, dass auch fertig platziert wurde:
+                        if($einzug_ko_fertig_manuell_angelegt == 1){
+                            echo "<script>console.log('db_update - rangliste: Startpositionenen der KO-Phase werden manuell angelegt' );</script>";
+                            //Alle Teams die keinen manuellen KO-Platz bekommen, sollen Platzierung bekommen
+                            //Deswegen wird erst geschaut, welche Teams (EGAL AUS WELCHER GRUPPE) einen KO-Platz haben
+                            //Alle Begegnungen des Start-KO-Finallevels aus dem aktuellen Turnier
+                            $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $start_ko_finallevel . ' AND `status` <> 3 
+                                AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
+                                AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
+                                ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
+                            $teamsDieWeiterSindArray = array();
+                            echo "<script>console.log('db_update - rangliste: teamsDieWeiterSindArray: " . $teamsDieWeiterSindArray . "' );</script>";
 
-                        //Alle Teams die keinen manuellen KO-Platz bekommen, sollen Platzierung bekommen
-                        //Deswegen wird erst geschaut, welche Teams einen KO-Platz haben
-                        $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $start_ko_finallevel . ' AND `status` <> 3 
-                            AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
-                            AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') 
-                            ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
-                        
-                        $teamsDieWeiterSindArray = array();
+                            //Gruppen durchiterieren, um Gruppen die nicht Teil des Arrays sind eine Endplatzierung zuzuweisen
+                            $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
+                            $resultGruppe = $conn->query($sqlGruppe);                        
+                            while ($rowGruppe = $resultGruppe->fetch_assoc()) {
+                                $gruppeID = $rowGruppe["id"];
+                                echo "<script>console.log('db_update - rangliste: Checken ob Endplatzierungen erstellt werden sollen für Gruppe mit der ID: " . $gruppeID . "' );</script>";
+                                
+                                //Endplatzierung für rausgeflogene Teams nur in den Gruppen wo alle Spiele gemacht wurden
+                                $allebegegnungenInGruppeFinal = 1; //TRUE
+                                $sqlFirstBegegnungen = 'SELECT * FROM Turnier_Begegnung, Turnier_Team a, Turnier_Team b WHERE a.geloescht = 0 AND b.geloescht = 0 AND Turnier_Begegnung.status <> 3 AND Turnier_Begegnung.ko_finallevel = 0 AND Turnier_Begegnung.fk_heimteam = a.id AND Turnier_Begegnung.fk_auswaertsteam = b.id AND a.fk_gruppe = '. $gruppeID .' AND b.fk_gruppe = '. $gruppeID .'';
+                                $resultFirstBegegnungen = $conn->query($sqlFirstBegegnungen);
+                                while (!empty($rowFirstBegegnungen = $resultFirstBegegnungen->fetch_assoc())) {
+                                    $begegnungsStatus = $rowFirstBegegnungen['status'];
+                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
+                                        $allebegegnungenInGruppeFinal=0; //FALSE
+                                    }
+                                }
+                                echo "<script>console.log('db_update - rangliste: allebegegnungenInGruppeFinal: " . $allebegegnungenInGruppeFinal . "' );</script>";
+                                
+                                //Nur Platzierung für alle Teams der Gruppe vergeben wenn gerade eben berechnet wurde dass alle Begegnungen in beiden Gruppen final sind
+                                if($allebegegnungenInGruppeFinal == 1){
+                                    $resultBegegnung = $conn->query($sqlBegegnung);
+                                    while (!empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
+                                        $fk_heimteam = $rowBegegnung["fk_heimteam"];
+                                        $fk_auswaertsteam = $rowBegegnung["fk_auswaertsteam"];
 
-                        $resultBegegnung = $conn->query($sqlBegegnung);
-                        while (!empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
-                            $fk_heimteam = $rowBegegnung["fk_heimteam"];
-                            $fk_auswaertsteam = $rowBegegnung["fk_auswaertsteam"];
+                                        $teamsDieWeiterSindArray[] = $fk_heimteam;
+                                        $teamsDieWeiterSindArray[] = $fk_auswaertsteam;
+                                    }
+                                    
+                                    $teamsDieWeiterSindArrayJson = json_encode($teamsDieWeiterSindArray);
+                                    echo "<script>console.log('teamsDieWeiterSindArray: " . $teamsDieWeiterSindArrayJson . "' );</script>";
 
-                            $teamsDieWeiterSindArray[] = $fk_heimteam;
-                            $teamsDieWeiterSindArray[] = $fk_auswaertsteam;
-                        }
-                        
-                        $teamsDieWeiterSindArrayJson = json_encode($teamsDieWeiterSindArray);
-                        echo "<script>console.log('teamsDieWeiterSindArray: " . $teamsDieWeiterSindArrayJson . "' );</script>";
-
-                        //Jetzt allen Teams die kein Teil des Arrays sind eine Platzierung geben
-                        $sqlTeam = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . '';
-                        $resultTeam = $conn->query($sqlTeam);
-                        while (!empty( $rowTeam = $resultTeam->fetch_assoc() ) ){
-                            $team_id = $rowTeam["id"];
-                            if (!in_array($team_id, $teamsDieWeiterSindArray)) {
-                                setTeamPlatziertLevel($conn, $TurnierID, $team_id, 0);
-                                echo "<script>console.log('Team mit der ID ... hat keinen manuellen KO-Platz und bekommt eine Platzierung: " . $team_id . "' );</script>";
+                                    //Jetzt allen Teams (AUS DER GRUPPE) die kein Teil des Arrays sind eine Platzierung geben
+                                    $sqlTeam = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = '. $gruppeID .'';
+                                    $resultTeam = $conn->query($sqlTeam);
+                                    while (!empty( $rowTeam = $resultTeam->fetch_assoc() ) ){
+                                        $team_id = $rowTeam["id"];
+                                        if (!in_array($team_id, $teamsDieWeiterSindArray)) {
+                                            setTeamPlatziertLevel($conn, $TurnierID, $team_id, 0);
+                                            echo "<script>console.log('db_update - rangliste: Team mit der ID " . $team_id . " hat keinen manuellen KO-Platz und bekommt eine Platzierung' );</script>";
+                                        }
+                                    }
+                                }
                             }
                         }
-                        
 
                     }
 
