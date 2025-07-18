@@ -167,13 +167,16 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                         <select name='Phase' id='phase'>           
                             <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>";
                             //Turnier-Finalstufen finden
-                            $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
-                            $resultTurnierPhase = $conn->query($sqlTurnierPhase);
-                            while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
-                                $turnier_phase = $rowTurnierPhase['name'];
-                                $turnier_phase_ID = $rowTurnierPhase['id'];
-                                echo "<option value=$turnier_phase_ID>$turnier_phase</option>";
+                            $sqlTeam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID;
+                            $resultTeam = $conn->query($sqlTeam);
+                            while ($rowTeam = $resultTeam->fetch_assoc()) {
+                                $TeamName = $rowTeam['name'];
+                                $TeamKuerzel = $rowTeam['kuerzel'];
+                                $TeamId = $rowTeam['id'];
+                                echo "<option value=$TeamId>$TeamName</option>";
                             }
+                        //!!!!!!!!!!!!!!!!!!!!STILL TODO!!!!!!!!!!!!!!!!!!!!!!
+                        //Hiermit passiert auch danach noch nichts
                     echo "</select>
                     <label for='demo-category'>Team 2 wählen:</label>
                         <select name='Phase' id='phase'>           
@@ -503,7 +506,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
             <h5><br /></h5>
             <h2>Letzte DB-Änderungen</h2> <!--class='major'-->
             <p>Hier werden alle Datenbankänderungen dokumentiert, egal ob es um Löschung, Änderung oder Einfügen geht. Wenn ein Team ständig versucht, Dinge zu bearbeiten, die es nicht bearbeiten soll, siehst du das hier und kannst dem Team die Rechte wegnehmen. Die Änderungen sind in SQL formuliert. Falls du nicht weißt, wie SQL funktioniert, klicke einfach <a href='https://studyflix.de/informatik/structured-query-language-606'>hier</a></p>"; 
-            $sqlSystem_Data_DB_Verlauf = 'SELECT * FROM `System_Data_DB_Verlauf` ORDER BY ID desc';
+            /*$sqlSystem_Data_DB_Verlauf = 'SELECT * FROM `System_Data_DB_Verlauf` ORDER BY ID desc';
             $resultSystem_Data_DB_Verlauf = $conn->query($sqlSystem_Data_DB_Verlauf);
             while ($rowSystem_Data_DB_Verlauf = $resultSystem_Data_DB_Verlauf->fetch_assoc()) {
                 $data_db_verlauf_timestamp = $rowSystem_Data_DB_Verlauf['timestamp'];
@@ -511,7 +514,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                 $data_db_verlauf_content = $rowSystem_Data_DB_Verlauf['content'];
                 echo"<hr>";
                 echo"<p><b>$data_db_verlauf_who:</b> $data_db_verlauf_content ($data_db_verlauf_timestamp)</p>";
-            }
+            }*/
             echo"<a href='#' class='button'>Zurück</a>
             <h5><br /></h5>  
         </article>
@@ -524,7 +527,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
             <h5><br /></h5>
             <h2>Website-Traffic</h2> <!--class='major'-->
             <p>Hier werden Website-Funktionalitäten getrackt.</p>"; 
-            $sql = 'SELECT * FROM `System_Traffic` ORDER BY id desc';
+            /*$sql = 'SELECT * FROM `System_Traffic` ORDER BY id desc';
             $result = $conn->query($sql);
             while ($row = $result->fetch_assoc()) {
                 $traffic_timestamp = $row['timestamp'];
@@ -538,7 +541,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
                 $traffic_text = $row['text'];
                 echo"<hr>";
                 echo"<p><b>$traffic_kategorie </b> $traffic_who $traffic_text ($traffic_timestamp)</p>";
-            }
+            }*/
             echo"<a href='#' class='button'>Zurück</a>
             <h5><br /></h5>  
         </article>

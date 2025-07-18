@@ -348,7 +348,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
             echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
             echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
-            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
+            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='turnierpassword' style='color: white' required>";
             echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
             echo "<input type='hidden' name='NextSection' value='teams'/>";
             
