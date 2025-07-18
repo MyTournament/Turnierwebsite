@@ -678,7 +678,7 @@
             //BEGEGNUNG UNFINALISIEREN
             ?>
             <form method='post' action='#changegame' style='margin: 0 0 0 0;'>
-                <button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&#9733;</button>
+                <button style='text-align="center";background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&#9733;</button>
                 <input type='hidden' name='action' value='unfinal'/>
                 <input type='hidden' name='begegnungId' value='<?php echo $begegnungId ?>'/>
                 <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
@@ -692,7 +692,9 @@
                 if($gameEditMode == 1){
                     ?>
                     <form method='post' action='#changegame' style='margin: 0 0 0 0;'>
-                        <button style='background-color:#7700FF;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>+</button>
+                        <button style='text-align="center";background-color:#7700FF; padding: 0 0.3rem; height: 1.5rem; line-height: 1.3rem; font-size: 1.3rem;'>
+                            +
+                        </button>
                         <input type='hidden' name='action' value='add'/>
                         <input type='hidden' name='begegnungId' value='<?php echo $begegnungId ?>'/>
                         <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
@@ -708,7 +710,9 @@
                 //BEGEGNUNG FINAL MACHEN
                 ?>
                 <form method='post' action='#changegame' style='margin: 0 0 0 0;'>
-                    <button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button>
+                    <button style='text-align="center";background-color:green; padding: 0 0.3rem; height: 1.1rem; line-height: 1rem; font-size: 1rem;'>
+                        &#10003; 
+                    </button>
                     <input type='hidden' name='action' value='final'/>
                     <input type='hidden' name='begegnungId' value='<?php echo $begegnungId ?>'/>
                     <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
@@ -764,7 +768,7 @@
                                 $teamId=$rowTeam["id"];	
                                 //$kuerzel=$rowTeam["kuerzel"];				
                                 //echo "<th class='text-center'>$kuerzel</th>";	
-                                echo "<th class='text-center'>";
+                                echo "<th style='padding: 0.05em 0.2em !important; text-align: center; white-space: nowrap;'>";
                                 $return = printKuerzelWithLink($conn, $teamId);
                                 echo "$return";
                                 echo "</th>";				
@@ -786,7 +790,7 @@
                             while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
                                 //$kuerzel=$rowTeamZeile["kuerzel"];	
                                 $teamId=$rowTeamZeile["id"];					
-                                echo "<td style='text-align:left;padding: 0.1em 0.75em !important;'>";
+                                echo "<td style='padding: 0.05em 0.2em !important; text-align: center; white-space: nowrap; vertical-align: middle;'>";
                                 $return = printKuerzelWithLink($conn, $teamId);
                                 echo "$return";
                                 echo "</td>";
@@ -802,14 +806,14 @@
                                     $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
                                     $resultBegegnung = $conn->query($sqlBegegnung);
                                     if ( empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
-                                        echo "<td style='text-align:left;background-color:#161819;padding: 0.1em 0.75em !important;'>"; // Tabellen-Feld eröffnen
+                                        echo "<td style='text-align:center; padding: 0.1em 0.3em !important; white-space: nowrap;'>";  // Tabellen-Feld eröffnen
                                         echo " - ";
                                     }
                                     //SONST BEGEGNUNGEN AUSGEBEN
                                     $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
                                     $resultBegegnung = $conn->query($sqlBegegnung);
                                     while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
-                                        echo "<td style='text-align:left;padding: 0.1em 0.75em !important;'>"; // Tabellen-Feld eröffnen
+                                        echo "<td style='text-align:center; padding: 0.05em 0.2em !important; white-space: nowrap;'>";   // Tabellen-Feld eröffnen
                                         $begegnungId = $rowBegegnung['id'];
                                         $status = $rowBegegnung['status']; //HERAUSFINDEN OB BEGEGNUNG FINAL
                                         printGames($TurnierID, $conn, $begegnungId, $gameEditMode, $status);
