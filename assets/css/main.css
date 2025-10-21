@@ -63,6 +63,37 @@ table.withBorderCollapse {
 	border-spacing: 0; 
 }
 
+/* Responsive tweaks for Gruppenphase table */
+#gruppenphase table.withBorderCollapse {
+    /* Ensure table never breaks layout on small screens */
+    max-width: 100%;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    table-layout: fixed;
+}
+
+/* When many columns are present, gently scale down font on small screens */
+@media screen and (max-width: 768px) {
+    /* >= 10 columns (incl. leading header cell) */
+    #gruppenphase table.withBorderCollapse:has(thead tr th:nth-child(10)) {
+        font-size: 0.95rem;
+    }
+    /* >= 12 columns */
+    #gruppenphase table.withBorderCollapse:has(thead tr th:nth-child(12)) {
+        font-size: 0.9rem;
+    }
+    /* >= 14 columns */
+    #gruppenphase table.withBorderCollapse:has(thead tr th:nth-child(14)) {
+        font-size: 0.85rem;
+    }
+    /* Tighten cell padding a bit when many columns */
+    #gruppenphase table.withBorderCollapse:has(thead tr th:nth-child(10)) td,
+    #gruppenphase table.withBorderCollapse:has(thead tr th:nth-child(10)) th {
+        padding-left: 0.5em;
+        padding-right: 0.5em;
+    }
+}
 body {
 	-webkit-text-size-adjust: none;
 }
