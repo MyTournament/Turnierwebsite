@@ -161,7 +161,7 @@
         }
         */
         //LOGIN
-            $TurnierID = $_POST['TurnierID'];
+            $TurnierID = isset($_POST['TurnierID']) ? $_POST['TurnierID'] : $TurnierID;
 
             $stmt = $conn->prepare("SELECT * FROM `System_Benutzer_in` ORDER BY ID");
             $stmt->execute();
