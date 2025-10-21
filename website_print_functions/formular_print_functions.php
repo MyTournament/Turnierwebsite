@@ -224,7 +224,9 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     </select>
 
 
-    <div class="h-captcha" data-sitekey="REDACTED"></div>
+    <div id="register_captcha_placeholder">
+        <button type="button" class="button" id="load_register_captcha">Captcha laden</button>
+    </div>
     <h5><br/></h5>
 
     <?php

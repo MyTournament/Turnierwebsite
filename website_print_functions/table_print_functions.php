@@ -610,12 +610,12 @@
                     //Button um Bearbeitungsmodus zu aktivieren -> nur wenn Turnierphase dazu passt
                     echo"
                     <form method='post' action=?test_turnier_id=$test_turnier_id$action>
-                        <button  name='content' class='button primary'>âœï¸<!--&#9998;--> Ergebnisse eintragen</button>     
+                        <button  name='content' class='button primary'>✏️<!--&#9998;--> Ergebnisse eintragen</button>     
                         <input type='hidden' name='gameEditMode' value='1'/>
                     </form>
                     ";
                 }else{
-                    echo"<li class='button disabled'><a href='#'>Ergebnisse eintragen</a></li>";
+                    echo"<li class='button disabled'><a href='#'>✏️ Ergebnisse eintragen</a></li>";
                 }
             
             
@@ -857,6 +857,11 @@
             while ($resTeamsLB && ($rt = $resTeamsLB->fetch_assoc())) { $teams[] = (int)$rt['id']; }
 
             echo "<h2>Gruppe Losing Bracket &#9733;</h2>";
+            // Wenn noch keine Teams im LB sind, Hinweis anzeigen und abbrechen
+            if (count($teams) === 0) {
+                echo "<div class='note'>Noch keine Spiele im Losing‑Bracket vorhanden. Die Begegnungen werden automatisch erzeugt, sobald die ersten Teams ausgeschieden sind.</div>";
+                return;
+            }
             echo "<table class='withBorderCollapse'><thead><tr><th />";
             $headerStart = ($schalterDreieck == 1 && $loescheErsteZeileUndSpalte == 1) ? 1 : 0;
             for ($i = $headerStart; $i < count($teams); $i++) {
@@ -916,18 +921,23 @@
         echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th></tr></thead><tbody>";
         $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND (id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) OR id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
         $resultTeamZeile = $conn->query($sqlTeam);
+        $__lb_rows = 0;
         while ($resultTeamZeile && ($rowTeamZeile = $resultTeamZeile->fetch_assoc())) {
             $name=$rowTeamZeile["name"]; $teamId=$rowTeamZeile["id"];
             $gruppenphase_spiele=$rowTeamZeile["gruppenphase_spiele"];
             $gruppenphase_flaschen=$rowTeamZeile["gruppenphase_flaschen"];
             $gruppenphase_punkte=$rowTeamZeile["gruppenphase_punkte"];
             echo "<tr>";
-            echo "<td style=\"text-align='left';padding: 0.1em 0.75em !important;\">$name</td>";
-            echo "<td style=\"text-align='rigth';padding: 0.1em 0.75em !important;\">"; $return = printKuerzelWithLink($conn, $teamId); echo $return; echo "</td>";
-            echo "<td style=\"text-align='rigth';padding: 0.1em 0.75em !important;\">$gruppenphase_spiele</td>";
-            echo "<td style=\"text-align='rigth';padding: 0.1em 0.75em !important;\">$gruppenphase_flaschen</td>";
-            echo "<td style=\"text-align='rigth';padding: 0.1em 0.75em !important;\">$gruppenphase_punkte</td>";
+            echo "<td style=\"text-align:left; padding: 0.1em 0.75em !important;\">$name</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">"; $return = printKuerzelWithLink($conn, $teamId); echo $return; echo "</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_spiele</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_flaschen</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_punkte</td>";
             echo "</tr>";
+            $__lb_rows++;
+        }
+        if ($__lb_rows === 0) {
+            echo "<tr><td colspan='5' style='text-align:center; opacity:.8;'>Noch keine Teams im Losing‑Bracket erfasst.</td></tr>";
         }
         echo "</tbody></table>";
     }
@@ -962,10 +972,10 @@
                         $gruppenphase_punkte=$rowTeamZeile["gruppenphase_punkte"]; ?>
                         <!-- AUSGEBEN -->				  
                         <td style="text-align='left';padding: 0.1em 0.75em !important;"><?php echo $name ?></td>
-                        <td style="text-align='rigth';padding: 0.1em 0.75em !important;"><?php $return = printKuerzelWithLink($conn, $teamId); echo "$return"; ?></td> <!-- echo $kuerzel -->
-                        <td style="text-align='rigth';padding: 0.1em 0.75em !important;"><?php echo $gruppenphase_spiele ?></td> <!-- Anzahl der Spiele ausgeben -->
-                        <td style="text-align='rigth';padding: 0.1em 0.75em !important;"><?php echo $gruppenphase_flaschen ?></td> <!-- Anzahl der Flaschen ausgeben -->
-                        <td style="text-align='rigth';padding: 0.1em 0.75em !important;"><?php echo $gruppenphase_punkte ?></td> <!-- Anzahl der Punkte ausgeben -->
+                        <td style="text-align:right;padding: 0.1em 0.75em !important;"><?php $return = printKuerzelWithLink($conn, $teamId); echo "$return"; ?></td> <!-- echo $kuerzel -->
+                        <td style="text-align:right;padding: 0.1em 0.75em !important;"><?php echo $gruppenphase_spiele ?></td> <!-- Anzahl der Spiele ausgeben -->
+                        <td style="text-align:right;padding: 0.1em 0.75em !important;"><?php echo $gruppenphase_flaschen ?></td> <!-- Anzahl der Flaschen ausgeben -->
+                        <td style="text-align:right;padding: 0.1em 0.75em !important;"><?php echo $gruppenphase_punkte ?></td> <!-- Anzahl der Punkte ausgeben -->
                         </tr> <!-- nÃ¤chste Zeile -->
                         <?php
                     }

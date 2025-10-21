@@ -54,8 +54,8 @@ include_once 'edit_interface.php';
 		// Parse JSON from response. Check for success or error codes 
 		$responseData = json_decode($response); 
         
-		// If reCAPTCHA response is valid 
-		if($responseData->success){//$responseData->success){ //TODO: wieder einkommentieren
+        // If hCaptcha response is valid 
+        if($responseData->success){
 			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
 
 			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
