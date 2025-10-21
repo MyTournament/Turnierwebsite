@@ -1,0 +1,17 @@
+    foreach (glob("website_print_functions/*.php") as $filename){
+        include_once $filename;
+    }
+    $siteID = 1; // SITE ID (Für CMS)
+
+    $gameEditMode = 0; //
+    $expertenmodus = 0;
+    $gameEditMode = $_POST['gameEditMode'];
+    $expertenmodus = $_POST['expertenmodus'];
+
+    //ANMELDUNG FÜR CMS
+    $bn = $_POST["bn"];
+    $pw = $_POST["pw"];
+    
+    $LoggedInWithCMSorHigher = False;
+        foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 5") as $row) {
+            if ($bn == $row["Benutzername"] && $pw == $row["Passwort"]) {

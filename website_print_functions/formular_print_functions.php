@@ -13,33 +13,32 @@
     </script> 
     <div id="LogIn2">
     <?php
-    $action = $_POST['action']; 
+    $action = isset($_POST['action']) ? $_POST['action'] : null; 
     //echo "<script>console.log('action: $action')</script>";
 
-    $begegnungId = 0;
-    $begegnungId = $_POST['begegnungId'];
+    $begegnungId = isset($_POST['begegnungId']) ? $_POST['begegnungId'] : 0;
 
-    $heimteam = $_POST['heimteam']; 
-    $auswaertsteam = $_POST['auswaertsteam']; 
+    $heimteam = isset($_POST['heimteam']) ? $_POST['heimteam'] : null; 
+    $auswaertsteam = isset($_POST['auswaertsteam']) ? $_POST['auswaertsteam'] : null; 
     
     echo "<div style='text-align: center;'>";
     if($action == 'add'){ //SPIEL EINTRAGEN
         //echo "<script>console.log('begegnungId: $begegnungId')</script>";
         echo "<h2>Ergebnis eintragen</h2>";   
-        $begegnungsAction = $_POST['begegnungsAction']; 
+        $begegnungsAction = isset($_POST['begegnungsAction']) ? $_POST['begegnungsAction'] : null; 
     }else if($action == 'editOrDelete'){ //SPIEL ÄNDERN/LÖSCHEN
         echo "<h2>Ergebnis bearbeiten</h2>";
-        $spielId = $_POST['spielId'];
+        $spielId = isset($_POST['spielId']) ? $_POST['spielId'] : null;
         echo "<script>console.log('spielId: $spielId')</script>";
-        $biereheimteam = $_POST['biereheimteam'];
-        $biereauswaertsteam = $_POST['biereauswaertsteam'];
+        $biereheimteam = isset($_POST['biereheimteam']) ? $_POST['biereheimteam'] : null;
+        $biereauswaertsteam = isset($_POST['biereauswaertsteam']) ? $_POST['biereauswaertsteam'] : null;
     }else if($action == 'final'){ //FINALISIEREN
         echo "<h2>Begenung finalisieren</h2>";
     }else if($action == 'unfinal'){ //FINALISIEREN
         echo "<h2>Begenung un-finalisieren</h2>";
     }else if($action == 'final_group'){ //FINALISIEREN
         echo "<h2>Gesamte Gruppe finalisieren</h2>";
-        $groupId = $_POST['groupId'];
+        $groupId = isset($_POST['groupId']) ? $_POST['groupId'] : null;
     }
     echo "<p></br></p>";
 
@@ -324,7 +323,7 @@ function printSpielerInfoLogin($TurnierID, $conn, $spielerId){
     <p>Bitte logge dich ein, um mehr Infos zu einem konkreten Spieler zu erhalten. (zum Beispiel die Telefonnummer)</p>
     <h3>Diese Funktion kann nur von Schiedsrichter*innen genutzt werden!</h3>
     <?php
-    $test_turnier_id = $_GET['test_turnier_id'];
+    $test_turnier_id = isset($_GET['test_turnier_id']) ? $_GET['test_turnier_id'] : 0;
     if($test_turnier_id==0){ //Fall: normales Turnier
         echo "<form action='/?spielerId=$spielerId#spielerinfo' method='POST' onSubmit='return checkAGBspielerinfo()'>";
     }else{ //Testturniere
