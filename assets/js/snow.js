@@ -63,11 +63,11 @@
         if (i == 0) {
             //document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
             //Jetzt nur noch auf letzter Ebene:
-            document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ 1 +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
+            document.write("<div id=\"dot"+ i +"\" style=\"position: fixed; pointer-events: none; z-index: "+ 1 +"; visibility: hidden; top: 15px; left: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
         } else {
             //document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
-            //Jetzt nur noch auf letzter Ebene:
-            document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ 1 +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
+            //Jetzt nur noch auf letzter Ebene und mit fixed + overflow-sicher:
+            document.write("<div id=\"dot"+ i +"\" style=\"position: fixed; pointer-events: none; z-index: "+ 1 +"; visibility: hidden; top: 15px; left: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
         }
     }
     }
@@ -77,7 +77,8 @@
     
 
     function snowIE_NS6() {  // IE and NS6 main animation function
-    doc_width = ns6up?window.innerWidth-10 : iecompattest().clientWidth-10;
+    // Leave a tiny margin and respect flake size to avoid causing scrollbars
+    doc_width = (ns6up?window.innerWidth : iecompattest().clientWidth) - (size + 4);
                 doc_height=(window.innerHeight && snowdistance=="windowheight")? window.innerHeight : (ie4up && snowdistance=="windowheight")?  iecompattest().clientHeight : (ie4up && !window.opera && snowdistance=="pageheight")? iecompattest().scrollHeight : iecompattest().offsetHeight;
     for (i = 0; i < no; ++ i) {  // iterate for every dot
         
@@ -90,8 +91,13 @@
         sty[i] = 0.7 + Math.random();
         }
         dx[i] += stx[i];
-        document.getElementById("dot"+i).style.top=yp[i]+"px";
-        document.getElementById("dot"+i).style.left=xp[i] + am[i]*Math.sin(dx[i])+"px";
+        var leftPos = xp[i] + am[i]*Math.sin(dx[i]);
+        // Clamp horizontal position to stay inside viewport and avoid triggering scrollbars
+        if (leftPos < 2) leftPos = 2;
+        if (leftPos > doc_width) leftPos = doc_width;
+        var el = document.getElementById("dot"+i);
+        el.style.top = yp[i]+"px";
+        el.style.left = leftPos+"px";
         }
     }
     snowtimer=setTimeout("snowIE_NS6()", 10);
