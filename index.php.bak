@@ -12,7 +12,7 @@ include_once 'variables.php'; //Variablen einbinden (Turniernummer) //Wichtig da
 // error_log($debug_message, 3, $log_file_path);
 
 //BULLEREI KOMMT
-// Fallback-Initialisierungen fï¿½r lokale Umgebung
+// Fallback-Initialisierungen für lokale Umgebung
 if (!isset($websiteId)) { $websiteId = 1; }
 if (!isset($sperrung)) { $sperrung = 0; }
 $sqlWebsite = 'SELECT * FROM `System_Website` WHERE id = '. $websiteId .' ORDER BY ID';
@@ -27,12 +27,12 @@ if($sperrung == 1){
 
 include_once 'website_functionalities/load_website.php';
 $website_array = determine_domain_id($conn);
-$websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Ã¼bersicht
+$websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #?bersicht
 if ($websiteId == null){
     echo "WEBSITE nicht gefunden";
 }
 
-// UmgebungsprÃ¼fung (Localhost/Private Netzwerke)
+// Umgebungspr?fung (Localhost/Private Netzwerke)
 if (!function_exists('is_local_env')) {
     function is_local_env(): bool {
         $hosts = [];
@@ -71,14 +71,14 @@ if ($restultAnzahlWebsiteBesuche) {
         <title>Blankiball Bierball Turnier</title>
         <meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <meta name="description" content="Berlins grï¿½ï¿½tes Bierball-Turnier">
+        <meta name="description" content="Berlins größtes Bierball-Turnier">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
         <meta name="keywords" content="REDACTED, bierball, turnier, flunkyball, bier" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
         <link href="images/icon/logo_export_icon/transparent/favicon-96x96.png" rel="shortcut icon" type="image/png">
         
-         <!-- fï¿½r Galerie -->
+         <!-- für Galerie -->
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
         <!-- hCaptcha: lazy load only when needed to reduce third-party frames -->
@@ -169,7 +169,7 @@ if ($restultAnzahlWebsiteBesuche) {
         <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
         <?php } ?>
 
-        <!-- fï¿½r Captcha -->
+        <!-- für Captcha -->
         <?php if (!(isset($is_localhost) && $is_localhost)) { ?><script src="https://js.hcaptcha.com/1/api.js" async defer></script><?php } ?>
         
         <noscript>
@@ -214,12 +214,6 @@ if ($restultAnzahlWebsiteBesuche) {
 <div id="wrapper">
 
 <?php
-
-// Ensure UTF-8 output for correct umlaut rendering
-if (!headers_sent()) {
-    header('Content-Type: text/html; charset=UTF-8');
-}
-if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     // Debug-Ausgabe entfernt: WebsiteId
     include_once 'website_functionalities/countdown.php';
     include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus
@@ -237,16 +231,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         db_update($conn, $TurnierID); //db_update.php AUSF?HREN
     }catch (Exception $e) {
         $message = $e->getMessage();
-        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der hï¿½chstwahrscheinlich die Funktionalitï¿½t der Website einschrï¿½nkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***$message*** ###</i>";
+        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***$message*** ###</i>";
     }catch (Throwable $e) { //Alles was nicht schon vorher abgefangen wird
-        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der hï¿½chstwahrscheinlich die Funktionalitï¿½t der Website einschrï¿½nkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***unbekannter Fehler*** ###</i>";
+        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***unbekannter Fehler*** ###</i>";
     }
     }
     foreach (glob("website_print_functions/*.php") as $filename){
         include_once $filename;
     }
-    $siteID = 1; // SITE ID (Fï¿½r CMS)
-    // Lokale Defaults fÃ¼r optionale POST-Werte
+    $siteID = 1; // SITE ID (Für CMS)
+    // Lokale Defaults f?r optionale POST-Werte
     if (!isset($_POST['gameEditMode'])) { $_POST['gameEditMode'] = 0; }
     if (!isset($_POST['expertenmodus'])) { $_POST['expertenmodus'] = 0; }
     if (!isset($_POST['bn'])) { $_POST['bn'] = null; }
@@ -257,7 +251,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $gameEditMode = $_POST['gameEditMode'];
     $expertenmodus = $_POST['expertenmodus'];
 
-    //ANMELDUNG fÃ¼r CMS
+    //ANMELDUNG F?R CMS
     $bn = $_POST["bn"];
     $pw = $_POST["pw"];
     
@@ -345,7 +339,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo"<h1>$anzeige_titel</h1>";
             echo"<p>$anzeige_subtitel</p>";
             ?>
-            <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
+            <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
         </div>
     </div>
     <!--<button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>-->
@@ -409,11 +403,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
                 cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
             }else if($turnier_phase_ID == 12){ //WARTELISTE
-                echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir kï¿½nnen nur nicht versprechen dass wir noch Kapazitï¿½t haben.</i></p>";
+                echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
                 echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
                 echo "<br/><br/>";
             } ?>
-            <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
+            <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
             
             
             
@@ -430,9 +424,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ###################################################################################################################################################################################################################################### -->
 <!-- CHANGE OR DELETE CONTENT -->
 <article id="changecontent">
-    <h2>Content ï¿½ndern</h2>
+    <h2>Content ändern</h2>
     <p></p>
-    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 3, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 3, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
     <?php 
         if (isset($_POST['contentID'])) {
             $cid = $_POST['contentID'];
@@ -443,38 +437,38 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             changeContent($conn, $TurnierID, $cid, $ccontent, $cstyle, $cfunc, $corder);
         }
     ?>
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- ADD CONTENT -->
 <article id="addcontent">
-    <h2>Content hinzufï¿½gen</h2>
+    <h2>Content hinzufügen</h2>
     <p></p>
     <?php if (isset($_POST['contentID'])) { addContent($_POST['contentID'], $TurnierID); } ?>
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="allgemeine_info">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 4, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <a href="#info" class="button">ZurÃ¼ck</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 4, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <a href="#info" class="button">Zur?ck</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="map">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 6, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <a href="#info" class="button">ZurÃ¼ck</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 6, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <a href="#info" class="button">Zur?ck</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- REGELN -->
 <article id="regeln">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- TEAMS -->
@@ -491,18 +485,18 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
             cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
         }else if($turnier_phase_ID == 12){ //WARTELISTE
-            echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir kï¿½nnen nur nicht versprechen dass wir noch Kapazitï¿½t haben.</i></p>";
+            echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
             echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
         }else{
             echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
         }
     
-        cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) 
+        cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) 
     }else{
         // login form
         echo "<div style='color:white; text-align: center;'>";
             echo "<h2>Turnierpasswort</h2>";
-            echo "<p>Aus Datenschutzgrï¿½nden sind die Personendaten mit einem Passwort geschï¿½tzt.</p>";
+            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
             echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
             echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
             echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
@@ -525,44 +519,44 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "</div>";
     }
     ?> 
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>                 
 </article>
 <!-- SPIELER INFO - LOGIN -->                       
 <article id="spielerinfo_login">
-    <a href="#teams" class="button">ZurÃ¼ck zu den Teams</a></br></br>
+    <a href="#teams" class="button">Zur?ck zu den Teams</a></br></br>
     <?php 
     $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
     printSpielerInfoLogin($TurnierID, $conn, $spielerId); 
     ?>
-    </br></br><a href="#teams" class="button">ZurÃ¼ck zu den Teams</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    </br></br><a href="#teams" class="button">Zur?ck zu den Teams</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- SPIELER INFO -->                       
 <article id="spielerinfo">
-    <a href="#teams" class="button">ZurÃ¼ck zu den Teams</a></br></br>
+    <a href="#teams" class="button">Zur?ck zu den Teams</a></br></br>
     <?php 
     $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
     printSpielerInfo($TurnierID, $conn, $spielerId); 
     ?>
-    </br></br><a href="#teams" class="button">ZurÃ¼ck zu den Teams</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    </br></br><a href="#teams" class="button">Zur?ck zu den Teams</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- TEAM INFO -->                       
 <article id="teaminfo">
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a></br></br>
+    <a href="#" class="button">Zur?ck zur Startseite</a></br></br>
     <?php 
     $teamId = isset($_GET['teamId']) ? $_GET['teamId'] : null;
     printTeamInfo($TurnierID, $conn, $teamId); 
     ?>
-    </br></br><a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    </br></br><a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
-<!-- SPIELPLAN Ã¼berSICHT -->                       
+<!-- SPIELPLAN ?BERSICHT -->                       
 <article id="spielplan">
     <!-- Lgin check und Spielplan-Anzeige -->
     <?php
@@ -582,7 +576,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         }
     
         if($use_excel==0){
-            //cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);  // ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS)
+            //cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);  // ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS)
             echo '<h1 class="section-header">Spielplan <img src="images/icon/sterni1.png" width="40" height="40" alt="Home"></h1>
 
             <!-- <iframe loading="lazy" width="100%" height="600" frameborder="0" scrolling="no" src="https://onedrive.live.com/embed?resid=35950B6E8DF41A30%21156&authkey=%21AMoZmMl3Yb55bbY&em=2&wdAllowInteractivity=False&ActiveCell=Spielplan!A3&wdHideGridlines=True&wdHideHeaders=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edesNext=false&resen=false" async></iframe>
@@ -609,7 +603,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
               </div>
               <div class="phase-card">
                 <h3><img class="icon" src="images/icon/sterni1.png" alt="Icon"> Losing-Bracket</h3>
-                <p class="muted">Im Losing-Bracket geht es fÃ¼r ausgeschiedene Teams weiter ? mit Chancen auf bessere Platzierungen und zus?tzliche Matches.</p>
+                <p class="muted">Im Losing-Bracket geht es f?r ausgeschiedene Teams weiter ? mit Chancen auf bessere Platzierungen und zus?tzliche Matches.</p>
                 <a href="#losingbracket" class="button primary">Zum Losing-Bracket</a>
               </div>
             </div>
@@ -625,7 +619,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "</form>";
         echo "<div style='color:white; text-align: center;'>";
             echo "<h2>Turnierpasswort</h2>";
-            echo "<p>Aus Datenschutzgrï¿½nden sind die Personendaten mit einem Passwort geschï¿½tzt.</p>";
+            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
             echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
             echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
             echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
@@ -649,38 +643,38 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "</div>";
     }
     ?>
-    <a href='#' class='button'>ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <a href='#' class='button'>Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- SPIELPLAN GRUPPEN -->
 <article id="gruppen">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 28, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <a href="#teams" class="button">ZurÃ¼ck zu den Teams</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 28, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <a href="#teams" class="button">Zur?ck zu den Teams</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- GRUPPENPHASE - SPIELPLAN -->
 <article id="gruppenphase">
-    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
     <h1 class="section-header">Gruppenphase</h1>
     <ul class="actions">         
-    <li><a href="#punktetabelle" class="button primary">ðŸŽ¯ Zur Punktetabelle</a></li>            
+    <li><a href="#punktetabelle" class="button primary">?? Zur Punktetabelle</a></li>            
     </ul>
-    <p style="font-size: 0.8rem;"><i>Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. W?rde das Verliererteam keine Flasche leeren, wï¿½re der Spielstand "3:0".</i></p>   
+    <p style="font-size: 0.8rem;"><i>Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. W?rde das Verliererteam keine Flasche leeren, wäre der Spielstand "3:0".</i></p>   
     <?php  printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <a href="#spielplan" class="button">ZurÃ¼ck zur Ã¼bersicht</a>  
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <a href="#spielplan" class="button">Zur?ck zur ?bersicht</a>  
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>                          
 </article>
 <!-- Punktetabelle -->
 <article id="punktetabelle">
-    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 12, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->                      
-    <a href="#gruppenphase" class="button">ZurÃ¼ck zum Spielplan</a>
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 12, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->                      
+    <a href="#gruppenphase" class="button">Zur?ck zum Spielplan</a>
     <h1>Punktetabelle der Gruppenphase</h1>
     <?php printPunktetabelleGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?>
     
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>  
 </article>
 <!-- KO-Phase -->
@@ -688,7 +682,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h2>KnockOut-Phase</h2>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
     <?php printKO_PhaseTabellen($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <a href="#spielplan" class="button">ZurÃ¼ck zur Ã¼bersicht</a>
+    <a href="#spielplan" class="button">Zur?ck zur ?bersicht</a>
     <p></br></p>
     <p></br></p>
 <!-- Losing Bracket -->
@@ -703,90 +697,90 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     printSpielplanLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
     printPunktetabelleLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
     ?>
-    <a href="#spielplan" class="button">ZurÃ¼ck zur Ãœbersicht</a>
+    <a href="#kophase" class="button">Zur?ck zur KO-Phase</a>
     <p></br></p> <!-- Abst??nde unten damit Button auf Handys nicht von Cookiewarnung Oberdeckt wird -->
     <p></br></p>  
 </article>
 <!-- Turnierbaum -->
 <article id="turnierbaum">
-    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->   
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->   
     <h1>Turnierbaum der KO-Phase <img src="images/icon/sterni1.png" width="40" height="40" border="10" alt="Home"></h1>
     <p>Hier k?nnt ihr nachverfolgen, wie sich die verschiedenen Matches ergeben. In einem K?stchen steht immer das Gewinnerteam eines Matches und in der Spalte rechts daneben das Gewinnerteam der n?chsten Stufe.</p>
     <?php printTurnierbaum($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus); ?>
     
-    <a href="#kophase" class="button">ZurÃ¼ck zur KO-Phase</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <a href="#kophase" class="button">Zur?ck zur KO-Phase</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>  
 </article>
 <!-- IMPRESSUM -->
 <article id="impressum">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 14, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####--> 
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 14, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####--> 
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
-<!-- datenschutzerklï¿½rung -->
+<!-- datenschutzerklärung -->
 <article id="datenschutzerklaerung">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 17, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####--> 
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 17, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####--> 
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="info">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 15, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####--> 
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 15, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####--> 
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- ZEITPLAN -->
 <article id="zeitplan">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 20, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####--> 
-    <a href="#info" class="button">ZurÃ¼ck</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 20, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####--> 
+    <a href="#info" class="button">Zur?ck</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- FAQ -->
 <article id="faq">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 21, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####--> 
-    <a href="#info" class="button">ZurÃ¼ck</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 21, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####--> 
+    <a href="#info" class="button">Zur?ck</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- PLATZHALTER -->
 <article id="platzhalter">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 16, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####--> 
-    <a href="/" class="button">ZurÃ¼ck zur Startseite</a>
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 16, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####--> 
+    <a href="/" class="button">Zur?ck zur Startseite</a>
     <h5><br/></h5>  
 </article>
 
 <!-- schiedsrichter*innen -->
 <article id="schiedsrichterinnen">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 24, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <a href="#info" class="button">ZurÃ¼ck</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 24, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <a href="#info" class="button">Zur?ck</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- schiedsrichter*innen -->
 <article id="REDACTED_simulator">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- Merch -->
 <article id="merch">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 34, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 34, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <article id="telefonjoker">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 33, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####--> 
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 33, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####--> 
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -855,21 +849,21 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </div><!-- content -->
     </div><!-- container -->
     
-    <a href="#info" class="button">ZurÃ¼ck</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <a href="#info" class="button">Zur?ck</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- schiedsrichter*innen -->
 <article id="history">
     <h1>Vergangene Turniere</h1>
-    <p>Wï¿½hle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
+    <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
     <p>Hier geht's zur alten Website (2017-2020)</p>
     <a href="https://2018-20.REDACTED.de" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
-    <a href="#" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <a href="#" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -880,7 +874,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             </br>
             <h1>History</h1>
             <p> Du befindest dich in der History-Ansicht! </p>
-            <!--Alle Informationen, die Teams und Spiele betreffen, wurden vom gewï¿½nschten Turnier geladen. 
+            <!--Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
             Alle sonstigen Infos bleiben aber die vom aktuellen Turnier. -->
             <p>Zum verlassen des History-Modus, klicke oben rechts auf "Leave".</p>
             <a href="#" class="button">Ok</a>
@@ -899,14 +893,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- EDIT GAME -->
 <article id="changegame">
     <?php printEditGames($TurnierID, $test_turnier_id); ?>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- BEGEGNUNG VERWALTEN -->
 <article id="begegnung_verwalten">
     <?php printEditGames($TurnierID, $test_turnier_id); ?>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -920,21 +914,21 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             }
         ?>
     <?php printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag); ?>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- SIEGER_INNEN TREPPE -->
 <article id="sieger_innen_treppe">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- SIEGER_INNEN TREPPE -->
 <article id="rangliste">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -942,7 +936,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id='bullerei_kommt'>
     <div style='text-align: center'> 
         <?php printBullereiKommt($conn, $websiteId, $TurnierID) ?>
-        <a href='#' class='button'>ZurÃ¼ck</a>
+        <a href='#' class='button'>Zur?ck</a>
         <h5><br /></h5>  
     </div>
 </article>
@@ -957,7 +951,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- KONTAKT -->
 <article id="kontakt">
     <h2 class="major">Kontakt</h2>
-    <p>Falls du Dinge hast, die du uns gerne mitteilen mï¿½chtest oder zum Beispiel dein Team wieder abmelden wollen solltest, ist hier der perfekte Ort dafï¿½r. Falls du dein Team abmelden mï¿½chtest, schreib bitte dein Teampasswort dazu.</p>
+    <p>Falls du Dinge hast, die du uns gerne mitteilen möchtest oder zum Beispiel dein Team wieder abmelden wollen solltest, ist hier der perfekte Ort dafür. Falls du dein Team abmelden möchtest, schreib bitte dein Teampasswort dazu.</p>
     <form method="post" action="website_functionalities/contact.php">
         <div class="fields">
             <div class="field half">
@@ -989,10 +983,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ANMELDEN -->
 <article id="kontakt_success">
     <p></br></p>
-    <h2>Vielen Dank fï¿½r deine Nachricht!</h2>
-    <p>Wir werden dir sobald wie mï¿½glich eine Antwort schicken.</p>
-    <a href="/" class="button">ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <h2>Vielen Dank für deine Nachricht!</h2>
+    <p>Wir werden dir sobald wie möglich eine Antwort schicken.</p>
+    <a href="/" class="button">Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -1023,14 +1017,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </ul>
     <p><br/></p> 
     <ul class="actions">
-            <li><a href="#info" class="button">ZurÃ¼ck</a></li>
+            <li><a href="#info" class="button">Zur?ck</a></li>
     </ul> 
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>                 
 </article>
 
 
-<!-- LOGIN - fÃ¼r WORDPRESS -->
+<!-- LOGIN - F?R WORDPRESS -->
 <article id="login">
 <title>Backstage-Login</title>
     <h2>Anzahl Websitebesuche</h2>
@@ -1039,7 +1033,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p></br></p> 
     
     <h2>Testmodus</h2>
-    <p>Der Testmodus ist dafï¿½r da, alle Funktionen der Website auszuprobieren. Der Testmous lï¿½uft mit einem Test-Turnier mit ausgedachten Teams.</p>
+    <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmous läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
     <form method='post' action='#'>
         <select name='test_turnier_id'>
             <option value='0'><i><?php echo $TurnierName ?></i></option>";
@@ -1099,13 +1093,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
     <p></br></p>
 
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
     <a href='#rangliste' class='button primary'>Rangliste</a>
     <a id="bookmark-this" href="#" title="Bookmark This Page">Bookmark This Page</a>
 
     
     
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -1117,7 +1111,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="vielendankfuerdeineanmeldung">
     <div style='text-align: center'>  
         </br>
-        <h1>Vielen Dank fï¿½r deine Anmeldung!</h1>
+        <h1>Vielen Dank für deine Anmeldung!</h1>
         <p>Deine Anmeldung wird jetzt bearbeitet und bald kannst du dein Team in der Team-Liste sehen.</a></p>
         </br>
         <h2>Hier kannst du testen ob dein Login funktioniert.</h2>
@@ -1129,7 +1123,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "<form action='website_functionalities/logincheck.php?test_turnier_id=$test_turnier_id' method='POST'>";
         }
         ?>
-            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-Kï¿½rzel" style="color: white" required>
+            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-Kürzel" style="color: white" required>
             <input type="password" id="passwdcheck" class="Eingabe" name="pw" placeholder="Dein Team-Passwort" style="color: white" required>
             <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
         <!--<input type="submit" value="Absenden" style="color: black"/> -->
@@ -1147,14 +1141,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             if($teilnahmebeitrag == 1){
                 echo "
                     <h3><a href=$link_solibeitrag>??Teilnahmebeitrag??</a></h3>
-                    <p><b>Nicht vergessen, die 10ï¿½ Teilnahmegebï¿½hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flieï¿½t in Bier fï¿½rs Turnier.</p>                  
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
                     <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
                 ";
             }
         ?>
         
     </div>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -1162,8 +1156,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="vielendankfuerdeineanmeldung_warteliste">
     <div style='text-align: center'>  
         </br>
-        <h3>Vielen Dank fï¿½r deine Anmeldung!</h3>
-        <h3>Leider ist die maximale Teamanzahl schon erreicht! Deswegen wurde dein Team einer Warteliste hinzugefï¿½gt und kann dann nachrï¿½cken, wenn sich andere Teams wieder abmelden. Informiert euch am besten ab und zu mal auf der Website, ob ihr eventuell noch nachgerï¿½ckt seid.</a></h3>
+        <h3>Vielen Dank für deine Anmeldung!</h3>
+        <h3>Leider ist die maximale Teamanzahl schon erreicht! Deswegen wurde dein Team einer Warteliste hinzugefügt und kann dann nachrücken, wenn sich andere Teams wieder abmelden. Informiert euch am besten ab und zu mal auf der Website, ob ihr eventuell noch nachgerückt seid.</a></h3>
         </br>
         <h4>Hier kannst du schonmal testen ob dein Login funktioniert.</h4>
         </br>
@@ -1174,7 +1168,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "<form action='website_functionalities/logincheck.php?test_turnier_id=$test_turnier_id' method='POST'>";
         }
         ?>
-            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-Kï¿½rzel" style="color: white" required>
+            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-Kürzel" style="color: white" required>
             <input type="password" id="passwdcheck" class="Eingabe" name="pw" placeholder="Dein Team-Passwort" style="color: white" required>
             <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
         <!--<input type="submit" value="Absenden" style="color: black"/> -->
@@ -1182,7 +1176,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <button value="Anmelden" type="submit">Anmelden</button>
         </form>
     </div>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -1201,9 +1195,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 $link_whatsapp_chat = $rowTurnier['link_whatsapp_chat'];
                 $link_telegram = $rowTurnier['link_telegram'];
             }
-            /*echo"<h3><a href=$link_solibeitrag>??Unterstï¿½tze uns??</a></h3>";
+            /*echo"<h3><a href=$link_solibeitrag>??Unterstütze uns??</a></h3>";
             echo"
-            <p>Gerne kannst du uns mit einem Solibeitrag unterstï¿½tzen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
+            <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
             <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
             */
             $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
@@ -1214,7 +1208,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             if($teilnahmebeitrag == 1){
                 echo "
                     <h3><a href=$link_solibeitrag>??Teilnahmebeitrag??</a></h3>
-                    <p><b>Nicht vergessen, die 10ï¿½ Teilnahmegebï¿½hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flieï¿½t in Bier fï¿½rs Turnier.</p>                  
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
                     <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
                 ";
             }
@@ -1228,7 +1222,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <!--<li><a class='button' style='background-color: green' href=$link_whatsapp_chat>Chat-Gruppe</a></li>-->
                 <!--<li><a class='button' style='background-color: blue' href=$link_telegram>Telegram-Gruppe</a></li>-->
                 </br>
-                <li><a class='button' href='#'>ZurÃ¼ck zur Startseite</a></li>
+                <li><a class='button' href='#'>Zur?ck zur Startseite</a></li>
             </ul>
             ";
             
@@ -1236,34 +1230,34 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         
         
     </div>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- logincheck_failure -->
 <article id="logincheck_failure">
     <h1>Login fehlgeschlagen</h1>
-    <p>Entweder du hast das Kï¿½rzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefï¿½gt. Falls der Anmeldezeitraum noch lï¿½uft, versuche entweder noch einmal dein Team anzumelden oder wende dich an kummerkasten@REDACTED.de</p>
-    <a class="button" href='#'>ZurÃ¼ck zur Startseite</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an kummerkasten@REDACTED.de</p>
+    <a class="button" href='#'>Zur?ck zur Startseite</a>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- edit_games_success -->
 <article id="edit_games_success">
-    <h1>Danke fï¿½r deinen Eintrag!</h1>
+    <h1>Danke für deinen Eintrag!</h1>
     <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>		
 
 <!-- edit_games_failure -->
 <article id="edit_games_failure">
     <h1>Ups, da ist wohl etwas schiefgelaufen!</h1>
-    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nï¿½tigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
-    <p></br></p> <!-- Abstï¿½nde unten damit Button auf Handys nicht von Cookiewarnung ï¿½berdeckt wird -->
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>		
                
@@ -1279,9 +1273,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <!--SIEGER*INNEN_TREPPE-->
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
 
-    <!-- Lï¿½dt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  -->
+    <!-- Lädt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  -->
     
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID Ã¼berGEBEN (Fï¿½r CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ?BERGEBEN (Für CMS) #####-->
 </footer>
 
 </div>
@@ -1319,7 +1313,7 @@ if($schnee==1){
 }else{
     include_once 'assets/js/cookies.js';
     echo "<script type='text/javascript' id='cookieinfo'
-    src='/assets/js/cookieinfo.min.js' data-linkmsg='Zeig mir diese Cookies &#9733;' data-moreinfo='javascript:start()' data-onclick='javascript:start()' data-expires='1min Wartezeit bis die Cookies gelï¿½scht werden. Zu verï¿½ndern in der .js Datei'>
+    src='/assets/js/cookieinfo.min.js' data-linkmsg='Zeig mir diese Cookies &#9733;' data-moreinfo='javascript:start()' data-onclick='javascript:start()' data-expires='1min Wartezeit bis die Cookies gelöscht werden. Zu verändern in der .js Datei'>
     </script>";
 }
 ?>

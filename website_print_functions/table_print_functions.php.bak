@@ -1,4 +1,4 @@
-<?php
+﻿<?php
     function helloHermann($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         $test = "baum";
         echo "Hallo Hermann $test";
