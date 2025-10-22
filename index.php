@@ -1131,7 +1131,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "<form action='website_functionalities/logincheck.php?test_turnier_id=$test_turnier_id' method='POST'>";
         }
         ?>
-            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-K�rzel" style="color: white" required>
+            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-Kürzel" style="color: white" required>
             <input type="password" id="passwdcheck" class="Eingabe" name="pw" placeholder="Dein Team-Passwort" style="color: white" required>
             <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
         <!--<input type="submit" value="Absenden" style="color: black"/> -->

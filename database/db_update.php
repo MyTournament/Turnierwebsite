@@ -424,9 +424,39 @@ if (php_sapi_name() !== 'cli') {
 
         // Teilnehmer fürs Losing Bracket: alle Teams dieses Turniers mit platziert_level = 0 (in Gruppenphase ausgeschieden)
         $teilnehmer = [];
+        // Sicherstellen: Alle Teams, die nicht in KO-Begegnungen (ko_finallevel > 1) stehen, erhalten platziert_level = 0 - somit auch Teams die sich vlt. jetzt erst anmelden
+        try {
+            $tid = (int)$TurnierID;
+            $sqlSetPL0 = "UPDATE Turnier_Team t
+                           LEFT JOIN (
+                               SELECT DISTINCT x.id AS team_id
+                               FROM Turnier_Team x
+                               WHERE x.geloescht = 0 AND x.fk_turnier = $tid
+                                 AND x.id IN (
+                                     SELECT b.fk_heimteam FROM Turnier_Begegnung b WHERE b.ko_finallevel > 1 AND b.status <> 3
+                                     UNION
+                                     SELECT b.fk_auswaertsteam FROM Turnier_Begegnung b WHERE b.ko_finallevel > 1 AND b.status <> 3
+                                 )
+                           ) ko ON ko.team_id = t.id
+                           SET t.platziert_level = 0
+                           WHERE t.geloescht = 0 AND t.fk_turnier = $tid AND ko.team_id IS NULL";
+            $conn->query($sqlSetPL0);
+        } catch (Throwable $e) {
+            echo "<script>console.warn('platziert_level=0-Setzung warn: " . addslashes($e->getMessage()) . "')</script>";
+        }
+
         $sqlTeilnehmer = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ' AND (platziert_level = 0) ORDER BY id';
         $resTeilnehmer = $conn->query($sqlTeilnehmer);
         while ($resTeilnehmer && ($rt = $resTeilnehmer->fetch_assoc())) { $teilnehmer[] = (int)$rt['id']; }
+
+        // Ergänzung: Alle Teams, die bereits in LB-Begegnungen (ko_finallevel = 20) auftauchen, ebenfalls in die Teilnehmerliste aufnehmen
+        $sqlTeilnehmerLB = 'SELECT DISTINCT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ' AND (id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) OR id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) ORDER BY id';
+        $resTeilnehmerLB = $conn->query($sqlTeilnehmerLB);
+        while ($resTeilnehmerLB && ($rt = $resTeilnehmerLB->fetch_assoc())) {
+            $tidLB = (int)$rt['id'];
+            if (!in_array($tidLB, $teilnehmer, true)) { $teilnehmer[] = $tidLB; }
+        }
+        sort($teilnehmer, SORT_NUMERIC);
 
         // Round-Robin Begegnungen für LB anlegen (ko_finallevel = 20) und als nicht veraltet markieren (status=1)
         for ($i = 0; $i < count($teilnehmer); $i++) {
@@ -453,22 +483,54 @@ if (php_sapi_name() !== 'cli') {
         // - Behalte pro (min(team1,team2), max(team1,team2)) die kleinste ID -> status=1
         // - Markiere alle weiteren IDs als veraltet -> status=3
         try {
+            $tid = (int)$TurnierID;
             $sqlKeep = "UPDATE Turnier_Begegnung t
+                        JOIN Turnier_Team th ON th.id = t.fk_heimteam
+                        JOIN Turnier_Team ta ON ta.id = t.fk_auswaertsteam
                         JOIN (
-                            SELECT MIN(id) AS keep_id,
-                                   LEAST(fk_heimteam, fk_auswaertsteam) AS a,
-                                   GREATEST(fk_heimteam, fk_auswaertsteam) AS b
-                            FROM Turnier_Begegnung
-                            WHERE ko_finallevel = 20
+                            SELECT MIN(t2.id) AS keep_id,
+                                   LEAST(t2.fk_heimteam, t2.fk_auswaertsteam) AS a,
+                                   GREATEST(t2.fk_heimteam, t2.fk_auswaertsteam) AS b
+                            FROM Turnier_Begegnung t2
+                            JOIN Turnier_Team th2 ON th2.id = t2.fk_heimteam
+                            JOIN Turnier_Team ta2 ON ta2.id = t2.fk_auswaertsteam
+                            WHERE t2.ko_finallevel = 20 AND th2.fk_turnier = $tid AND ta2.fk_turnier = $tid
                             GROUP BY a, b
                         ) k
                           ON LEAST(t.fk_heimteam, t.fk_auswaertsteam) = k.a
                          AND GREATEST(t.fk_heimteam, t.fk_auswaertsteam) = k.b
                         SET t.status = CASE WHEN t.id = k.keep_id THEN 1 ELSE 3 END
-                        WHERE t.ko_finallevel = 20 AND t.status <> 4 AND t.status <> 5";
+                        WHERE t.ko_finallevel = 20 AND t.status <> 4 AND t.status <> 5 AND th.fk_turnier = $tid AND ta.fk_turnier = $tid";
             $conn->query($sqlKeep);
         } catch (Throwable $e) {
             echo "<script>console.warn('LB-Dedupe warn: " . addslashes($e->getMessage()) . "')</script>";
+        }
+
+        // Sicherheitspass: Für jedes Teilnehmer-Paar genau 1 aktive Begegnung (status <> 3) anlegen
+        // Falls keine vorhanden ist: neu erstellen; falls mehrere: kleinste ID aktiv lassen, Rest veralten.
+        for ($i = 0; $i < count($teilnehmer); $i++) {
+            for ($j = $i+1; $j < count($teilnehmer); $j++) {
+                $a = (int)$teilnehmer[$i];
+                $b = (int)$teilnehmer[$j];
+                $ids = [];
+                $sqlPairs = 'SELECT id FROM Turnier_Begegnung WHERE ko_finallevel = 20 AND status <> 3 AND ((fk_heimteam = ' . $a . ' AND fk_auswaertsteam = ' . $b . ') OR (fk_heimteam = ' . $b . ' AND fk_auswaertsteam = ' . $a . ')) ORDER BY id';
+                $resPairs = $conn->query($sqlPairs);
+                while ($resPairs && ($rp = $resPairs->fetch_assoc())) { $ids[] = (int)$rp['id']; }
+                if (count($ids) === 0) {
+                    $stmt = $conn->prepare("INSERT INTO Turnier_Begegnung (fk_heimteam, fk_auswaertsteam, fk_siegerteam, ko_finallevel, ko_turnierbaumposition, status) VALUES (?, ?, NULL, 20, NULL, 1)");
+                    $stmt->bind_param("ii", $a, $b);
+                    $stmt->execute();
+                } elseif (count($ids) > 1) {
+                    sort($ids, SORT_NUMERIC);
+                    $keep = $ids[0];
+                    // aktiv setzen
+                    $conn->query('UPDATE Turnier_Begegnung SET status = 1 WHERE id = ' . $keep);
+                    // rest veralten
+                    for ($k = 1; $k < count($ids); $k++) {
+                        $conn->query('UPDATE Turnier_Begegnung SET status = 3 WHERE id = ' . (int)$ids[$k] . ' AND status <> 4 AND status <> 5');
+                    }
+                }
+            }
         }
 
         // gruppenphase_* für LB neu berechnen (nur LB-Gruppe; aus LB-Spielen ko_finallevel=20)
