@@ -609,7 +609,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
               </div>
               <div class="phase-card">
                 <h3><img class="icon" src="images/icon/sterni1.png" alt="Icon"> Losing-Bracket</h3>
-                <p class="muted">Im Losing-Bracket geht es für ausgeschiedene Teams weiter ? mit Chancen auf bessere Platzierungen und zus?tzliche Matches.</p>
+                <p class="muted">Im Losing-Bracket geht es für ausgeschiedene Teams weiter - mit Chancen auf bessere Platzierungen und zusätzliche Matches.</p>
                 <a href="#losingbracket" class="button primary">Zum Losing-Bracket</a>
               </div>
             </div>
@@ -1251,7 +1251,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
 <!-- edit_games_success -->
 <article id="edit_games_success">
-    <h1>Danke f�r deinen Eintrag!</h1>
+    <h1>Danke für deinen Eintrag!</h1>
     <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->

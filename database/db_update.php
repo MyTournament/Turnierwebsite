@@ -404,8 +404,9 @@ if (php_sapi_name() !== 'cli') {
             // Reset nur für LB-Teams (by IDs)
             $ids = implode(',', array_map('intval', $teilnehmer));
             if ($ids === '') { $ids = '0'; }
-            $stmtR = $conn->prepare("UPDATE Turnier_Team SET gruppenphase_spiele = 0, gruppenphase_flaschen = 0, gruppenphase_punkte = 0 WHERE id IN ($ids) AND geloescht = 0");
-            $stmtR->execute();
+            // LB schreibt keine gruppenphase_* mehr in die DB
+            // $stmtR = $conn->prepare("UPDATE Turnier_Team SET gruppenphase_spiele = 0, gruppenphase_flaschen = 0, gruppenphase_punkte = 0 WHERE id IN ($ids) AND geloescht = 0");
+            // $stmtR->execute();
 
             foreach ($teilnehmer as $tid) {
                 $spiele = 0; $flaschen = 0; $punkte = 0;
@@ -440,9 +441,10 @@ if (php_sapi_name() !== 'cli') {
                     }
                 }
 
-                $stmtU = $conn->prepare("UPDATE Turnier_Team SET gruppenphase_spiele = ?, gruppenphase_flaschen = ?, gruppenphase_punkte = ? WHERE id = ? AND geloescht = 0");
-                $stmtU->bind_param("iiii", $spiele, $flaschen, $punkte, $tid);
-                $stmtU->execute();
+                // LB schreibt keine gruppenphase_* mehr in die DB
+                // $stmtU = $conn->prepare("UPDATE Turnier_Team SET gruppenphase_spiele = ?, gruppenphase_flaschen = ?, gruppenphase_punkte = ? WHERE id = ? AND geloescht = 0");
+                // $stmtU->bind_param("iiii", $spiele, $flaschen, $punkte, $tid);
+                // $stmtU->execute();
             }
         }
 
@@ -1010,13 +1012,15 @@ if (php_sapi_name() !== 'cli') {
                                         $counter++;
                                     }
                                     //LIMIT IST counter-2 weil 2 Teams weiterkommen
-                                    $counter=$counter-2;
+                                    $counter = max(0, $counter - 2);
                                     //allen Teams, die rausgefolgen sind eine Platzierung zuweisen
-                                    $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = '. $gruppeID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
-                                    $resultRausgeflogen = $conn->query($sqlRausgeflogen);
-                                    while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
-                                        $verliererTeam1ID = $rowRausgeflogen['id'];
-                                        setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
+                                    if ($counter > 0) {
+                                        $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = '. $gruppeID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
+                                        $resultRausgeflogen = $conn->query($sqlRausgeflogen);
+                                        while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
+                                            $verliererTeam1ID = $rowRausgeflogen['id'];
+                                            setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
+                                        }
                                     }
                                     
                                     //Nächste Gruppe
@@ -1028,13 +1032,15 @@ if (php_sapi_name() !== 'cli') {
                                         $counter++;
                                     }
                                     //LIMIT IST counter-2 weil 2 Teams weiterkommen
-                                    $counter=$counter-2;
+                                    $counter = max(0, $counter - 2);
                                     //allen Teams, die rausgefolgen sind eine Platzierung zuweisen
-                                    $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = '. $gruppeNextID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
-                                    $resultRausgeflogen = $conn->query($sqlRausgeflogen);
-                                    while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
-                                        $verliererTeam1ID = $rowRausgeflogen['id'];
-                                        setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
+                                    if ($counter > 0) {
+                                        $sqlRausgeflogen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = '. $gruppeNextID .' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT '. $counter .''; //NOT (id = '. $team1ID .' OR id = '. $team2ID .') AND
+                                        $resultRausgeflogen = $conn->query($sqlRausgeflogen);
+                                        while (!empty($rowRausgeflogen = $resultRausgeflogen->fetch_assoc())) {
+                                            $verliererTeam1ID = $rowRausgeflogen['id'];
+                                            setTeamPlatziertLevel($conn, $TurnierID, $verliererTeam1ID, 0);
+                                        }
                                     }
 
                                     //Erste Finalstufe erstellen (könnte zB Viertel- oder Achtelfinale sein)
@@ -1044,7 +1050,7 @@ if (php_sapi_name() !== 'cli') {
                                     $sqlKOBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam = ' . $team1Gruppe1ID . ' AND fk_auswaertsteam = ' . $team2Gruppe2ID . ' AND ko_finallevel = ' . $ko_finallevel . ' ORDER BY ID'; //NICHT status <> 3 !!!
                                     $resultKOBegegnung = $conn->query($sqlKOBegegnung);
                                     //Wenn es keine gibt, dann einfügen
-                                    if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
+                                    if ( (int)$team1Gruppe1ID > 0 && (int)$team2Gruppe2ID > 0 && empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty und gültige Team-IDs
                                         $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team1Gruppe1ID, $team2Gruppe2ID, NULL, $ko_finallevel, $ko_position_team1, 1);"); //(?, ?, ?, ?, ?, ?, ?)
                                         //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
                                         if ( $stmt === false ){
@@ -1065,7 +1071,7 @@ if (php_sapi_name() !== 'cli') {
                                     $sqlKOBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam = ' . $team2Gruppe1ID . ' AND fk_auswaertsteam = ' . $team1Gruppe2ID . ' AND ko_finallevel = ' . $ko_finallevel . ' ORDER BY ID'; //NICHT status <> 3 !!!
                                     $resultKOBegegnung = $conn->query($sqlKOBegegnung);
                                     //Wenn es keine gibt, dann einfügen
-                                    if ( empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty
+                                    if ( (int)$team2Gruppe1ID > 0 && (int)$team1Gruppe2ID > 0 && empty( $rowKOBegegnung = $resultKOBegegnung->fetch_assoc() ) ){ // nur wenn empty und gültige Team-IDs
                                         $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $team2Gruppe1ID, $team1Gruppe2ID, NULL, $ko_finallevel, $ko_position_team2, 1);"); //(?, ?, ?, ?, ?, ?, ?)
                                         //$stmt->bind_param("ssssssss", NULL, $team1ID, $team2ID, NULL, $ko_finallevel, NULL, 0, 0);
                                         if ( $stmt === false ){
