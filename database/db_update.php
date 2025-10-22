@@ -95,6 +95,41 @@ if (php_sapi_name() !== 'cli') {
         
 
     }
+    // Gesamtstatistik aus allen Turnierspielen (alle KO-Level)
+    function computeOverallStats($conn, $TeamId){
+        $spiele = 0; $flaschen = 0; $punkte = 0;
+        // Heimspiele
+        $sqlH = 'SELECT id FROM Turnier_Begegnung WHERE `status` <> 3 AND fk_heimteam = ' . (int)$TeamId . ' ORDER BY id';
+        $resH = $conn->query($sqlH);
+        while ($resH && ($rb = $resH->fetch_assoc())) {
+            $bid = (int)$rb['id'];
+            $sqlS = 'SELECT biereheimteam, biereauswaertsteam FROM Turnier_Spiel WHERE fk_begegnung = ' . $bid . ' ORDER BY id';
+            $resS = $conn->query($sqlS);
+            while ($resS && ($rs = $resS->fetch_assoc())) {
+                $spiele++;
+                $a = (int)$rs['biereheimteam'];
+                $b = (int)$rs['biereauswaertsteam'];
+                $flaschen += $a;
+                if ($a > $b) { $punkte++; }
+            }
+        }
+        // Auswärtsspiele
+        $sqlA = 'SELECT id FROM Turnier_Begegnung WHERE `status` <> 3 AND fk_auswaertsteam = ' . (int)$TeamId . ' ORDER BY id';
+        $resA = $conn->query($sqlA);
+        while ($resA && ($rb = $resA->fetch_assoc())) {
+            $bid = (int)$rb['id'];
+            $sqlS = 'SELECT biereheimteam, biereauswaertsteam FROM Turnier_Spiel WHERE fk_begegnung = ' . $bid . ' ORDER BY id';
+            $resS = $conn->query($sqlS);
+            while ($resS && ($rs = $resS->fetch_assoc())) {
+                $spiele++;
+                $a = (int)$rs['biereheimteam'];
+                $b = (int)$rs['biereauswaertsteam'];
+                $flaschen += $b;
+                if ($b > $a) { $punkte++; }
+            }
+        }
+        return array('spiele'=>$spiele,'flaschen'=>$flaschen,'punkte'=>$punkte);
+    }
     function setAllEndplatzierungen($conn, $TurnierID){
         //zählen wie viele Teams es gibt
         $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
@@ -106,32 +141,44 @@ if (php_sapi_name() !== 'cli') {
         $platzierung = $teamZaehler;
         //GRUPPENPHASE
         //--------------------
-        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND (platziert_level = 0 OR platziert_level = NULL) AND fk_turnier = '. $TurnierID .' ORDER BY siegesquote ASC, id DESC';
+        // Gruppenphase ausgeschiedene Teams (nur platziert_level = 0) anhand Gesamtstatistik sortieren
+        $teamsGF = array();
+        $sql = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND platziert_level = 0 AND fk_turnier = '. (int)$TurnierID;
         $result = $conn->query($sql);
-        while (!empty($row = $result->fetch_assoc())) {
-            $TeamId = $row['id'];
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+        while ($result && ($row = $result->fetch_assoc())) {
+            $tid = (int)$row['id'];
+            $st = computeOverallStats($conn, $tid);
+            $teamsGF[] = array('id'=>$tid,'punkte'=>$st['punkte'],'flaschen'=>$st['flaschen'],'spiele'=>$st['spiele']);
+        }
+        usort($teamsGF, function($a,$b){
+            if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] > $b['punkte']) ? -1 : 1;
+            if ($a['flaschen'] !== $b['flaschen']) return ($a['flaschen'] > $b['flaschen']) ? -1 : 1;
+            if ($a['spiele'] !== $b['spiele']) return ($a['spiele'] > $b['spiele']) ? -1 : 1;
+            return ($a['id'] < $b['id']) ? -1 : 1;
+        });
+        foreach ($teamsGF as $row) {
+            $TeamId = (int)$row['id'];
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';");
             if ( $stmt === false ){
-                throw new Exception('siegesquote konnte nicht gesetzt werden.');
+                throw new Exception('endplatzierung konnte nicht gesetzt werden.');
             }
             $stmt->execute();
             $stmt->close();
-            //Zähler
             $platzierung--;
         }
 
         //KO-PHASE außer "Finale" und "Spiel um Platz 3" und "Halbfinale"
         //--------------------
+        // KO-Phase (größer als Halbfinale): ursprüngliche Logik nach Level und Siegesquote
         $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level > 3 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC, id DESC';
         $result = $conn->query($sql);
         while (!empty($row = $result->fetch_assoc())) {
             $TeamId = $row['id'];
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';"); //AND `Turnier`.`id` = '$TurnierID'
+            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = '$platzierung' WHERE geloescht = 0 AND Turnier_Team.id = '$TeamId';");
             if ( $stmt === false ){
                 throw new Exception('siegesquote konnte nicht gesetzt werden.');
             }
             $stmt->execute();
-            //Zähler
             $platzierung--;
         }
         
@@ -139,7 +186,7 @@ if (php_sapi_name() !== 'cli') {
         //--------------------
 
         //Teams aus "Spiel um Platz 3" ermitteln
-        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC, id DESC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level = 1 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, gruppenphase_manuelle_platzierung ASC, gruppenphase_punkte DESC, gruppenphase_flaschen DESC, gruppenphase_spiele DESC, id DESC';
         $result = $conn->query($sql);
         $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
@@ -178,7 +225,7 @@ if (php_sapi_name() !== 'cli') {
         //--------------------
 
         //Teams aus "Finale" ermitteln
-        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, siegesquote ASC';
+        $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND platziert_level = 2 AND fk_turnier = '. $TurnierID .' ORDER BY platziert_level DESC, gruppenphase_manuelle_platzierung ASC, gruppenphase_punkte DESC, gruppenphase_flaschen DESC, gruppenphase_spiele DESC';
         $result = $conn->query($sql);
         $team_ids = array();
         while (!empty($row = $result->fetch_assoc())) {
@@ -1156,6 +1203,20 @@ if (php_sapi_name() !== 'cli') {
                                         }
                                     }
                                 }
+                            }
+                        }else{
+                            //Hier einen SQL Befehl ausführen, der alle endplatzierungen und platziert_level auf NULL setzt
+                            try {
+                                $stmtResetPlatzierungen = $conn->prepare('UPDATE `Turnier_Team` SET `endplatzierung` = NULL, `platziert_level` = NULL WHERE geloescht = 0 AND fk_turnier = ?');
+                                if ($stmtResetPlatzierungen === false) {
+                                    throw new Exception('Platzierungen konnten nicht zurückgesetzt werden.');
+                                }
+                                $stmtResetPlatzierungen->bind_param('i', $TurnierID);
+                                $stmtResetPlatzierungen->execute();
+                                $stmtResetPlatzierungen->close();
+                                echo "<script>console.log('db_update - rangliste: Alle Endplatzierungen und platziert_level auf NULL zurückgesetzt.');</script>";
+                            } catch (Exception $e) {
+                                echo "<script>console.error('" . $e->getMessage() . "');</script>";
                             }
                         }
 

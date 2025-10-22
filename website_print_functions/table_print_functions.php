@@ -918,11 +918,13 @@
 
     function printPunktetabelleLosingBracket($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
         echo "<h2>Punktetabelle</h2>";
-        echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th></tr></thead><tbody>";
+        echo "<h3>Kombiniert mit den Ergebnissen der Gruppenphase und KO-Phase</h3>";
+        echo "<p>Es werden also alle Spiele, die das Team in diesem Turnier gespielt hat berücktsichtigt für die Wertung</p>";
+        echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th><th>Sieg%</th></tr></thead><tbody>";
 
         // Teilnehmer im Losing Bracket (ko_finallevel = 20)
         $teams = array();
-        $sqlTeamsLB = 'SELECT DISTINCT t.id, t.name, t.kuerzel, t.gruppenphase_manuelle_platzierung '
+        $sqlTeamsLB = 'SELECT DISTINCT t.id, t.name, t.kuerzel, t.gruppenphase_manuelle_platzierung, t.siegesquote '
                     . 'FROM Turnier_Team t '
                     . 'WHERE t.geloescht = 0 AND t.fk_turnier = ' . (int)$TurnierID . ' '
                     . 'AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) '
@@ -934,6 +936,7 @@
                 'id' => (int)$rt['id'],
                 'name' => $rt['name'],
                 'kuerzel' => $rt['kuerzel'],
+                'siegesquote' => $rt['siegesquote'],
                 'man_pos' => isset($rt['gruppenphase_manuelle_platzierung']) ? (int)$rt['gruppenphase_manuelle_platzierung'] : 0,
             );
         }
@@ -951,7 +954,7 @@
             $spiele = 0; $flaschen = 0; $punkte = 0;
 
             // Heimspiele
-            $sqlH = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_heimteam = ' . $tid . ' AND ko_finallevel = 20 ORDER BY id';
+            $sqlH = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_heimteam = ' . $tid . ' ORDER BY id';
             $resH = $conn->query($sqlH);
             while ($resH && ($rb = $resH->fetch_assoc())) {
                 $bid = (int)$rb['id'];
@@ -967,7 +970,7 @@
             }
 
             // Auswärtsspiele
-            $sqlA = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_auswaertsteam = ' . $tid . ' AND ko_finallevel = 20 ORDER BY id';
+            $sqlA = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_auswaertsteam = ' . $tid . ' ORDER BY id';
             $resA = $conn->query($sqlA);
             while ($resA && ($rb = $resA->fetch_assoc())) {
                 $bid = (int)$rb['id'];
@@ -989,10 +992,11 @@
                 'spiele' => $spiele,
                 'flaschen' => $flaschen,
                 'punkte' => $punkte,
+                'siegesquote' => $t['siegesquote'],
             );
         }
 
-        // Sortierung: manuelle Platzierung asc, dann Punkte desc, Flaschen desc, Spiele desc
+        // Sortierung wie Gruppenphase: manuelle Platzierung asc, Punkte desc, Flaschen desc, Spiele desc
         usort($stats, function($a, $b){
             if ($a['man_pos'] !== $b['man_pos']) return ($a['man_pos'] < $b['man_pos']) ? -1 : 1;
             if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] > $b['punkte']) ? -1 : 1;
@@ -1014,6 +1018,15 @@
             echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$spiele</td>";
             echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$flaschen</td>";
             echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$punkte</td>";
+            $siegq = isset($row['siegesquote']) ? $row['siegesquote'] : NULL;
+            if ($siegq === NULL || $siegq === '') {
+                $siegqOut = '<i>-</i>';
+            } else {
+                $val = (float)$siegq;
+                if ($val > 0 && $val <= 1) { $val = $val * 100.0; }
+                $siegqOut = round($val) . ' %';
+            }
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$siegqOut</td>";
             echo "</tr>";
         }
 
