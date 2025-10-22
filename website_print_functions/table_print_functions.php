@@ -919,26 +919,104 @@
     function printPunktetabelleLosingBracket($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
         echo "<h2>Punktetabelle</h2>";
         echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th></tr></thead><tbody>";
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND (id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) OR id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
-        $resultTeamZeile = $conn->query($sqlTeam);
-        $__lb_rows = 0;
-        while ($resultTeamZeile && ($rowTeamZeile = $resultTeamZeile->fetch_assoc())) {
-            $name=$rowTeamZeile["name"]; $teamId=$rowTeamZeile["id"];
-            $gruppenphase_spiele=$rowTeamZeile["gruppenphase_spiele"];
-            $gruppenphase_flaschen=$rowTeamZeile["gruppenphase_flaschen"];
-            $gruppenphase_punkte=$rowTeamZeile["gruppenphase_punkte"];
+
+        // Teilnehmer im Losing Bracket (ko_finallevel = 20)
+        $teams = array();
+        $sqlTeamsLB = 'SELECT DISTINCT t.id, t.name, t.kuerzel, t.gruppenphase_manuelle_platzierung '
+                    . 'FROM Turnier_Team t '
+                    . 'WHERE t.geloescht = 0 AND t.fk_turnier = ' . (int)$TurnierID . ' '
+                    . 'AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) '
+                    . 'OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) '
+                    . 'ORDER BY t.id';
+        $resTeamsLB = $conn->query($sqlTeamsLB);
+        while ($resTeamsLB && ($rt = $resTeamsLB->fetch_assoc())) {
+            $teams[] = array(
+                'id' => (int)$rt['id'],
+                'name' => $rt['name'],
+                'kuerzel' => $rt['kuerzel'],
+                'man_pos' => isset($rt['gruppenphase_manuelle_platzierung']) ? (int)$rt['gruppenphase_manuelle_platzierung'] : 0,
+            );
+        }
+
+        if (count($teams) === 0) {
+            echo "<tr><td colspan='5' style='text-align:center; opacity:.8;'>Noch keine Teams im Losing‑Bracket erfasst.</td></tr>";
+            echo "</tbody></table>";
+            return;
+        }
+
+        // Live-Berechnung (nur LB-Spiele: ko_finallevel = 20)
+        $stats = array();
+        foreach ($teams as $t) {
+            $tid = (int)$t['id'];
+            $spiele = 0; $flaschen = 0; $punkte = 0;
+
+            // Heimspiele
+            $sqlH = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_heimteam = ' . $tid . ' AND ko_finallevel = 20 ORDER BY id';
+            $resH = $conn->query($sqlH);
+            while ($resH && ($rb = $resH->fetch_assoc())) {
+                $bid = (int)$rb['id'];
+                $sqlS = 'SELECT biereheimteam, biereauswaertsteam FROM Turnier_Spiel WHERE fk_begegnung = ' . $bid . ' ORDER BY id';
+                $resS = $conn->query($sqlS);
+                while ($resS && ($rs = $resS->fetch_assoc())) {
+                    $spiele++;
+                    $a = (int)$rs['biereheimteam'];
+                    $b = (int)$rs['biereauswaertsteam'];
+                    $flaschen += $a;
+                    if ($a > $b) { $punkte++; }
+                }
+            }
+
+            // Auswärtsspiele
+            $sqlA = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_auswaertsteam = ' . $tid . ' AND ko_finallevel = 20 ORDER BY id';
+            $resA = $conn->query($sqlA);
+            while ($resA && ($rb = $resA->fetch_assoc())) {
+                $bid = (int)$rb['id'];
+                $sqlS = 'SELECT biereheimteam, biereauswaertsteam FROM Turnier_Spiel WHERE fk_begegnung = ' . $bid . ' ORDER BY id';
+                $resS = $conn->query($sqlS);
+                while ($resS && ($rs = $resS->fetch_assoc())) {
+                    $spiele++;
+                    $a = (int)$rs['biereheimteam'];
+                    $b = (int)$rs['biereauswaertsteam'];
+                    $flaschen += $b;
+                    if ($b > $a) { $punkte++; }
+                }
+            }
+
+            $stats[] = array(
+                'id' => $tid,
+                'name' => $t['name'],
+                'man_pos' => $t['man_pos'],
+                'spiele' => $spiele,
+                'flaschen' => $flaschen,
+                'punkte' => $punkte,
+            );
+        }
+
+        // Sortierung: manuelle Platzierung asc, dann Punkte desc, Flaschen desc, Spiele desc
+        usort($stats, function($a, $b){
+            if ($a['man_pos'] !== $b['man_pos']) return ($a['man_pos'] < $b['man_pos']) ? -1 : 1;
+            if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] > $b['punkte']) ? -1 : 1;
+            if ($a['flaschen'] !== $b['flaschen']) return ($a['flaschen'] > $b['flaschen']) ? -1 : 1;
+            if ($a['spiele'] !== $b['spiele']) return ($a['spiele'] > $b['spiele']) ? -1 : 1;
+            return 0;
+        });
+
+        // Ausgabe
+        foreach ($stats as $row) {
+            $teamId = (int)$row['id'];
+            $name = htmlspecialchars($row['name']);
+            $spiele = (int)$row['spiele'];
+            $flaschen = (int)$row['flaschen'];
+            $punkte = (int)$row['punkte'];
             echo "<tr>";
             echo "<td style=\"text-align:left; padding: 0.1em 0.75em !important;\">$name</td>";
             echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">"; $return = printKuerzelWithLink($conn, $teamId); echo $return; echo "</td>";
-            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_spiele</td>";
-            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_flaschen</td>";
-            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_punkte</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$spiele</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$flaschen</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$punkte</td>";
             echo "</tr>";
-            $__lb_rows++;
         }
-        if ($__lb_rows === 0) {
-            echo "<tr><td colspan='5' style='text-align:center; opacity:.8;'>Noch keine Teams im Losing‑Bracket erfasst.</td></tr>";
-        }
+
         echo "</tbody></table>";
     }
 
