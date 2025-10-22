@@ -43,9 +43,9 @@
     echo "<p></br></p>";
 
     if($test_turnier_id==0){ //Fall: normales Turnier
-        echo "<form action='website_datachange/edit_games.php' method='POST' onSubmit='return checkAGBchangeGame()''>";
+        echo "<form action='website_datachange/edit_games.php' method='POST' onSubmit='return checkAGBchangeGame()'>";
     }else{ //Testturniere
-        echo "<form action='website_datachange/edit_games.php?test_turnier_id=$test_turnier_id' method='POST' onSubmit='return checkAGBchangeGame()''>";
+        echo "<form action='website_datachange/edit_games.php?test_turnier_id=$test_turnier_id' method='POST' onSubmit='return checkAGBchangeGame()'>";
     }
 
     echo ""; ?> <!-- ?id=$spielId -->
@@ -56,9 +56,9 @@
     <?php if($action == 'add' || $action == 'editOrDelete'){ ?>
         <ul class="actions">
             <?php echo "<p style='font-size: 2.25rem'>$heimteam</p>"; ?>
-            <li><input type="number" min="0" max="3" type="text" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo $biereheimteam ?>' placeholder="Flaschen 1*" style="color: black" required><p><i>Ausgetrunkene Flaschen*</i></p></li>
+            <li><input type="number" min="0" max="3" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo $biereheimteam ?>' placeholder="Flaschen 1*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore><p><i>Ausgetrunkene Flaschen*</i></p></li>
             <li><h1>:</h1></li>
-            <li><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo $biereauswaertsteam ?>' placeholder="Flaschen 2*" style="color: black" required><p><i>Ausgetrunkene Flaschen*</i></p></li>
+            <li><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo $biereauswaertsteam ?>' placeholder="Flaschen 2*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore><p><i>Ausgetrunkene Flaschen*</i></p></li>
             <?php echo "<p style='font-size: 2.25rem'>$auswaertsteam</p>"; ?>
             <!-- values übergeben -->
             <input type='hidden' name='heimteam' value='<?php echo $heimteam ?>'/>
@@ -78,7 +78,13 @@
     <input type='hidden' name='begegnungId' value='<?php echo $begegnungId ?>'/>
 
     <!-- LOGIN  -->
-    <h5><br/></h5>
+    <script>
+        try {
+            document.getElementById('changegame_bn')?.setAttribute('autocomplete','username');
+            document.getElementById('changegame_pw')?.setAttribute('autocomplete','current-password');
+        } catch (e) {}
+    </script>
+    <h5><br/></h5>                                 
     <label for="demo-category">Login</label>
     <input type="text" id="changegame_bn" name="bn" class="Eingabe" placeholder="Dein Team-Kürzel" style="color: white" required>
     <input type="password" id="changegame_pw" name="pw" class="Eingabe" placeholder="Dein Team-Passwort" style="color: white" required>

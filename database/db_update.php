@@ -150,10 +150,13 @@ if (php_sapi_name() !== 'cli') {
             $st = computeOverallStats($conn, $tid);
             $teamsGF[] = array('id'=>$tid,'punkte'=>$st['punkte'],'flaschen'=>$st['flaschen'],'spiele'=>$st['spiele']);
         }
+        // Für die Gruppenphase hier aufsteigend sortieren (schlechteste zuerst),
+        // damit die schlechtesten Plätze die höchsten Endplatzierungen erhalten
+        // und die besten ausgeschiedenen Teams niedrigere Endplatzierungen (z.B. 5) bekommen.
         usort($teamsGF, function($a,$b){
-            if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] > $b['punkte']) ? -1 : 1;
-            if ($a['flaschen'] !== $b['flaschen']) return ($a['flaschen'] > $b['flaschen']) ? -1 : 1;
-            if ($a['spiele'] !== $b['spiele']) return ($a['spiele'] > $b['spiele']) ? -1 : 1;
+            if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] < $b['punkte']) ? -1 : 1; // weniger Punkte zuerst
+            if ($a['flaschen'] !== $b['flaschen']) return ($a['flaschen'] < $b['flaschen']) ? -1 : 1; // weniger Flaschen zuerst
+            if ($a['spiele'] !== $b['spiele']) return ($a['spiele'] < $b['spiele']) ? -1 : 1; // weniger Spiele zuerst
             return ($a['id'] < $b['id']) ? -1 : 1;
         });
         foreach ($teamsGF as $row) {
@@ -444,6 +447,28 @@ if (php_sapi_name() !== 'cli') {
                     $stmt->execute();
                 }
             }
+        }
+
+        // Deduplizierung: genau eine Begegnung je Team-Paar im LB behalten
+        // - Behalte pro (min(team1,team2), max(team1,team2)) die kleinste ID -> status=1
+        // - Markiere alle weiteren IDs als veraltet -> status=3
+        try {
+            $sqlKeep = "UPDATE Turnier_Begegnung t
+                        JOIN (
+                            SELECT MIN(id) AS keep_id,
+                                   LEAST(fk_heimteam, fk_auswaertsteam) AS a,
+                                   GREATEST(fk_heimteam, fk_auswaertsteam) AS b
+                            FROM Turnier_Begegnung
+                            WHERE ko_finallevel = 20
+                            GROUP BY a, b
+                        ) k
+                          ON LEAST(t.fk_heimteam, t.fk_auswaertsteam) = k.a
+                         AND GREATEST(t.fk_heimteam, t.fk_auswaertsteam) = k.b
+                        SET t.status = CASE WHEN t.id = k.keep_id THEN 1 ELSE 3 END
+                        WHERE t.ko_finallevel = 20 AND t.status <> 4 AND t.status <> 5";
+            $conn->query($sqlKeep);
+        } catch (Throwable $e) {
+            echo "<script>console.warn('LB-Dedupe warn: " . addslashes($e->getMessage()) . "')</script>";
         }
 
         // gruppenphase_* für LB neu berechnen (nur LB-Gruppe; aus LB-Spielen ko_finallevel=20)
