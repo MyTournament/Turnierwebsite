@@ -71,7 +71,7 @@ if ($restultAnzahlWebsiteBesuche) {
         <title>Blankiball Bierball Turnier</title>
         <meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <meta name="description" content="Berlins gr��tes Bierball-Turnier">
+        <meta name="description" content="Berlins größtes Bierball-Turnier">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
         <meta name="keywords" content="REDACTED, bierball, turnier, flunkyball, bier" />
@@ -237,9 +237,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         db_update($conn, $TurnierID); //db_update.php AUSF?HREN
     }catch (Exception $e) {
         $message = $e->getMessage();
-        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der h�chstwahrscheinlich die Funktionalit�t der Website einschr�nkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***$message*** ###</i>";
+        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***$message*** ###</i>";
     }catch (Throwable $e) { //Alles was nicht schon vorher abgefangen wird
-        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der h�chstwahrscheinlich die Funktionalit�t der Website einschr�nkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***unbekannter Fehler*** ###</i>";
+        print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***unbekannter Fehler*** ###</i>";
     }
     }
     foreach (glob("website_print_functions/*.php") as $filename){
@@ -409,7 +409,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
                 cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
             }else if($turnier_phase_ID == 12){ //WARTELISTE
-                echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir k�nnen nur nicht versprechen dass wir noch Kapazit�t haben.</i></p>";
+                echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
                 echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
                 echo "<br/><br/>";
             } ?>
@@ -449,7 +449,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 <!-- ADD CONTENT -->
 <article id="addcontent">
-    <h2>Content hinzuf�gen</h2>
+    <h2>Content hinzufügen</h2>
     <p></p>
     <?php if (isset($_POST['contentID'])) { addContent($_POST['contentID'], $TurnierID); } ?>
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
@@ -502,7 +502,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // login form
         echo "<div style='color:white; text-align: center;'>";
             echo "<h2>Turnierpasswort</h2>";
-            echo "<p>Aus Datenschutzgr�nden sind die Personendaten mit einem Passwort gesch�tzt.</p>";
+            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
             echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
             echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
             echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
@@ -933,7 +933,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
 <!-- SIEGER_INNEN TREPPE -->
 <article id="rangliste">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (Für CMS) #####-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -957,7 +957,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- KONTAKT -->
 <article id="kontakt">
     <h2 class="major">Kontakt</h2>
-    <p>Falls du Dinge hast, die du uns gerne mitteilen m�chtest oder zum Beispiel dein Team wieder abmelden wollen solltest, ist hier der perfekte Ort daf�r. Falls du dein Team abmelden m�chtest, schreib bitte dein Teampasswort dazu.</p>
+    <p>Falls du Dinge hast, die du uns gerne mitteilen möchtest oder zum Beispiel dein Team wieder abmelden wollen solltest, ist hier der perfekte Ort dafür. Falls du dein Team abmelden möchtest, schreib bitte dein Teampasswort dazu.</p>
     <form method="post" action="website_functionalities/contact.php">
         <div class="fields">
             <div class="field half">
@@ -989,10 +989,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ANMELDEN -->
 <article id="kontakt_success">
     <p></br></p>
-    <h2>Vielen Dank f�r deine Nachricht!</h2>
-    <p>Wir werden dir sobald wie m�glich eine Antwort schicken.</p>
+    <h2>Vielen Dank für deine Nachricht!</h2>
+    <p>Wir werden dir sobald wie möglich eine Antwort schicken.</p>
     <a href="/" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -1039,7 +1039,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p></br></p> 
     
     <h2>Testmodus</h2>
-    <p>Der Testmodus ist daf�r da, alle Funktionen der Website auszuprobieren. Der Testmous l�uft mit einem Test-Turnier mit ausgedachten Teams.</p>
+    <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmous läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
     <form method='post' action='#'>
         <select name='test_turnier_id'>
             <option value='0'><i><?php echo $TurnierName ?></i></option>";
@@ -1117,7 +1117,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="vielendankfuerdeineanmeldung">
     <div style='text-align: center'>  
         </br>
-        <h1>Vielen Dank f�r deine Anmeldung!</h1>
+        <h1>Vielen Dank für deine Anmeldung!</h1>
         <p>Deine Anmeldung wird jetzt bearbeitet und bald kannst du dein Team in der Team-Liste sehen.</a></p>
         </br>
         <h2>Hier kannst du testen ob dein Login funktioniert.</h2>
@@ -1162,8 +1162,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="vielendankfuerdeineanmeldung_warteliste">
     <div style='text-align: center'>  
         </br>
-        <h3>Vielen Dank f�r deine Anmeldung!</h3>
-        <h3>Leider ist die maximale Teamanzahl schon erreicht! Deswegen wurde dein Team einer Warteliste hinzugef�gt und kann dann nachr�cken, wenn sich andere Teams wieder abmelden. Informiert euch am besten ab und zu mal auf der Website, ob ihr eventuell noch nachger�ckt seid.</a></h3>
+        <h3>Vielen Dank für deine Anmeldung!</h3>
+        <h3>Leider ist die maximale Teamanzahl schon erreicht! Deswegen wurde dein Team einer Warteliste hinzugefügt und kann dann nachrücken, wenn sich andere Teams wieder abmelden. Informiert euch am besten ab und zu mal auf der Website, ob ihr eventuell noch nachgerückt seid.</a></h3>
         </br>
         <h4>Hier kannst du schonmal testen ob dein Login funktioniert.</h4>
         </br>
@@ -1174,7 +1174,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "<form action='website_functionalities/logincheck.php?test_turnier_id=$test_turnier_id' method='POST'>";
         }
         ?>
-            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-K�rzel" style="color: white" required>
+            <input type="text" id="benutzercheck" name="bn" class="Eingabe" placeholder="Dein Team-Kürzel" style="color: white" required>
             <input type="password" id="passwdcheck" class="Eingabe" name="pw" placeholder="Dein Team-Passwort" style="color: white" required>
             <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
         <!--<input type="submit" value="Absenden" style="color: black"/> -->
@@ -1214,7 +1214,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             if($teilnahmebeitrag == 1){
                 echo "
                     <h3><a href=$link_solibeitrag>??Teilnahmebeitrag??</a></h3>
-                    <p><b>Nicht vergessen, die 10� Teilnahmegeb�hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie�t in Bier f�rs Turnier.</p>                  
+                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
                     <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
                 ";
             }
@@ -1243,7 +1243,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- logincheck_failure -->
 <article id="logincheck_failure">
     <h1>Login fehlgeschlagen</h1>
-    <p>Entweder du hast das K�rzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingef�gt. Falls der Anmeldezeitraum noch l�uft, versuche entweder noch einmal dein Team anzumelden oder wende dich an kummerkasten@REDACTED.de</p>
+    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an kummerkasten@REDACTED.de</p>
     <a class="button" href='#'>Zurück zur Startseite</a>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
@@ -1261,7 +1261,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- edit_games_failure -->
 <article id="edit_games_failure">
     <h1>Ups, da ist wohl etwas schiefgelaufen!</h1>
-    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die n�tigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
@@ -1319,7 +1319,7 @@ if($schnee==1){
 }else{
     include_once 'assets/js/cookies.js';
     echo "<script type='text/javascript' id='cookieinfo'
-    src='/assets/js/cookieinfo.min.js' data-linkmsg='Zeig mir diese Cookies &#9733;' data-moreinfo='javascript:start()' data-onclick='javascript:start()' data-expires='1min Wartezeit bis die Cookies gel�scht werden. Zu ver�ndern in der .js Datei'>
+    src='/assets/js/cookieinfo.min.js' data-linkmsg='Zeig mir diese Cookies &#9733;' data-moreinfo='javascript:start()' data-onclick='javascript:start()' data-expires='1min Wartezeit bis die Cookies gelöscht werden. Zu verändern in der .js Datei'>
     </script>";
 }
 ?>
