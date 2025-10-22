@@ -486,7 +486,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $loggedInValue = $_COOKIE['turnier-loggedin'];
     }
 
-    if($loggedInValue){
+    //if($loggedInValue){ //Wieder einkommentieren wenn login wieder soll
+    if(TRUE){
         if($turnier_phase_ID == 3 || $turnier_phase_ID == 11 || $turnier_phase_ID == 13){
             echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
             cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
@@ -572,7 +573,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $loggedInValue = $_COOKIE['turnier-loggedin'];
     }
 
-    if($loggedInValue){
+    //if($loggedInValue){ //Wieder einkommentieren wenn login wieder soll
+    if(TRUE){
         // Check if Excel is been used
         $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
         $resultTurnier = $conn->query($sqlTurnier);
