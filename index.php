@@ -430,7 +430,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ###################################################################################################################################################################################################################################### -->
 <!-- CHANGE OR DELETE CONTENT -->
 <article id="changecontent">
-    <h2>Content �ndern</h2>
+    <h2>Content ändern</h2>
     <p></p>
     <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 3, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
     <?php 
@@ -1279,11 +1279,71 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########################## -->  
 <footer id="footer">
     <!--SIEGER*INNEN_TREPPE-->
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+    <?php  cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+                    <!--<div><b><p>Folge uns auf Instagram, um alle aktuellen Infos und Updates zu bekommen:</p></b>
+                    <b><p style="font-size: 30px"><a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/"><img src="images/icon/insta.png" width="30" height="30" border="0" alt="Home"> @REDACTED_official</a></p></b><!--<h3>📢Offizieller Start:</h3>
+                    <p>t.b.a.<br/> -->
+                    <!--Freitag (16.12.22) - 18:00 Uhr / -->
+                    <!--Treffpunkt: <a href="#map">Blankensteinpark</a><p>-->
+                    <!--<h3>📢Anmeldezeitraum:</h3>
+                    <p>bis zum 15.12.22<br/><p>-->
+                    <!--Montag (06.09.) - 16:00 Uhr--><br/>
+                    <!--<a href="#history" class="button primary">Vergangene Turniere</a>
+                    <br/><br/><br/><h3><a href="#merch">👘Offizieller Merch</a></h3>
+                    <h3><a href="https://www.seedshirt.de/shop/REDACTED22">👘Offizieller Merch</a></h3>
+                    <h3><a href="https://www.shirtee.com/en/store/REDACTEDmerch">👘Offizieller Merch</a></h3>
+                    <p>upgrade deinen Style und supporte das Turnier</p>
+                    <img src="images/Sonstiges/Merch/front-organic-basic-hoodie-f8f8f8-558x.png" alt=""  style="width:10rem;"/>
+                    <br/><br/><h3>
+                    <a href="https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE">💓Spende fürs Turnier</a>
+                    </h3>
+                    <p>
+                    finanziere krassere Preise und noch mehr Bier
+                    </p></div>
 
-    <!-- L�dt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  -->
-    
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+                         Lädt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  
+                        <div><br/><br/>
+                    <img src="images/Sonstiges/REDACTED_simulator.jpg" alt=""  style="width:20rem;"/>
+                    <br/>
+                    <a href="#REDACTED_simulator" class="button primary">Blankiball-Simulator</a>
+                    <br/><br/>
+
+                    <img src="images/Sonstiges/the_one_logo_weinglas_mit_schriftzug.png" alt=""  style="width:20rem;"/>
+                    <br/>
+                    <h4>Die eine Trinkspielapp, die alle anderen ersetzt</h4>
+                    <a href="https://www.instagram.com/app.theone/" class="button primary">zur App</a>
+                    <br/><br/><h3><br/>
+                    <a style="color: white;font-size:15px;" href="https://open.spotify.com/user/11129583931/playlist/3K13BWkhzAVwHdRM2F6P8Z">Der offizielle S<img src="images/icon/spoti.png" width="15" height="15" border="5" alt="Home">undtrack zum Turnier<br/></a></h3><h4><br/>
+                    <img src="images/icon/insta.png" width="20" height="20" border="0" alt="Home">
+                    <br/>
+                    <a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/">@REDACTED_official</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/REDACTED_memes/?hl=de/">@REDACTED_memes</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/REDACTED_simulator/?hl=de/">@REDACTED_simulator</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/explore/tags/REDACTED/">#REDACTED</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/app.theone/">@app.theone - Trinkspielapp</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/roehrlitrinkhalme/?hl=de/">@roehrlitrinkhalme</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/sternburg.brauerei/?hl=de/">@sternburg.official</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/gretarthouse/?hl=de/">@gretarthouse</a></h4><NULL><br/>
+                    
+                    <a href="#kontakt" class="button">Kontakt & Feedback</a>
+                    <br/><br/
+                    <a href="https://www.youtube.com/watch?v=DLzxrzFCyOs" class="button">Secret Stuff</a></NULL><NULL><br/><br/>
+                    <h4>Für den Notfall</h4>
+                    <audio id="audio_with_controls" controls>
+                            <source src="assets/audio/kein_bier_mehr_da.mp3" type="audio/mp3" />
+                            Ihr Browser kann dieses Tondokument nicht wiedergeben.<br>
+                            Es enth�lt eine Auff�hrung der Europahymne. 
+                            Sie k�nnen es unter <a href="#">Link-Addresse</a> abrufen.
+                    </audio></NULL><p><hr></p><p><a href="#bullerei_kommt" class="button">BK</a></p><p class="copyright">Bei Fragen, wende dich an <a href="mailto:kummerkasten@REDACTED.de">kummerkasten@REDACTED.de</a></p class="copyright"><p class="copyright">© Blankiball <a href="#impressum">Impressum</a></p class="copyright"><p class="copyright"><br/>
+                    <a href="#login">Backstage</a></p class="copyright"></div>-->
+    <?php  cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID OberGEBEN (F�r CMS) #####-->
 </footer>
 
 </div>

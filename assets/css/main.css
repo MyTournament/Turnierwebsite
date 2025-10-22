@@ -1795,3 +1795,15 @@ table.withBorderCollapse tbody tr:hover { background: rgba(255,255,255,0.08); }
 #punktetabelle { text-align: left; }
 #punktetabelle h1, #punktetabelle h2, #punktetabelle h3 { text-align: left; }
 #punktetabelle table, #punktetabelle thead th, #punktetabelle th, #punktetabelle td { text-align: left !important; }
+/* Footer CMS inline sections (responsive, themed) */
+.footer-cards{display:grid;gap:1rem;grid-template-columns:1fr}
+@media (min-width:640px){.footer-cards{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:960px){.footer-cards{grid-template-columns:repeat(3,1fr)}}
+.footer-card{border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:1rem;background:rgba(255,255,255,.03)}
+.footer-card h3{margin:0 0 .5rem 0;font-size:1.1rem}
+.footer-card .actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.footer-card .actions .button{padding:.4rem .6rem;font-size:.9rem}
+.footer-card img.responsive{width:100%;max-width:10rem;height:auto;border-radius:.3rem}
+.footer-social{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.25rem .75rem}
+.footer-social a{color:#fff}
+.footer-note{font-size:.9rem;margin-top:.6rem}
