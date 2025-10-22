@@ -747,6 +747,9 @@ if (php_sapi_name() !== 'cli') {
                     throw new Exception('veraltet-Status aller Begegnungen konnte nicht auf TRUE gesetzt werden.');
                 }
                 $stmtVeralteteBegegnung->execute();
+                // LOSING BRACKET (Hook) direkt nach Vormarkieren aufrufen,
+                // damit benötigte LB-Begegnungen frühzeitig wieder auf status=1 gesetzt werden können
+                update_losing_bracket($conn, $TurnierID);
             
             //GRUPPENPHASE
                 //BEGEGNUNGEN FÜR GRUPPENPHASE ANLEGEN // id IN (SELECT fk_gruppe FROM Team WHERE fk_turnier = ' . $TurnierID . ')';
@@ -1472,8 +1475,7 @@ if (php_sapi_name() !== 'cli') {
                     $TeamId = $rowTeam['id'];
                     setSiegesQuote($conn, $TurnierID, $TeamId);
                 }
-                // LOSING BRACKET (Hook)
-                update_losing_bracket($conn, $TurnierID);
+                // LOSING BRACKET (Hook) wurde bereits vor dem finalen Veraltet-Schritt aufgerufen
 
                 //PLATZIERUNGEN
                 setAllEndplatzierungen($conn, $TurnierID);
