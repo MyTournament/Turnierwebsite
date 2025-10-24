@@ -1,4 +1,6 @@
 <?php
+// Start PHP session early so captcha tokens persist via cookie
+if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
 
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
@@ -81,66 +83,13 @@ if ($restultAnzahlWebsiteBesuche) {
          <!-- f�r Galerie -->
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
-        <!-- hCaptcha: lazy load only when needed to reduce third-party frames -->
+        <!-- hCaptcha: Altcode auskommentiert und durch eigenes Bild-Captcha ersetzt
         <?php if (!(isset($is_localhost) && $is_localhost)) { ?>
         <script>
-        (function(){
-            if (window.__hcaptchaLoaderInit) return; // guard
-            window.__hcaptchaLoaderInit = true;
-            var loaded = false;
-            function loadHcaptcha(){
-                if (loaded) return; loaded = true;
-                var s = document.createElement('script');
-                s.src = 'https://js.hcaptcha.com/1/api.js?recaptchacompat=off';
-                s.async = true; s.defer = true;
-                document.head.appendChild(s);
-            }
-            function hasHCaptcha(){ return document.querySelector('.h-captcha'); }
-            function setup(){
-                try {
-                    var io = new IntersectionObserver(function(entries){
-                        entries.forEach(function(e){ if (e.isIntersecting) { loadHcaptcha(); io.disconnect(); } });
-                    }, {rootMargin: '200px'});
-                    document.querySelectorAll('.h-captcha').forEach(function(el){ io.observe(el); });
-                } catch(e){ loadHcaptcha(); }
-                ['click','focus','touchstart'].forEach(function(ev){ window.addEventListener(ev, loadHcaptcha, {once:true, passive:true}); });
-            }
-            if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', setup); }
-            else { setup(); }
-
-            // On-demand creation for contact form
-            function createContactCaptcha(){
-                var ph = document.getElementById('contact_captcha_placeholder');
-                if (!ph) return;
-                if (ph.__hasCaptcha) return; ph.__hasCaptcha = true;
-                var d = document.createElement('div');
-                d.className = 'h-captcha';
-                d.setAttribute('data-sitekey','REDACTED');
-                ph.innerHTML = '';
-                ph.appendChild(d);
-                loadHcaptcha();
-                setup();
-            }
-            window.addEventListener('click', function(ev){ if (ev.target && ev.target.id === 'load_contact_captcha') { createContactCaptcha(); } }, {passive:true});
-            if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', createContactCaptcha, {once:true}); }
-            // On-demand creation for register form (if present)
-            function createRegisterCaptcha(){
-                var ph = document.getElementById('register_captcha_placeholder');
-                if (!ph) return;
-                if (ph.__hasCaptcha) return; ph.__hasCaptcha = true;
-                var d = document.createElement('div');
-                d.className = 'h-captcha';
-                d.setAttribute('data-sitekey','REDACTED');
-                ph.innerHTML = '';
-                ph.appendChild(d);
-                loadHcaptcha();
-                setup();
-            }
-            window.addEventListener('click', function(ev){ if (ev.target && ev.target.id === 'load_register_captcha') { createRegisterCaptcha(); } }, {passive:true});
-            if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', createRegisterCaptcha, {once:true}); }
-        })();
+        (function(){ /* hCaptcha Lazy-Loader deaktiviert */ })();
         </script>
         <?php } ?>
+        -->
         <script>
             // Unterdr?cke laute Debug-Logs aus eingebundenem PHP/JS
             try { if (!window.__suppressLogs) { window.__suppressLogs = true; console.log = function(){}; } } catch(e){}
@@ -170,7 +119,7 @@ if ($restultAnzahlWebsiteBesuche) {
         <?php } ?>
 
         <!-- f�r Captcha -->
-        <?php if (!(isset($is_localhost) && $is_localhost)) { ?><script src="https://js.hcaptcha.com/1/api.js" async defer></script><?php } ?>
+        <?php /* if (!(isset($is_localhost) && $is_localhost)) { ?><script src="https://js.hcaptcha.com/1/api.js" async defer></script><?php } */ ?>
         
         <noscript>
             <style>
@@ -959,6 +908,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- KONTAKT -->
 <article id="kontakt">
     <h2 class="major">Kontakt</h2>
+    <?php if (isset($_SESSION['flash_error_contact']) && $_SESSION['flash_error_contact']) { 
+        echo '<div style="margin:10px 0;padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">'. htmlspecialchars($_SESSION['flash_error_contact']) .'</div>'; 
+        unset($_SESSION['flash_error_contact']);
+    } ?>
     <p>Falls du Dinge hast, die du uns gerne mitteilen möchtest oder zum Beispiel dein Team wieder abmelden wollen solltest, ist hier der perfekte Ort dafür. Falls du dein Team abmelden möchtest, schreib bitte dein Teampasswort dazu.</p>
     <form method="post" action="website_functionalities/contact.php">
         <div class="fields">
@@ -975,9 +928,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <textarea name="message" id="message" rows="4" required></textarea>
             </div>
             <br/><br/>
-            <div id="contact_captcha_placeholder">
-                <button type="button" class="button" id="load_contact_captcha">Captcha laden</button>
-            </div>
+            <?php 
+                // Neues Bild-Captcha einbinden
+                require_once 'website_functionalities/captcha_blanki.php';
+                CaptchaBlanki::render('contact');
+            ?>
         </div>
         
         <ul class="actions">

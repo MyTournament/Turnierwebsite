@@ -167,6 +167,11 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <title>Adressbuch</title>
     <id="LogIn">
     <h1>Melde dein Team an</h1>
+    <?php if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); } 
+    if (isset($_SESSION['flash_error_register']) && $_SESSION['flash_error_register']) { 
+        echo '<div style="margin:10px 0;padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">'. htmlspecialchars($_SESSION['flash_error_register']) .'</div>'; 
+        unset($_SESSION['flash_error_register']);
+    } ?>
     <h3>Kurz das wichtigste:</h3>
     <ul>
         <li>3 Spieler*innen pro Team</li>
@@ -230,9 +235,11 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     </select>
 
 
-    <div id="register_captcha_placeholder">
-        <button type="button" class="button" id="load_register_captcha">Captcha laden</button>
-    </div>
+    <?php 
+        // Neues Bild-Captcha einbinden (Registrierung)
+        require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
+        CaptchaBlanki::render('register');
+    ?>
     <h5><br/></h5>
 
     <?php
