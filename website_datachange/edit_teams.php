@@ -20,42 +20,42 @@ include_once 'edit_interface.php';
 	$action = $_POST['action'];
 
 
-	if($action == 'Anmelden'){
-		//Tut: https://www.codexworld.com/integrate-captcha-checkbox-with-hcaptcha-php/
-		echo "<script>console.log('Step: Anmeldeprozess gestartet')</script>";
+    if($action == 'Anmelden'){
+        echo "<script>console.log('Step: Anmeldeprozess gestartet')</script>";
 
-		$SECRET_KEY = "REDACTED";    # replace with your secret key
-		$VERIFY_URL = "https://hcaptcha.com/siteverify";
-		//echo $_POST['h-captcha-response'];
-		# Retrieve token from post data with key 'h-captcha-response'.
-		$token = $_POST['h-captcha-response']; //$request.POST_DATA['h-captcha-response'];
-		# Build payload with secret key and token.
-		$data = array( 
-			'secret' => $SECRET_KEY, 
-			'response' => $token, 
-			'remoteip' => $_SERVER['REMOTE_ADDR'] 
-		); 
+        // Neues Bild-Captcha prüfen
+        require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
+        $captchaOk = CaptchaBlanki::validate($_POST);
 
-		echo "<script>console.log('Step: Initialize cURL request')</script>";
-		// Initialize cURL request 
-		// Make POST request with data payload to hCaptcha API endpoint 
-		$curlConfig = array( 
-			CURLOPT_URL => $VERIFY_URL, 
-			CURLOPT_POST => true, 
-			CURLOPT_RETURNTRANSFER => true, 
-			CURLOPT_POSTFIELDS => $data 
-		); 
-		$ch = curl_init(); 
-		curl_setopt_array($ch, $curlConfig); 
-		$response = curl_exec($ch); 
-		curl_close($ch); 
-		
-		echo "<script>console.log('Step: json_decode')</script>";
-		// Parse JSON from response. Check for success or error codes 
-		$responseData = json_decode($response); 
-        
-        // If hCaptcha response is valid 
-        if($responseData->success){
+        // Bei fehlerhaftem Captcha: sofort abbrechen und inline-Fehler setzen
+        if(!$captchaOk){
+            if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+            $token = isset($_POST['cb_token']) ? (string)$_POST['cb_token'] : '';
+            $remaining = 0;
+            if ($token !== '' && isset($_SESSION['captcha_blanki'][$token]['attempts'])) {
+                $att = (int)$_SESSION['captcha_blanki'][$token]['attempts'];
+                $remaining = max(0, 3 - $att);
+            }
+            $_SESSION['flash_error_register'] = $remaining > 0
+                ? "Captcha falsch. Verbleibende Versuche: $remaining"
+                : "Captcha fehlgeschlagen. Bitte Seite neu laden und erneut versuchen.";
+            header("Location: /#anmelden");
+            exit;
+        }
+
+        // ALT: hCaptcha-Validierung (deaktiviert, nur auskommentiert belassen)
+        /*
+        $SECRET_KEY = "REDACTED";    # replace with your secret key
+        $VERIFY_URL = "https://hcaptcha.com/siteverify";
+        $token = $_POST['h-captcha-response'];
+        $data = array('secret'=>$SECRET_KEY,'response'=>$token,'remoteip'=>$_SERVER['REMOTE_ADDR']);
+        $curlConfig = array(CURLOPT_URL=>$VERIFY_URL,CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,CURLOPT_POSTFIELDS=>$data);
+        $ch = curl_init(); curl_setopt_array($ch, $curlConfig); $response = curl_exec($ch); curl_close($ch);
+        $responseData = json_decode($response);
+        $captchaOk = $responseData && !empty($responseData->success);
+        */
+
+        if($captchaOk){
 			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
 
 			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
@@ -67,7 +67,7 @@ include_once 'edit_interface.php';
 				$resultPhase = $conn->query($sqlPhase);
 				while ($rowPhase = $resultPhase->fetch_assoc()) {
 					$turnier_phase_ID = $rowPhase['fk_turnier_phase'];
-				}
+        }
 				//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfügen
 				//Warteliste finden
 				echo "<script>console.log('Step: WARTELISTE - Warteliste finden')</script>";
