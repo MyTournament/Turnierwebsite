@@ -8,7 +8,8 @@ $message = isset($_POST['message']) ? $_POST['message'] : '';
 include_once 'send_mail.php';
 require_once __DIR__ . '/captcha_blanki.php';
 
-$isHuman = CaptchaBlanki::validate($_POST);
+// Nur Absenden erlauben, wenn vorher über den Captcha-Button bestätigt wurde
+$isHuman = CaptchaBlanki::passed('contact');
 
 // ALT: hCaptcha-Validierung (deaktiviert)
 /*
@@ -31,15 +32,7 @@ if ($isHuman) {
 }
 else {
     // Flash error and attempts left for inline display on the same page
-    $token = isset($_POST['cb_token']) ? (string)$_POST['cb_token'] : '';
-    $remaining = 0;
-    if ($token !== '' && isset($_SESSION['captcha_blanki'][$token]['attempts'])) {
-        $att = (int)$_SESSION['captcha_blanki'][$token]['attempts'];
-        $remaining = max(0, 3 - $att);
-    }
-    $_SESSION['flash_error_contact'] = $remaining > 0
-        ? "Captcha falsch. Verbleibende Versuche: $remaining"
-        : "Captcha fehlgeschlagen. Bitte neu laden und erneut versuchen.";
+    $_SESSION['flash_error_contact'] = 'Bitte zuerst das Captcha bestätigen.';
     header("Location: /#kontakt");
     exit;
 }

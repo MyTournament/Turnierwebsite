@@ -17,7 +17,21 @@ include_once 'edit_interface.php';
 //$tel3R = $_POST['tel3'];
 //if(strlen($Teamname)>2 && strlen($Spieler1)>2){
 
-	$action = $_POST['action'];
+    $action = isset($_POST['action']) ? $_POST['action'] : '';
+    // Captcha-Check: nur Captcha prüfen, Formularwerte merken und zurück zu #anmelden
+    if (isset($_POST['cb_action']) && $_POST['cb_action'] === 'check') {
+        if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+        require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
+        $res = CaptchaBlanki::preverify($_POST);
+        // Eingaben für erneutes Anzeigen merken
+        $keep = ['Teamname','Spieler1','tel1','Spieler2','tel2','Spieler3','tel3','Kuerzel','Passwort','Mail','woher_erfahren'];
+        $snap = [];
+        foreach ($keep as $k) { if (isset($_POST[$k])) { $snap[$k] = $_POST[$k]; } }
+        $_SESSION['register_form_data'] = $snap;
+        $_SESSION['flash_error_register'] = $res['ok'] ? 'Captcha bestätigt. Du kannst jetzt absenden.' : (($res['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$res['remaining']) : 'Captcha fehlgeschlagen. Die Seite wird neu geladen.');
+        header("Location: /#anmelden");
+        exit;
+    }
 
 
     if($action == 'Anmelden'){
@@ -25,20 +39,11 @@ include_once 'edit_interface.php';
 
         // Neues Bild-Captcha prüfen
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
-        $captchaOk = CaptchaBlanki::validate($_POST);
-
-        // Bei fehlerhaftem Captcha: sofort abbrechen und inline-Fehler setzen
-        if(!$captchaOk){
+        // Nur Absenden erlauben, wenn vorher über den Captcha-Button bestätigt wurde
+        require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
+        if (!CaptchaBlanki::passed('register')){
             if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
-            $token = isset($_POST['cb_token']) ? (string)$_POST['cb_token'] : '';
-            $remaining = 0;
-            if ($token !== '' && isset($_SESSION['captcha_blanki'][$token]['attempts'])) {
-                $att = (int)$_SESSION['captcha_blanki'][$token]['attempts'];
-                $remaining = max(0, 3 - $att);
-            }
-            $_SESSION['flash_error_register'] = $remaining > 0
-                ? "Captcha falsch. Verbleibende Versuche: $remaining"
-                : "Captcha fehlgeschlagen. Bitte Seite neu laden und erneut versuchen.";
+            $_SESSION['flash_error_register'] = 'Bitte zuerst das Captcha bestätigen.';
             header("Location: /#anmelden");
             exit;
         }
@@ -54,6 +59,9 @@ include_once 'edit_interface.php';
         $responseData = json_decode($response);
         $captchaOk = $responseData && !empty($responseData->success);
         */
+
+        // Neues Bild-Captcha ersetzt die hCaptcha-Validierung
+        $captchaOk = true;
 
         if($captchaOk){
 			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
@@ -152,6 +160,12 @@ include_once 'edit_interface.php';
 			//Beide Mails versenden
 			//mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
 			//mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
+
+			if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+			unset($_SESSION['register_form_data'], $_SESSION['flash_error_register']);
+			if (isset($_SESSION['captcha_blanki_pass']['register'])) {
+				unset($_SESSION['captcha_blanki_pass']['register']);
+			}
 
 			echo "<script>console.log('Step: WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID')</script>";
 			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID

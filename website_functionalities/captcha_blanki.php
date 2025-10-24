@@ -99,15 +99,25 @@ class CaptchaBlanki {
             #'. htmlspecialchars($containerId) .' .cb-title{margin:0 0 10px 0;text-align:center;}
             #'. htmlspecialchars($containerId) .' .cb-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;}
             @media (max-width:520px){ #'. htmlspecialchars($containerId) .' .cb-grid{grid-template-columns:repeat(3,1fr);} }
-            #'. htmlspecialchars($containerId) .' .cb-item{position:relative;border:1px solid #666;border-radius:6px;overflow:hidden;cursor:pointer;user-select:none;}
-            #'. htmlspecialchars($containerId) .' .cb-item .cb-img{display:block;width:100%;height:100px;object-fit:cover;}
-            #'. htmlspecialchars($containerId) .' .cb-item .cb-badge{position:absolute;left:6px;top:6px;background:rgba(0,0,0,0.55);padding:3px 6px;border-radius:3px;color:#fff;font-size:12px;}
-            #'. htmlspecialchars($containerId) .' .cb-item .cb-check{position:absolute;right:6px;top:6px;background:rgba(3,150,70,0.0);border-radius:50%;color:#fff;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background 0.15s ease;border:1px solid rgba(255,255,255,0.6);} 
-            #'. htmlspecialchars($containerId) .' .cb-item.selected{outline:2px solid #2ecc71;border-color:#2ecc71;}
-            #'. htmlspecialchars($containerId) .' .cb-item.selected .cb-check{background:rgba(3,150,70,0.9);} 
-            #'. htmlspecialchars($containerId) .' .cb-hidden{position:absolute !important;left:-9999px !important;}
+            #'. htmlspecialchars($containerId) .' label.cb-item{position:relative;display:block;border:1px solid #666;border-radius:6px;overflow:hidden;cursor:pointer;user-select:none;}
+            #'. htmlspecialchars($containerId) .' .cb-native{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+            #'. htmlspecialchars($containerId) .' .cb-tile{position:relative;}
+            #'. htmlspecialchars($containerId) .' .cb-img{display:block;width:100%;height:100px;object-fit:cover;}
+            #'. htmlspecialchars($containerId) .' .cb-badge{position:absolute;left:6px;top:6px;background:rgba(0,0,0,0.55);padding:3px 6px;border-radius:3px;color:#fff;font-size:12px;}
+            #'. htmlspecialchars($containerId) .' .cb-check{position:absolute;right:6px;top:6px;background:rgba(3,150,70,0.0);border-radius:50%;color:#fff;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background 0.15s ease;border:1px solid rgba(255,255,255,0.6);} 
+            #'. htmlspecialchars($containerId) .' .cb-native:checked + .cb-tile{outline:2px solid #2ecc71;border-color:#2ecc71;}
+            #'. htmlspecialchars($containerId) .' .cb-native:checked + .cb-tile .cb-check{background:rgba(3,150,70,0.9);} 
+            #'. htmlspecialchars($containerId) .' .cb-check-btn[onclick]{display:none !important;}
         </style>';
         echo '<p class="cb-title"><strong>Erkenne welche der folgenden Bilder im Blankensteinpark gemacht wurden.</strong></p>';
+        $statusMsg = '';
+        $statusColor = '#c0392b';
+        if ($alreadyPassed) {
+            $statusMsg = 'Captcha bestätigt. Du kannst jetzt absenden.';
+            $statusColor = '#2ecc71';
+        }
+        echo '<div class="cb-status" style="margin:6px 0 10px 0;color:'. htmlspecialchars($statusColor) .';min-height:18px;">'. htmlspecialchars($statusMsg) .'</div>';
+        $alreadyPassed = self::passed($formKey);
         echo '<div class="cb-grid">';
         $i = 0;
         foreach ($map as $id => $meta) {
@@ -119,37 +129,31 @@ class CaptchaBlanki {
             $i++;
             $imgSrc = '/' . ltrim(str_replace('\\', '/', $file), '/');
             $safeId = htmlspecialchars($id);
-            echo '<div class="cb-item" data-id="'. $safeId .'">';
+            echo '<label class="cb-item" data-id="'. $safeId .'">';
+            echo '<input class="cb-native" type="checkbox" name="cbsel[]" value="' . $safeId . '" aria-label="Bild '. $i .' auswählen" />';
+            echo '<div class="cb-tile">';
             echo '<img class="cb-img" src="' . htmlspecialchars($imgSrc) . '" alt="Captcha Bild ' . $i . '" loading="lazy"/>';
             echo '<div class="cb-badge">Auswählen</div>';
             echo '<div class="cb-check">✓</div>';
-            echo '<input class="cb-hidden" type="checkbox" name="cbsel[]" value="' . $safeId . '" aria-label="Bild '. $i .' auswählen" />';
             echo '</div>';
+            echo '</label>';
         }
         echo '</div>';
         echo '<input type="hidden" name="cb_token" value="' . htmlspecialchars($token) . '"/>';
+        echo '<input type="hidden" name="cb_formkey" value="' . htmlspecialchars($formKey) . '"/>';
+        echo '<input type="hidden" name="cb_pass" value="'. ($alreadyPassed ? '1' : '0') .'"/>';
         // honeypot + render timestamp
         echo '<div style="position:absolute;left:-9999px;top:-9999px;"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>';
         echo '<input type="hidden" name="cb_rendered_at" value="' . (int)$now . '">';
-        // Interaction script (scoped to this container)
-        echo '<script>(function(){
-                var root = document.getElementById('. json_encode($containerId) .');
-                if (!root) return;
-                function sync(el){
-                    var cb = el.querySelector("input[type=checkbox]");
-                    if (!cb) return;
-                    el.classList.toggle("selected", !!cb.checked);
-                }
-                root.querySelectorAll(".cb-item").forEach(function(item){
-                    var cb = item.querySelector("input[type=checkbox]");
-                    item.addEventListener("click", function(e){
-                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "input") return;
-                        if (cb){ cb.checked = !cb.checked; }
-                        sync(item);
-                    });
-                    if (cb){ cb.addEventListener("change", function(){ sync(item); }); }
-                });
-            })();</script>';
+        $attemptText = '3 Versuche bis die Website neu geladen werden muss';
+        $checkDisabledAttr = $alreadyPassed ? ' disabled' : '';
+        echo '<div class="cb-actions" style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">';
+        echo '<span class="cb-attempts" style="font-size:0.95em;color:#999;">'. htmlspecialchars($attemptText) .'</span>';
+        echo '<button type="submit" name="cb_action" value="check" formnovalidate class="button cb-check-btn" style="background:#444;color:#fff;"'. $checkDisabledAttr .'>Captcha &uuml;berpr&uuml;fen</button>';
+        if ($alreadyPassed) {
+            echo '<span style="color:#2ecc71;">Erfolgreich gepr&uuml;ft</span>';
+        }
+        echo '</div>';
         echo '</div>';
     }
 
@@ -188,6 +192,42 @@ class CaptchaBlanki {
         if ($attempts >= 3) { unset($_SESSION[self::SESSION_KEY][$token]); }
         return false;
     }
+
+    public static function preverify(array $post): array {
+        // Returns ['ok'=>bool, 'remaining'=>int, 'reload'=>bool]
+        self::ensureSession();
+        $ok = self::validate($post); // uses and updates attempts, unsets on success
+        $token = isset($post['cb_token']) ? (string)$post['cb_token'] : '';
+        $formKey = isset($post['cb_formkey']) ? (string)$post['cb_formkey'] : 'default';
+        $remaining = 3;
+        $reload = false;
+        if ($token !== '' && isset($_SESSION[self::SESSION_KEY][$token]['attempts'])) {
+            $att = (int)$_SESSION[self::SESSION_KEY][$token]['attempts'];
+            $remaining = max(0, 3 - $att);
+        } else if ($ok) {
+            $remaining = 3; // after success token is removed, treat as full
+        } else {
+            $remaining = 0; // token might have been removed due to limit
+            $reload = true;
+        }
+        if ($ok) {
+            if (!isset($_SESSION[self::SESSION_KEY.'_pass'])) { $_SESSION[self::SESSION_KEY.'_pass'] = []; }
+            $_SESSION[self::SESSION_KEY.'_pass'][$formKey] = time();
+        } else {
+            if ($remaining <= 0) { $reload = true; }
+        }
+        return ['ok'=>$ok, 'remaining'=>$remaining, 'reload'=>$reload];
+    }
+
+    public static function passed(string $formKey, int $ttl = 600): bool {
+        self::ensureSession();
+        $arr = $_SESSION[self::SESSION_KEY.'_pass'] ?? [];
+        if (!isset($arr[$formKey])) return false;
+        if ((time() - (int)$arr[$formKey]) > $ttl) { unset($_SESSION[self::SESSION_KEY.'_pass'][$formKey]); return false; }
+        return true;
+    }
 }
 
 ?>
+
+
