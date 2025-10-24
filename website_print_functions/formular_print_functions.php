@@ -11,6 +11,22 @@
             return false;
         }
     </script> 
+    <script type="text/javascript">
+        // Override to allow captcha-only submit via cb_action=check
+        try {
+            (function(){
+                var old = window.checkAGB;
+                window.checkAGB = function(){
+                    try {
+                        var submitter = document.activeElement;
+                        if (submitter && submitter.name === 'cb_action' && submitter.value === 'check') { return true; }
+                    } catch(e){}
+                    if (typeof old === 'function') { return old(); }
+                    return true;
+                };
+            })();
+        } catch(e){}
+    </script> 
     <div id="LogIn2">
     <?php
     $action = isset($_POST['action']) ? $_POST['action'] : null; 
@@ -168,6 +184,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <id="LogIn">
     <h1>Melde dein Team an</h1>
     <?php if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); } 
+    $prev = isset($_SESSION['register_form_data']) ? $_SESSION['register_form_data'] : [];
     if (isset($_SESSION['flash_error_register']) && $_SESSION['flash_error_register']) { 
         echo '<div style="margin:10px 0;padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">'. htmlspecialchars($_SESSION['flash_error_register']) .'</div>'; 
         unset($_SESSION['flash_error_register']);
@@ -193,18 +210,18 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <p>&#9733; = Pflichtfeld</p>
     <?php
     if($test_turnier_id==0){ //Fall: normales Turnier
-        echo "<form action='website_datachange/edit_teams.php' method='POST' onSubmit='return checkAGB()'>";
+        echo "<form action='website_datachange/edit_teams.php' method='POST' onSubmit='return checkAGB(event)'>";
     }else{ //Testturniere
-        echo "<form action='website_datachange/edit_teams.php?test_turnier_id=$test_turnier_id' method='POST' onSubmit='return checkAGB()'>";
+        echo "<form action='website_datachange/edit_teams.php?test_turnier_id=$test_turnier_id' method='POST' onSubmit='return checkAGB(event)'>";
     }
     ?>
-    <input type="text" id="teamname" name="Teamname" class="Eingabe" placeholder="Dein legendärer Teamname &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="spieler1" name="Spieler1" class="Eingabe" placeholder="1. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="tel1" name="tel1" class="Eingabe" placeholder="1. Telefonnummer &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="spieler2" name="Spieler2" class="Eingabe" placeholder="2. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="spieler3" name="Spieler3" class="Eingabe" placeholder="3. Bierballer*in &#9733;" style="color: white" maxlength="40" required><br/>
-    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer &#9733;" style="color: white" maxlength="40" required><br/>
+    <input type="text" id="teamname" name="Teamname" class="Eingabe" placeholder="Dein legendärer Teamname &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['Teamname']) ? htmlspecialchars($prev['Teamname'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="spieler1" name="Spieler1" class="Eingabe" placeholder="1. Bierballer*in &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['Spieler1']) ? htmlspecialchars($prev['Spieler1'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="tel1" name="tel1" class="Eingabe" placeholder="1. Telefonnummer &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['tel1']) ? htmlspecialchars($prev['tel1'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="spieler2" name="Spieler2" class="Eingabe" placeholder="2. Bierballer*in &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['Spieler2']) ? htmlspecialchars($prev['Spieler2'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['tel2']) ? htmlspecialchars($prev['tel2'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="spieler3" name="Spieler3" class="Eingabe" placeholder="3. Bierballer*in &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['Spieler3']) ? htmlspecialchars($prev['Spieler3'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['tel3']) ? htmlspecialchars($prev['tel3'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
     <i>Die Einträge dürfen nicht länger als 20 Buchstaben sein.</i>
     <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
     <p></br></p>
@@ -212,8 +229,8 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <h4>Kürzel* & Passwort</h4>
     <!--<p>*Wähle Kürzel deines Teamnamens (2-4 Buchstaben) und ein Passwort/PIN-Code. Das Kürzel wird im Spielplan als Abkürzung benutzt und später kann dein Team mit Kürzel & Passwort auf der Website die Ergebnisse eintragen. Wichtig: Bitte nutze <b>wirklich wirklich kein Passwort, was du woanders schon benutzt</b> weil unsere Website nicht komplett sicher ist. Und außerdem brauchen alle deine Teammitglieder das Passwort.</p>-->
     <p>Mit dem Passwort könnt ihr später eure Turnierergebnisse eintragen!</p>
-    <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required autocomplete="Kürzel"><br/>
-    <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required autocomplete="team-password"><br/>
+    <input type="text" id="kuerzel" name="Kuerzel" class="Eingabe" placeholder="Team-Kürzel* wählen (2-4 Buchstaben) &#9733;" style="color: white" maxlength="5" required autocomplete="Kürzel" value="<?php echo isset($prev['Kuerzel']) ? htmlspecialchars($prev['Kuerzel'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="password" id="passwort" name="Passwort" class="Eingabe" placeholder="Passwort* wählen &#9733;" style="color: white" required autocomplete="team-password" value="<?php echo isset($prev['Passwort']) ? htmlspecialchars($prev['Passwort'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
     <br/>
     <!--<h4>E-Mail</h4>
     <p>Die Mail-Adresse, die du hier angibst, kann später genutzt werden, um z.B. euer Passwort zurückzusetzen oder euer Team wieder abzumelden. Außerdem bekommst du nach erfolgreichem Anmelden eine Mail mit Bestätigung und einer Übersicht deiner angemeldeten Daten (auch euer Passwort).</p>
@@ -226,19 +243,22 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <h5><br/></h5>
     <h4>Woher hast du von uns erfahren? (Freiwillig)</h4>
     <select name='woher_erfahren'>
-        <option value='...'><i>...</i></option>
-        <option value='Freund*innen'><i>Freund*innen</i></option>
-        <option value='Social Media'><i>Social Media</i></option>
-        <option value='Sonstiges'><i>Blankiball-Sticker</i></option>
-        <option value='Google bzw. andere Suchmaschine'><i>Google bzw. andere Suchmaschine</i></option>
-        <option value='Sonstiges'><i>Sonstiges</i></option>
+        <?php $prevWoher = isset($prev['woher_erfahren']) ? (string)$prev['woher_erfahren'] : '...'; ?>
+        <option value='...' <?php echo $prevWoher === '...' ? 'selected' : ''; ?>><i>...</i></option>
+        <option value='Freund*innen' <?php echo $prevWoher === 'Freund*innen' ? 'selected' : ''; ?>><i>Freund*innen</i></option>
+        <option value='Social Media' <?php echo $prevWoher === 'Social Media' ? 'selected' : ''; ?>><i>Social Media</i></option>
+        <option value='Blankiball-Sticker' <?php echo $prevWoher === 'Blankiball-Sticker' ? 'selected' : ''; ?>><i>Blankiball-Sticker</i></option>
+        <option value='Google bzw. andere Suchmaschine' <?php echo $prevWoher === 'Google bzw. andere Suchmaschine' ? 'selected' : ''; ?>><i>Google bzw. andere Suchmaschine</i></option>
+        <option value='Sonstiges' <?php echo $prevWoher === 'Sonstiges' ? 'selected' : ''; ?>><i>Sonstiges</i></option>
     </select>
 
 
     <?php 
         // Neues Bild-Captcha einbinden (Registrierung)
+        if (!empty($_SESSION['register_form_data'])) { unset($_SESSION['register_form_data']); }
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
         CaptchaBlanki::render('register');
+        $captchaPassed = CaptchaBlanki::passed('register');
     ?>
     <h5><br/></h5>
 
@@ -275,7 +295,8 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     </div>
     <p></br></p>
     <input type='hidden' name='action' value='Anmelden'/>
-    <p><button value="Absenden" type="submit">Anmelden</button></p>
+    <?php $submitDisabledAttr = $captchaPassed ? '' : ' disabled'; ?>
+    <p><button value="Absenden" type="submit"<?php echo $submitDisabledAttr; ?>>Anmelden</button></p>
     </form>
     <?php
 }

@@ -83,6 +83,7 @@ if ($restultAnzahlWebsiteBesuche) {
          <!-- f�r Galerie -->
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
+        <?php /* JS für Captcha deaktiviert: server-submit Modus */ ?>
         <!-- hCaptcha: Altcode auskommentiert und durch eigenes Bild-Captcha ersetzt
         <?php if (!(isset($is_localhost) && $is_localhost)) { ?>
         <script>
