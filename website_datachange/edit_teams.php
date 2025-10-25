@@ -33,6 +33,8 @@ include_once 'edit_interface.php';
             : (($res['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$res['remaining']) : 'Captcha fehlgeschlagen. Die Seite wird neu geladen.');
         
         $_SESSION['flash_error_register'] = $statusMessage;
+        $_SESSION['captcha_remaining_register'] = isset($res['remaining']) ? (int)$res['remaining'] : 3;
+        $_SESSION['captcha_attempted_register'] = 1;
         header("Location: /#anmelden");
         exit;
     }
@@ -47,6 +49,8 @@ include_once 'edit_interface.php';
         if (!CaptchaBlanki::passed('register')){
             if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
             $_SESSION['flash_error_register'] = 'Bitte zuerst das Captcha bestätigen.';
+            $_SESSION['captcha_attempted_register'] = 1;
+            $_SESSION['captcha_remaining_register'] = 0;
             
             header("Location: /#anmelden");
             exit;
@@ -166,7 +170,7 @@ include_once 'edit_interface.php';
 			//mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 			if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
-			unset($_SESSION['register_form_data'], $_SESSION['flash_error_register']);
+			unset($_SESSION['register_form_data'], $_SESSION['flash_error_register'], $_SESSION['captcha_attempted_register'], $_SESSION['captcha_remaining_register']);
 			if (isset($_SESSION['captcha_blanki_pass']['register'])) {
 				unset($_SESSION['captcha_blanki_pass']['register']);
 			}
