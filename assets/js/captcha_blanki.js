@@ -1,5 +1,5 @@
 (() => {
-  const ready = (fn) => {
+  const onReady = (fn) => {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', fn, { once: true });
     } else {
@@ -8,18 +8,23 @@
   };
 
   const closestForm = (el) => {
-    while (el && el !== document) {
-      if (el.tagName && el.tagName.toLowerCase() === 'form') return el;
-      el = el.parentNode;
+    let current = el;
+    while (current && current !== document) {
+      if (current.tagName && current.tagName.toLowerCase() === 'form') {
+        return current;
+      }
+      current = current.parentNode;
     }
     return null;
   };
 
   const supportsAjax = () => {
     try {
-      return typeof window.fetch === 'function' &&
-             typeof window.FormData === 'function' &&
-             typeof Promise === 'function';
+      return (
+        typeof window.fetch === 'function'
+        && typeof window.FormData === 'function'
+        && typeof Promise === 'function'
+      );
     } catch (_) {
       return false;
     }
@@ -28,30 +33,35 @@
   const setSubmitEnabled = (form, enabled) => {
     if (!form) return;
     try {
-      form.querySelectorAll('button[type=submit],input[type=submit]').forEach(btn => {
-        const isCheckBtn = btn.classList?.contains('cb-check-btn') || (btn.name === 'cb_action' && btn.value === 'check');
+      form.querySelectorAll('button[type=submit],input[type=submit]').forEach((btn) => {
+        const isCheckBtn = btn.classList?.contains('cb-check-btn')
+          || (btn.name === 'cb_action' && btn.value === 'check');
         if (isCheckBtn) return;
         btn.disabled = !enabled;
       });
-    } catch (_) {}
+    } catch (_) {
+      /* ignore */
+    }
   };
 
+  const attemptLabel = (count) => (count === 1 ? 'Versuch' : 'Versuche');
+
   const updateAttempts = (root, value) => {
-    const el = root.querySelector('.cb-attempts');
-    if (!el) return;
-    const count = (typeof value === 'number' && value >= 0) ? value : 3;
-    el.textContent = `${count} Versuche übrig`;
+    const counter = root.querySelector('.cb-attempts');
+    if (!counter) return;
+    const count = Number.isFinite(value) && value >= 0 ? value : 3;
+    counter.textContent = `${count} ${attemptLabel(count)} übrig`;
   };
 
   const showStatus = (root, msg, ok) => {
-    const el = root.querySelector('.cb-status');
-    if (!el) return;
-    el.style.color = ok ? '#2ecc71' : '#c0392b';
-    el.textContent = msg || '';
+    const box = root.querySelector('.cb-status');
+    if (!box) return;
+    box.style.color = ok ? '#2ecc71' : '#c0392b';
+    box.textContent = msg || '';
   };
 
   const lockTiles = (root) => {
-    root.querySelectorAll('.cb-item').forEach(item => {
+    root.querySelectorAll('.cb-item').forEach((item) => {
       item.style.pointerEvents = 'none';
       item.style.opacity = '0.8';
       const native = item.querySelector('.cb-native');
@@ -80,34 +90,43 @@
   };
 
   const updateGlobalStatus = (message, remaining, ok) => {
-    const box = ensureGlobalBox();
+    const shouldShow = !!ok || (Number.isFinite(remaining) && remaining <= 2);
+    const existing = document.querySelector('.cb-status-global');
+    if (!shouldShow) {
+      if (existing) existing.remove();
+      return;
+    }
+    const box = existing || ensureGlobalBox();
     const color = ok ? '#27ae60' : '#c0392b';
-    box.style.border = '1px solid ' + color;
+    box.style.border = `1px solid ${color}`;
     box.style.background = ok ? '#ecf9f0' : '#ffeaea';
     box.style.color = color;
+
     box.textContent = '';
     if (message) {
-      const msgEl = document.createElement('div');
-      msgEl.textContent = message;
-      box.appendChild(msgEl);
+      const msg = document.createElement('div');
+      msg.textContent = message;
+      box.appendChild(msg);
     }
-    const attemptsEl = document.createElement('div');
-    attemptsEl.textContent = 'Verbleibende Versuche: ' + remaining;
-    box.appendChild(attemptsEl);
+    if (Number.isFinite(remaining)) {
+      const info = document.createElement('div');
+      info.textContent = `Verbleibende ${attemptLabel(remaining)}: ${remaining}`;
+      box.appendChild(info);
+    }
   };
 
-  const collectSelections = (root, target, tokenInput, formKeyInput, renderedAtInput, honeypotInput) => {
-    target.append('cb_token', (tokenInput && tokenInput.value) || '');
-    target.append('cb_formkey', (formKeyInput && formKeyInput.value) || '');
-    if (renderedAtInput) { target.append('cb_rendered_at', renderedAtInput.value); }
-    if (honeypotInput) { target.append('website', honeypotInput.value || ''); }
-    root.querySelectorAll('input[name=cbsel[]]').forEach(c => {
-      if (c.checked) { target.append('cbsel[]', c.value); }
+  const collectSelections = (root, fd, tokenInput, formKeyInput, renderedAtInput, honeypotInput) => {
+    fd.append('cb_token', (tokenInput && tokenInput.value) || '');
+    fd.append('cb_formkey', (formKeyInput && formKeyInput.value) || '');
+    if (renderedAtInput) fd.append('cb_rendered_at', renderedAtInput.value);
+    if (honeypotInput) fd.append('website', honeypotInput.value || '');
+    root.querySelectorAll('input[name="cbsel[]"]').forEach((c) => {
+      if (c.checked) fd.append('cbsel[]', c.value);
     });
   };
 
-  ready(() => {
-    document.querySelectorAll('.captcha-blanki').forEach(root => {
+  onReady(() => {
+    document.querySelectorAll('.captcha-blanki').forEach((root) => {
       const form = closestForm(root);
       const btn = root.querySelector('.cb-check-btn');
       const passInput = root.querySelector('input[name=cb_pass]');
@@ -115,11 +134,11 @@
       const formKeyInput = root.querySelector('input[name=cb_formkey]');
       const renderedAtInput = root.querySelector('input[name=cb_rendered_at]');
       const honeypotInput = root.querySelector('input[name=website]');
-      const initialAttempts = parseInt(root.getAttribute('data-initial-attempts') || '3', 10);
-      const attemptsUsedAttr = parseInt(root.getAttribute('data-attempts-used') || '0', 10);
-      const remainingInitial = Math.max(0, 3 - attemptsUsedAttr);
+      const initialRemaining = Number(root.getAttribute('data-initial-attempts') || '3');
 
-      updateAttempts(root, remainingInitial);
+      root.dataset.remaining = String(initialRemaining);
+      root.dataset.attemptsUsed = String(Math.max(0, 3 - initialRemaining));
+      updateAttempts(root, initialRemaining);
 
       if (passInput && passInput.value === '1') {
         setSubmitEnabled(form, true);
@@ -131,18 +150,18 @@
         if (btn) btn.disabled = false;
       }
 
-      if (!btn) return;
-      if (!supportsAjax()) return; // fall back to server submission
+      if (!btn || !supportsAjax()) return;
 
       btn.addEventListener('click', (ev) => {
         ev.preventDefault();
+
         const fd = new FormData();
         collectSelections(root, fd, tokenInput, formKeyInput, renderedAtInput, honeypotInput);
 
         btn.disabled = true;
-        let origin = '';
-        try { origin = window.location && (window.location.origin || ''); } catch (_) {}
-        const url = origin + '/website_functionalities/captcha_blanki_check.php';
+        const origin = (window.location && (window.location.origin || '')) || '';
+        const url = `${origin}/website_functionalities/captcha_blanki_check.php`;
+        const previousRemaining = Number(root.dataset.remaining || '3');
 
         const finish = (ok) => {
           if (!ok && !(passInput && passInput.value === '1')) {
@@ -151,19 +170,22 @@
         };
 
         fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' })
-          .then(r => r.json())
-          .then(res => {
+          .then((r) => r.json())
+          .then((res) => {
             const ok = !!(res && res.ok);
-            const remaining = (res && typeof res.remaining === 'number') ? res.remaining : 3;
-            const used = Math.max(0, 3 - remaining);
-            root.setAttribute('data-attempts-used', String(used));
+            let remaining = Number(res && res.remaining);
+            if (!Number.isFinite(remaining) || remaining < 0 || remaining > 3) {
+              remaining = previousRemaining;
+            }
+            root.dataset.remaining = String(remaining);
+            root.dataset.attemptsUsed = String(Math.max(0, 3 - remaining));
             updateAttempts(root, remaining);
 
             if (ok) {
               const msg = 'Captcha bestätigt. Du kannst jetzt absenden.';
               showStatus(root, msg, true);
               updateGlobalStatus(msg, remaining, true);
-              if (passInput) { passInput.value = '1'; }
+              if (passInput) passInput.value = '1';
               setSubmitEnabled(form, true);
               lockTiles(root);
               finish(true);
@@ -179,12 +201,17 @@
             }
           })
           .catch(() => {
-            const used = parseInt(root.getAttribute('data-attempts-used') || '0', 10);
-            const remaining = Math.max(0, 3 - used);
-            showStatus(root, 'Captcha-Prüfung fehlgeschlagen. Bitte später erneut probieren.', false);
-            updateGlobalStatus('Captcha-Prüfung fehlgeschlagen. Bitte später erneut probieren.', remaining, false);
+            const fallback = Math.max(0, previousRemaining - 1);
+            root.dataset.remaining = String(fallback);
+            root.dataset.attemptsUsed = String(Math.max(0, 3 - fallback));
+            updateAttempts(root, fallback);
+            const msg = 'Captcha-Prüfung fehlgeschlagen. Bitte später erneut probieren.';
+            showStatus(root, msg, false);
+            updateGlobalStatus(msg, fallback, false);
             finish(false);
           });
+
+        return false;
       });
     });
   });
