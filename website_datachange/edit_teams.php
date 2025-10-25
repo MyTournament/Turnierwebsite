@@ -28,7 +28,11 @@ include_once 'edit_interface.php';
         $snap = [];
         foreach ($keep as $k) { if (isset($_POST[$k])) { $snap[$k] = $_POST[$k]; } }
         $_SESSION['register_form_data'] = $snap;
-        $_SESSION['flash_error_register'] = $res['ok'] ? 'Captcha bestätigt. Du kannst jetzt absenden.' : (($res['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$res['remaining']) : 'Captcha fehlgeschlagen. Die Seite wird neu geladen.');
+        $statusMessage = $res['ok']
+            ? 'Captcha bestätigt. Du kannst jetzt absenden.'
+            : (($res['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$res['remaining']) : 'Captcha fehlgeschlagen. Die Seite wird neu geladen.');
+        
+        $_SESSION['flash_error_register'] = $statusMessage;
         header("Location: /#anmelden");
         exit;
     }
@@ -40,10 +44,10 @@ include_once 'edit_interface.php';
         // Neues Bild-Captcha prüfen
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
         // Nur Absenden erlauben, wenn vorher über den Captcha-Button bestätigt wurde
-        require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
         if (!CaptchaBlanki::passed('register')){
             if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
             $_SESSION['flash_error_register'] = 'Bitte zuerst das Captcha bestätigen.';
+            
             header("Location: /#anmelden");
             exit;
         }
@@ -166,6 +170,7 @@ include_once 'edit_interface.php';
 			if (isset($_SESSION['captcha_blanki_pass']['register'])) {
 				unset($_SESSION['captcha_blanki_pass']['register']);
 			}
+			
 
 			echo "<script>console.log('Step: WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID')</script>";
 			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
