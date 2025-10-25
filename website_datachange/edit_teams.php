@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 
 //########################
 include_once '../database/db_connection.php';
@@ -18,19 +18,19 @@ include_once 'edit_interface.php';
 //if(strlen($Teamname)>2 && strlen($Spieler1)>2){
 
     $action = isset($_POST['action']) ? $_POST['action'] : '';
-    // Captcha-Check: nur Captcha prÃ¼fen, Formularwerte merken und zurÃ¼ck zu #anmelden
+    // Captcha-Check: nur Captcha prüfen, Formularwerte merken und zurück zu #anmelden
     if (isset($_POST['cb_action']) && $_POST['cb_action'] === 'check') {
         if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
         $res = CaptchaBlanki::preverify($_POST);
-        // Eingaben fÃ¼r erneutes Anzeigen merken
+        // Eingaben für erneutes Anzeigen merken
         $keep = ['Teamname','Spieler1','tel1','Spieler2','tel2','Spieler3','tel3','Kuerzel','Passwort','Mail','woher_erfahren'];
         $snap = [];
         foreach ($keep as $k) { if (isset($_POST[$k])) { $snap[$k] = $_POST[$k]; } }
         $_SESSION['register_form_data'] = $snap;
         $statusMessage = $res['ok']
-            ? 'Captcha bestÃ¤tigt. Du kannst jetzt absenden.'
-            : (($res['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$res['remaining']) : 'Captcha fehlgeschlagen. Die Seite wird neu geladen.');
+            ? 'Captcha bestätigt. Du kannst jetzt absenden.'
+            : (($res['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$res['remaining']) : 'Captcha 3x fehlgeschlagen. Die Seite wurde neu geladen.');
         
         $_SESSION['flash_error_register'] = $statusMessage;
         $_SESSION['captcha_remaining_register'] = isset($res['remaining']) ? (int)$res['remaining'] : 3;
@@ -43,12 +43,12 @@ include_once 'edit_interface.php';
     if($action == 'Anmelden'){
         echo "<script>console.log('Step: Anmeldeprozess gestartet')</script>";
 
-        // Neues Bild-Captcha prÃ¼fen
+        // Neues Bild-Captcha prüfen
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
-        // Nur Absenden erlauben, wenn vorher Ã¼ber den Captcha-Button bestÃ¤tigt wurde
+        // Nur Absenden erlauben, wenn vorher über den Captcha-Button bestätigt wurde
         if (!CaptchaBlanki::passed('register')){
             if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
-            $_SESSION['flash_error_register'] = 'Bitte zuerst das Captcha bestÃ¤tigen.';
+            $_SESSION['flash_error_register'] = 'Bitte zuerst das Captcha bestätigen.';
             $_SESSION['captcha_attempted_register'] = 1;
             $_SESSION['captcha_remaining_register'] = 0;
             
@@ -74,7 +74,7 @@ include_once 'edit_interface.php';
         if($captchaOk){
 			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
 
-			$TurnierID = $_POST['TurnierID']; //die Ã¼bergebene TurnierID benutzen und nicht die aus variables.php
+			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
 
 			//SONDERFALL: WARTELISTE
 				echo "<script>console.log('Step: WARTELISTE - Aktuelle Turnierphase herausfinden')</script>";
@@ -84,7 +84,7 @@ include_once 'edit_interface.php';
 				while ($rowPhase = $resultPhase->fetch_assoc()) {
 					$turnier_phase_ID = $rowPhase['fk_turnier_phase'];
         }
-				//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfÃ¼gen
+				//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfügen
 				//Warteliste finden
 				echo "<script>console.log('Step: WARTELISTE - Warteliste finden')</script>";
 				if($turnier_phase_ID==12){
@@ -107,17 +107,17 @@ include_once 'edit_interface.php';
 			
 			echo "<script>console.log('Step: SQL vorbereiten')</script>";
 			$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
-			echo "<script>console.log('Step: SQL ausfÃ¼hren')</script>";
+			echo "<script>console.log('Step: SQL ausführen')</script>";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 3",$sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 4",$sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 5",$sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
 			
 
-			echo "<script>console.log('Step: Text fÃ¼r beide Mails vorbereiten')</script>";
-			//Text fÃ¼r beide Mails vorbereiten
+			echo "<script>console.log('Step: Text für beide Mails vorbereiten')</script>";
+			//Text für beide Mails vorbereiten
 			$infoVomAngemeldetenTeam = "";
 			$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
-			$infoVomAngemeldetenTeam .= "Team-KÃ¼rzel: " . $_POST['Kuerzel'] . "\r\n";
+			$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'] . "\r\n";
 			$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'] . "\r\n \r\n";
 			$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'] . " \r\n \r\n";
 			$infoVomAngemeldetenTeam .= "Spieler 2: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . " \r\n \r\n";
@@ -146,18 +146,18 @@ include_once 'edit_interface.php';
 			$empfaenger = $_POST['Mail'];
 			$name = $_POST['Teamname'];
 			if($turnier_phase_ID==12){ // Falls Warteliste
-				$message2 = "Leider sind die Plaetze des Turniers vorlÃ¤ufig voll. Dein Team wurde der Warteliste hinzugefÃ¼gt und kann eventuell noch nachrÃ¼cken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
+				$message2 = "Leider sind die Plaetze des Turniers vorläufig voll. Dein Team wurde der Warteliste hinzugefügt und kann eventuell noch nachrücken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
 			}else{
-				$message2 = "Dein Team wurde erfolgreich fÃ¼r das Blankiball-Turnier registriert! \r\n \r\n";
+				$message2 = "Dein Team wurde erfolgreich für das Blankiball-Turnier registriert! \r\n \r\n";
 			}
-			$message2 .= "Hier kannst du noch einmal deine Angaben Ã¼berprÃ¼fen und hast euer Team-Passwort auch nochmal zum Abspeichern. \r\n \r\n";
+			$message2 .= "Hier kannst du noch einmal deine Angaben überprüfen und hast euer Team-Passwort auch nochmal zum Abspeichern. \r\n \r\n";
 			$message2 .= $infoVomAngemeldetenTeam;
 			$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
 
 			// Verschicken
 			$betreff = 'Der Betreff';
 			//$nachricht = "Zeile 1\r\nZeile 2\r\nZeile 3";
-			// Falls eine Zeile der Nachricht mehr als 70 Zeichen enthÃ¤lten kÃ¶nnte,
+			// Falls eine Zeile der Nachricht mehr als 70 Zeichen enthälten könnte,
 			// sollte wordwrap() benutzt werden
 			$message2 = wordwrap($message2, 70, "\r\n");
 			$header = 'From: Blankiball <kummerkasten@REDACTED.de>' . "\r\n" .
@@ -176,8 +176,8 @@ include_once 'edit_interface.php';
 			}
 			
 
-			echo "<script>console.log('Step: WEITERLEITUNG ZURÃœCK - mit eventueller TestTurnierID')</script>";
-			//WEITERLEITUNG ZURÃœCK - mit eventueller TestTurnierID
+			echo "<script>console.log('Step: WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID')</script>";
+			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				if($turnier_phase_ID==12){ //WARTELISTE
@@ -193,7 +193,7 @@ include_once 'edit_interface.php';
 				}
 			}
 		}else{
-			//echo "Du Keck, du musst das Captcha ausfÃ¼llen, damit dein Team angemeldet wird. FÃ¼r die Dummheit designen wir dir die Seite hier nichtmal schÃ¶n. Klicke einfach auf ZurÃ¼ck in deinem Browser und probiere es noch einmal...";
+			//echo "Du Keck, du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...";
 			echo '
 				<!DOCTYPE html>
 				<html lang="de">
@@ -231,7 +231,7 @@ include_once 'edit_interface.php';
 				<body>
 					<div class="message">
 						<h1>Du Keck!</h1>
-						<p>Du musst das Captcha ausfÃ¼llen, damit dein Team angemeldet wird. FÃ¼r die Dummheit designen wir dir die Seite hier nichtmal schÃ¶n. Klicke einfach auf ZurÃ¼ck in deinem Browser und probiere es noch einmal...</p>
+						<p>Du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...</p>
 					</div>
 				</body>
 				</html>';
@@ -261,7 +261,7 @@ include_once 'edit_interface.php';
 		}
 		//Teams
 		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant
-		//FALL: Team-Login -> Bearbeitungsrechte nur fÃ¼r eigene Begegnungen
+		//FALL: Team-Login -> Bearbeitungsrechte nur für eigene Begegnungen
 		/*$teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);
 		$successfulLogin = 0; //false
 		while ($row = $teamListeFuerTurnier->fetch_assoc()) {
@@ -278,15 +278,15 @@ include_once 'edit_interface.php';
 		
 		
 		if($action == 'Abmelden'){
-			if($teamId == "auffangbeckenfueralledienichtcheckendassmanhierwasauswÃ¤hlenmuss"){
-				$message = "Du musst schon ein Team auswÃ¤hlen du Keck";
+			if($teamId == "auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss"){
+				$message = "Du musst schon ein Team auswählen du Keck";
 				//echo "<script type='text/javascript'>alert('$message');</script>";
 			}else{
-				//LOGIN ÃœBERPRÃœFEN
+				//LOGIN ÜBERPRÜFEN
 				if ($successfulLogin == 0){ //fehlerhafter Login
 					$message = "Login leider nicht erfolgreich!";
 					//echo "<script type='text/javascript'>alert('$message');</script>";
-				}else if($successfulLogin == 1 || $successfulLogin == 2){ //Account-Login oder Team-Login && Spiel gehÃ¶rt zu Team
+				}else if($successfulLogin == 1 || $successfulLogin == 2){ //Account-Login oder Team-Login && Spiel gehört zu Team
 					//$sql = "DELETE FROM Spieler WHERE fk_team = ?";
 					//myDb_execute($conn, $TurnierID, $bn, "edit_teams.php x",$sql, array($teamId));
 	
@@ -305,7 +305,7 @@ include_once 'edit_interface.php';
 				}
 			}
 
-			//WEITERLEITUNG ZURÃœCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#teams");
@@ -319,7 +319,7 @@ include_once 'edit_interface.php';
 			$sql = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ?";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 7",$sql, array($gruppeId, $teamId));
 			
-			//WEITERLEITUNG ZURÃœCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#login");
@@ -332,7 +332,7 @@ include_once 'edit_interface.php';
 			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 8",$sql, array($teamId));
 			
-			//WEITERLEITUNG ZURÃœCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#login");
@@ -345,7 +345,7 @@ include_once 'edit_interface.php';
 			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 9",$sql, array($teamId));
 			
-			//WEITERLEITUNG ZURÃœCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#login");
