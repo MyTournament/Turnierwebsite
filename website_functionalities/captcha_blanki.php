@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Simple image-selection CAPTCHA for Blankensteinpark
 // Renders a grid of images and asks users to select all from Blankensteinpark.
 // Reads images dynamically from:
@@ -42,6 +42,12 @@ class CaptchaBlanki {
 
     public static function render(string $formKey = 'default', int $targetTotal = 8): void {
         self::ensureSession();
+
+        // Always require a fresh verification on new render
+        $passKey = self::SESSION_KEY . '_pass';
+        if (isset($_SESSION[$passKey][$formKey])) {
+            unset($_SESSION[$passKey][$formKey]);
+        }
 
         $blanki = self::listImages(self::DIR_BLANKI);
         $other  = self::listImages(self::DIR_OTHER);
@@ -237,7 +243,6 @@ class CaptchaBlanki {
 }
 
 ?>
-
 
 
 
