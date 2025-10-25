@@ -15,9 +15,13 @@ try {
     if ($out['ok']) {
         $out['message'] = 'Captcha bestätigt. Du kannst jetzt absenden.';
     } else {
-        $out['message'] = $out['remaining'] > 0
-            ? 'Captcha falsch. Verbleibende Versuche: ' . $out['remaining']
-            : 'Captcha fehlgeschlagen. Die Seite wird neu geladen.';
+        if (!empty($out['reload']) && $out['remaining'] >= 3) {
+            $out['message'] = 'Captcha 3x fehlgeschlagen. Die Seite wurde neu geladen.';
+        } else {
+            $out['message'] = $out['remaining'] > 0
+                ? 'Captcha falsch. Verbleibende Versuche: ' . $out['remaining']
+                : 'Captcha falsch. Bitte erneut versuchen.';
+        }
     }
     if ($formKey !== '') {
         $_SESSION['captcha_attempted_' . $formKey] = 1;
@@ -33,4 +37,3 @@ try {
     echo json_encode(['ok'=>false,'remaining'=>0,'reload'=>false,'message'=>'Interner Fehler']);
 }
 ?>
-

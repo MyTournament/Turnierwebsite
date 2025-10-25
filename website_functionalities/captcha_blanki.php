@@ -226,14 +226,18 @@ class CaptchaBlanki {
             $attempts = 3;
             $reload = true;
         }
+        $displayRemaining = $remaining;
+        if (!$ok && $remaining <= 0) {
+            $displayRemaining = 3;
+        }
         if ($ok) {
             if (!isset($_SESSION[self::SESSION_KEY.'_pass'])) { $_SESSION[self::SESSION_KEY.'_pass'] = []; }
             $_SESSION[self::SESSION_KEY.'_pass'][$formKey] = time();
         } else {
             if ($remaining <= 0) { $reload = true; }
         }
-        $_SESSION['captcha_remaining_' . $formKey] = $remaining;
-        return ['ok'=>$ok, 'remaining'=>$remaining, 'reload'=>$reload, 'attempts'=>$attempts];
+        $_SESSION['captcha_remaining_' . $formKey] = $displayRemaining;
+        return ['ok'=>$ok, 'remaining'=>$displayRemaining, 'reload'=>$reload, 'attempts'=>$attempts];
     }
 
     public static function passed(string $formKey, int $ttl = 600): bool {

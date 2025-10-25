@@ -50,7 +50,7 @@
     const counter = root.querySelector('.cb-attempts');
     if (!counter) return;
     const count = Number.isFinite(value) && value >= 0 ? value : 3;
-    counter.textContent = `${count} ${attemptLabel(count)} Ã¼brig`;
+    counter.textContent = `${count} ${attemptLabel(count)} übrig`;
   };
 
   const showStatus = (root, msg, ok) => {
@@ -144,7 +144,7 @@
       if (passInput && passInput.value === '1') {
         setSubmitEnabled(form, true);
         if (btn) btn.disabled = true;
-        showStatus(root, 'Captcha bestÃ¤tigt. Du kannst jetzt absenden.', true);
+        showStatus(root, 'Captcha bestätigt. Du kannst jetzt absenden.', true);
         lockTiles(root);
       } else {
         setSubmitEnabled(form, false);
@@ -193,7 +193,7 @@
 
             let message;
             if (ok) {
-              message = 'Captcha bestÃ¤tigt. Du kannst jetzt absenden.';
+              message = 'Captcha bestätigt. Du kannst jetzt absenden.';
               showStatus(root, message, true);
               updateGlobalStatus(message, remaining, true);
               if (passInput) passInput.value = '1';
@@ -204,7 +204,8 @@
               if (remaining > 0) {
                 message = `Captcha falsch. Verbleibende ${attemptLabel(remaining)}: ${remaining}`;
               } else if (res && res.reload) {
-                message = 'Captcha fehlgeschlagen. Die Seite wird neu geladen.';
+                remaining = 3;
+                message = 'Captcha 3x fehlgeschlagen. Die Seite wurde neu geladen.';
               } else {
                 message = (res && res.message) ? res.message : 'Captcha falsch. Bitte erneut versuchen.';
               }
@@ -222,7 +223,7 @@
             root.dataset.remaining = String(fallback);
             root.dataset.attemptsUsed = String(Math.max(0, 3 - fallback));
             updateAttempts(root, fallback);
-            const msg = 'Captcha-PrÃ¼fung fehlgeschlagen. Bitte spÃ¤ter erneut probieren.';
+            const msg = 'Captcha-Prüfung fehlgeschlagen. Bitte später erneut probieren.';
             showStatus(root, msg, false);
             updateGlobalStatus(msg, fallback, false);
             finish(false);
