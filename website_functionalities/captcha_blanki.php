@@ -108,7 +108,8 @@ class CaptchaBlanki {
                 $initialAttempts = max(0, min(3, (int)$m[1]));
             }
         }
-        echo '<div class="captcha-blanki" id="'. htmlspecialchars($containerId) .'" data-initial-attempts="'. (int)$initialAttempts .'" data-passed="'. ($alreadyPassed ? '1' : '0') .'" style="margin:10px auto;padding:12px;border:1px solid #888;border-radius:8px;max-width:560px;">';
+        $sessionAttempts = isset($_SESSION[self::SESSION_KEY][$token]) ? $_SESSION[self::SESSION_KEY][$token]['attempts'] : 0;
+        echo '<div class="captcha-blanki" id="'. htmlspecialchars($containerId) .'" data-initial-attempts="'. (int)$initialAttempts .'" data-attempts-used="'. (int)$sessionAttempts .'" data-passed="'. ($alreadyPassed ? '1' : '0') .'" style="margin:10px auto;padding:12px;border:1px solid #888;border-radius:8px;max-width:560px;">';
         // Scoped styles
         echo '<style> 
             #'. htmlspecialchars($containerId) .' .cb-title{margin:0 0 10px 0;text-align:center;}

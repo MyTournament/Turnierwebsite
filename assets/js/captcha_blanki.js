@@ -20,7 +20,7 @@
       return typeof window.fetch === 'function' &&
              typeof window.FormData === 'function' &&
              typeof Promise === 'function';
-    } catch (e) {
+    } catch (_) {
       return false;
     }
   };
@@ -33,14 +33,14 @@
         if (isCheckBtn) return;
         btn.disabled = !enabled;
       });
-    } catch (e) {}
+    } catch (_) {}
   };
 
   const updateAttempts = (root, value) => {
     const el = root.querySelector('.cb-attempts');
     if (!el) return;
     const count = (typeof value === 'number' && value >= 0) ? value : 3;
-    el.textContent = `${count} Versuche \u00fcbrig`;
+    el.textContent = `${count} Versuche übrig`;
   };
 
   const showStatus = (root, msg, ok) => {
@@ -62,6 +62,50 @@
     });
   };
 
+  const ensureGlobalBox = () => {
+    let box = document.querySelector('.cb-status-global');
+    if (!box) {
+      const anchor = document.querySelector('#anmelden') || document.body;
+      box = document.createElement('div');
+      box.className = 'cb-status-global';
+      box.style.margin = '10px 0';
+      box.style.padding = '10px';
+      box.style.borderRadius = '6px';
+      box.style.border = '1px solid #c0392b';
+      box.style.background = '#ffeaea';
+      box.style.color = '#c0392b';
+      anchor.insertBefore(box, anchor.firstChild || null);
+    }
+    return box;
+  };
+
+  const updateGlobalStatus = (message, remaining, ok) => {
+    const box = ensureGlobalBox();
+    const color = ok ? '#27ae60' : '#c0392b';
+    box.style.border = '1px solid ' + color;
+    box.style.background = ok ? '#ecf9f0' : '#ffeaea';
+    box.style.color = color;
+    box.textContent = '';
+    if (message) {
+      const msgEl = document.createElement('div');
+      msgEl.textContent = message;
+      box.appendChild(msgEl);
+    }
+    const attemptsEl = document.createElement('div');
+    attemptsEl.textContent = 'Verbleibende Versuche: ' + remaining;
+    box.appendChild(attemptsEl);
+  };
+
+  const collectSelections = (root, target, tokenInput, formKeyInput, renderedAtInput, honeypotInput) => {
+    target.append('cb_token', (tokenInput && tokenInput.value) || '');
+    target.append('cb_formkey', (formKeyInput && formKeyInput.value) || '');
+    if (renderedAtInput) { target.append('cb_rendered_at', renderedAtInput.value); }
+    if (honeypotInput) { target.append('website', honeypotInput.value || ''); }
+    root.querySelectorAll('input[name=cbsel[]]').forEach(c => {
+      if (c.checked) { target.append('cbsel[]', c.value); }
+    });
+  };
+
   ready(() => {
     document.querySelectorAll('.captcha-blanki').forEach(root => {
       const form = closestForm(root);
@@ -72,13 +116,15 @@
       const renderedAtInput = root.querySelector('input[name=cb_rendered_at]');
       const honeypotInput = root.querySelector('input[name=website]');
       const initialAttempts = parseInt(root.getAttribute('data-initial-attempts') || '3', 10);
+      const attemptsUsedAttr = parseInt(root.getAttribute('data-attempts-used') || '0', 10);
+      const remainingInitial = Math.max(0, 3 - attemptsUsedAttr);
 
-      updateAttempts(root, initialAttempts);
+      updateAttempts(root, remainingInitial);
 
       if (passInput && passInput.value === '1') {
         setSubmitEnabled(form, true);
         if (btn) btn.disabled = true;
-        showStatus(root, 'Captcha best\u00e4tigt. Du kannst jetzt absenden.', true);
+        showStatus(root, 'Captcha bestätigt. Du kannst jetzt absenden.', true);
         lockTiles(root);
       } else {
         setSubmitEnabled(form, false);
@@ -86,21 +132,17 @@
       }
 
       if (!btn) return;
-      if (!supportsAjax()) return; // fall back to server; leave default submission
+      if (!supportsAjax()) return; // fall back to server submission
 
       btn.addEventListener('click', (ev) => {
         ev.preventDefault();
         const fd = new FormData();
-        fd.append('cb_token', (tokenInput && tokenInput.value) || '');
-        fd.append('cb_formkey', (formKeyInput && formKeyInput.value) || '');
-        if (renderedAtInput) fd.append('cb_rendered_at', renderedAtInput.value);
-        if (honeypotInput) fd.append('website', honeypotInput.value || '');
-        root.querySelectorAll('input[name=cbsel[]]').forEach(c => {
-          if (c.checked) fd.append('cbsel[]', c.value);
-        });
+        collectSelections(root, fd, tokenInput, formKeyInput, renderedAtInput, honeypotInput);
 
         btn.disabled = true;
-        const url = `${(window.location && (window.location.origin || '')) || ''}/website_functionalities/captcha_blanki_check.php`;
+        let origin = '';
+        try { origin = window.location && (window.location.origin || ''); } catch (_) {}
+        const url = origin + '/website_functionalities/captcha_blanki_check.php';
 
         const finish = (ok) => {
           if (!ok && !(passInput && passInput.value === '1')) {
@@ -113,16 +155,22 @@
           .then(res => {
             const ok = !!(res && res.ok);
             const remaining = (res && typeof res.remaining === 'number') ? res.remaining : 3;
+            const used = Math.max(0, 3 - remaining);
+            root.setAttribute('data-attempts-used', String(used));
             updateAttempts(root, remaining);
+
             if (ok) {
-              showStatus(root, 'Captcha best\u00e4tigt. Du kannst jetzt absenden.', true);
-              if (passInput) passInput.value = '1';
+              const msg = 'Captcha bestätigt. Du kannst jetzt absenden.';
+              showStatus(root, msg, true);
+              updateGlobalStatus(msg, remaining, true);
+              if (passInput) { passInput.value = '1'; }
               setSubmitEnabled(form, true);
               lockTiles(root);
               finish(true);
             } else {
-              const message = (res && res.message) ? res.message : 'Captcha falsch. Bitte erneut versuchen.';
-              showStatus(root, message, false);
+              const msg = (res && res.message) ? res.message : 'Captcha falsch. Bitte erneut versuchen.';
+              showStatus(root, msg, false);
+              updateGlobalStatus(msg, remaining, false);
               if (res && res.reload) {
                 window.location.reload();
                 return;
@@ -131,7 +179,10 @@
             }
           })
           .catch(() => {
-            showStatus(root, 'Captcha-Pr\u00fcfung fehlgeschlagen. Bitte sp\u00e4ter erneut probieren.', false);
+            const used = parseInt(root.getAttribute('data-attempts-used') || '0', 10);
+            const remaining = Math.max(0, 3 - used);
+            showStatus(root, 'Captcha-Prüfung fehlgeschlagen. Bitte später erneut probieren.', false);
+            updateGlobalStatus('Captcha-Prüfung fehlgeschlagen. Bitte später erneut probieren.', remaining, false);
             finish(false);
           });
       });
