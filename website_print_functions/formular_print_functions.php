@@ -182,27 +182,53 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     ?>
     <title>Adressbuch</title>
     <id="LogIn">
-    <h1>Melde dein Team an</h1>
-    <?php if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); } 
+    <?php
+    if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
     $prev = isset($_SESSION['register_form_data']) ? $_SESSION['register_form_data'] : [];
+    $captchaFeedback = [
+        'shouldShow' => false,
+        'message' => null,
+        'remaining' => 3,
+        'ok' => false,
+        'reloadNotice' => null,
+    ];
     if (!empty($_SESSION['captcha_attempted_register'])) {
-        $remaining = isset($_SESSION['captcha_remaining_register']) ? (int)$_SESSION['captcha_remaining_register'] : 3;
-        $msg = isset($_SESSION['flash_error_register']) ? $_SESSION['flash_error_register'] : null;
-        $ok = ($msg && stripos($msg, 'best') !== false);
-        if ($ok || $remaining <= 2) {
-            $attemptLabel = ($remaining === 1) ? 'Versuch' : 'Versuche';
-            echo '<div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid '. ($ok ? '#27ae60' : '#c0392b') .';border-radius:6px;background:'. ($ok ? '#ecf9f0' : '#ffeaea') .';color:'. ($ok ? '#27ae60' : '#c0392b') .';">';
-            if ($msg) {
-                echo htmlspecialchars($msg);
-                if (stripos($msg, 'Verbleibende Versuch') === false) {
-                    echo '<br />Verbleibende '. $attemptLabel .': '. $remaining;
-                }
-            } else {
-                echo 'Verbleibende '. $attemptLabel .': '. $remaining;
-            }
-            echo '</div>';
+        $captchaFeedback['remaining'] = isset($_SESSION['captcha_remaining_register'])
+            ? (int)$_SESSION['captcha_remaining_register']
+            : 3;
+        $captchaFeedback['message'] = isset($_SESSION['flash_error_register'])
+            ? $_SESSION['flash_error_register']
+            : null;
+        $captchaFeedback['ok'] = ($captchaFeedback['message'] && stripos($captchaFeedback['message'], 'best') !== false);
+        $captchaFeedback['shouldShow'] = $captchaFeedback['ok'] || $captchaFeedback['remaining'] <= 2;
+        if ($captchaFeedback['message'] && stripos($captchaFeedback['message'], 'Captcha 3x fehlgeschlagen') !== false) {
+            $captchaFeedback['reloadNotice'] = $captchaFeedback['message'];
+            $captchaFeedback['shouldShow'] = true;
         }
         unset($_SESSION['captcha_attempted_register'], $_SESSION['captcha_remaining_register']);
+    }
+    ?>
+    <?php if (!empty($captchaFeedback['reloadNotice'])) { ?>
+        <div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">
+            <?php echo htmlspecialchars($captchaFeedback['reloadNotice'], ENT_QUOTES, 'UTF-8'); ?>
+        </div>
+    <?php } ?>
+    <h1>Melde dein Team an</h1>
+    <?php if ($captchaFeedback['shouldShow']) {
+        $attemptLabel = ($captchaFeedback['remaining'] === 1) ? 'Versuch' : 'Versuche';
+        $borderColor = $captchaFeedback['ok'] ? '#27ae60' : '#c0392b';
+        $bgColor = $captchaFeedback['ok'] ? '#ecf9f0' : '#ffeaea';
+        $textColor = $captchaFeedback['ok'] ? '#27ae60' : '#c0392b';
+        echo '<div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid '. $borderColor .';border-radius:6px;background:'. $bgColor .';color:'. $textColor .';">';
+        if ($captchaFeedback['message']) {
+            echo htmlspecialchars($captchaFeedback['message'], ENT_QUOTES, 'UTF-8');
+            if (stripos($captchaFeedback['message'], 'Verbleibende Versuch') === false) {
+                echo '<br />Verbleibende '. $attemptLabel .': '. $captchaFeedback['remaining'];
+            }
+        } else {
+            echo 'Verbleibende '. $attemptLabel .': '. $captchaFeedback['remaining'];
+        }
+        echo '</div>';
     } ?>
     <h3>Kurz das wichtigste:</h3>
     <ul>
