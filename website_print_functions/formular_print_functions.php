@@ -184,11 +184,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <id="LogIn">
     <h1>Melde dein Team an</h1>
     <?php if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); } 
-    $prev = isset($_SESSION['register_form_data']) ? $_SESSION['register_form_data'] : [];
-    if (isset($_SESSION['flash_error_register']) && $_SESSION['flash_error_register']) { 
-        echo '<div style="margin:10px 0;padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">'. htmlspecialchars($_SESSION['flash_error_register']) .'</div>'; 
-        unset($_SESSION['flash_error_register']);
-    } ?>
+    $prev = isset($_SESSION['register_form_data']) ? $_SESSION['register_form_data'] : []; ?>
     <h3>Kurz das wichtigste:</h3>
     <ul>
         <li>3 Spieler*innen pro Team</li>
@@ -257,6 +253,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
         // Neues Bild-Captcha einbinden (Registrierung)
         if (!empty($_SESSION['register_form_data'])) { unset($_SESSION['register_form_data']); }
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
+        echo '<div id="anmelden-captcha"></div>';
         CaptchaBlanki::render('register');
         $captchaPassed = CaptchaBlanki::passed('register');
     ?>
@@ -278,13 +275,20 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <h5><br/></h5>
     <title>[ untitled ]</title>                                
     <script type="text/javascript">
-        function checkAGB() {
-        if (document.getElementById('human').checked) {
-            return true;
+        function checkAGB(evt) {
+            try {
+                var submitter = evt && (evt.submitter || document.activeElement);
+                if (submitter && submitter.name === 'cb_action' && submitter.value === 'check') {
+                    return true;
+                }
+            } catch (e) {}
+            var human = document.getElementById('human');
+            if (human && human.checked) {
+                return true;
+            }
+            alert('Du musst unten noch das Häkchen setzen, du Hermann!');
+            return false;
         }
-        alert('Du musst unten noch das Häkchen setzen, du Hermann!');
-        return false;
-    }
     </script> 
 
     <div>

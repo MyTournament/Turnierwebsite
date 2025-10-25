@@ -71,6 +71,8 @@ class CaptchaBlanki {
         }
         shuffle($choices);
 
+        $alreadyPassed = self::passed($formKey);
+
         $token = self::randomToken(18);
         $now = time();
         $map = [];
@@ -93,7 +95,20 @@ class CaptchaBlanki {
 
         // Render HTML (compact block + interactive tiles)
         $containerId = 'captcha-blanki-' . $token;
-        echo '<div class="captcha-blanki" id="'. htmlspecialchars($containerId) .'" style="margin:10px auto;padding:12px;border:1px solid #888;border-radius:8px;max-width:560px;">';
+        $statusMsg = $alreadyPassed ? 'Captcha bestätigt. Du kannst jetzt absenden.' : '';
+        $statusColor = $alreadyPassed ? '#2ecc71' : '#c0392b';
+        if (isset($_SESSION['flash_error_register']) && $_SESSION['flash_error_register']) {
+            $statusMsg = (string)$_SESSION['flash_error_register'];
+            $statusColor = (stripos($statusMsg, 'best') !== false) ? '#2ecc71' : '#c0392b';
+            unset($_SESSION['flash_error_register']);
+        }
+        $initialAttempts = 3;
+        if ($statusMsg !== '' && stripos($statusMsg, 'Versuch') !== false) {
+            if (preg_match('/(\d+)/', $statusMsg, $m)) {
+                $initialAttempts = max(0, min(3, (int)$m[1]));
+            }
+        }
+        echo '<div class="captcha-blanki" id="'. htmlspecialchars($containerId) .'" data-initial-attempts="'. (int)$initialAttempts .'" data-passed="'. ($alreadyPassed ? '1' : '0') .'" style="margin:10px auto;padding:12px;border:1px solid #888;border-radius:8px;max-width:560px;">';
         // Scoped styles
         echo '<style> 
             #'. htmlspecialchars($containerId) .' .cb-title{margin:0 0 10px 0;text-align:center;}
@@ -110,12 +125,6 @@ class CaptchaBlanki {
             #'. htmlspecialchars($containerId) .' .cb-check-btn[onclick]{display:none !important;}
         </style>';
         echo '<p class="cb-title"><strong>Erkenne welche der folgenden Bilder im Blankensteinpark gemacht wurden.</strong></p>';
-        $statusMsg = '';
-        $statusColor = '#c0392b';
-        if ($alreadyPassed) {
-            $statusMsg = 'Captcha bestätigt. Du kannst jetzt absenden.';
-            $statusColor = '#2ecc71';
-        }
         echo '<div class="cb-status" style="margin:6px 0 10px 0;color:'. htmlspecialchars($statusColor) .';min-height:18px;">'. htmlspecialchars($statusMsg) .'</div>';
         $alreadyPassed = self::passed($formKey);
         echo '<div class="cb-grid">';
@@ -145,14 +154,11 @@ class CaptchaBlanki {
         // honeypot + render timestamp
         echo '<div style="position:absolute;left:-9999px;top:-9999px;"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>';
         echo '<input type="hidden" name="cb_rendered_at" value="' . (int)$now . '">';
-        $attemptText = '3 Versuche bis die Website neu geladen werden muss';
+        $attemptText = $initialAttempts . ' Versuche übrig';
         $checkDisabledAttr = $alreadyPassed ? ' disabled' : '';
         echo '<div class="cb-actions" style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">';
         echo '<span class="cb-attempts" style="font-size:0.95em;color:#999;">'. htmlspecialchars($attemptText) .'</span>';
-        echo '<button type="submit" name="cb_action" value="check" formnovalidate class="button cb-check-btn" style="background:#444;color:#fff;"'. $checkDisabledAttr .'>Captcha &uuml;berpr&uuml;fen</button>';
-        if ($alreadyPassed) {
-            echo '<span style="color:#2ecc71;">Erfolgreich gepr&uuml;ft</span>';
-        }
+        echo '<button type="submit" name="cb_action" value="check" formnovalidate class="button cb-check-btn" style="background:#444;color:#fff;"'. $checkDisabledAttr .'>Captcha überprüfen</button>';
         echo '</div>';
         echo '</div>';
     }
@@ -226,8 +232,13 @@ class CaptchaBlanki {
         if ((time() - (int)$arr[$formKey]) > $ttl) { unset($_SESSION[self::SESSION_KEY.'_pass'][$formKey]); return false; }
         return true;
     }
+
 }
 
 ?>
+
+
+
+
 
 
