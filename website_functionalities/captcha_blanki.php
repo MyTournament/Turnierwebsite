@@ -174,7 +174,8 @@ class CaptchaBlanki {
         $entry = $_SESSION[self::SESSION_KEY][$token];
         // Track attempts to limit brute force
         $_SESSION[self::SESSION_KEY][$token]['attempts'] = ($entry['attempts'] ?? 0) + 1;
-        $attempts = $_SESSION[self::SESSION_KEY][$token]['attempts'];
+        $attempts = (int)$_SESSION[self::SESSION_KEY][$token]['attempts'];
+        $_SESSION[self::SESSION_KEY][$token]['remaining'] = max(0, 3 - $attempts);
         if ($attempts > 3) { unset($_SESSION[self::SESSION_KEY][$token]); return false; }
 
         $created = (int)($entry['created'] ?? 0);
@@ -210,14 +211,19 @@ class CaptchaBlanki {
         $token = isset($post['cb_token']) ? (string)$post['cb_token'] : '';
         $formKey = isset($post['cb_formkey']) ? (string)$post['cb_formkey'] : 'default';
         $remaining = 3;
+        $attempts = 0;
         $reload = false;
-        if ($token !== '' && isset($_SESSION[self::SESSION_KEY][$token]['attempts'])) {
-            $att = (int)$_SESSION[self::SESSION_KEY][$token]['attempts'];
-            $remaining = max(0, 3 - $att);
+        if ($token !== '' && isset($_SESSION[self::SESSION_KEY][$token])) {
+            $entry = $_SESSION[self::SESSION_KEY][$token];
+            $attempts = (int)($entry['attempts'] ?? 0);
+            $remaining = isset($entry['remaining']) ? (int)$entry['remaining'] : max(0, 3 - $attempts);
+            if ($remaining <= 0 && !$ok) { $reload = true; }
         } else if ($ok) {
             $remaining = 3; // after success token is removed, treat as full
+            $attempts = 0;
         } else {
             $remaining = 0; // token might have been removed due to limit
+            $attempts = 3;
             $reload = true;
         }
         if ($ok) {
@@ -227,7 +233,7 @@ class CaptchaBlanki {
             if ($remaining <= 0) { $reload = true; }
         }
         $_SESSION['captcha_remaining_' . $formKey] = $remaining;
-        return ['ok'=>$ok, 'remaining'=>$remaining, 'reload'=>$reload];
+        return ['ok'=>$ok, 'remaining'=>$remaining, 'reload'=>$reload, 'attempts'=>$attempts];
     }
 
     public static function passed(string $formKey, int $ttl = 600): bool {
@@ -241,8 +247,3 @@ class CaptchaBlanki {
 }
 
 ?>
-
-
-
-
-

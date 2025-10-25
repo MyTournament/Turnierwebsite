@@ -190,12 +190,16 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
         $msg = isset($_SESSION['flash_error_register']) ? $_SESSION['flash_error_register'] : null;
         $ok = ($msg && stripos($msg, 'best') !== false);
         if ($ok || $remaining <= 2) {
+            $attemptLabel = ($remaining === 1) ? 'Versuch' : 'Versuche';
             echo '<div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid '. ($ok ? '#27ae60' : '#c0392b') .';border-radius:6px;background:'. ($ok ? '#ecf9f0' : '#ffeaea') .';color:'. ($ok ? '#27ae60' : '#c0392b') .';">';
             if ($msg) {
                 echo htmlspecialchars($msg);
-                echo '<br />';
+                if (stripos($msg, 'Verbleibende Versuch') === false) {
+                    echo '<br />Verbleibende '. $attemptLabel .': '. $remaining;
+                }
+            } else {
+                echo 'Verbleibende '. $attemptLabel .': '. $remaining;
             }
-            echo 'Verbleibende Versuche: '. $remaining;
             echo '</div>';
         }
         unset($_SESSION['captcha_attempted_register'], $_SESSION['captcha_remaining_register']);
