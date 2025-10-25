@@ -108,7 +108,8 @@
       msg.textContent = message;
       box.appendChild(msg);
     }
-    if (Number.isFinite(remaining)) {
+    const hasCountInMessage = typeof message === 'string' && /Verbleibende\s+Versuche/i.test(message);
+    if (!hasCountInMessage && Number.isFinite(remaining)) {
       const info = document.createElement('div');
       info.textContent = `Verbleibende ${attemptLabel(remaining)}: ${remaining}`;
       box.appendChild(info);
@@ -174,25 +175,41 @@
           .then((res) => {
             const ok = !!(res && res.ok);
             let remaining = Number(res && res.remaining);
+            const attempts = Number(res && res.attempts);
             if (!Number.isFinite(remaining) || remaining < 0 || remaining > 3) {
-              remaining = previousRemaining;
+              if (Number.isFinite(attempts) && attempts >= 0 && attempts <= 3) {
+                remaining = Math.max(0, 3 - attempts);
+              } else {
+                remaining = previousRemaining;
+              }
+            }
+            const stale = !ok && remaining === previousRemaining && previousRemaining > 0;
+            if (stale) {
+              remaining = Math.max(0, previousRemaining - 1);
             }
             root.dataset.remaining = String(remaining);
             root.dataset.attemptsUsed = String(Math.max(0, 3 - remaining));
             updateAttempts(root, remaining);
 
+            let message;
             if (ok) {
-              const msg = 'Captcha bestätigt. Du kannst jetzt absenden.';
-              showStatus(root, msg, true);
-              updateGlobalStatus(msg, remaining, true);
+              message = 'Captcha bestätigt. Du kannst jetzt absenden.';
+              showStatus(root, message, true);
+              updateGlobalStatus(message, remaining, true);
               if (passInput) passInput.value = '1';
               setSubmitEnabled(form, true);
               lockTiles(root);
               finish(true);
             } else {
-              const msg = (res && res.message) ? res.message : 'Captcha falsch. Bitte erneut versuchen.';
-              showStatus(root, msg, false);
-              updateGlobalStatus(msg, remaining, false);
+              if (remaining > 0) {
+                message = `Captcha falsch. Verbleibende ${attemptLabel(remaining)}: ${remaining}`;
+              } else if (res && res.reload) {
+                message = 'Captcha fehlgeschlagen. Die Seite wird neu geladen.';
+              } else {
+                message = (res && res.message) ? res.message : 'Captcha falsch. Bitte erneut versuchen.';
+              }
+              showStatus(root, message, false);
+              updateGlobalStatus(message, remaining, false);
               if (res && res.reload) {
                 window.location.reload();
                 return;

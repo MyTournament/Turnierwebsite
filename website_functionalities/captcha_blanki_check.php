@@ -9,6 +9,7 @@ try {
         'ok' => !empty($res['ok']),
         'remaining' => isset($res['remaining']) ? (int)$res['remaining'] : 0,
         'reload' => !empty($res['reload']),
+        'attempts' => isset($res['attempts']) ? (int)$res['attempts'] : 0,
     ];
     $formKey = isset($_POST['cb_formkey']) ? (string)$_POST['cb_formkey'] : 'default';
     if ($out['ok']) {
