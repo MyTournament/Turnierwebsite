@@ -301,9 +301,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <!--<button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>-->
     <nav>
         <ul>
-            <li><a href="#info">Info</a></li>
-            <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">Regeln</a></li>
-            <li class='button'><a href='#teams'>Teams</a></li>
+            <li><a href="#info">ℹ️ Info</a></li>
+            <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">📖 Regeln</a></li>
+            <li class='button'><a href='#teams'>👩‍👧‍👦Teams</a></li>
             <?php 
             //Aktuelle Turnierphase herausfinden - erstmal ID
                 $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
@@ -315,13 +315,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
                 //SPIELPLAN
                 if($turnier_phase_ID == 4 ||$turnier_phase_ID == 5 || $turnier_phase_ID == 7 || $turnier_phase_ID == 9 || $turnier_phase_ID == 11 || $turnier_phase_ID == 13){
-                    echo"<li><a href='#spielplan' >Spielplan</a></li>";
+                    echo"<li><a href='#spielplan' >🗓️ Spielplan</a></li>";
                     //onclick='"insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich den Spielplan angesehen');"
                 }else{
-                    echo"<li class='button disabled'><a href='#spielplan'>Spielplan</a></li>";
+                    echo"<li class='button disabled'><a href='#spielplan'>🗓️ Spielplan</a></li>";
                 }
             ?>    
-            <li><a href="https://www.paypal.com/paypalme/REDACTED?country.x=DE&locale.x=de_DE">Spenden</a></li>        
+            <li><a href="https://www.paypal.com/paypalme/REDACTED?country.x=DE&locale.x=de_DE">♥️ Spenden</a></li>        
         </ul>
     </nav>
     <div class="content">
