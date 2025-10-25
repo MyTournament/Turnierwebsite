@@ -103,19 +103,15 @@ class CaptchaBlanki {
         $containerId = 'captcha-blanki-' . $token;
         $statusMsg = $alreadyPassed ? 'Captcha bestätigt. Du kannst jetzt absenden.' : '';
         $statusColor = $alreadyPassed ? '#2ecc71' : '#c0392b';
-        if (isset($_SESSION['flash_error_register']) && $_SESSION['flash_error_register']) {
-            $statusMsg = (string)$_SESSION['flash_error_register'];
+        $flashKey = 'flash_error_' . $formKey;
+        if (isset($_SESSION[$flashKey]) && $_SESSION[$flashKey]) {
+            $statusMsg = (string)$_SESSION[$flashKey];
             $statusColor = (stripos($statusMsg, 'best') !== false) ? '#2ecc71' : '#c0392b';
-            unset($_SESSION['flash_error_register']);
+            unset($_SESSION[$flashKey]);
         }
         $initialAttempts = 3;
-        if ($statusMsg !== '' && stripos($statusMsg, 'Versuch') !== false) {
-            if (preg_match('/(\d+)/', $statusMsg, $m)) {
-                $initialAttempts = max(0, min(3, (int)$m[1]));
-            }
-        }
-        $sessionAttempts = isset($_SESSION[self::SESSION_KEY][$token]) ? $_SESSION[self::SESSION_KEY][$token]['attempts'] : 0;
-        echo '<div class="captcha-blanki" id="'. htmlspecialchars($containerId) .'" data-initial-attempts="'. (int)$initialAttempts .'" data-attempts-used="'. (int)$sessionAttempts .'" data-passed="'. ($alreadyPassed ? '1' : '0') .'" style="margin:10px auto;padding:12px;border:1px solid #888;border-radius:8px;max-width:560px;">';
+        $attemptsUsedInitial = 0;
+        echo '<div class="captcha-blanki" id="'. htmlspecialchars($containerId) .'" data-initial-attempts="'. $initialAttempts .'" data-attempts-used="'. $attemptsUsedInitial .'" data-passed="'. ($alreadyPassed ? '1' : '0') .'" style="margin:10px auto;padding:12px;border:1px solid #888;border-radius:8px;max-width:560px;">';
         // Scoped styles
         echo '<style> 
             #'. htmlspecialchars($containerId) .' .cb-title{margin:0 0 10px 0;text-align:center;}
@@ -161,7 +157,8 @@ class CaptchaBlanki {
         // honeypot + render timestamp
         echo '<div style="position:absolute;left:-9999px;top:-9999px;"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>';
         echo '<input type="hidden" name="cb_rendered_at" value="' . (int)$now . '">';
-        $attemptText = $initialAttempts . ' Versuche übrig';
+        $attemptLabel = ($initialAttempts === 1) ? 'Versuch' : 'Versuche';
+        $attemptText = $initialAttempts . ' ' . $attemptLabel . ' übrig';
         $checkDisabledAttr = $alreadyPassed ? ' disabled' : '';
         echo '<div class="cb-actions" style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">';
         echo '<span class="cb-attempts" style="font-size:0.95em;color:#999;">'. htmlspecialchars($attemptText) .'</span>';
@@ -229,6 +226,7 @@ class CaptchaBlanki {
         } else {
             if ($remaining <= 0) { $reload = true; }
         }
+        $_SESSION['captcha_remaining_' . $formKey] = $remaining;
         return ['ok'=>$ok, 'remaining'=>$remaining, 'reload'=>$reload];
     }
 

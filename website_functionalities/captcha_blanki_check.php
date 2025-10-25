@@ -23,6 +23,9 @@ try {
         $_SESSION['captcha_remaining_' . $formKey] = $out['remaining'];
         $_SESSION['flash_error_' . $formKey] = $out['message'];
     }
+    if ($formKey === 'register') {
+        $_SESSION['flash_error_register'] = $out['message'];
+    }
     echo json_encode($out);
 } catch (Throwable $e) {
     http_response_code(200);

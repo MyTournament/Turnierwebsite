@@ -189,13 +189,16 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
         $remaining = isset($_SESSION['captcha_remaining_register']) ? (int)$_SESSION['captcha_remaining_register'] : 3;
         $msg = isset($_SESSION['flash_error_register']) ? $_SESSION['flash_error_register'] : null;
         $ok = ($msg && stripos($msg, 'best') !== false);
-        echo '<div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid '. ($ok ? '#27ae60' : '#c0392b') .';border-radius:6px;background:'. ($ok ? '#ecf9f0' : '#ffeaea') .';color:'. ($ok ? '#27ae60' : '#c0392b') .';">';
-        if ($msg) {
-            echo htmlspecialchars($msg);
-            echo '<br />';
+        if ($ok || $remaining <= 2) {
+            echo '<div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid '. ($ok ? '#27ae60' : '#c0392b') .';border-radius:6px;background:'. ($ok ? '#ecf9f0' : '#ffeaea') .';color:'. ($ok ? '#27ae60' : '#c0392b') .';">';
+            if ($msg) {
+                echo htmlspecialchars($msg);
+                echo '<br />';
+            }
+            echo 'Verbleibende Versuche: '. $remaining;
+            echo '</div>';
         }
-        echo 'Verbleibende Versuche: '. $remaining;
-        echo '</div>';
+        unset($_SESSION['captcha_attempted_register'], $_SESSION['captcha_remaining_register']);
     } ?>
     <h3>Kurz das wichtigste:</h3>
     <ul>
