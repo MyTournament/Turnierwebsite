@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
     function printEditGames($TurnierID, $test_turnier_id){
     //echo "<script>console.log('TurnierID2: $TurnierID')</script>";
 ?>  

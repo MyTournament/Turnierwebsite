@@ -10,10 +10,18 @@ try {
         'remaining' => isset($res['remaining']) ? (int)$res['remaining'] : 0,
         'reload' => !empty($res['reload']),
     ];
-    if (!$out['ok']) {
+    $formKey = isset($_POST['cb_formkey']) ? (string)$_POST['cb_formkey'] : 'default';
+    if ($out['ok']) {
+        $out['message'] = 'Captcha bestätigt. Du kannst jetzt absenden.';
+    } else {
         $out['message'] = $out['remaining'] > 0
-            ? 'Captcha falsch. Verbleibende Versuche: '.$out['remaining']
+            ? 'Captcha falsch. Verbleibende Versuche: ' . $out['remaining']
             : 'Captcha fehlgeschlagen. Die Seite wird neu geladen.';
+    }
+    if ($formKey !== '') {
+        $_SESSION['captcha_attempted_' . $formKey] = 1;
+        $_SESSION['captcha_remaining_' . $formKey] = $out['remaining'];
+        $_SESSION['flash_error_' . $formKey] = $out['message'];
     }
     echo json_encode($out);
 } catch (Throwable $e) {
