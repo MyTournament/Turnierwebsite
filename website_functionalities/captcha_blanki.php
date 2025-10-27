@@ -141,9 +141,10 @@ class CaptchaBlanki {
         echo '<p class="cb-title"><strong>Bitte w&auml;hle die 4 Bilder aus, die im Blankensteinpark aufgenommen wurden.</strong></p>';
         $statusClass = 'cb-status';
         if ($statusMsg !== '') {
-            $statusClass .= ($statusColor === '#2ecc71') ? ' cb-status--success' : ' cb-status--error';
+            $stateClass = ($statusColor === '#2ecc71') ? ' cb-status--success' : ' cb-status--error';
+            $statusClass .= $stateClass;
         }
-        echo '<div class="'. $statusClass .'" aria-live="polite">'. htmlspecialchars($statusMsg) .'</div>';
+        $statusMarkup = '<div class="'. $statusClass .'" aria-live="polite">'. htmlspecialchars($statusMsg) .'</div>';
         $alreadyPassed = self::passed($formKey);
         echo '<div class="cb-grid">';
         $i = 0;
@@ -172,6 +173,7 @@ class CaptchaBlanki {
         // honeypot + render timestamp
         echo '<div style="position:absolute;left:-9999px;top:-9999px;"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>';
         echo '<input type="hidden" name="cb_rendered_at" value="' . (int)$now . '">';
+        echo $statusMarkup;
         $attemptLabel = ($initialAttempts === 1) ? 'Versuch' : 'Versuche';
         $attemptText = $initialAttempts . ' ' . $attemptLabel . ' übrig';
         $checkDisabledAttr = $alreadyPassed ? ' disabled' : '';
