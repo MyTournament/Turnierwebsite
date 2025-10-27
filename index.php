@@ -1077,7 +1077,32 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </br>
         <h1>Vielen Dank für deine Anmeldung!</h1>
         <p>Deine Anmeldung wird jetzt bearbeitet und bald kannst du dein Team in der Team-Liste sehen.</a></p>
-        </br>
+
+        
+        <?php
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if (is_string($teilnahmebeitrag)) {
+                $teilnahmebeitrag = str_replace(',', '.', $teilnahmebeitrag);
+            }
+            $teilnahmebeitragValue = (is_numeric($teilnahmebeitrag)) ? (float)$teilnahmebeitrag : 0.0;
+            if ($teilnahmebeitragValue > 0) {
+                if (floor($teilnahmebeitragValue) == $teilnahmebeitragValue) {
+                    $teilnahmebeitragText = number_format($teilnahmebeitragValue, 0, ',', '.');
+                } else {
+                    $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
+                }
+                echo "<h3><a href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
+            }
+        ?>
+
+
+        </br></br></br>
         <h2>Hier kannst du testen ob dein Login funktioniert.</h2>
         </br>
         <?php
@@ -1095,21 +1120,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <button value="Anmelden" type="submit">Anmelden</button>
         </form>
 
-        </br></br></br>
-        <?php
-            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
-            $resultTurnier = $conn->query($sqlTurnier);
-            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
-                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
-            }
-            if($teilnahmebeitrag == 1){
-                echo "
-                    <h3><a href=$link_solibeitrag>??Teilnahmebeitrag??</a></h3>
-                    <p><b>Nicht vergessen, die 10� Teilnahmegeb�hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie�t in Bier f�rs Turnier.</p>                  
-                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
-                ";
-            }
-        ?>
+        
         
     </div>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
@@ -1169,12 +1180,19 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             while ($rowTurnier = $resultTurnier->fetch_assoc()) {
                 $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
             }
-            if($teilnahmebeitrag == 1){
-                echo "
-                    <h3><a href=$link_solibeitrag>??Teilnahmebeitrag??</a></h3>
-                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
-                ";
+            if (is_string($teilnahmebeitrag)) {
+                $teilnahmebeitrag = str_replace(',', '.', $teilnahmebeitrag);
+            }
+            $teilnahmebeitragValue = (is_numeric($teilnahmebeitrag)) ? (float)$teilnahmebeitrag : 0.0;
+            if ($teilnahmebeitragValue > 0) {
+                if (floor($teilnahmebeitragValue) == $teilnahmebeitragValue) {
+                    $teilnahmebeitragText = number_format($teilnahmebeitragValue, 0, ',', '.');
+                } else {
+                    $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
+                }
+                echo "<h3><a href='" . $link_solibeitrag . "'>??Teilnahmebeitrag??</a></h3>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
             
             
