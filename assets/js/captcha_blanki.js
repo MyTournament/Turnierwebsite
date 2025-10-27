@@ -54,20 +54,22 @@
   };
 
   const showStatus = (root, msg, ok) => {
-    const box = root.querySelector('.cb-status');
-    if (!box) return;
+    const boxes = Array.from(root.querySelectorAll('.cb-status'));
+    if (!boxes.length) return;
     const hasMessage = !!msg;
-    box.textContent = hasMessage ? msg : '';
-    box.style.color = '';
-    box.classList.toggle('cb-status--success', !!ok && hasMessage);
-    box.classList.toggle('cb-status--error', !ok && hasMessage);
-    if (hasMessage) {
-      box.setAttribute('role', ok ? 'status' : 'alert');
-      box.setAttribute('aria-live', 'polite');
-    } else {
-      box.removeAttribute('role');
-      box.removeAttribute('aria-live');
-    }
+    boxes.forEach((box) => {
+      box.textContent = hasMessage ? msg : '';
+      box.style.color = '';
+      box.classList.toggle('cb-status--success', !!ok && hasMessage);
+      box.classList.toggle('cb-status--error', !ok && hasMessage);
+      if (hasMessage) {
+        box.setAttribute('role', ok ? 'status' : 'alert');
+        box.setAttribute('aria-live', 'polite');
+      } else {
+        box.removeAttribute('role');
+        box.removeAttribute('aria-live');
+      }
+    });
     if (ok) {
       root.dataset.passed = '1';
       root.classList.add('captcha-blanki--success');
