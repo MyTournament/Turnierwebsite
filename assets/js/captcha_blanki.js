@@ -56,8 +56,32 @@
   const showStatus = (root, msg, ok) => {
     const box = root.querySelector('.cb-status');
     if (!box) return;
-    box.style.color = ok ? '#2ecc71' : '#c0392b';
-    box.textContent = msg || '';
+    const hasMessage = !!msg;
+    box.textContent = hasMessage ? msg : '';
+    box.style.color = '';
+    box.classList.toggle('cb-status--success', !!ok && hasMessage);
+    box.classList.toggle('cb-status--error', !ok && hasMessage);
+    if (hasMessage) {
+      box.setAttribute('role', ok ? 'status' : 'alert');
+      box.setAttribute('aria-live', 'polite');
+    } else {
+      box.removeAttribute('role');
+      box.removeAttribute('aria-live');
+    }
+    if (ok) {
+      root.dataset.passed = '1';
+      root.classList.add('captcha-blanki--success');
+      root.classList.remove('captcha-blanki--error');
+    } else if (hasMessage) {
+      root.dataset.passed = '0';
+      root.classList.add('captcha-blanki--error');
+      root.classList.remove('captcha-blanki--success');
+    } else {
+      root.classList.remove('captcha-blanki--error');
+      if (!root.dataset.passed || root.dataset.passed === '0') {
+        root.classList.remove('captcha-blanki--success');
+      }
+    }
   };
 
   const lockTiles = (root) => {

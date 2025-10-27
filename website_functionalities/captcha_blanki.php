@@ -111,10 +111,15 @@ class CaptchaBlanki {
         }
         $initialAttempts = 3;
         $attemptsUsedInitial = 0;
-        echo '<div class="captcha-blanki" id="'. htmlspecialchars($containerId) .'" data-initial-attempts="'. $initialAttempts .'" data-attempts-used="'. $attemptsUsedInitial .'" data-passed="'. ($alreadyPassed ? '1' : '0') .'" style="margin:10px auto;padding:12px;border:1px solid #888;border-radius:8px;max-width:560px;">';
+        $containerClasses = 'captcha-blanki';
+        if ($alreadyPassed) { $containerClasses .= ' captcha-blanki--success'; }
+        if ($statusMsg !== '' && $statusColor !== '#2ecc71') { $containerClasses .= ' captcha-blanki--error'; }
+        echo '<div class="'. $containerClasses .'" id="'. htmlspecialchars($containerId) .'" data-initial-attempts="'. $initialAttempts .'" data-attempts-used="'. $attemptsUsedInitial .'" data-passed="'. ($alreadyPassed ? '1' : '0') .'" style="margin:10px auto;padding:14px;border:1px solid #888;border-radius:10px;max-width:560px;transition:background 0.2s ease,border-color 0.2s ease,box-shadow 0.2s ease;">';
         // Scoped styles
         echo '<style> 
+            #'. htmlspecialchars($containerId) .'{background:#050505;color:#f5f5f5;}
             #'. htmlspecialchars($containerId) .' .cb-title{margin:0 0 10px 0;text-align:center;}
+            #'. htmlspecialchars($containerId) .' .cb-title strong{color:#ffffff;letter-spacing:0.2px;}
             #'. htmlspecialchars($containerId) .' .cb-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;}
             @media (max-width:520px){ #'. htmlspecialchars($containerId) .' .cb-grid{grid-template-columns:repeat(3,1fr);} }
             #'. htmlspecialchars($containerId) .' label.cb-item{position:relative;display:block;border:1px solid #666;border-radius:6px;overflow:hidden;cursor:pointer;user-select:none;}
@@ -126,9 +131,19 @@ class CaptchaBlanki {
             #'. htmlspecialchars($containerId) .' .cb-native:checked + .cb-tile{outline:2px solid #2ecc71;border-color:#2ecc71;}
             #'. htmlspecialchars($containerId) .' .cb-native:checked + .cb-tile .cb-check{background:rgba(3,150,70,0.9);} 
             #'. htmlspecialchars($containerId) .' .cb-check-btn[onclick]{display:none !important;}
+            #'. htmlspecialchars($containerId) .' .cb-status{margin:8px 0 14px 0;font-size:1.05em;line-height:1.35;min-height:24px;font-weight:600;padding:0;border:none;background:transparent;color:#f5f5f5;transition:all 0.2s ease;}
+            #'. htmlspecialchars($containerId) .' .cb-status.cb-status--error{background:#310000;border-left:5px solid #ff5c5c;color:#ffbdbd;padding:14px 16px;border-radius:6px;}
+            #'. htmlspecialchars($containerId) .' .cb-status.cb-status--success{background:#062913;border-left:5px solid #2ecc71;color:#b1ffd3;padding:12px 16px;border-radius:6px;}
+            #'. htmlspecialchars($containerId) .'.captcha-blanki--error{background:#2c0000;border-color:#f04e4e;box-shadow:0 0 0 3px rgba(240,78,78,0.25);}
+            #'. htmlspecialchars($containerId) .'.captcha-blanki--success{background:#082c16;border-color:#29a357;box-shadow:0 0 0 3px rgba(41,163,87,0.18);}
+            #'. htmlspecialchars($containerId) .' .cb-attempts{color:#e0e0e0;}
         </style>';
-        echo '<p class="cb-title"><strong>Erkenne welche der folgenden Bilder im Blankensteinpark gemacht wurden.</strong></p>';
-        echo '<div class="cb-status" style="margin:6px 0 10px 0;color:'. htmlspecialchars($statusColor) .';min-height:18px;">'. htmlspecialchars($statusMsg) .'</div>';
+        echo '<p class="cb-title"><strong>Bitte w&auml;hle die 4 Bilder aus, die im Blankensteinpark aufgenommen wurden.</strong></p>';
+        $statusClass = 'cb-status';
+        if ($statusMsg !== '') {
+            $statusClass .= ($statusColor === '#2ecc71') ? ' cb-status--success' : ' cb-status--error';
+        }
+        echo '<div class="'. $statusClass .'" aria-live="polite">'. htmlspecialchars($statusMsg) .'</div>';
         $alreadyPassed = self::passed($formKey);
         echo '<div class="cb-grid">';
         $i = 0;

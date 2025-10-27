@@ -185,6 +185,19 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <?php
     if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
     $prev = isset($_SESSION['register_form_data']) ? $_SESSION['register_form_data'] : [];
+    $teilnahmebeitragValue = 0.0;
+    $teilnahmebeitragText = null;
+    if (is_string($teilnahmebeitrag)) {
+        $teilnahmebeitrag = str_replace(',', '.', $teilnahmebeitrag);
+    }
+    if (is_numeric($teilnahmebeitrag)) {
+        $teilnahmebeitragValue = (float)$teilnahmebeitrag;
+        if (floor($teilnahmebeitragValue) == $teilnahmebeitragValue) {
+            $teilnahmebeitragText = number_format($teilnahmebeitragValue, 0, ',', '.');
+        } else {
+            $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
+        }
+    }
     $captchaFeedback = [
         'shouldShow' => false,
         'message' => null,
@@ -234,10 +247,8 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <ul>
         <li>3 Spieler*innen pro Team</li>
         <?php
-            if($teilnahmebeitrag == 1){
-                echo "
-                    <li><b>10€ Teilnahmegebühr pro Team - nach Anmeldung überweisen per Paypal an @REDACTED ➡️ Verwendungszweck: *Euer Teamname*</b></li>
-                ";
+            if ($teilnahmebeitragValue > 0 && $teilnahmebeitragText !== null) {
+                echo "<li><b>" . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team - nach Anmeldung &uuml;berweisen per Paypal an @REDACTED &#10145;&#65039; Verwendungszweck: *Euer Teamname*</b></li>";
             }
         ?>
         
@@ -305,14 +316,12 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <h5><br/></h5>
 
     <?php
-        if($teilnahmebeitrag == 1){
-            echo "
-                <div style='text-align:center;'>
-                    <h1>Wichtig!</h1>
-                    <p>❗Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegebühr</b> von <b>10€</b> pro Team überwiesen habt❗</p>
-                    <p>➡️ Überweisen per <b>Paypal an @REDACTED mit eurem Teamnamen als Verwendungszweck</b> ⬅️</p>
-                </div>
-            ";
+        if ($teilnahmebeitragValue > 0 && $teilnahmebeitragText !== null) {
+            echo "<div style='text-align:center;'>";
+            echo "<h1>Wichtig!</h1>";
+            echo "<p>&#10071;Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegeb&uuml;hr</b> von <b>" . $teilnahmebeitragText . "&nbsp;&euro;</b> pro Team &uuml;berwiesen habt&#10071;</p>";
+            echo "<p>&#128176; &Uuml;berweisen per <b>Paypal an @REDACTED mit eurem Teamnamen als Verwendungszweck</b> &#128176;</p>";
+            echo "</div>";
         }
     ?>
     
