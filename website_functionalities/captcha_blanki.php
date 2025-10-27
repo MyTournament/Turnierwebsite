@@ -120,12 +120,12 @@ class CaptchaBlanki {
             #'. htmlspecialchars($containerId) .'{background:#050505;color:#f5f5f5;}
             #'. htmlspecialchars($containerId) .' .cb-title{margin:0 0 10px 0;text-align:center;}
             #'. htmlspecialchars($containerId) .' .cb-title strong{color:#ffffff;letter-spacing:0.2px;}
-            #'. htmlspecialchars($containerId) .' .cb-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;}
-            @media (max-width:520px){ #'. htmlspecialchars($containerId) .' .cb-grid{grid-template-columns:repeat(3,1fr);} }
+            #'. htmlspecialchars($containerId) .' .cb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
+            @media (max-width:520px){ #'. htmlspecialchars($containerId) .' .cb-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));} }
             #'. htmlspecialchars($containerId) .' label.cb-item{position:relative;display:block;border:1px solid #666;border-radius:6px;overflow:hidden;cursor:pointer;user-select:none;}
             #'. htmlspecialchars($containerId) .' .cb-native{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;}
-            #'. htmlspecialchars($containerId) .' .cb-tile{position:relative;}
-            #'. htmlspecialchars($containerId) .' .cb-img{display:block;width:100%;height:100px;object-fit:cover;}
+            #'. htmlspecialchars($containerId) .' .cb-tile{position:relative;aspect-ratio:1;overflow:hidden;}
+            #'. htmlspecialchars($containerId) .' .cb-img{display:block;width:100%;height:100%;object-fit:cover;}
             #'. htmlspecialchars($containerId) .' .cb-badge{position:absolute;left:6px;top:6px;background:rgba(0,0,0,0.55);padding:3px 6px;border-radius:3px;color:#fff;font-size:12px;}
             #'. htmlspecialchars($containerId) .' .cb-check{position:absolute;right:6px;top:6px;background:rgba(3,150,70,0.0);border-radius:50%;color:#fff;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background 0.15s ease;border:1px solid rgba(255,255,255,0.6);} 
             #'. htmlspecialchars($containerId) .' .cb-native:checked + .cb-tile{outline:2px solid #2ecc71;border-color:#2ecc71;}
