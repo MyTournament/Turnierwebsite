@@ -1190,7 +1190,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 } else {
                     $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
                 }
-                echo "<h3><a href='" . $link_solibeitrag . "'>??Teilnahmebeitrag??</a></h3>";
+                echo "<h3><a href='" . $link_solibeitrag . "'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
                 echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
                 echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
