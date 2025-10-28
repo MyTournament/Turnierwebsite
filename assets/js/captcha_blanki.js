@@ -50,7 +50,7 @@
     const counter = root.querySelector('.cb-attempts');
     if (!counter) return;
     const count = Number.isFinite(value) && value >= 0 ? value : 3;
-    counter.textContent = `${count} ${attemptLabel(count)} ¸brig`;
+    counter.textContent = `${count} ${attemptLabel(count)} √ºbrig`;
   };
 
   const showStatus = (root, msg, ok) => {
@@ -161,6 +161,8 @@
       const formKeyInput = root.querySelector('input[name=cb_formkey]');
       const renderedAtInput = root.querySelector('input[name=cb_rendered_at]');
       const honeypotInput = root.querySelector('input[name=website]');
+      const tipsToggle = root.querySelector('.cb-tips-toggle');
+      const tipsList = root.querySelector('.cb-tips');
       const initialRemaining = Number(root.getAttribute('data-initial-attempts') || '3');
 
       root.dataset.remaining = String(initialRemaining);
@@ -170,11 +172,29 @@
       if (passInput && passInput.value === '1') {
         setSubmitEnabled(form, true);
         if (btn) btn.disabled = true;
-        showStatus(root, 'Captcha best‰tigt. Du kannst jetzt absenden.', true);
+        showStatus(root, 'Captcha best√§tigt. Du kannst jetzt absenden.', true);
         lockTiles(root);
       } else {
         setSubmitEnabled(form, false);
         if (btn) btn.disabled = false;
+      }
+
+      if (tipsToggle && tipsList) {
+        const syncTips = (expanded) => {
+          const isExpanded = !!expanded;
+          tipsToggle.setAttribute('aria-expanded', String(isExpanded));
+          tipsList.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
+          tipsToggle.textContent = isExpanded ? 'Tipps ausblenden' : 'Tipps einblenden';
+          tipsList.style.display = isExpanded ? 'block' : 'none';
+          tipsList.classList.toggle('cb-tips--open', isExpanded);
+        };
+        const initialExpanded = tipsToggle.getAttribute('aria-expanded') === 'true'
+          || tipsList.getAttribute('aria-hidden') === 'false';
+        syncTips(initialExpanded);
+        tipsToggle.addEventListener('click', () => {
+          const expanded = tipsToggle.getAttribute('aria-expanded') === 'true';
+          syncTips(!expanded);
+        });
       }
 
       if (!btn || !supportsAjax()) return;
@@ -219,7 +239,7 @@
 
             let message;
             if (ok) {
-              message = 'Captcha best‰tigt. Du kannst jetzt absenden.';
+              message = 'Captcha best√§tigt. Du kannst jetzt absenden.';
               showStatus(root, message, true);
               updateGlobalStatus(message, remaining, true);
               if (passInput) passInput.value = '1';
@@ -249,7 +269,7 @@
             root.dataset.remaining = String(fallback);
             root.dataset.attemptsUsed = String(Math.max(0, 3 - fallback));
             updateAttempts(root, fallback);
-            const msg = 'Captcha-Pr¸fung fehlgeschlagen. Bitte sp‰ter erneut probieren.';
+            const msg = 'Captcha-Pr√ºfung fehlgeschlagen. Bitte sp√§ter erneut probieren.';
             showStatus(root, msg, false);
             updateGlobalStatus(msg, fallback, false);
             finish(false);

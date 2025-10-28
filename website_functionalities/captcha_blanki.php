@@ -137,8 +137,13 @@ class CaptchaBlanki {
             #'. htmlspecialchars($containerId) .'.captcha-blanki--error{background:#2c0000;border-color:#f04e4e;box-shadow:0 0 0 3px rgba(240,78,78,0.25);}
             #'. htmlspecialchars($containerId) .'.captcha-blanki--success{background:#082c16;border-color:#29a357;box-shadow:0 0 0 3px rgba(41,163,87,0.18);}
             #'. htmlspecialchars($containerId) .' .cb-attempts{color:#e0e0e0;}
+            #'. htmlspecialchars($containerId) .' .cb-tips-toggle{background:rgba(255,255,255,0.12);color:#f0f0f0;border:1px solid rgba(255,255,255,0.25);padding:6px 12px;font-size:0.9em;border-radius:6px;cursor:pointer;transition:background 0.2s ease,border-color 0.2s ease;}
+            #'. htmlspecialchars($containerId) .' .cb-tips-toggle:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.35);}
+            #'. htmlspecialchars($containerId) .' .cb-tips{display:none;margin:6px 0 0 0;padding-left:18px;font-size:0.9em;color:#dcdcdc;}
+            #'. htmlspecialchars($containerId) .' .cb-tips li{margin:4px 0;}
+            #'. htmlspecialchars($containerId) .' .cb-tips[aria-hidden="false"],#'. htmlspecialchars($containerId) .' .cb-tips.cb-tips--open{display:block;}
         </style>';
-        echo '<p class="cb-title"><strong>Bitte w&auml;hle die 4 Bilder aus, die im Blankensteinpark aufgenommen wurden.</strong></p>';
+        echo '<p class="cb-title"><strong>Bitte wähle die 4 Bilder aus, die im Blankensteinpark aufgenommen wurden.</strong></p>';
         $statusClass = 'cb-status';
         if ($statusMsg !== '') {
             $stateClass = ($statusColor === '#2ecc71') ? ' cb-status--success' : ' cb-status--error';
@@ -177,9 +182,17 @@ class CaptchaBlanki {
         $attemptLabel = ($initialAttempts === 1) ? 'Versuch' : 'Versuche';
         $attemptText = $initialAttempts . ' ' . $attemptLabel . ' übrig';
         $checkDisabledAttr = $alreadyPassed ? ' disabled' : '';
-        echo '<div class="cb-actions" style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">';
+        echo '<div class="cb-actions" style="margin-top:10px; display:flex; flex-direction:column; gap:10px; align-items:flex-start;">';
+        echo '<button type="button" class="cb-tips-toggle" aria-expanded="false">Tipps einblenden</button>';
+        echo '<ul class="cb-tips" aria-hidden="true">';
+        echo '<li>Im Blankensteinpark gibt es wenig Bäume</li>';
+        echo '<li>Auf der Wiese steht ein altes Gerüst</li>';
+        echo '<li>An der Seite des Parks ist der größte Zweiradhandel Deutschlands, auch in ein altes Gerüst reingebaut</li>';
+        echo '</ul>';
+        echo '<div class="cb-actions-row" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">';
         echo '<span class="cb-attempts" style="font-size:0.95em;color:#999;">'. htmlspecialchars($attemptText) .'</span>';
         echo '<button type="submit" name="cb_action" value="check" formnovalidate class="button cb-check-btn" style="background:#444;color:#fff;"'. $checkDisabledAttr .'>Captcha überprüfen</button>';
+        echo '</div>';
         echo '</div>';
         echo '</div>';
     }
