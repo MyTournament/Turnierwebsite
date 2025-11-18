@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
@@ -12,7 +12,7 @@ include_once 'variables.php'; //Variablen einbinden (Turniernummer) //Wichtig da
 // error_log($debug_message, 3, $log_file_path);
 
 //BULLEREI KOMMT
-// Fallback-Initialisierungen f�r lokale Umgebung
+// Fallback-Initialisierungen für lokale Umgebung
 if (!isset($websiteId)) { $websiteId = 1; }
 if (!isset($sperrung)) { $sperrung = 0; }
 $sqlWebsite = 'SELECT * FROM `System_Website` WHERE id = '. $websiteId .' ORDER BY ID';
