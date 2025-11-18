@@ -619,7 +619,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <ul class="actions">         
     <li><a href="#punktetabelle" class="button primary">🎯 Zur Punktetabelle</a></li>            
     </ul>
-    <p style="font-size: 0.8rem;"><i>Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. W?rde das Verliererteam keine Flasche leeren, w�re der Spielstand "3:0".</i></p>   
+    <p style="font-size: 0.8rem;"><i>Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. Würde das Verliererteam keine Flasche leeren, wäre der Spielstand "3:0".</i></p>   
     <?php  printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
     <a href="#spielplan" class="button">Zurück zur übersicht</a>  
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
@@ -914,6 +914,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         unset($_SESSION['flash_error_contact']);
     } ?>
     <p>Falls du Dinge hast, die du uns gerne mitteilen möchtest oder zum Beispiel dein Team wieder abmelden wollen solltest, ist hier der perfekte Ort dafür. Falls du dein Team abmelden möchtest, schreib bitte dein Teampasswort dazu.</p>
+    <!-- Alt: Kontaktformular (auskommentiert, um Spam zu vermeiden)
     <form method="post" action="website_functionalities/contact.php">
         <div class="fields">
             <div class="field half">
@@ -942,6 +943,77 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <li><input type="reset" value="Abbrechen" /></li>
         </ul>
     </form>
+    -->
+
+    <?php 
+        // Captcha vor E-Mail-Anzeige
+        require_once 'website_functionalities/captcha_blanki.php';
+        CaptchaBlanki::render('contact');
+    ?>
+    <div style="margin-top:20px;">
+        <button id="show-mail" class="button primary" disabled>E-Mail anzeigen</button>
+        <span id="mail-link" style="margin-left:10px;"></span>
+        <div id="mail-error" style="margin-top:8px;color:#c0392b;"></div>
+    </div>
+    <script>
+        (function() {
+            var btn = document.getElementById('show-mail');
+            var span = document.getElementById('mail-link');
+            var err = document.getElementById('mail-error');
+            var captcha = document.querySelector('#kontakt .captcha-blanki');
+
+            function captchaPassed() {
+                if (!captcha) return false;
+                if (captcha.dataset && captcha.dataset.passed === '1') return true;
+                var passInput = captcha.querySelector('input[name=cb_pass]');
+                return passInput && passInput.value === '1';
+            }
+
+            function setBtnState() {
+                if (!btn) return;
+                var ok = captchaPassed();
+                btn.disabled = !ok;
+                if (!ok) {
+                    span.innerHTML = '';
+                    if (err) { err.textContent = 'Bitte zuerst das Captcha best\u00e4tigen.'; }
+                } else if (err) {
+                    err.textContent = '';
+                }
+            }
+
+            function revealMail() {
+                var user = 'kummerkasten';
+                var domain = 'REDACTED.de';
+                var addr = user + '@' + domain;
+                var a = document.createElement('a');
+                a.href = 'mailto:' + addr;
+                a.textContent = addr;
+                span.innerHTML = '';
+                span.appendChild(a);
+                btn.style.display = 'none';
+            }
+
+            if (btn) {
+                btn.addEventListener('click', function(ev) {
+                    if (!captchaPassed()) {
+                        ev.preventDefault();
+                        setBtnState();
+                        return;
+                    }
+                    revealMail();
+                });
+            }
+
+            if (captcha) {
+                // Beobachte Captcha-Status (dataset / hidden input) und schalte Button frei
+                var observer = new MutationObserver(setBtnState);
+                observer.observe(captcha, { attributes: true, attributeFilter: ['data-passed', 'class'] });
+                setInterval(setBtnState, 800); // Fallback, falls weder Mutation noch Events feuern
+            } else {
+                if (btn) btn.disabled = true;
+            }
+        })();
+    </script>
 </article>
 
 <!-- ANMELDEN -->
@@ -1096,7 +1168,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
                 }
                 echo "<h3><a href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
-                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
                 echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
         ?>
@@ -1191,7 +1263,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
                 }
                 echo "<h3><a href='" . $link_solibeitrag . "'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
-                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
                 echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
             
@@ -1219,7 +1291,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- logincheck_failure -->
 <article id="logincheck_failure">
     <h1>Login fehlgeschlagen</h1>
-    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an kummerkasten@REDACTED.de</p>
+    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an <a href="#kontakt">die Orga</a></p>
     <a class="button" href='#'>Zurück zur Startseite</a>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
@@ -1228,7 +1300,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- edit_games_success -->
 <article id="edit_games_success">
     <h1>Danke für deinen Eintrag!</h1>
-    <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an <a href="#kontakt">die Orga</a>!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
@@ -1237,7 +1309,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- edit_games_failure -->
 <article id="edit_games_failure">
     <h1>Ups, da ist wohl etwas schiefgelaufen!</h1>
-    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an <a href="#kontakt">die Orga</a>!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>

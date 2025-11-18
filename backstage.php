@@ -646,7 +646,6 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
 <footer id="footer">
     <a href="https://www.strato.de/apps/CustomerService#/skl" class="button">Strato Kunden Login</a>
     <p><br/></p> 
-    <p class="copyright">Bei Fragen, wende dich an <a>kummerkasten@REDACTED.de</a></p>
 </footer>
                     
 
