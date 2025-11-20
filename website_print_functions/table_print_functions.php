@@ -1037,7 +1037,7 @@
         echo "</tbody></table>";
         echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
         echo"<br/><br/>";
-        echo "<div class='note'>Beim Losing Bracket wird kombiniert mit den Ergebnissen der Gruppenphase und KO-Phase. Es werden also alle Spiele, die das Team in diesem Turnier gespielt hat berücktsichtigt für die Wertung. Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge.</div>";
+        echo "<div class='note'>Beim Losing Bracket wird kombiniert mit den Ergebnissen der Gruppenphase. Es werden also alle Spiele, die das Team in diesem Turnier gespielt hat berücktsichtigt für die Wertung. Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge.</div>";
         
     }
 
