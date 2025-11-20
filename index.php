@@ -409,21 +409,21 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- INFOS -->
 <article id="allgemeine_info">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 4, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href="#info" class="button">Zurück</a>
+    <!--<a href="#info" class="button">Zurück</a>-_>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="map">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 6, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href="#info" class="button">Zurück</a>
+    <!--<a href="#info" class="button">Zurück</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- REGELN -->
 <article id="regeln">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -476,40 +476,40 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "</div>";
     }
     ?> 
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>                 
 </article>
 <!-- SPIELER INFO - LOGIN -->                       
 <article id="spielerinfo_login">
-    <a href="#teams" class="button">Zurück zu den Teams</a></br></br>
+    <!--<a href="#teams" class="button">Zurück zu den Teams</a></br></br>-->
     <?php 
     $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
     printSpielerInfoLogin($TurnierID, $conn, $spielerId); 
     ?>
-    </br></br><a href="#teams" class="button">Zurück zu den Teams</a>
+    <!--</br></br><a href="#teams" class="button">Zurück zu den Teams</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- SPIELER INFO -->                       
 <article id="spielerinfo">
-    <a href="#teams" class="button">Zurück zu den Teams</a></br></br>
+    <!--<a href="#teams" class="button">Zurück zu den Teams</a></br></br>-->
     <?php 
     $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
     printSpielerInfo($TurnierID, $conn, $spielerId); 
     ?>
-    </br></br><a href="#teams" class="button">Zurück zu den Teams</a>
+    <!--</br></br><a href="#teams" class="button">Zurück zu den Teams</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- TEAM INFO -->                       
 <article id="teaminfo">
-    <a href="#" class="button">Zurück zur Startseite</a></br></br>
+    <!--<a href="#" class="button">Zurück zur Startseite</a></br></br>-->
     <?php 
     $teamId = isset($_GET['teamId']) ? $_GET['teamId'] : null;
     printTeamInfo($TurnierID, $conn, $teamId); 
     ?>
-    </br></br><a href="#" class="button">Zurück zur Startseite</a>
+    <!--</br></br><a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -561,7 +561,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
               </div>
               <div class="phase-card">
                 <h3><img class="icon" src="images/icon/sterni1.png" alt="Icon"> Losing-Bracket</h3>
-                <p class="muted">Im Losing-Bracket geht es für ausgeschiedene Teams weiter - mit Chancen auf bessere Platzierungen und zusätzliche Matches.</p>
+                <p class="muted">Im Losing-Bracket geht es für ausgeschiedene Teams weiter - mit Chancen auf eine bessere Endplatzierung und zusätzliche Matches.</p>
                 <a href="#losingbracket" class="button primary">Zum Losing-Bracket</a>
               </div>
             </div>
@@ -601,14 +601,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "</div>";
     }
     ?>
-    <a href='#' class='button'>Zurück zur Startseite</a>
+    <!--<a href='#' class='button'>Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- SPIELPLAN GRUPPEN -->
 <article id="gruppen">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 28, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href="#teams" class="button">Zurück zu den Teams</a>
+    <!--<a href="#teams" class="button">Zurück zu den Teams</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -616,22 +616,20 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="gruppenphase">
     <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
     <h1 class="section-header">Gruppenphase</h1>
-    <ul class="actions">         
-    <li><a href="#punktetabelle" class="button primary">🎯 Zur Punktetabelle</a></li>            
-    </ul>
-    <p style="font-size: 0.8rem;"><i>Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. Würde das Verliererteam keine Flasche leeren, wäre der Spielstand "3:0".</i></p>   
+    <div class='note' style="font-size: 0.8rem;">Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. Würde das Verliererteam keine Flasche leeren, wäre der Spielstand "3:0".</div>
+    <a href="#punktetabelle" class="button primary">🎯 Zur Punktetabelle</a>
+    <br/><br/>
     <?php  printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <a href="#spielplan" class="button">Zurück zur übersicht</a>  
+    <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>  -->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>                          
 </article>
 <!-- Punktetabelle -->
 <article id="punktetabelle">
     <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 12, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->                      
-    <a href="#gruppenphase" class="button">Zurück zum Spielplan</a>
+    <!--<a href="#gruppenphase" class="button">Zurück zum Spielplan</a>-->
     <h1>Punktetabelle der Gruppenphase</h1>
     <?php printPunktetabelleGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?>
-    
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>  
 </article>
@@ -640,7 +638,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h2>KnockOut-Phase</h2>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
     <?php printKO_PhaseTabellen($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <a href="#spielplan" class="button">Zurück zur übersicht</a>
+    <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>-->
     <p></br></p>
     <p></br></p>
 <!-- Losing Bracket -->
@@ -655,7 +653,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     printSpielplanLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
     printPunktetabelleLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
     ?>
-    <a href="#spielplan" class="button">Zurück zur Übersicht</a>
+    <!--<a href="#spielplan" class="button">Zurück zur Übersicht</a>-->
     <p></br></p> <!-- Abst??nde unten damit Button auf Handys nicht von Cookiewarnung Oberdeckt wird -->
     <p></br></p>  
 </article>
@@ -663,59 +661,59 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="turnierbaum">
     <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->   
     <h1>Turnierbaum der KO-Phase <img src="images/icon/sterni1.png" width="40" height="40" border="10" alt="Home"></h1>
-    <p>Hier k?nnt ihr nachverfolgen, wie sich die verschiedenen Matches ergeben. In einem K?stchen steht immer das Gewinnerteam eines Matches und in der Spalte rechts daneben das Gewinnerteam der n?chsten Stufe.</p>
+    <p>Hier könnt ihr nachverfolgen, wie sich die verschiedenen Matches ergeben. In einem Kästchen steht immer das Gewinnerteam eines Matches und in der Spalte rechts daneben das Gewinnerteam der nächsten Stufe.</p>
     <?php printTurnierbaum($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus); ?>
     
-    <a href="#kophase" class="button">Zurück zur KO-Phase</a>
+    <!--<a href="#kophase" class="button">Zurück zur KO-Phase</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>  
 </article>
 <!-- IMPRESSUM -->
 <article id="impressum">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 14, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- datenschutzerkl�rung -->
 <article id="datenschutzerklaerung">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 17, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="info">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 15, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- ZEITPLAN -->
 <article id="zeitplan">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 20, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
-    <a href="#info" class="button">Zurück</a>
+    <!--<a href="#info" class="button">Zurück</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- FAQ -->
 <article id="faq">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 21, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
-    <a href="#info" class="button">Zurück</a>
+    <!--<a href="#info" class="button">Zurück</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- PLATZHALTER -->
 <article id="platzhalter">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 16, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
-    <a href="/" class="button">Zurück zur Startseite</a>
+    <!--<a href="/" class="button">Zurück zur Startseite</a>-->
     <h5><br/></h5>  
 </article>
 
 <!-- schiedsrichter*innen -->
 <article id="schiedsrichterinnen">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 24, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href="#info" class="button">Zurück</a>
+    <!--<a href="#info" class="button">Zurück</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -723,7 +721,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- schiedsrichter*innen -->
 <article id="REDACTED_simulator">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -731,7 +729,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- Merch -->
 <article id="merch">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 34, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -807,7 +805,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </div><!-- content -->
     </div><!-- container -->
     
-    <a href="#info" class="button">Zurück</a>
+    <!--<a href="#info" class="button">Zurück</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -820,7 +818,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p>Hier geht's zur alten Website (2017-2020)</p>
     <a href="https://2018-20.REDACTED.de" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -894,7 +892,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id='bullerei_kommt'>
     <div style='text-align: center'> 
         <?php printBullereiKommt($conn, $websiteId, $TurnierID) ?>
-        <a href='#' class='button'>Zurück</a>
+        <!--<a href='#' class='button'>Zurück</a>-->
         <h5><br /></h5>  
     </div>
 </article>

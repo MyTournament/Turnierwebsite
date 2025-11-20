@@ -85,7 +85,7 @@
 
     <!-- FALL: FINALISIEREN -->
     <?php }else if($action == 'final' || $action == 'final_group'){ ?>
-        <p>Hier kannst du die Begegnung zwischen den beiden Teams finalisieren. Dadurch weiß die Website, dass ihr keine weiteren Spiele gegeneinander mehr macht und das Gewinnerteam für die nächsten Spiele berechnet werden kann.</p>
+        <div class="note">Hier kannst du die Begegnung zwischen den beiden Teams finalisieren. Dadurch weiß die Website, dass ihr keine weiteren Spiele gegeneinander mehr macht und das Gewinnerteam für die nächsten Spiele berechnet werden kann.</div>
     <?php }else if($action == 'unfinal'){ ?>
         <p>Falls dieser Spielstand doch noch einmal bearbeitet werden soll, kann die Finalisierung hier aufgehoben werden.</p>
     <?php } ?>
