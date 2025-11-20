@@ -551,12 +551,16 @@
             $platzierungsZaehler++;
         }
         echo "</ul>";
+        echo "<br/>";
+        echo"<div class='note'>Die Endplatzierung für alle Teams der KO-Phase ergibt sich durch den Zeitpunkt des Ausscheidens. Alle Teams, die in der Gruppenphase ausgeschieden sind, haben im Losing Bracket die Möglichkeit, ihre Endplatzierung untereinander noch zu verbessern. Für die Wertung zählen dann alle Spiele der Gruppenphase und des Losing Brackets. Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge.</div>";
+        
         
     }
 
     function printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, $action, $test_turnier_id){
         if($gameEditMode == 1){
             echo "<h2 style='color:#00FF00'>Bearbeitungsmodus</h2>";
+            echo "<div class='note' style='font-size: 0.6rem;'>";
             echo "<ul class='alt'>";
             echo "<li style='color:#00FF00'><button style='background-color:#7700FF;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' class='button primary'>+</button> Über die Plus-Buttons kannst du neue Spielstände hinzufügen.</li>";
             //echo "<li style='color:#00FF00'><button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>3:0</button> Ein Spielstand ist nicht korrekt? Dann tippe einfach auf ihn, gib das Passwort deines Teams ein und ändere oder lösche den Spielstand.</li>";
@@ -569,15 +573,14 @@
             
             if($nurOberesDreieck === 1 || $action === "#kophase") { 
                     echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Sobald ihr alle Spiele gegen ein bestimmtes Team eingetragen habt müsst ihr noch einmal das grüne Häkchen anklicken, damit die Website weiß, dass sie auf keine Spiele mehr warten muss und schon die Teams schon für die kommenden Spiele berechnen kann.</li>";}
-            else {  echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Mit diesen Buttons tragt ihr ein, dass ein Spiel ergebnislos bleibt, also bspw. nicht stattfinden kann. </li>";}
+            else {  echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Mit diesen Buttons markiert ihr ein Spiel als final, also entweder weil alle Spiele dieser Begegnung bespielt wurden oder weil das Match ergebnislos bleibt. </li>";}
             echo "<li style='color:#00FF00'><button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&#9733;</button> Dieser Button zeigt an, dass ein Spiel als final markiert wurde. Solltet ihr nachträglich doch noch ein Spiel eintragen wollen, könnt ihr euch an einen Administrator wenden.</li>";
             //grey: #888888
-            echo "</ul>";
             if(!$expertenmodus){
                 echo "
                     <form style='color:#00FF00' method='post' action=?test_turnier_id=$test_turnier_id$action>      
                         <button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>E</button>
-                        <p>Expertenmodus</p>  
+                        <p>Expertenmodus (nur für Admins - kann genutzt werden um Begegnungen zu verändern/zu sperren)</p>  
                         <input type='hidden' name='gameEditMode' value='1'/>
                         <input type='hidden' name='expertenmodus' value='1'/>
                     </form>
@@ -592,6 +595,9 @@
                     <input type='hidden' name='expertenmodus' value='0'/>
                 ";
             }
+            echo "</ul>";
+            echo "</div>";
+            
             echo "
             <form style='color:#00FF00' method='post' action=?test_turnier_id=$test_turnier_id$action>      
                 <button  style='background-color:green;' name='content' class='button primary'>Bearbeitungsmodus verlassen</button>  
@@ -692,7 +698,7 @@
                 if($gameEditMode == 1){
                     ?>
                     <form method='post' action='#changegame' style='margin: 0 0 0 0;'>
-                        <button style='text-align="center";background-color:#7700FF; padding: 0 0.3rem; height: 1.5rem; line-height: 1.3rem; font-size: 1.3rem;'>
+                        <button style='text-align="center";background-color:#7700FF; padding: 0 0.3rem; height: 2rem; width: 2rem; line-height: 1.3rem; font-size: 1.3rem; text-align: center;'>
                             +
                         </button>
                         <input type='hidden' name='action' value='add'/>
@@ -918,8 +924,7 @@
 
     function printPunktetabelleLosingBracket($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
         echo "<h2>Punktetabelle</h2>";
-        echo "<h3>Kombiniert mit den Ergebnissen der Gruppenphase und KO-Phase</h3>";
-        echo "<p>Es werden also alle Spiele, die das Team in diesem Turnier gespielt hat berücktsichtigt für die Wertung</p>";
+        echo "<br/><br/>";
         echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th><th>Sieg%</th></tr></thead><tbody>";
 
         // Teilnehmer im Losing Bracket (ko_finallevel = 20)
@@ -998,11 +1003,10 @@
 
         // Sortierung wie Gruppenphase: manuelle Platzierung asc, Punkte desc, Flaschen desc, Spiele desc
         usort($stats, function($a, $b){
-            if ($a['man_pos'] !== $b['man_pos']) return ($a['man_pos'] < $b['man_pos']) ? -1 : 1;
             if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] > $b['punkte']) ? -1 : 1;
             if ($a['flaschen'] !== $b['flaschen']) return ($a['flaschen'] > $b['flaschen']) ? -1 : 1;
             if ($a['spiele'] !== $b['spiele']) return ($a['spiele'] > $b['spiele']) ? -1 : 1;
-            return 0;
+            return ($a['id'] < $b['id']) ? -1 : 1;
         });
 
         // Ausgabe
@@ -1031,6 +1035,10 @@
         }
 
         echo "</tbody></table>";
+        echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
+        echo"<br/><br/>";
+        echo "<div class='note'>Beim Losing Bracket wird kombiniert mit den Ergebnissen der Gruppenphase und KO-Phase. Es werden also alle Spiele, die das Team in diesem Turnier gespielt hat berücktsichtigt für die Wertung. Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge.</div>";
+        
     }
 
     function printPunktetabelleGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
@@ -1075,6 +1083,10 @@
             </table>
         <?php
         } 
+        echo"<div class='note'>Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge. Falls dann immernoch Gleichstand sein sollte, zählt der direkte Vergleich. Sollte euch das auffallen, sagt am besten der Orga Bescheid, weil der direkte Vergleich manuell eingetragen werden muss</div>";
+        echo"<br/><br/>";
+        echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
+        echo"<br/><br/>";
     }
 
     function printKO_PhaseTabellen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
@@ -1206,6 +1218,8 @@
             </table>";
             $ko_finallevel--; //Zähler dekrementieren (nächste Finalstufe)
         }
+        echo"<br/><br/>";
+        echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
     }
 
     function printKuerzelWithLink($conn, $teamId){
