@@ -70,19 +70,64 @@
 
     <!-- FALL: HINZUFÜGEN, ÄNDERN ODER LÖSCHEN -->
     <?php if($action == 'add' || $action == 'editOrDelete'){ ?>
-        <ul class="actions">
-            <?php echo "<p style='font-size: 2.25rem'>$heimteam</p>"; ?>
-            <li><input type="number" min="0" max="3" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo $biereheimteam ?>' placeholder="Flaschen 1*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore><p><i>Ausgetrunkene Flaschen*</i></p></li>
-            <li><h1>:</h1></li>
-            <li><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo $biereauswaertsteam ?>' placeholder="Flaschen 2*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore><p><i>Ausgetrunkene Flaschen*</i></p></li>
-            <?php echo "<p style='font-size: 2.25rem'>$auswaertsteam</p>"; ?>
-            <!-- values übergeben -->
-            <input type='hidden' name='heimteam' value='<?php echo $heimteam ?>'/>
-            <input type='hidden' name='auswaertsteam' value='<?php echo $auswaertsteam ?>'/>
-            <input type='hidden' name='spielId' value='<?php echo $spielId ?>'/> <!-- nur für editOrDelete relevant -->
+        <style>
+            .score-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: clamp(0.35rem, 1.2vw, 0.75rem);
+                flex-wrap: nowrap;
+                white-space: nowrap;
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                width: 100%;
+            }
+            .score-row > li {
+                flex-shrink: 1;
+                min-width: 0;
+            }
+            .score-row .team-label {
+                flex: 1 1 0;
+                font-size: clamp(1.25rem, 4vw, 2.25rem);
+                text-align: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .score-row .score-input {
+                flex: 0 1 90px;
+                min-width: 0;
+            }
+            .score-row .score-input input {
+                width: 100%;
+                min-width: 0;
+                text-align: center;
+            }
+            .score-row .score-separator {
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .score-note {
+                text-align: center;
+                margin: 0.35rem 0 0.75rem;
+            }
+        </style>
+        <?php echo '<h1>' . htmlspecialchars($heimteam, ENT_QUOTES, 'UTF-8') . ' vs. ' . htmlspecialchars($auswaertsteam, ENT_QUOTES, 'UTF-8') . '</h1>'; ?>
+        <ul class="actions score-row fixed">
+            <li class="team-label"><?php echo $heimteam; ?></li>
+            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo $biereheimteam ?>' placeholder="Flaschen 1*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
+            <li class="score-separator"><span style='font-size: clamp(1.4rem, 4vw, 2.25rem)'>:</span></li>
+            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo $biereauswaertsteam ?>' placeholder="Flaschen 2*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
+            <li class="team-label"><?php echo $auswaertsteam; ?></li>
         </ul>
-        <p>Hinweis: Wenn du das Spielergebnis löschen möchtest, weil es nur versehentlich eingetragen wurde, kannst du beide Felder oben frei lassen.</p>
-
+        <div class="score-note"><b>(Ausgetrunkene Flaschen)</b></div>
+        <!-- values ?bergeben -->
+        <input type='hidden' name='heimteam' value='<?php echo $heimteam ?>'/>
+        <input type='hidden' name='auswaertsteam' value='<?php echo $auswaertsteam ?>'/>
+        <input type='hidden' name='spielId' value='<?php echo $spielId ?>'/> <!-- nur f?r editOrDelete relevant -->
+        <div class="note">Falls ein Spielstand wieder gelöscht werden soll, müsst ihr die Orga ansprechen (Löschen geht nur mit Admin-Accounts)</div>
     <!-- FALL: FINALISIEREN -->
     <?php }else if($action == 'final' || $action == 'final_group'){ ?>
         <div class="note">Hier kannst du die Begegnung zwischen den beiden Teams finalisieren. Dadurch weiß die Website, dass ihr keine weiteren Spiele gegeneinander mehr macht und das Gewinnerteam für die nächsten Spiele berechnet werden kann.</div>
