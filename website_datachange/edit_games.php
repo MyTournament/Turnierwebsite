@@ -4,6 +4,10 @@ include_once '../database/db_connection.php';
 include_once '../website_datachange/edit_interface.php';
 //##########################################################
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+ob_start();
 echo "<script>console.log('Testausgabe 1')</script>";
 
 //Variablen speichern
@@ -109,12 +113,15 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_success");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        exit;
     }
 
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        exit;
     }
 
     //echo "<script>console.log('Das Spiel wurde erfolgreich geändert. $successfulLogin $spielGehoertZuTeam')</script>";
@@ -128,12 +135,15 @@ if ($action == 'Ändern') {
       $test_turnier_id = $_GET['test_turnier_id'];
       if($test_turnier_id==NULL){
           header("Location: /#edit_games_failure");
+          exit;
       }else{
           header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+          exit;
       }
 
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+        exit;
     }
 
     //echo "<script>console.log('Das Spiel wurde nicht geändert.')</script>";
@@ -153,12 +163,15 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_success");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        exit;
     }
 
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        exit;
     }
 
     //echo "<script>console.log('Das Spiel wurde erfolgreich gelöscht.')</script>";
@@ -171,13 +184,16 @@ if ($action == 'Ändern') {
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
-        header("Location: /#edit_games_failure");
-    }else{
-        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
-    }
+          header("Location: /#edit_games_failure");
+          exit;
+      }else{
+          header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+          exit;
+      }
 
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+        exit;
     }
 
     //echo "<script>console.log('Das Spiel wurde nicht gelöscht..')</script>";
@@ -187,8 +203,23 @@ if ($action == 'Ändern') {
 }else if($action == 'Eintragen'){
   if($accountDarfSpieleBearbeiten == 1 || ($successfulTeamLogin == 1 && $spielGehoertZuTeam == 1)){ //Account-Login oder Team-Login && Spiel gehört zu Team
     echo "<script>console.log('Testausgabe 4')</script>";
+    
     $sqlInsertSpiel = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
+    $insertParams = array(
+      'conn_set' => isset($conn),
+      'TurnierID' => $TurnierID,
+      'bn' => $bn,
+      'ort' => 'edit_games.php 3',
+      'sql' => $sqlInsertSpiel,
+      'begegnungId' => $begegnungId,
+      'Flaschen1' => $flaschen1,
+      'Flaschen2' => $flaschen2
+    );
+    echo "<script>console.log('SQL insert params', " . json_encode($insertParams) . ");</script>";
+    echo "<script>console.log('before myDb_execute insert')</script>";
+
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php 3",$sqlInsertSpiel, array($begegnungId, $_POST['Flaschen1'], $_POST['Flaschen2'], $bn));
+    echo "<script>console.log('after myDb_execute insert')</script>";
     
     echo "<script>console.log('Testausgabe 5')</script>";
     
@@ -217,18 +248,21 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_success");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        exit;
     }
-    echo "<script>console.log('Das Spiel wurde erfolgreich eingetragen. $successfulLogin $spielGehoertZuTeam')</script>";
   }else{ //Team-Login
     
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_failure");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+        exit;
     }
 
     //echo "<script>console.log('Das Spiel wurde nicht eingetragen.')</script>";
@@ -244,8 +278,10 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_success");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        exit;
     }
 
     //echo "<script>console.log('Das Spiel wurde erfolgreich finalisiert. $successfulLogin $spielGehoertZuTeam')</script>";
@@ -255,8 +291,10 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_failure");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+        exit;
     }
 
     //echo "<script>console.log('Das Spiel wurde nicht finalisiert.')</script>";
@@ -272,8 +310,10 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_success");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        exit;
     }
 
   }else{ //Team-Login
@@ -282,8 +322,10 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_failure");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+        exit;
     }
 
     //echo "<script>console.log('Die Begegnung wurde nicht unfinalisiert...')</script>";
@@ -310,8 +352,10 @@ if ($action == 'Ändern') {
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_failure");
+        exit;
     }else{
         header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+        exit;
     }
 
     //echo "<script>console.log('Die Begegnung wurde nicht unfinalisiert...')</script>";
