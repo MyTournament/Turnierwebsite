@@ -384,12 +384,12 @@ if (php_sapi_name() !== 'cli') {
 // Losing Bracket: einfache Hülle (Platzhalter für Logik)
     function update_losing_bracket($conn, $TurnierID){
         // Flags für KO-Einzug laden
-        $sqlFlags = 'SELECT einzug_ko_manuell_anlegen, einzug_ko_fertig_manuell_angelegt FROM Turnier_Main WHERE id = ' . (int)$TurnierID . ' LIMIT 1';
+        $sqlFlags = 'SELECT einzug_ko_manuell_anlegen, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . (int)$TurnierID . ' LIMIT 1';
         $resultFlags = $conn->query($sqlFlags);
-        $einzug_ko_manuell_anlegen = 0; $einzug_ko_fertig_manuell_angelegt = 0;
+        $einzug_ko_manuell_anlegen = 0; $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = 0;
         if ($resultFlags && ($row = $resultFlags->fetch_assoc())) {
             $einzug_ko_manuell_anlegen = (int)$row['einzug_ko_manuell_anlegen'];
-            $einzug_ko_fertig_manuell_angelegt = (int)$row['einzug_ko_fertig_manuell_angelegt'];
+            $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = (int)$row['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'];
         }
 
         // Prüfen, ob Gruppenphase komplett ist (alle Gruppenspiele final)
@@ -416,7 +416,7 @@ if (php_sapi_name() !== 'cli') {
                 return;
             }
         } else {
-            if ($einzug_ko_fertig_manuell_angelegt != 1) {
+            if ($einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei != 1) {
                 echo "<script>console.log('losing_bracket: manuelle Einzüge noch nicht fertig.')</script>";
                 return;
             }
@@ -834,6 +834,17 @@ if (php_sapi_name() !== 'cli') {
 
 
             
+            $schalterDreieck = 0;
+            $gruppenphase_vorbei = 0;
+            $sqlSchalter = 'SELECT nurOberesDreieckInGruppenphase, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . $TurnierID;
+            $resultSchalter = $conn->query($sqlSchalter);
+            if ($resultSchalter && ($rowSchalter = $resultSchalter->fetch_assoc())) {
+                $schalterDreieck = (int)$rowSchalter['nurOberesDreieckInGruppenphase'];
+                $gruppenphase_vorbei = (int)$rowSchalter['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'];
+            }
+            // Ab Gruppenphase-vorbei-Switch neue Gruppenspiele direkt als final markieren (Status 5)
+            $statusGruppenphaseNeu = ($gruppenphase_vorbei === 1) ? 5 : 1;
+            
             //STATUS SETZEN
                 //Hier wird allen Begegnungen der Status auf 2 (als veraltet vormarkiert) gesetzt, immer wenn eine Begegung im folgenden dann bei einer Berechnung auftaucht, wird der Status auf 1 (nicht veraltet) gesetzt
                 //Am Ende werden dann alle Begegnung mit Status veraltet gelöscht
@@ -860,11 +871,6 @@ if (php_sapi_name() !== 'cli') {
                             $TeamZeileID = $rowTeamZeile['id'];
                             $TeamSpalteID =$rowTeamSpalte['id'];
                             //SCHALTER -> soll in Gruppenphasentabelle nur obere Hälfte gefüllt werden -> 1
-                            $sqlSchalter = 'SELECT * FROM Turnier_Main WHERE id = ' . $TurnierID . '';
-                            $resultSchalter = $conn->query($sqlSchalter);
-                            while ($rowSchalter = $resultSchalter->fetch_assoc()) {
-                                $schalterDreieck = $rowSchalter['nurOberesDreieckInGruppenphase'];
-                            }
                             $anlegen = 0;
                             if($schalterDreieck == 1){
                                 $schonVorhanden = 0;
@@ -892,7 +898,7 @@ if (php_sapi_name() !== 'cli') {
                                     if ( empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // nur wenn empty
                                         //$stmtBegegnungGruppenphase = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?);");
                                         //Grund für den ganzen ausgeklammerten Code: Ich wollte SQL-Injection verhindern, leider funzt der Code aus irgendeinem Grund hier nicht, deswegen bin ich zurück zur alten Version gegangen. Hier kann nämlich eh keine SQL Injection passieren weil ID auto-generiert wird und der einzige Parameter ist
-                                        $stmtBegegnungGruppenphase = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $TeamZeileID, $TeamSpalteID, NULL, 0, NULL, 1);");
+                                        $stmtBegegnungGruppenphase = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, $TeamZeileID, $TeamSpalteID, NULL, 0, NULL, $statusGruppenphaseNeu);");
                                         //INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, 60, 69, NULL, 0, NULL, 0)
                                         /*$stmtBegegnungGruppenphase->bind_param("ssssssss", NULL, $TeamZeileID, $TeamSpalteID, NULL, 0, NULL, 0, 0);*/
                                         if ( $stmtBegegnungGruppenphase === false ){
@@ -900,7 +906,7 @@ if (php_sapi_name() !== 'cli') {
                                         }
                                         $stmtBegegnungGruppenphase->execute();
                                     }else{ //Wenn Begegnung schon existiert, dann muss der Status geupdated werden
-                                        $stmtNichtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET status = 1 WHERE status <> 4 AND status <> 5 AND fk_heimteam = '$TeamZeileID' AND fk_auswaertsteam = '$TeamSpalteID' AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID')");
+                                        $stmtNichtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET status = $statusGruppenphaseNeu WHERE status <> 4 AND status <> 5 AND fk_heimteam = '$TeamZeileID' AND fk_auswaertsteam = '$TeamSpalteID' AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID')");
                                         if ( $stmtNichtVeralteteBegegnung === false ){
                                             throw new Exception('veraltet-Status der Gruppenphase konnte nicht geupdated werden.');
                                         }
@@ -984,9 +990,11 @@ if (php_sapi_name() !== 'cli') {
                     //+ herausfinden ob schon fertig angelegt wurde
                     $sql_einzug_ko_manuell_anlegen = 'SELECT * FROM Turnier_Main WHERE id = '. $TurnierID .'';
                     $result_einzug_ko_manuell_anlegen = $conn->query($sql_einzug_ko_manuell_anlegen);
+                    $einzug_ko_manuell_anlegen = 0;
+                    $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = 0;
                     while ($row_einzug_ko_manuell_anlegen = $result_einzug_ko_manuell_anlegen->fetch_assoc()) {
                         $einzug_ko_manuell_anlegen = $row_einzug_ko_manuell_anlegen["einzug_ko_manuell_anlegen"];
-                        $einzug_ko_fertig_manuell_angelegt = $row_einzug_ko_manuell_anlegen["einzug_ko_fertig_manuell_angelegt"];
+                        $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = $row_einzug_ko_manuell_anlegen["einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei"];
                     }
                     echo "<script>console.log('TurnierID: " . $TurnierID . "' );</script>";
                     echo "<script>console.log('einzug_ko_manuell_anlegen: " . $einzug_ko_manuell_anlegen . "' );</script>";
@@ -1242,7 +1250,7 @@ if (php_sapi_name() !== 'cli') {
                         //Dadurch wbekommen dann schon alle Teams eine Platzierung
                         //Dadurch ist innerhalb dieser Bedingung hier die zweite Bedingung theoretisch redundant, aber stört auch nicht
                         //Deswegen: Nur wenn der manuelle zweite Schalter aussagt, dass auch fertig platziert wurde:
-                        if($einzug_ko_fertig_manuell_angelegt == 1){
+                        if($einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei == 1){
                             echo "<script>console.log('db_update - rangliste: Startpositionenen der KO-Phase werden manuell angelegt' );</script>";
                             //Alle Teams die keinen manuellen KO-Platz bekommen, sollen Platzierung bekommen
                             //Deswegen wird erst geschaut, welche Teams (EGAL AUS WELCHER GRUPPE) einen KO-Platz haben
