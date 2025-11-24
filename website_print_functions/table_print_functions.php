@@ -61,7 +61,7 @@
                 </thead>
                 <tbody>
                     <tr>";
-            $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
+            $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` NOT IN (3,6) AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
             $result = $conn->query($sql);
             while (!empty($row = $result->fetch_assoc())) {
                 $begegnungId = $row['id'];
@@ -343,7 +343,7 @@
                 $zaehlerForKoPosition = 1;
                 while($zaehlerForKoPosition < pow(2,($ko_finallevel-2))+1){ //Zähler bis zu 2^x (x=Finalstufe, zB Stufe 4 hat 2^(4-1)=8 ) ||| -2 weil ja 2 und nicht 1 das Finale ist
                     //Begegnung (eine) finden, die zum Zähler passt + restliche Bed. (zB der vorherigen  Stufe & des aktuellen Turniers)
-                    $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC'; //AND NOT fk_siegerteam = NULL 
+                    $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC'; //AND NOT fk_siegerteam = NULL 
                     $resultBegegnung = $conn->query($sqlBegegnung);
                     $siegerGefunden = false;
                     $zumindestBegegnungGefunden = false;
@@ -813,14 +813,14 @@
                                     // Erst alle Begegnungen filtern und dann dazu die passenden Spiele suchen
                                     $leereZeile = 1;
                                     //CHECKEN OB ES KEINE BEGEGNUNG GIBT - WENN JA DANN "-" ausgeben
-                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
+                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
                                     $resultBegegnung = $conn->query($sqlBegegnung);
                                     if ( empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
                                         echo "<td style='text-align:center; padding: 0.1em 0.3em !important; white-space: nowrap;'>";  // Tabellen-Feld eröffnen
                                         echo " - ";
                                     }
                                     //SONST BEGEGNUNGEN AUSGEBEN
-                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
+                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
                                     $resultBegegnung = $conn->query($sqlBegegnung);
                                     while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
                                         echo "<td style='text-align:center; padding: 0.05em 0.2em !important; white-space: nowrap;'>";   // Tabellen-Feld eröffnen
@@ -858,7 +858,7 @@
 
             // Teilnehmer-Teams für LB dynamisch aus Begegnungen (ko_finallevel=20), nur dieses Turnier
             $teams = [];
-            $sqlTeamsLB = 'SELECT DISTINCT t.id FROM Turnier_Team t WHERE t.geloescht = 0 AND t.fk_turnier = ' . $TurnierID . ' AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) ORDER BY t.id';
+            $sqlTeamsLB = 'SELECT DISTINCT t.id FROM Turnier_Team t WHERE t.geloescht = 0 AND t.fk_turnier = ' . $TurnierID . ' AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20) OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20)) ORDER BY t.id';
             $resTeamsLB = $conn->query($sqlTeamsLB);
             while ($resTeamsLB && ($rt = $resTeamsLB->fetch_assoc())) { $teams[] = (int)$rt['id']; }
 
@@ -897,7 +897,7 @@
                         echo "<td style='text-align:center; padding: 0.1em 0.3em !important; white-space: nowrap;'> - </td>";
                         continue;
                     }
-                    $sqlBeg = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND ((fk_heimteam = ' . $rowTid . ' AND fk_auswaertsteam = ' . $colTid . ') OR (fk_heimteam = ' . $colTid . ' AND fk_auswaertsteam = ' . $rowTid . ')) AND ko_finallevel = 20 ORDER BY ID';
+                    $sqlBeg = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND ((fk_heimteam = ' . $rowTid . ' AND fk_auswaertsteam = ' . $colTid . ') OR (fk_heimteam = ' . $colTid . ' AND fk_auswaertsteam = ' . $rowTid . ')) AND ko_finallevel = 20 ORDER BY ID';
                     $resBeg = $conn->query($sqlBeg);
                     if ($resBeg && empty($resBeg->fetch_assoc())) {
                         echo "<td style='text-align:center; padding: 0.1em 0.3em !important; white-space: nowrap;'> - </td>";
@@ -932,8 +932,8 @@
         $sqlTeamsLB = 'SELECT DISTINCT t.id, t.name, t.kuerzel, t.gruppenphase_manuelle_platzierung, t.siegesquote '
                     . 'FROM Turnier_Team t '
                     . 'WHERE t.geloescht = 0 AND t.fk_turnier = ' . (int)$TurnierID . ' '
-                    . 'AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) '
-                    . 'OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) '
+                    . 'AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20) '
+                    . 'OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20)) '
                     . 'ORDER BY t.id';
         $resTeamsLB = $conn->query($sqlTeamsLB);
         while ($resTeamsLB && ($rt = $resTeamsLB->fetch_assoc())) {
@@ -959,7 +959,7 @@
             $spiele = 0; $flaschen = 0; $punkte = 0;
 
             // Heimspiele
-            $sqlH = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_heimteam = ' . $tid . ' ORDER BY id';
+            $sqlH = 'SELECT id FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND fk_heimteam = ' . $tid . ' ORDER BY id';
             $resH = $conn->query($sqlH);
             while ($resH && ($rb = $resH->fetch_assoc())) {
                 $bid = (int)$rb['id'];
@@ -975,7 +975,7 @@
             }
 
             // Auswärtsspiele
-            $sqlA = 'SELECT id FROM Turnier_Begegnung WHERE status <> 3 AND fk_auswaertsteam = ' . $tid . ' ORDER BY id';
+            $sqlA = 'SELECT id FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND fk_auswaertsteam = ' . $tid . ' ORDER BY id';
             $resA = $conn->query($sqlA);
             while ($resA && ($rb = $resA->fetch_assoc())) {
                 $bid = (int)$rb['id'];
@@ -1122,7 +1122,7 @@
                 <tbody>
                     <tr>";
                         // Erst alle Begegnungen des aktuellen Turniers (Heim oder Auswärtsspiel) filtern und dann dazu die passenden Spiele suchen
-                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
+                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
                         $resultBegegnung = $conn->query($sqlBegegnung);
                         while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Gegegnung gibt
                             //IDs der Teams speichern
