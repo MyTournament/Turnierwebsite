@@ -130,6 +130,23 @@ if (php_sapi_name() !== 'cli') {
         }
         return array('spiele'=>$spiele,'flaschen'=>$flaschen,'punkte'=>$punkte);
     }
+    function setPlatziertLevelForActiveKoTeams($conn, $TurnierID){
+        $tid = (int)$TurnierID;
+        // Teams, die bereits in einer nicht-finalen KO-Begegnung stehen, sollen kein platziert_level = 0/NULL behalten
+        $sql = "UPDATE Turnier_Team t
+                JOIN (
+                    SELECT fk_heimteam AS team_id, ko_finallevel
+                    FROM Turnier_Begegnung
+                    WHERE status NOT IN (3,4,5) AND ko_finallevel > 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = $tid AND geloescht = 0)
+                    UNION ALL
+                    SELECT fk_auswaertsteam AS team_id, ko_finallevel
+                    FROM Turnier_Begegnung
+                    WHERE status NOT IN (3,4,5) AND ko_finallevel > 0 AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = $tid AND geloescht = 0)
+                ) ko ON ko.team_id = t.id
+                SET t.platziert_level = ko.ko_finallevel
+                WHERE t.geloescht = 0 AND t.fk_turnier = $tid AND (t.platziert_level IS NULL OR t.platziert_level = 0)";
+        $conn->query($sql);
+    }
     function setAllEndplatzierungen($conn, $TurnierID){
         //zählen wie viele Teams es gibt
         $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
@@ -589,6 +606,9 @@ if (php_sapi_name() !== 'cli') {
                 // $stmtU->execute();
             }
         }*/
+
+        // Alle Teams mit aktiven LB-/KO-Begegnungen (ko_finallevel > 0) erhalten ihr platziert_level gesetzt
+        setPlatziertLevelForActiveKoTeams($conn, $TurnierID);
 
         echo "<script>console.log('losing_bracket: erstellt/aktualisiert (ko_finallevel=20).')</script>";
     }
@@ -1325,7 +1345,8 @@ if (php_sapi_name() !== 'cli') {
 
                     }
 
-                    
+                    // Teams, die jetzt in KO-Begegnungen stehen, als gesetzt markieren (platziert_level setzen)
+                    setPlatziertLevelForActiveKoTeams($conn, $TurnierID);
 
                 
                 //RESTLICHE FINALSTUFEN - Für Alle Finalstufen außer der ersten Finalstufe die Begegnungen erstellen
