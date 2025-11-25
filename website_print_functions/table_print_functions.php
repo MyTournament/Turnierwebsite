@@ -584,7 +584,7 @@
         }
         echo "</ul>";
         echo "<br/>";
-        echo "<div class='note'>Die Endplatzierung bleibt zwischen den Phasen fix: alle Gruppenphasen-Aussteiger stehen unter den KO-Leveln, darueber folgen Viertel-, Halb- und Finalaussteiger in der Reihenfolge ihres Ausscheidens. Im Losing Bracket duerfen Teams nur innerhalb ihres KO-Levels (bzw. innerhalb der Gruppenphasen-Aussteiger) ihre Reihenfolge verschieben. Wertung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
+        echo "<div class='note'>Die Endplatzierung bleibt zwischen den Phasen fix: alle Gruppenphasen-Aussteiger stehen unter den KO-Leveln. Im Losing Bracket dürfen Teams nur innerhalb ihres KO-Levels (bzw. innerhalb der Gruppenphasen-Aussteiger) ihre Reihenfolge verschieben. Wertung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
     }
 
     function printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, $action, $test_turnier_id){
@@ -1108,7 +1108,7 @@
         echo "</tbody></table>";
         echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
         echo"<br/><br/>";
-        echo "<div class='note'>Im Losing Bracket zaehlen alle Spiele des Turniers. Wenn der Schalter fuer KO-Loser aktiv ist, landen nach Abschluss der Gruppenphase auch ausgeschiedene KO-Teams hier. Die Gesamt-Rangliste bleibt phasenweise fix: Gruppen-Aussteiger bleiben unter den KO-Leveln, darueber folgen Viertel-, Halb- und Finalaussteiger. Innerhalb eines Levels koennen die LB-Spiele die Reihenfolge verschieben. Sortierung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
+        echo "<div class='note'>Im Losing Bracket zählen alle Spiele des Turniers. Die Gesamt-Rangliste bleibt phasenweise fix: Gruppen-Aussteiger bleiben unter den KO-Leveln. Innerhalb eines Levels können die Losing-Bracket-Spiele die Reihenfolge verschieben. Sortierung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
         
     }
 
