@@ -527,34 +527,64 @@
     }
 
     function print_platzierungen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
-        echo "<ul class='alt'>";
-        $platzierungsZaehler = 1;
-        $limit = 0;
-        //zählen wie viele Teams es gibt
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
-        $resultTeamZeile = $conn->query($sqlTeam);
-        while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
-            $limit++;
+        // Phase-Titel vorbereiten
+        $phaseLabels = array(0 => 'Gruppenphase (ausgeschieden)');
+        $sqlLevels = 'SELECT id, name FROM Turnier_KO_Finallevel';
+        $resLevels = $conn->query($sqlLevels);
+        while ($resLevels && ($rl = $resLevels->fetch_assoc())) {
+            $phaseLabels[(int)$rl['id']] = $rl['name'];
         }
-        while($platzierungsZaehler <= $limit){
-            $teamName = "<i>noch nicht bestimmt</i>";
-            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND endplatzierung = '. $platzierungsZaehler .' ORDER BY endplatzierung DESC'; //AND NOT endplatzierung = NULL
-            $resultTeam = $conn->query($sqlTeam);
-            while (!empty($rowTeam = $resultTeam->fetch_assoc())) {
-                //$endplatzierung = $resultTeam['endplatzierung'];
-                $teamName = $rowTeam['name'];
-                $teamId = $rowTeam['id'];
-                $teamKuerzel = printKuerzelWithLink($conn, $teamId);
-                $teamName .= " ($teamKuerzel)";
+
+        // Daten einsammeln
+        $teamsByPlacement = array();
+        $limit = 0;
+        $sqlTeam = 'SELECT id, name, endplatzierung, platziert_level FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
+        $resultTeam = $conn->query($sqlTeam);
+        while ($resultTeam && ($rowTeam = $resultTeam->fetch_assoc())) {
+            $limit++;
+            if ($rowTeam['endplatzierung'] !== NULL) {
+                $teamsByPlacement[(int)$rowTeam['endplatzierung']] = array(
+                    'name' => $rowTeam['name'],
+                    'id' => (int)$rowTeam['id'],
+                    'level' => isset($rowTeam['platziert_level']) ? (int)$rowTeam['platziert_level'] : NULL
+                );
             }
-            echo "<li>$platzierungsZaehler. $teamName</li>";
-            $platzierungsZaehler++;
+        }
+
+        echo "<ul class='alt' style='margin-bottom: 0;'>";
+        $currentPhase = '__none__';
+        for ($platzierungsZaehler = 1; $platzierungsZaehler <= $limit; $platzierungsZaehler++){
+            $teamName = "<i>noch nicht bestimmt</i>";
+            $teamId = NULL;
+            $phaseKey = 'offen';
+            if (isset($teamsByPlacement[$platzierungsZaehler])) {
+                $teamName = $teamsByPlacement[$platzierungsZaehler]['name'];
+                $teamId = $teamsByPlacement[$platzierungsZaehler]['id'];
+                $phaseKey = ($teamsByPlacement[$platzierungsZaehler]['level'] === NULL) ? 'offen' : $teamsByPlacement[$platzierungsZaehler]['level'];
+            }
+            $phaseLabel = (isset($phaseLabels[$phaseKey])) ? $phaseLabels[$phaseKey] : (($phaseKey === 'offen') ? 'Noch laufend' : 'KO-Level ' . $phaseKey);
+
+            // Visuelle Trennung pro Phase
+            if ($phaseKey !== $currentPhase) {
+                if ($currentPhase !== '__none__') {
+                    echo "<li style='list-style:none; margin:0.35rem 0; padding:0;'><hr style='border:1px solid #d22; opacity:0.7; margin:0.2rem 0;'></li>";
+                }
+                echo "<li style='list-style:none; color:#b00; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; margin:0.25rem 0 0.05rem;'>$phaseLabel</li>";
+                $currentPhase = $phaseKey;
+            }
+
+            $line = $platzierungsZaehler . '. ';
+            if ($teamId !== NULL) {
+                $kuerzel = printKuerzelWithLink($conn, $teamId);
+                $line .= $teamName . " ($kuerzel)";
+            } else {
+                $line .= $teamName;
+            }
+            echo "<li>$line</li>";
         }
         echo "</ul>";
         echo "<br/>";
-        echo"<div class='note'>Die Endplatzierung für alle Teams der KO-Phase ergibt sich durch den Zeitpunkt des Ausscheidens. Alle Teams, die in der Gruppenphase ausgeschieden sind, haben im Losing Bracket die Möglichkeit, ihre Endplatzierung untereinander noch zu verbessern. Für die Wertung zählen dann alle Spiele der Gruppenphase und des Losing Brackets. Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge.</div>";
-        
-        
+        echo "<div class='note'>Die Endplatzierung bleibt zwischen den Phasen fix: alle Gruppenphasen-Aussteiger stehen unter den KO-Leveln, darueber folgen Viertel-, Halb- und Finalaussteiger in der Reihenfolge ihres Ausscheidens. Im Losing Bracket duerfen Teams nur innerhalb ihres KO-Levels (bzw. innerhalb der Gruppenphasen-Aussteiger) ihre Reihenfolge verschieben. Wertung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
     }
 
     function printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, $action, $test_turnier_id){
@@ -1037,7 +1067,7 @@
         echo "</tbody></table>";
         echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
         echo"<br/><br/>";
-        echo "<div class='note'>Beim Losing Bracket wird kombiniert mit den Ergebnissen der Gruppenphase. Es werden also alle Spiele, die das Team in diesem Turnier gespielt hat berücktsichtigt für die Wertung. Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge.</div>";
+        echo "<div class='note'>Im Losing Bracket zaehlen alle Spiele des Turniers. Wenn der Schalter fuer KO-Loser aktiv ist, landen nach Abschluss der Gruppenphase auch ausgeschiedene KO-Teams hier. Die Gesamt-Rangliste bleibt phasenweise fix: Gruppen-Aussteiger bleiben unter den KO-Leveln, darueber folgen Viertel-, Halb- und Finalaussteiger. Innerhalb eines Levels koennen die LB-Spiele die Reihenfolge verschieben. Sortierung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
         
     }
 
