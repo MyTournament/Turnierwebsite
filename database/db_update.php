@@ -263,7 +263,8 @@ if (php_sapi_name() !== 'cli') {
             $team_ids[] = $row['id'];
         }
 
-        if (!empty($team_ids)){
+        // Nur fortfahren, wenn tatsächlich zwei Teams im Finale stehen
+        if (!empty($team_ids) && count($team_ids) >= 2){
             //Gewinner- und Verliererteam ermitteln
             $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND (fk_heimteam = ' . $team_ids[0] . ' OR fk_heimteam = ' . $team_ids[1] . ')';
             $result = $conn->query($sql);
@@ -412,13 +413,15 @@ if (php_sapi_name() !== 'cli') {
 // Losing Bracket: einfache Hülle (Platzhalter für Logik)
     function update_losing_bracket($conn, $TurnierID){
         // Flags für KO-Einzug laden
-        $sqlFlags = 'SELECT einzug_ko_manuell_anlegen, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . (int)$TurnierID . ' LIMIT 1';
+        $sqlFlags = 'SELECT einzug_ko_manuell_anlegen, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei, losingbracket_open_for_ko_losers FROM Turnier_Main WHERE id = ' . (int)$TurnierID . ' LIMIT 1';
         $resultFlags = $conn->query($sqlFlags);
-        $einzug_ko_manuell_anlegen = 0; $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = 0;
+        $einzug_ko_manuell_anlegen = 0; $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = 0; $losingbracket_open_for_ko_losers = 0;
         if ($resultFlags && ($row = $resultFlags->fetch_assoc())) {
             $einzug_ko_manuell_anlegen = (int)$row['einzug_ko_manuell_anlegen'];
             $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = (int)$row['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'];
+            $losingbracket_open_for_ko_losers = isset($row['losingbracket_open_for_ko_losers']) ? (int)$row['losingbracket_open_for_ko_losers'] : 0;
         }
+        $koLosersAllowed = ($losingbracket_open_for_ko_losers === 1 && $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei === 1);
 
         // Prüfen, ob Gruppenphase komplett ist (alle Gruppenspiele final)
         $alleGruppenFinal = 1; // TRUE
@@ -476,6 +479,32 @@ if (php_sapi_name() !== 'cli') {
         $sqlTeilnehmer = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ' AND (platziert_level = 0) ORDER BY id';
         $resTeilnehmer = $conn->query($sqlTeilnehmer);
         while ($resTeilnehmer && ($rt = $resTeilnehmer->fetch_assoc())) { $teilnehmer[] = (int)$rt['id']; }
+
+        // Erweiterung: KO-Verlierer aufnehmen, sobald Flag aktiv & KO-Einzug fertig
+        if ($koLosersAllowed) {
+            $stmtKo = $conn->prepare("SELECT DISTINCT CASE WHEN b.fk_siegerteam = b.fk_heimteam THEN b.fk_auswaertsteam ELSE b.fk_heimteam END AS loser_id
+                                      FROM Turnier_Begegnung b
+                                      JOIN Turnier_Team th ON th.id = b.fk_heimteam
+                                      JOIN Turnier_Team ta ON ta.id = b.fk_auswaertsteam
+                                      WHERE b.ko_finallevel > 0 AND b.ko_finallevel < 20
+                                        AND b.status IN (4,5)
+                                        AND b.fk_siegerteam IS NOT NULL
+                                        AND th.fk_turnier = ?
+                                        AND ta.fk_turnier = ?");
+            if ($stmtKo) {
+                $tidKo = (int)$TurnierID;
+                $stmtKo->bind_param("ii", $tidKo, $tidKo);
+                $stmtKo->execute();
+                $resKo = $stmtKo->get_result();
+                while ($resKo && ($rk = $resKo->fetch_assoc())) {
+                    $lid = (int)$rk['loser_id'];
+                    if (!in_array($lid, $teilnehmer, true)) {
+                        $teilnehmer[] = $lid;
+                    }
+                }
+                $stmtKo->close();
+            }
+        }
 
         // Ergänzung: Alle Teams, die bereits in LB-Begegnungen (ko_finallevel = 20) auftauchen, ebenfalls in die Teilnehmerliste aufnehmen
         //Update: das ist unnötig, da weiter oben schon alle Teams mit platziert_level=0 berücksichtigt werden und hierdurch Fehler passieren können
@@ -867,7 +896,7 @@ if (php_sapi_name() !== 'cli') {
             
             $schalterDreieck = 0;
             $gruppenphase_vorbei = 0;
-            $sqlSchalter = 'SELECT nurOberesDreieckInGruppenphase, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . $TurnierID;
+            $sqlSchalter = 'SELECT nurOberesDreieckInGruppenphase, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei, losingbracket_open_for_ko_losers FROM Turnier_Main WHERE id = ' . $TurnierID;
             $resultSchalter = $conn->query($sqlSchalter);
             if ($resultSchalter && ($rowSchalter = $resultSchalter->fetch_assoc())) {
                 $schalterDreieck = (int)$rowSchalter['nurOberesDreieckInGruppenphase'];
@@ -1651,3 +1680,5 @@ if (php_sapi_name() !== 'cli') {
         }*/
     }
 ?>
+
+
