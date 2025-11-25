@@ -953,13 +953,29 @@
     }
 
     function printPunktetabelleLosingBracket($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
+        // Flag laden, ob KO-Loser im LB erlaubt sind
+        $sqlFlagLB = 'SELECT losingbracket_open_for_ko_losers FROM Turnier_Main WHERE id = ' . (int)$TurnierID . ' LIMIT 1';
+        $resFlagLB = $conn->query($sqlFlagLB);
+        $lbOpenForKoLosers = 0;
+        if ($resFlagLB && ($rf = $resFlagLB->fetch_assoc())) {
+            $lbOpenForKoLosers = isset($rf['losingbracket_open_for_ko_losers']) ? (int)$rf['losingbracket_open_for_ko_losers'] : 0;
+        }
+
         echo "<h2>Punktetabelle</h2>";
         echo "<br/><br/>";
         echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th><th>Sieg%</th></tr></thead><tbody>";
 
+        // Phase-Labels wie Rangliste
+        $phaseLabels = array(0 => 'Gruppenphase (ausgeschieden)');
+        $sqlLevels = 'SELECT id, name FROM Turnier_KO_Finallevel';
+        $resLevels = $conn->query($sqlLevels);
+        while ($resLevels && ($rl = $resLevels->fetch_assoc())) {
+            $phaseLabels[(int)$rl['id']] = $rl['name'];
+        }
+
         // Teilnehmer im Losing Bracket (ko_finallevel = 20)
         $teams = array();
-        $sqlTeamsLB = 'SELECT DISTINCT t.id, t.name, t.kuerzel, t.gruppenphase_manuelle_platzierung, t.siegesquote '
+        $sqlTeamsLB = 'SELECT DISTINCT t.id, t.name, t.kuerzel, t.gruppenphase_manuelle_platzierung, t.siegesquote, t.platziert_level '
                     . 'FROM Turnier_Team t '
                     . 'WHERE t.geloescht = 0 AND t.fk_turnier = ' . (int)$TurnierID . ' '
                     . 'AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20) '
@@ -973,6 +989,7 @@
                 'kuerzel' => $rt['kuerzel'],
                 'siegesquote' => $rt['siegesquote'],
                 'man_pos' => isset($rt['gruppenphase_manuelle_platzierung']) ? (int)$rt['gruppenphase_manuelle_platzierung'] : 0,
+                'platziert_level' => isset($rt['platziert_level']) ? (int)$rt['platziert_level'] : 0,
             );
         }
 
@@ -1028,24 +1045,48 @@
                 'flaschen' => $flaschen,
                 'punkte' => $punkte,
                 'siegesquote' => $t['siegesquote'],
+                'platziert_level' => isset($t['platziert_level']) ? (int)$t['platziert_level'] : 0,
             );
         }
 
-        // Sortierung wie Gruppenphase: manuelle Platzierung asc, Punkte desc, Flaschen desc, Spiele desc
+        // Sortierung: erst Abschnittsreihenfolge (Halbfinale, Viertel, ... , Gruppenphase), dann Punkte/Flaschen/Spiele/id
         usort($stats, function($a, $b){
+            $wa = ($a['platziert_level'] === 0) ? 1000 : $a['platziert_level'];
+            $wb = ($b['platziert_level'] === 0) ? 1000 : $b['platziert_level'];
+            if ($wa !== $wb) return ($wa < $wb) ? -1 : 1;
             if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] > $b['punkte']) ? -1 : 1;
             if ($a['flaschen'] !== $b['flaschen']) return ($a['flaschen'] > $b['flaschen']) ? -1 : 1;
             if ($a['spiele'] !== $b['spiele']) return ($a['spiele'] > $b['spiele']) ? -1 : 1;
             return ($a['id'] < $b['id']) ? -1 : 1;
         });
 
-        // Ausgabe
+        // Ausgabe mit Trennlinien zwischen Gruppenphase-Aussteiger (platziert_level=0) und KO-Leveln, falls Flag aktiv
+        $currentSection = '__none__';
         foreach ($stats as $row) {
             $teamId = (int)$row['id'];
             $name = htmlspecialchars($row['name']);
             $spiele = (int)$row['spiele'];
             $flaschen = (int)$row['flaschen'];
             $punkte = (int)$row['punkte'];
+            $plLevel = isset($row['platziert_level']) ? (int)$row['platziert_level'] : 0;
+
+            // Nur wenn KO-Loser erlaubt, nach platziert_level trennen
+            if ($lbOpenForKoLosers === 1) {
+                $sectionKey = $plLevel;
+                if ($sectionKey !== $currentSection) {
+                    // Mini-Header pro Abschnitt
+                    if (isset($phaseLabels[$plLevel])) {
+                        $label = $phaseLabels[$plLevel];
+                    } else {
+                        $label = ($plLevel === 0) ? 'Gruppenphase (ausgeschieden)' : 'KO-Level ' . $plLevel;
+                    }
+                    echo "<tr><td colspan='6' style='padding:0.15rem 0.3rem; color:#b00; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; font-weight:bold; border-top:1px solid #d22;'>";
+                    echo htmlspecialchars($label);
+                    echo "</td></tr>";
+                    $currentSection = $sectionKey;
+                }
+            }
+
             echo "<tr>";
             echo "<td style=\"text-align:left; padding: 0.1em 0.75em !important;\">$name</td>";
             echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">"; $return = printKuerzelWithLink($conn, $teamId); echo $return; echo "</td>";
