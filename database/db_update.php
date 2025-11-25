@@ -566,7 +566,7 @@ if (php_sapi_name() !== 'cli') {
                                       FROM Turnier_Begegnung b
                                       JOIN Turnier_Team th ON th.id = b.fk_heimteam
                                       JOIN Turnier_Team ta ON ta.id = b.fk_auswaertsteam
-                                      WHERE b.ko_finallevel > 0 AND b.ko_finallevel < 20
+                                      WHERE b.ko_finallevel >= 4 AND b.ko_finallevel < 20
                                         AND b.status IN (4,5)
                                         AND b.fk_siegerteam IS NOT NULL
                                         AND th.fk_turnier = ?
