@@ -1,4 +1,4 @@
-<?php
+﻿<?php
     function helloHermann($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         $test = "baum";
         echo "Hallo Hermann $test";
@@ -61,7 +61,7 @@
                 </thead>
                 <tbody>
                     <tr>";
-            $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` NOT IN (3,6) AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
+            $sql = 'SELECT * FROM Turnier_Begegnung WHERE `status` <> 3 AND (fk_heimteam = ' . $teamId . ' OR fk_auswaertsteam = ' . $teamId . ') ORDER BY id';
             $result = $conn->query($sql);
             while (!empty($row = $result->fetch_assoc())) {
                 $begegnungId = $row['id'];
@@ -296,6 +296,7 @@
         echo "</tbody>
         </table>";
     }
+
     function printTurnierbaum($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         //Start-Finalstufe rausfinden
         $sql = 'SELECT * FROM Turnier_Main WHERE id = ' . $TurnierID;
@@ -303,10 +304,99 @@
         while ($row_sql = $result_sql->fetch_assoc()) {
             $start_ko_finallevel = $row_sql["start_ko_finallevel"];
         }
-        $ko_finallevel = $start_ko_finallevel; //Zähler
-        echo "<div style='text-align: center'>";
+        $maxKoLevel = $start_ko_finallevel;
+        $ko_finallevel = $start_ko_finallevel; //Zaehler
         echo "
-        <table style='text-align: center;'>
+        <section id='turnierbaum' class='bracket-section'>
+            <style>
+                :root {
+                    --bracket-bg: #0d1626;
+                    --bracket-card: linear-gradient(135deg, #0f1e34, #142740);
+                    --bracket-line: #1f3a63;
+                    --bracket-accent: #00c2ff;
+                }
+                .bracket-shell {
+                    background: radial-gradient(circle at 15% 20%, rgba(0, 194, 255, 0.12), transparent 32%), radial-gradient(circle at 85% 0%, rgba(255, 117, 88, 0.08), transparent 26%), var(--bracket-bg);
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 16px;
+                    padding: clamp(1rem, 2vw, 1.75rem);
+                    margin: 0 auto 2rem;
+                    max-width: min(100%, 1100px);
+                    box-shadow: 0 24px 80px rgba(5, 12, 26, 0.45);
+                }
+                .bracket-scroll {
+                    overflow-x: auto;
+                    padding-bottom: 0.35rem;
+                }
+                .bracket-table {
+                    width: min(100%, 980px);
+                    margin: 0 auto;
+                    table-layout: fixed;
+                    border-collapse: separate;
+                    border-spacing: 0.45rem 0.55rem;
+                    color: #eaf1ff;
+                    text-align: center;
+                }
+                .bracket-table thead td {
+                    color: #8fb5ff;
+                    letter-spacing: 0.08em;
+                    font-size: 0.85rem;
+                    text-transform: uppercase;
+                    border: none;
+                    padding: 0.25rem 0.35rem;
+                    background: transparent;
+                    white-space: nowrap;
+                }
+                .round-title {
+                    writing-mode: vertical-rl;
+                    transform: rotate(180deg);
+                    line-height: 1.1;
+                    padding: 0.45rem 0.3rem;
+                }
+                .bracket-table td {
+                    vertical-align: middle;
+                }
+                .bracket-slot {
+                    background: var(--bracket-card);
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 12px;
+                    padding: 0.45rem 0.6rem;
+                    font-weight: 700;
+                    font-size: 1rem;
+                    box-shadow: 0 10px 28px rgba(10, 18, 36, 0.35);
+                    min-width: 150px;
+                    white-space: nowrap;
+                }
+                .bracket-slot.placeholder {
+                    color: #7a8ca8;
+                    font-style: italic;
+                }
+                .bracket-slot.bracket-winner {
+                    background: linear-gradient(135deg, #12436d, #0e8aa8);
+                    border-color: rgba(0, 194, 255, 0.35);
+                    color: #e9fbff;
+                }
+                .bracket-line {
+                    padding: 0;
+                    min-width: 18px;
+                    border-left: 2px dashed var(--bracket-line);
+                    opacity: 0.85;
+                }
+                @media (max-width: 900px) {
+                    .bracket-shell { padding: 0.9rem 0.8rem; }
+                    .bracket-table { border-spacing: 0.35rem 0.4rem; }
+                    .bracket-slot { min-width: 130px; font-size: 0.95rem; padding: 0.4rem 0.5rem; }
+                    .bracket-table thead td { font-size: 0.78rem; }
+                }
+                @media (max-width: 640px) {
+                    .bracket-shell { margin: 0 -0.35rem 1.5rem; border-radius: 12px; }
+                    .bracket-slot { min-width: 115px; font-size: 0.88rem; }
+                    .bracket-table { border-spacing: 0.3rem 0.35rem; }
+                }
+            </style>
+            <div class='bracket-shell'>
+                <div class='bracket-scroll'>
+        <table class='bracket-table'>
             <thead>
                 <tr>";
                     while($ko_finallevel>1){
@@ -314,12 +404,12 @@
                         $result_sql = $conn->query($sql);
                         while ($row_sql = $result_sql->fetch_assoc()) {
                             $name = $row_sql["name"];
-                            echo "<td><i>$name</i></td>";
+                            echo "<td class='round-title'><i>$name</i></td>";
                         }
                         $ko_finallevel--;
                     }
-                    echo "<td><i>Gewinnerteam</i></td>";
-                    $ko_finallevel = $start_ko_finallevel; //zurücksetzen
+                    echo "<td class='round-title'><i>Gewinnerteam</i></td>";
+                    $ko_finallevel = $start_ko_finallevel; //zuruecksetzen
         echo"
                 </tr>
             </thead>
@@ -327,22 +417,15 @@
             ";
             //Einen Tree erstellen
             $recursiveTree = recursiveTreeHelper($ko_finallevel);
-            //echo "$recursiveTree";
 
             //SQL-ABFRAGE IN (doppeltes) ARRAY SCHREIBEN
             $treeArray = array(); //Array erstellen
-            //array_push($treeArray, "test");
-            //$treeArray[] = "test";
-            //$treeArray[] = "abc";
-            //$test = $treeArray[0];
-            //$test2 = $treeArray[1];
-            //echo "$test $test2";
             
             $index = 0;
             while ($ko_finallevel > 0){
                 $zaehlerForKoPosition = 1;
-                while($zaehlerForKoPosition < pow(2,($ko_finallevel-2))+1){ //Zähler bis zu 2^x (x=Finalstufe, zB Stufe 4 hat 2^(4-1)=8 ) ||| -2 weil ja 2 und nicht 1 das Finale ist
-                    //Begegnung (eine) finden, die zum Zähler passt + restliche Bed. (zB der vorherigen  Stufe & des aktuellen Turniers)
+                while($zaehlerForKoPosition < pow(2,($ko_finallevel-2))+1){ //Zaehler bis zu 2^x (x=Finalstufe, zB Stufe 4 hat 2^(4-1)=8 ) ||| -2 weil ja 2 und nicht 1 das Finale ist
+                    //Begegnung (eine) finden, die zum Zaehler passt + restliche Bed. (zB der vorherigen  Stufe & des aktuellen Turniers)
                     $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC'; //AND NOT fk_siegerteam = NULL 
                     $resultBegegnung = $conn->query($sqlBegegnung);
                     $siegerGefunden = false;
@@ -363,13 +446,13 @@
                                     $teamString .= ")";
                                 }
                             }
-                            //INS ARRAY EINFÜGEN
+                            //INS ARRAY EINFUEGEN
                             $treeArray[$index][$zaehlerForKoPosition-1] = $teamString;
 
                             $siegerGefunden = true;
                         }
                         
-                        //SONDERFALL: ERSTES FINALLEVEL - hier können keine Gewinner abgelesen werden, sondern es müssen einfach das Heimteam und Auswärtsteam abgelesen werden
+                        //SONDERFALL: ERSTES FINALLEVEL - hier koennen keine Gewinner abgelesen werden, sondern es muessen einfach das Heimteam und Auswaertsteam abgelesen werden
                         //dieser Sonderfall soll auch dann passieren, wenn die Begegnung noch nicht final ist
                         if($ko_finallevel == $start_ko_finallevel){
                             //TEAM 1
@@ -400,7 +483,7 @@
                                     $teamString2 .= ")";
                                 }
                             }
-                            //INS ARRAY EINFÜGEN
+                            //INS ARRAY EINFUEGEN
                             $treeArray[$index-1][$zaehlerForKoPosition*2-1] = $teamString1;
                             $treeArray[$index-1][$zaehlerForKoPosition*2] = $teamString2;
 
@@ -408,11 +491,11 @@
                         }
                         
                     }
-                    if($siegerGefunden == false){ //Falls keine Begegnung gefunden wurde, wird ein Platzhalter eingefügt
+                    if($siegerGefunden == false){ //Falls keine Begegnung gefunden wurde, wird ein Platzhalter eingefuegt
                         $treeArray[$index][$zaehlerForKoPosition-1] = "...";
                     } 
                     if($zumindestBegegnungGefunden == false){
-                        //SONDERFALL: ERSTES FINALLEVEL - hier können keine Gewinner abgelesen werden, sondern es müssen einfach das Heimteam und Auswärtsteam abgelesen werden
+                        //SONDERFALL: ERSTES FINALLEVEL - hier koennen keine Gewinner abgelesen werden, sondern es muessen einfach das Heimteam und Auswaertsteam abgelesen werden
                         if($ko_finallevel == $start_ko_finallevel){
                             $treeArray[$index-1][$zaehlerForKoPosition*2-1] = "...";
                             $treeArray[$index-1][$zaehlerForKoPosition*2] = "...";
@@ -423,7 +506,7 @@
                 $index++;
                 $ko_finallevel--;
             }
-            $ko_finallevel = $start_ko_finallevel; //zurücksetzen
+            $ko_finallevel = $start_ko_finallevel; //zuruecksetzen
             
             //Immer das erste Element des jeweiligen Unterarrays rausnehmen, je nachdem welche Number gerade im Tree steht
             for ($i = 0; $i < strlen($recursiveTree); $i++) {
@@ -435,13 +518,17 @@
                     if($c == $zaehler){
                         $value = array_shift($treeArray[$c-2]); //array_pop(array_reverse($treeArray[$c-1]));
                         if($value != NULL){
-                            echo "<td style='background-color: green'>$value</td>";
+                            $slotClass = 'bracket-slot';
+                            if($zaehler === $maxKoLevel){
+                                $slotClass .= ' bracket-winner';
+                            }
+                            echo "<td class='$slotClass'>$value</td>";
                         }else{
-                            echo "<td style='background-color: green'><i>...</i></td>";
+                            echo "<td class='bracket-slot placeholder'><i>...</i></td>";
                         }
                         
                     }else{
-                        echo "<td style='background-color:black'></td>";
+                        echo "<td class='bracket-line'></td>";
                     }
                     $zaehler++;
                 }
@@ -450,8 +537,10 @@
         echo"
             </tbody>
         </table>
+                </div>
+            </div>
+        </section>
         ";  
-        echo "</div>";      
     }
 
     //$recursiveTreeTest = recursiveTreeHelper(4);
@@ -527,72 +616,36 @@
     }
 
     function print_platzierungen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
-        // Phase-Titel vorbereiten
-        $phaseLabels = array(0 => 'Gruppenphase (ausgeschieden)');
-        $sqlLevels = 'SELECT id, name FROM Turnier_KO_Finallevel';
-        $resLevels = $conn->query($sqlLevels);
-        while ($resLevels && ($rl = $resLevels->fetch_assoc())) {
-            $phaseLabels[(int)$rl['id']] = $rl['name'];
-        }
-        $phaseLabels['offen'] = 'Noch laufend';
-
-        // Daten einsammeln
-        $teamsByPlacement = array();
+        echo "<ul class='alt'>";
+        $platzierungsZaehler = 1;
         $limit = 0;
-        // Endplatzierung + platziert_level gemeinsam auslesen, damit die Trennlinien nach platziert_level gesetzt werden k��nnen
-        $sqlTeam = 'SELECT id, name, endplatzierung, platziert_level FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY endplatzierung ASC';
-        $resultTeam = $conn->query($sqlTeam);
-        while ($resultTeam && ($rowTeam = $resultTeam->fetch_assoc())) {
+        //zählen wie viele Teams es gibt
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
+        $resultTeamZeile = $conn->query($sqlTeam);
+        while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
             $limit++;
-            if ($rowTeam['endplatzierung'] !== NULL) {
-                $teamsByPlacement[(int)$rowTeam['endplatzierung']] = array(
-                    'name' => $rowTeam['name'],
-                    'id' => (int)$rowTeam['id'],
-                    'level' => isset($rowTeam['platziert_level']) ? (int)$rowTeam['platziert_level'] : NULL
-                );
-            }
         }
-
-        echo "<ul class='alt' style='margin-bottom: 0;'>";
-        $currentPhase = '__none__';
-        for ($platzierungsZaehler = 1; $platzierungsZaehler <= $limit; $platzierungsZaehler++){
+        while($platzierungsZaehler <= $limit){
             $teamName = "<i>noch nicht bestimmt</i>";
-            $teamId = NULL;
-            $phaseKey = 'offen';
-            if (isset($teamsByPlacement[$platzierungsZaehler])) {
-                $teamName = $teamsByPlacement[$platzierungsZaehler]['name'];
-                $teamId = $teamsByPlacement[$platzierungsZaehler]['id'];
-                $phaseKey = ($teamsByPlacement[$platzierungsZaehler]['level'] === NULL) ? 'offen' : $teamsByPlacement[$platzierungsZaehler]['level'];
+            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND endplatzierung = '. $platzierungsZaehler .' ORDER BY endplatzierung DESC'; //AND NOT endplatzierung = NULL
+            $resultTeam = $conn->query($sqlTeam);
+            while (!empty($rowTeam = $resultTeam->fetch_assoc())) {
+                //$endplatzierung = $resultTeam['endplatzierung'];
+                $teamName = $rowTeam['name'];
+                $teamId = $rowTeam['id'];
+                $teamKuerzel = printKuerzelWithLink($conn, $teamId);
+                $teamName .= " ($teamKuerzel)";
             }
-            $phaseLabel = (isset($phaseLabels[$phaseKey])) ? $phaseLabels[$phaseKey] : 'KO-Level ' . $phaseKey;
-
-            // Visuelle Trennung pro Phase
-            if ($phaseKey !== $currentPhase) {
-                if ($currentPhase !== '__none__') {
-                    echo "<li style='list-style:none; margin:0.35rem 0; padding:0;'><hr style='border:1px solid #d22; opacity:0.7; margin:0.2rem 0;'></li>";
-                }
-                echo "<li style='list-style:none; color:#b00; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; margin:0.25rem 0 0.05rem;'>$phaseLabel</li>";
-                $currentPhase = $phaseKey;
-            }
-
-            $line = $platzierungsZaehler . '. ';
-            if ($teamId !== NULL) {
-                $kuerzel = printKuerzelWithLink($conn, $teamId);
-                $line .= $teamName . " ($kuerzel)";
-            } else {
-                $line .= $teamName;
-            }
-            echo "<li>$line</li>";
+            echo "<li>$platzierungsZaehler. $teamName</li>";
+            $platzierungsZaehler++;
         }
         echo "</ul>";
-        echo "<br/>";
-        echo "<div class='note'>Die Endplatzierung bleibt zwischen den Phasen fix: alle Gruppenphasen-Aussteiger stehen unter den KO-Leveln. Im Losing Bracket dürfen Teams nur innerhalb ihres KO-Levels (bzw. innerhalb der Gruppenphasen-Aussteiger) ihre Reihenfolge verschieben. Wertung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
+        
     }
 
     function printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, $action, $test_turnier_id){
         if($gameEditMode == 1){
             echo "<h2 style='color:#00FF00'>Bearbeitungsmodus</h2>";
-            echo "<div class='note' style='font-size: 0.6rem;'>";
             echo "<ul class='alt'>";
             echo "<li style='color:#00FF00'><button style='background-color:#7700FF;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' class='button primary'>+</button> Über die Plus-Buttons kannst du neue Spielstände hinzufügen.</li>";
             //echo "<li style='color:#00FF00'><button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>3:0</button> Ein Spielstand ist nicht korrekt? Dann tippe einfach auf ihn, gib das Passwort deines Teams ein und ändere oder lösche den Spielstand.</li>";
@@ -605,14 +658,15 @@
             
             if($nurOberesDreieck === 1 || $action === "#kophase") { 
                     echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Sobald ihr alle Spiele gegen ein bestimmtes Team eingetragen habt müsst ihr noch einmal das grüne Häkchen anklicken, damit die Website weiß, dass sie auf keine Spiele mehr warten muss und schon die Teams schon für die kommenden Spiele berechnen kann.</li>";}
-            else {  echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Mit diesen Buttons markiert ihr ein Spiel als final, also entweder weil alle Spiele dieser Begegnung bespielt wurden oder weil das Match ergebnislos bleibt. </li>";}
+            else {  echo "<li style='color:#00FF00'><button style='background-color:green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&check;</button> Mit diesen Buttons tragt ihr ein, dass ein Spiel ergebnislos bleibt, also bspw. nicht stattfinden kann. </li>";}
             echo "<li style='color:#00FF00'><button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>&#9733;</button> Dieser Button zeigt an, dass ein Spiel als final markiert wurde. Solltet ihr nachträglich doch noch ein Spiel eintragen wollen, könnt ihr euch an einen Administrator wenden.</li>";
             //grey: #888888
+            echo "</ul>";
             if(!$expertenmodus){
                 echo "
                     <form style='color:#00FF00' method='post' action=?test_turnier_id=$test_turnier_id$action>      
                         <button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>E</button>
-                        <p>Expertenmodus (nur für Admins - kann genutzt werden um Begegnungen zu verändern/zu sperren)</p>  
+                        <p>Expertenmodus</p>  
                         <input type='hidden' name='gameEditMode' value='1'/>
                         <input type='hidden' name='expertenmodus' value='1'/>
                     </form>
@@ -627,9 +681,6 @@
                     <input type='hidden' name='expertenmodus' value='0'/>
                 ";
             }
-            echo "</ul>";
-            echo "</div>";
-            
             echo "
             <form style='color:#00FF00' method='post' action=?test_turnier_id=$test_turnier_id$action>      
                 <button  style='background-color:green;' name='content' class='button primary'>Bearbeitungsmodus verlassen</button>  
@@ -730,7 +781,7 @@
                 if($gameEditMode == 1){
                     ?>
                     <form method='post' action='#changegame' style='margin: 0 0 0 0;'>
-                        <button style='text-align="center";background-color:#7700FF; padding: 0 0.3rem; height: 2rem; width: 2rem; line-height: 1.3rem; font-size: 1.3rem; text-align: center;'>
+                        <button style='text-align="center";background-color:#7700FF; padding: 0 0.3rem; height: 1.5rem; line-height: 1.3rem; font-size: 1.3rem;'>
                             +
                         </button>
                         <input type='hidden' name='action' value='add'/>
@@ -845,14 +896,14 @@
                                     // Erst alle Begegnungen filtern und dann dazu die passenden Spiele suchen
                                     $leereZeile = 1;
                                     //CHECKEN OB ES KEINE BEGEGNUNG GIBT - WENN JA DANN "-" ausgeben
-                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
+                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
                                     $resultBegegnung = $conn->query($sqlBegegnung);
                                     if ( empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
                                         echo "<td style='text-align:center; padding: 0.1em 0.3em !important; white-space: nowrap;'>";  // Tabellen-Feld eröffnen
                                         echo " - ";
                                     }
                                     //SONST BEGEGNUNGEN AUSGEBEN
-                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
+                                    $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND fk_heimteam = ' . $rowTeamZeile["id"] . ' AND fk_auswaertsteam = ' . $rowTeamSpalte["id"] . ' AND ko_finallevel = 0 ORDER BY ID';
                                     $resultBegegnung = $conn->query($sqlBegegnung);
                                     while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Begegnung gibt
                                         echo "<td style='text-align:center; padding: 0.05em 0.2em !important; white-space: nowrap;'>";   // Tabellen-Feld eröffnen
@@ -890,7 +941,7 @@
 
             // Teilnehmer-Teams für LB dynamisch aus Begegnungen (ko_finallevel=20), nur dieses Turnier
             $teams = [];
-            $sqlTeamsLB = 'SELECT DISTINCT t.id FROM Turnier_Team t WHERE t.geloescht = 0 AND t.fk_turnier = ' . $TurnierID . ' AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20) OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20)) ORDER BY t.id';
+            $sqlTeamsLB = 'SELECT DISTINCT t.id FROM Turnier_Team t WHERE t.geloescht = 0 AND t.fk_turnier = ' . $TurnierID . ' AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) ORDER BY t.id';
             $resTeamsLB = $conn->query($sqlTeamsLB);
             while ($resTeamsLB && ($rt = $resTeamsLB->fetch_assoc())) { $teams[] = (int)$rt['id']; }
 
@@ -929,7 +980,7 @@
                         echo "<td style='text-align:center; padding: 0.1em 0.3em !important; white-space: nowrap;'> - </td>";
                         continue;
                     }
-                    $sqlBeg = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND ((fk_heimteam = ' . $rowTid . ' AND fk_auswaertsteam = ' . $colTid . ') OR (fk_heimteam = ' . $colTid . ' AND fk_auswaertsteam = ' . $rowTid . ')) AND ko_finallevel = 20 ORDER BY ID';
+                    $sqlBeg = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND ((fk_heimteam = ' . $rowTid . ' AND fk_auswaertsteam = ' . $colTid . ') OR (fk_heimteam = ' . $colTid . ' AND fk_auswaertsteam = ' . $rowTid . ')) AND ko_finallevel = 20 ORDER BY ID';
                     $resBeg = $conn->query($sqlBeg);
                     if ($resBeg && empty($resBeg->fetch_assoc())) {
                         echo "<td style='text-align:center; padding: 0.1em 0.3em !important; white-space: nowrap;'> - </td>";
@@ -955,163 +1006,29 @@
     }
 
     function printPunktetabelleLosingBracket($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
-        // Flag laden, ob KO-Loser im LB erlaubt sind
-        $sqlFlagLB = 'SELECT losingbracket_open_for_ko_losers FROM Turnier_Main WHERE id = ' . (int)$TurnierID . ' LIMIT 1';
-        $resFlagLB = $conn->query($sqlFlagLB);
-        $lbOpenForKoLosers = 0;
-        if ($resFlagLB && ($rf = $resFlagLB->fetch_assoc())) {
-            $lbOpenForKoLosers = isset($rf['losingbracket_open_for_ko_losers']) ? (int)$rf['losingbracket_open_for_ko_losers'] : 0;
-        }
-
         echo "<h2>Punktetabelle</h2>";
-        echo "<br/><br/>";
-        echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th><th>Sieg%</th></tr></thead><tbody>";
-
-        // Phase-Labels wie Rangliste
-        $phaseLabels = array(0 => 'Gruppenphase (ausgeschieden)');
-        $sqlLevels = 'SELECT id, name FROM Turnier_KO_Finallevel';
-        $resLevels = $conn->query($sqlLevels);
-        while ($resLevels && ($rl = $resLevels->fetch_assoc())) {
-            $phaseLabels[(int)$rl['id']] = $rl['name'];
-        }
-
-        // Teilnehmer im Losing Bracket (ko_finallevel = 20)
-        $teams = array();
-        $sqlTeamsLB = 'SELECT DISTINCT t.id, t.name, t.kuerzel, t.gruppenphase_manuelle_platzierung, t.siegesquote, t.platziert_level '
-                    . 'FROM Turnier_Team t '
-                    . 'WHERE t.geloescht = 0 AND t.fk_turnier = ' . (int)$TurnierID . ' '
-                    . 'AND (t.id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20) '
-                    . 'OR t.id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND ko_finallevel = 20)) '
-                    . 'ORDER BY t.id';
-        $resTeamsLB = $conn->query($sqlTeamsLB);
-        while ($resTeamsLB && ($rt = $resTeamsLB->fetch_assoc())) {
-            $teams[] = array(
-                'id' => (int)$rt['id'],
-                'name' => $rt['name'],
-                'kuerzel' => $rt['kuerzel'],
-                'siegesquote' => $rt['siegesquote'],
-                'man_pos' => isset($rt['gruppenphase_manuelle_platzierung']) ? (int)$rt['gruppenphase_manuelle_platzierung'] : 0,
-                'platziert_level' => isset($rt['platziert_level']) ? (int)$rt['platziert_level'] : 0,
-            );
-        }
-
-        if (count($teams) === 0) {
-            echo "<tr><td colspan='5' style='text-align:center; opacity:.8;'>Noch keine Teams im Losing‑Bracket erfasst.</td></tr>";
-            echo "</tbody></table>";
-            return;
-        }
-
-        // Live-Berechnung (nur LB-Spiele: ko_finallevel = 20)
-        $stats = array();
-        foreach ($teams as $t) {
-            $tid = (int)$t['id'];
-            $spiele = 0; $flaschen = 0; $punkte = 0;
-
-            // Heimspiele
-            $sqlH = 'SELECT id FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND fk_heimteam = ' . $tid . ' ORDER BY id';
-            $resH = $conn->query($sqlH);
-            while ($resH && ($rb = $resH->fetch_assoc())) {
-                $bid = (int)$rb['id'];
-                $sqlS = 'SELECT biereheimteam, biereauswaertsteam FROM Turnier_Spiel WHERE fk_begegnung = ' . $bid . ' ORDER BY id';
-                $resS = $conn->query($sqlS);
-                while ($resS && ($rs = $resS->fetch_assoc())) {
-                    $spiele++;
-                    $a = (int)$rs['biereheimteam'];
-                    $b = (int)$rs['biereauswaertsteam'];
-                    $flaschen += $a;
-                    if ($a > $b) { $punkte++; }
-                }
-            }
-
-            // Auswärtsspiele
-            $sqlA = 'SELECT id FROM Turnier_Begegnung WHERE status NOT IN (3,6) AND fk_auswaertsteam = ' . $tid . ' ORDER BY id';
-            $resA = $conn->query($sqlA);
-            while ($resA && ($rb = $resA->fetch_assoc())) {
-                $bid = (int)$rb['id'];
-                $sqlS = 'SELECT biereheimteam, biereauswaertsteam FROM Turnier_Spiel WHERE fk_begegnung = ' . $bid . ' ORDER BY id';
-                $resS = $conn->query($sqlS);
-                while ($resS && ($rs = $resS->fetch_assoc())) {
-                    $spiele++;
-                    $a = (int)$rs['biereheimteam'];
-                    $b = (int)$rs['biereauswaertsteam'];
-                    $flaschen += $b;
-                    if ($b > $a) { $punkte++; }
-                }
-            }
-
-            $stats[] = array(
-                'id' => $tid,
-                'name' => $t['name'],
-                'man_pos' => $t['man_pos'],
-                'spiele' => $spiele,
-                'flaschen' => $flaschen,
-                'punkte' => $punkte,
-                'siegesquote' => $t['siegesquote'],
-                'platziert_level' => isset($t['platziert_level']) ? (int)$t['platziert_level'] : 0,
-            );
-        }
-
-        // Sortierung: erst Abschnittsreihenfolge (Halbfinale, Viertel, ... , Gruppenphase), dann Punkte/Flaschen/Spiele/id
-        usort($stats, function($a, $b){
-            $wa = ($a['platziert_level'] === 0) ? 1000 : $a['platziert_level'];
-            $wb = ($b['platziert_level'] === 0) ? 1000 : $b['platziert_level'];
-            if ($wa !== $wb) return ($wa < $wb) ? -1 : 1;
-            if ($a['punkte'] !== $b['punkte']) return ($a['punkte'] > $b['punkte']) ? -1 : 1;
-            if ($a['flaschen'] !== $b['flaschen']) return ($a['flaschen'] > $b['flaschen']) ? -1 : 1;
-            if ($a['spiele'] !== $b['spiele']) return ($a['spiele'] > $b['spiele']) ? -1 : 1;
-            return ($a['id'] < $b['id']) ? -1 : 1;
-        });
-
-        // Ausgabe mit Trennlinien zwischen Gruppenphase-Aussteiger (platziert_level=0) und KO-Leveln, falls Flag aktiv
-        $currentSection = '__none__';
-        foreach ($stats as $row) {
-            $teamId = (int)$row['id'];
-            $name = htmlspecialchars($row['name']);
-            $spiele = (int)$row['spiele'];
-            $flaschen = (int)$row['flaschen'];
-            $punkte = (int)$row['punkte'];
-            $plLevel = isset($row['platziert_level']) ? (int)$row['platziert_level'] : 0;
-
-            // Nur wenn KO-Loser erlaubt, nach platziert_level trennen
-            if ($lbOpenForKoLosers === 1) {
-                $sectionKey = $plLevel;
-                if ($sectionKey !== $currentSection) {
-                    // Mini-Header pro Abschnitt
-                    if (isset($phaseLabels[$plLevel])) {
-                        $label = $phaseLabels[$plLevel];
-                    } else {
-                        $label = ($plLevel === 0) ? 'Gruppenphase (ausgeschieden)' : 'KO-Level ' . $plLevel;
-                    }
-                    echo "<tr><td colspan='6' style='padding:0.15rem 0.3rem; color:#b00; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; font-weight:bold; border-top:1px solid #d22;'>";
-                    echo htmlspecialchars($label);
-                    echo "</td></tr>";
-                    $currentSection = $sectionKey;
-                }
-            }
-
+        echo "<table class='withBorderCollapse'><thead><tr><th>Team</th><th>Abk.</th><th>Sp.</th><th>Fl.</th><th>Pkt.</th></tr></thead><tbody>";
+        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND (id IN (SELECT fk_heimteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20) OR id IN (SELECT fk_auswaertsteam FROM Turnier_Begegnung WHERE status <> 3 AND ko_finallevel = 20)) ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
+        $resultTeamZeile = $conn->query($sqlTeam);
+        $__lb_rows = 0;
+        while ($resultTeamZeile && ($rowTeamZeile = $resultTeamZeile->fetch_assoc())) {
+            $name=$rowTeamZeile["name"]; $teamId=$rowTeamZeile["id"];
+            $gruppenphase_spiele=$rowTeamZeile["gruppenphase_spiele"];
+            $gruppenphase_flaschen=$rowTeamZeile["gruppenphase_flaschen"];
+            $gruppenphase_punkte=$rowTeamZeile["gruppenphase_punkte"];
             echo "<tr>";
             echo "<td style=\"text-align:left; padding: 0.1em 0.75em !important;\">$name</td>";
             echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">"; $return = printKuerzelWithLink($conn, $teamId); echo $return; echo "</td>";
-            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$spiele</td>";
-            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$flaschen</td>";
-            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$punkte</td>";
-            $siegq = isset($row['siegesquote']) ? $row['siegesquote'] : NULL;
-            if ($siegq === NULL || $siegq === '') {
-                $siegqOut = '<i>-</i>';
-            } else {
-                $val = (float)$siegq;
-                if ($val > 0 && $val <= 1) { $val = $val * 100.0; }
-                $siegqOut = round($val) . ' %';
-            }
-            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$siegqOut</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_spiele</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_flaschen</td>";
+            echo "<td style=\"text-align:right; padding: 0.1em 0.75em !important;\">$gruppenphase_punkte</td>";
             echo "</tr>";
+            $__lb_rows++;
         }
-
+        if ($__lb_rows === 0) {
+            echo "<tr><td colspan='5' style='text-align:center; opacity:.8;'>Noch keine Teams im Losing‑Bracket erfasst.</td></tr>";
+        }
         echo "</tbody></table>";
-        echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
-        echo"<br/><br/>";
-        echo "<div class='note'>Im Losing Bracket zählen alle Spiele des Turniers. Die Gesamt-Rangliste bleibt phasenweise fix: Gruppen-Aussteiger bleiben unter den KO-Leveln. Innerhalb eines Levels können die Losing-Bracket-Spiele die Reihenfolge verschieben. Sortierung: Punkte &gt; Flaschen &gt; Spiele (aufsteigend).</div>";
-        
     }
 
     function printPunktetabelleGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
@@ -1156,10 +1073,6 @@
             </table>
         <?php
         } 
-        echo"<div class='note'>Sortiert wird zuerst nach Punkten, Bei Gleichstand nach Flaschen, dann nach Spielen in verkehrter Reihenfolge. Falls dann immernoch Gleichstand sein sollte, zählt der direkte Vergleich. Sollte euch das auffallen, sagt am besten der Orga Bescheid, weil der direkte Vergleich manuell eingetragen werden muss</div>";
-        echo"<br/><br/>";
-        echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
-        echo"<br/><br/>";
     }
 
     function printKO_PhaseTabellen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
@@ -1195,7 +1108,7 @@
                 <tbody>
                     <tr>";
                         // Erst alle Begegnungen des aktuellen Turniers (Heim oder Auswärtsspiel) filtern und dann dazu die passenden Spiele suchen
-                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` NOT IN (3,6) AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
+                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
                         $resultBegegnung = $conn->query($sqlBegegnung);
                         while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Gegegnung gibt
                             //IDs der Teams speichern
@@ -1291,8 +1204,6 @@
             </table>";
             $ko_finallevel--; //Zähler dekrementieren (nächste Finalstufe)
         }
-        echo"<br/><br/>";
-        echo"<a href='#rangliste' class='button primary'>🏆 Zur Rangliste</a>";
     }
 
     function printKuerzelWithLink($conn, $teamId){
