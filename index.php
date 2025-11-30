@@ -636,7 +636,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- KO-Phase -->
 <article id="kophase">
     <h2>KnockOut-Phase</h2>
-    <a href="#turnierbaum" class="button primary">🎯 Zum Turnierbaum</a>
+    <a href="#turnierbaum" class="button primary">🌲 Zum Turnierbaum</a>
     <br/><br/>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
     <?php printKO_PhaseTabellen($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
