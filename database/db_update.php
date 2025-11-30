@@ -144,18 +144,22 @@ if (php_sapi_name() !== 'cli') {
     function setPlatziertLevelForActiveKoTeams($conn, $TurnierID){
         $tid = (int)$TurnierID;
         // Teams mit aktiven KO-/LB-Begegnungen (nicht final) sollen kein platziert_level behalten (Gruppenphase-Platzierung 0 bleibt erhalten)
+        // Alle Teams, die gerade in laufenden KO-Begegnungen stecken, d��rfen keine alte Platzierung behalten
+        // (auch nicht den Gruppenphasen-Wert 0), sonst werden sie f��lschlich als ausgeschieden angezeigt.
+        // Achtung: Losing Bracket (ko_finallevel = 20) soll das platziert_level=0 behalten, damit sie als Gruppen-Aussteiger markiert bleiben.
+        // Daher nur regul��re KO-Ebenen (<20) nullen.
         $sql = "UPDATE Turnier_Team t
                 JOIN (
                     SELECT fk_heimteam AS team_id
                     FROM Turnier_Begegnung
-                    WHERE status NOT IN (3,4,5,6) AND ko_finallevel > 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = $tid AND geloescht = 0)
+                    WHERE status NOT IN (3,4,5,6) AND ko_finallevel > 0 AND ko_finallevel < 20 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = $tid AND geloescht = 0)
                     UNION ALL
                     SELECT fk_auswaertsteam AS team_id
                     FROM Turnier_Begegnung
-                    WHERE status NOT IN (3,4,5,6) AND ko_finallevel > 0 AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = $tid AND geloescht = 0)
+                    WHERE status NOT IN (3,4,5,6) AND ko_finallevel > 0 AND ko_finallevel < 20 AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = $tid AND geloescht = 0)
                 ) ko ON ko.team_id = t.id
-                SET t.platziert_level = NULL
-                WHERE t.geloescht = 0 AND t.fk_turnier = $tid AND t.platziert_level > 0";
+                SET t.platziert_level = NULL, t.endplatzierung = NULL
+                WHERE t.geloescht = 0 AND t.fk_turnier = $tid AND (t.platziert_level IS NOT NULL OR t.endplatzierung IS NOT NULL)";
         $conn->query($sql);
     }
     function setPlacementsForFinalizedKoLosers($conn, $TurnierID){
@@ -170,7 +174,7 @@ if (php_sapi_name() !== 'cli') {
                       AND b.fk_siegerteam IS NOT NULL
                 ) ko ON ko.loser_id = t.id
                 SET t.platziert_level = ko.lvl
-                WHERE t.geloescht = 0 AND t.fk_turnier = $tid AND t.platziert_level IS NULL";
+                WHERE t.geloescht = 0 AND t.fk_turnier = $tid AND (t.platziert_level IS NULL OR t.platziert_level = 0)";
         $conn->query($sql);
     }
     function setAllEndplatzierungen($conn, $TurnierID){
@@ -1165,32 +1169,14 @@ if (php_sapi_name() !== 'cli') {
                                 //13 24 57 68
                                 //1; 2->3; 3->2; 4; 5; 6->7; 7->6; 8
                                 
-                                $ko_position_team1 = 0;
-                                $ko_position_team2 = 0;
-                                if ($anzahl_gruppen==2){ //SONDERFALL: Nur zwei Gruppen in Gruppenphase - dann soll natürlich nicht versetzt verteilt werden
-                                    $ko_position_team1 = 1;
-                                    $ko_position_team2 = 2;
-                                }else{ //FALL: Mehr als zwei Gruppen in Gruppenphase - dann werden Teams versetzt verteilt auf KO-Plätze
-                                    switch ($zaehlerForKoPosition) {
-                                        case 1:
-                                            $ko_position_team1 = 1;
-                                            $ko_position_team2 = 3;
-                                            break;
-                                        case 3:
-                                            $ko_position_team1 = 2;
-                                            $ko_position_team2 = 4;
-                                            break;
-                                        case 5:
-                                            $ko_position_team1 = 5;
-                                            $ko_position_team2 = 7;
-                                            break;
-                                        case 7:
-                                            $ko_position_team1 = 6;
-                                            $ko_position_team2 = 8;
-                                            break;                         
-                                    }
-                                }
-
+                                // Dynamische Turnierbaum-Positionen fuer alle Start-KO-Level:
+                                // Die beiden Begegnungen eines Gruppenpaares werden in unterschiedliche Haelften gelegt,
+                                // damit sie erst moeglichst spaet (Finale) wieder aufeinandertreffen.
+                                $totalStartSlots = (int)pow(2, max(0, $start_ko_finallevel - 2)); // Anzahl Begegnungen im Start-KO-Level
+                                $slotsPerHalf   = max(1, (int)($totalStartSlots / 2));
+                                $pairIndex      = (int)(($zaehlerForKoPosition - 1) / 2); // 0-basiert: 1.+2. Gruppe = 0, 3.+4. = 1, ...
+                                $ko_position_team1 = $pairIndex + 1; // linke Haelfte
+                                $ko_position_team2 = $ko_position_team1 + $slotsPerHalf; // rechte Haelfte
                                 $gruppeID = $rowGruppe["id"];
                                 $turnierposition_for_ko = $rowGruppe["turnierposition_for_ko"];
                                 
@@ -1540,22 +1526,6 @@ if (php_sapi_name() !== 'cli') {
                                     //Neue Turnierbaumposition berechnen
                                     $ko_turnierbaumposition_alt = $rowBegegnung['ko_turnierbaumposition'];
                                     $ko_turnierbaumposition = ($ko_turnierbaumposition_alt / 2); //Neue Turnierbaumposition ist die alte der zweiten Begegnung durch 2
-                                    if($ko_finallevel_next == 4){ // FALLS GRAD FÜR VIERTELFINALE ERSTELLT WIRD
-                                        switch ($ko_turnierbaumposition) {
-                                            case 1:
-                                                $ko_turnierbaumposition = 1;
-                                                break;
-                                            case 2:
-                                                $ko_turnierbaumposition = 3;
-                                                break;
-                                            case 3:
-                                                $ko_turnierbaumposition = 2;
-                                                break;
-                                            case 4:
-                                                $ko_turnierbaumposition = 4;
-                                                break;                         
-                                        }
-                                    }
                                     //Gewinnerteam herausfinden
                                     if($rowBegegnung['fk_siegerteam'] == $rowBegegnung['fk_heimteam']){
                                         $gewinnerTeam2ID = $rowBegegnung['fk_heimteam'];
@@ -1762,5 +1732,6 @@ if (php_sapi_name() !== 'cli') {
         }*/
     }
 ?>
+
 
 

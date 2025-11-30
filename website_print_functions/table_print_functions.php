@@ -534,11 +534,13 @@
         while ($resLevels && ($rl = $resLevels->fetch_assoc())) {
             $phaseLabels[(int)$rl['id']] = $rl['name'];
         }
+        $phaseLabels['offen'] = 'Noch laufend';
 
         // Daten einsammeln
         $teamsByPlacement = array();
         $limit = 0;
-        $sqlTeam = 'SELECT id, name, endplatzierung, platziert_level FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY ID';
+        // Endplatzierung + platziert_level gemeinsam auslesen, damit die Trennlinien nach platziert_level gesetzt werden k��nnen
+        $sqlTeam = 'SELECT id, name, endplatzierung, platziert_level FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY endplatzierung ASC';
         $resultTeam = $conn->query($sqlTeam);
         while ($resultTeam && ($rowTeam = $resultTeam->fetch_assoc())) {
             $limit++;
@@ -562,7 +564,7 @@
                 $teamId = $teamsByPlacement[$platzierungsZaehler]['id'];
                 $phaseKey = ($teamsByPlacement[$platzierungsZaehler]['level'] === NULL) ? 'offen' : $teamsByPlacement[$platzierungsZaehler]['level'];
             }
-            $phaseLabel = (isset($phaseLabels[$phaseKey])) ? $phaseLabels[$phaseKey] : (($phaseKey === 'offen') ? 'Noch laufend' : 'KO-Level ' . $phaseKey);
+            $phaseLabel = (isset($phaseLabels[$phaseKey])) ? $phaseLabels[$phaseKey] : 'KO-Level ' . $phaseKey;
 
             // Visuelle Trennung pro Phase
             if ($phaseKey !== $currentPhase) {
