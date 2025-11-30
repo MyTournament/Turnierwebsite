@@ -21,6 +21,7 @@ $spielID = $_POST['spielId'];
 $flaschen1 = $_POST['Flaschen1'];
 $flaschen2 = $_POST['Flaschen2'];
 $action = $_POST['action'];
+$finalizeAfterEntry = isset($_POST['finalize_after_entry']) ? 1 : 0;
 //echo "<script>console.log('Action: $action')</script>";
 
 
@@ -222,6 +223,13 @@ if ($action == 'Ändern') {
     echo "<script>console.log('after myDb_execute insert')</script>";
     
     echo "<script>console.log('Testausgabe 5')</script>";
+
+    // Direkt finalisieren, falls gewuenscht
+    if ($finalizeAfterEntry) {
+      $sqlFinalizeAfterInsert = "UPDATE Turnier_Begegnung SET `status` = 5 WHERE id = ?";
+      myDb_execute($conn, $TurnierID, $bn, "edit_games.php finalize_after_insert", $sqlFinalizeAfterInsert, array($begegnungId));
+    }
+
     
     //TODO: Für KO-Phase alle Begegnungen mit 3 Spielen als final markieren
     //-final wird nie wieder als unnötig markiert #done (wird einfach ganz oben nicht als veraltet markiert) - TODO: trotzdem Fall mitbedenken dass Admin ein final-Spiel in Achtel löscht, dann müssten auch Finalspiele in höherer Ebene die darauf folgen gelöscht werden.
