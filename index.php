@@ -663,7 +663,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="turnierbaum">
     <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->   
     <h1>Turnierbaum der KO-Phase <img src="images/icon/sterni1.png" width="40" height="40" border="10" alt="Home"></h1>
-    <p>Hier könnt ihr nachverfolgen, wie sich die verschiedenen Matches ergeben. In einem Kästchen steht immer das Gewinnerteam eines Matches und in der Spalte rechts daneben das Gewinnerteam der nächsten Stufe.</p>
+    <div class="note">Hier könnt ihr nachverfolgen, wie sich die verschiedenen Matches ergeben. In einem Kästchen steht immer das Gewinnerteam eines Matches und in der Spalte rechts daneben das Gewinnerteam der nächsten Stufe.</div>
     <?php printTurnierbaum($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus); ?>
     
     <!--<a href="#kophase" class="button">Zurück zur KO-Phase</a>-->
