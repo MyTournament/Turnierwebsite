@@ -163,7 +163,7 @@
                 <div class="field half">
                     <input type="checkbox" id="finalize-after-entry" name="finalize_after_entry" value="1">
                     <label for="finalize-after-entry">Begegnung direkt finalisieren.</label>
-                    <p class="note" style="margin: 0.35rem 0 0; font-size: 0.8rem;">Mit diesem Haken wird der Website gesagt, dass an dieser Stelle kein weiteres Match ansteht und direkt die Nachfolgespiele berechnet werden können. Falls ihr noch weitere Spiele hier eintragen wollt, lasst die Checkbox frei.</p>
+                    <p class="note" style="margin: 0.35rem 0 0; font-size: 0.8rem;">Mit diesem Haken wird der Website gesagt, dass an dieser Stelle kein weiteres Match ansteht und direkt die Nachfolgespiele berechnet werden können. Falls ihr noch weitere Spiele zwischen den beiden Teams hier eintragen wollt, lasst die Checkbox frei.</p>
                     <h5><br/></h5>  
                 </div>
             </div>
