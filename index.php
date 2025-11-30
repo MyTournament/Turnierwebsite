@@ -560,7 +560,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <a href="#kophase" class="button primary">Zur KO-Phase</a>
               </div>
               <div class="phase-card">
-                <h3><img class="icon" src="images/icon/sterni1.png" alt="Icon"> Losing-Bracket</h3>
+                <h3><img class="icon" src="images/icon/logo_export_icon/transparent/favicon-96x96.png" alt="Icon"> Losing-Bracket</h3>
                 <p class="muted">Im Losing-Bracket geht es für ausgeschiedene Teams weiter - mit Chancen auf eine bessere Endplatzierung und zusätzliche Matches.</p>
                 <a href="#losingbracket" class="button primary">Zum Losing-Bracket</a>
               </div>
