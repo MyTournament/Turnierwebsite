@@ -73,10 +73,10 @@ if ($restultAnzahlWebsiteBesuche) {
         <title>Blankiball Bierball Turnier</title>
         <meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <meta name="description" content="Berlins größtes Bierball-Turnier">
+        <meta name="description" content="Blankiball ist Berlins groesstes Bierball- und Flunkyball-Turnier. Infos, Regeln, Teams und Anmeldung.">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
-        <meta name="keywords" content="REDACTED, bierball, turnier, flunkyball, bier" />
+        <meta name="keywords" content="Blankiball, Bierball, Bierball Berlin, Bierball Turnier, Flunkyball, Flunkyball Turnier, Flunkyball Berlin, Bierball Team Anmeldung, Bierball Regeln, Blankiball Turnier" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
         <link href="images/icon/logo_export_icon/transparent/favicon-96x96.png" rel="shortcut icon" type="image/png">
         
