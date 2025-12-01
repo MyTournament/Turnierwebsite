@@ -114,6 +114,23 @@ if ($restultAnzahlWebsiteBesuche) {
                 }
             })();
         </script>
+        <?php
+        // Strukturierte Navigation f�r Suchmaschinen (Sitelinks-Hinweis)
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $baseUrl = $scheme . '://' . $host;
+        $siteNav = [
+            ['@type' => 'SiteNavigationElement', 'name' => 'Teams', 'url' => $baseUrl . '/#teams'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Team Anmelden', 'url' => $baseUrl . '/#anmelden'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Vergangene Turniere', 'url' => $baseUrl . '/#history'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Info', 'url' => $baseUrl . '/#info'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Regeln', 'url' => $baseUrl . '/#regeln'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Instagram', 'url' => 'https://www.instagram.com/REDACTED_official/?hl=de/'],
+        ];
+        ?>
+        <script type="application/ld+json">
+            <?php echo json_encode(['@context' => 'https://schema.org', '@graph' => $siteNav], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT); ?>
+        </script>
         <?php if (!(isset($is_localhost) && $is_localhost)) { ?>
         <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
         <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
