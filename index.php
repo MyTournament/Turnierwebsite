@@ -1404,7 +1404,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                             Ihr Browser kann dieses Tondokument nicht wiedergeben.<br>
                             Es enth�lt eine Auff�hrung der Europahymne. 
                             Sie k�nnen es unter <a href="#">Link-Addresse</a> abrufen.
-                    </audio></NULL><p><hr></p><p><a href="#bullerei_kommt" class="button">BK</a></p><p class="copyright">Bei Fragen, wende dich an <a href="mailto:kummerkasten@REDACTED.de">kummerkasten@REDACTED.de</a></p class="copyright"><p class="copyright">© Blankiball <a href="#impressum">Impressum</a></p class="copyright"><p class="copyright"><br/>
+                    </audio></NULL><p><hr></p><p><a href="#bullerei_kommt" class="button">BK</a></p><p class="copyright">Bei Fragen, nutze das <a href="#kontakt">Kontaktformular</a></p class="copyright"><p class="copyright">© Blankiball <a href="#impressum">Impressum</a></p class="copyright"><p class="copyright"><br/>
                     <a href="#login">Backstage</a></p class="copyright"></div>-->
     <?php  cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID OberGEBEN (F�r CMS) #####-->
 </footer>
