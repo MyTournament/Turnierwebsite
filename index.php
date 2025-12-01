@@ -174,6 +174,101 @@ if ($restultAnzahlWebsiteBesuche) {
         <?php } else { ?>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <?php } ?>
+        <style>
+            /* Eigenes Design nur für die KO-Navigation (Turnierbaum / Rangliste) */
+            .ko-phase-cta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.85rem;
+                width: 100%;
+                margin: 1.5rem 0 0;
+            }
+            .ko-phase-cta--single {
+                max-width: 440px;
+            }
+            .ko-phase-btn {
+                position: relative;
+                display: flex;
+                flex: 1 1 260px;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.9rem;
+                min-height: 78px;
+                padding: 0.9rem 1.35rem;
+                border-radius: 18px;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                font-weight: 800;
+                line-height: 1.35;
+                white-space: normal;
+                color: #ffffff !important;
+                box-shadow: 0 18px 32px rgba(8, 21, 45, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+                border: 1px solid rgba(255,255,255,0.08);
+                background-clip: padding-box;
+                overflow: hidden;
+                transition: transform 0.16s ease, box-shadow 0.3s ease, filter 0.35s ease;
+            }
+            .ko-phase-btn,
+            .ko-phase-btn:visited,
+            .ko-phase-btn .ko-btn-label,
+            .ko-phase-btn .ko-btn-sub {
+                color: #ffffff !important;
+            }
+            .ko-phase-btn::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(120deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 40%);
+                mix-blend-mode: screen;
+                opacity: 0.8;
+                transition: opacity 0.35s ease;
+            }
+            .ko-phase-btn::after {
+                content: "";
+                position: absolute;
+                right: -18%;
+                top: -40%;
+                width: 42%;
+                height: 180%;
+                background: radial-gradient(circle at center, rgba(255,255,255,0.32), rgba(255,255,255,0));
+                transform: rotate(18deg);
+                opacity: 0.7;
+                transition: transform 0.35s ease, opacity 0.35s ease;
+            }
+            .ko-phase-btn .ko-btn-label {
+                font-size: 1.08rem;
+                letter-spacing: 0.08em;
+            }
+            .ko-phase-btn .ko-btn-sub {
+                font-size: 0.84rem;
+                letter-spacing: 0.02em;
+                opacity: 0.95;
+                display: block;
+            }
+            .ko-phase-btn--tree {
+                background: linear-gradient(135deg, #15457c 0%, #0f7ed6 45%, #11b7c6 100%);
+            }
+            .ko-phase-btn--rank {
+                background: linear-gradient(135deg, #130b1d 0%, #5d1784 45%, #d24678 100%);
+            }
+            .ko-phase-btn--points {
+                background: linear-gradient(135deg, #0d2f2a 0%, #0f8a6d 45%, #3fc7a9 100%);
+            }
+            .ko-phase-btn:hover {
+                transform: translateY(-1px) scale(1.005);
+                box-shadow: 0 22px 38px rgba(8, 21, 45, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+                filter: saturate(1.05);
+            }
+            .ko-phase-btn:hover::before { opacity: 1; }
+            .ko-phase-btn:hover::after {
+                opacity: 0.9;
+                transform: rotate(12deg) translateX(4%);
+            }
+            .ko-phase-btn:active {
+                transform: translateY(0);
+                box-shadow: 0 12px 24px rgba(8, 21, 45, 0.36);
+            }
+        </style>
 	</head>
 <body class="is-preload">
 
@@ -634,7 +729,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
     <h1 class="section-header">Gruppenphase</h1>
     <div class='note' style="font-size: 0.8rem;">Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. Würde das Verliererteam keine Flasche leeren, wäre der Spielstand "3:0".</div>
-    <a href="#punktetabelle" class="button primary">🎯 Zur Punktetabelle</a>
+    <div class="ko-phase-cta ko-phase-cta--single">
+        <a href="#punktetabelle" class="button primary ko-phase-btn ko-phase-btn--points">
+            <span class="ko-btn-label">Punktetabelle</span>
+            <span class="ko-btn-sub">Gruppenphase</span>
+        </a>
+    </div>
     <br/><br/>
     <?php  printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
     <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>  -->
@@ -653,7 +753,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- KO-Phase -->
 <article id="kophase">
     <h2>KnockOut-Phase</h2>
-    <a href="#turnierbaum" class="button primary">🌲 Zum Turnierbaum</a>
+    <div class="ko-phase-cta">
+        <a href="#turnierbaum" class="button primary ko-phase-btn ko-phase-btn--tree">
+            <span class="ko-btn-label">Turnierbaum</span>
+            <span class="ko-btn-sub">Alle KO-Matches</span>
+        </a>
+        <a href="#rangliste" class="button primary ko-phase-btn ko-phase-btn--rank">
+            <span class="ko-btn-label">Rangliste</span>
+            <span class="ko-btn-sub">Live-Positionen</span>
+        </a>
+    </div>
     <br/><br/>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
     <?php printKO_PhaseTabellen($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
@@ -673,6 +782,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     printPunktetabelleLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
     ?>
     <!--<a href="#spielplan" class="button">Zurück zur Übersicht</a>-->
+    <div class="ko-phase-cta">
+        <a href="#rangliste" class="button primary ko-phase-btn ko-phase-btn--rank">
+            <span class="ko-btn-label">Rangliste</span>
+            <span class="ko-btn-sub">Losing-Bracket</span>
+        </a>
+    </div>
     <p></br></p> <!-- Abst??nde unten damit Button auf Handys nicht von Cookiewarnung Oberdeckt wird -->
     <p></br></p>  
 </article>
