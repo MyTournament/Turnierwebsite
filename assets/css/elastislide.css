@@ -2,7 +2,7 @@
 .rg-image-wrapper{
 	position:relative;
 	padding:20px 30px;
-	background:transparent url(../../images/galerie/black.png) repeat top left;
+	background:transparent url(../../images/galerie_buttons/black.png) repeat top left;
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
 	border-radius: 10px;
@@ -60,7 +60,7 @@
 	position:absolute;
 	top:50%;
 	left:8px;
-	background:transparent url(../../images/galerie/nav_thumbs.png) no-repeat top left;
+	background:transparent url(../../images/galerie_buttons/nav_thumbs.png) no-repeat top left;
 	width:14px;
 	height:26px;
 	margin-top:-13px;

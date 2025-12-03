@@ -150,8 +150,8 @@ if ($restultAnzahlWebsiteBesuche) {
             <div class="rg-image-wrapper">
                 {{if itemsCount > 1}}
                 <div class="rg-image-nav">
-                    <a href="#" class="rg-image-nav-prev">Previous Image</a>
-                    <a href="#" class="rg-image-nav-next">Next Image</a>
+                    <a href="#" class="rg-image-nav-prev" aria-label="Previous image"></a>
+                    <a href="#" class="rg-image-nav-next" aria-label="Next image"></a>
                 </div>
                 {{/if}}
                 <div class="rg-image"></div>
@@ -874,6 +874,72 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p></br></p>
 </article>
 
+<?php
+    // Bilder aus dem Galerie-Ordner dynamisch laden
+    $galleryBaseDir = 'images/galerie';
+    $galleryDir = __DIR__ . '/images/galerie';
+    $galleryImages = [];
+    $allowedGalleryExt = ['jpg','jpeg','png','gif','webp','JPG','JPEG','PNG','GIF','WEBP'];
+    if (is_dir($galleryDir)) {
+        $files = array_filter(scandir($galleryDir), function($file) use ($galleryDir, $allowedGalleryExt) {
+            if ($file === '.' || $file === '..') { return false; }
+            if (is_dir($galleryDir . '/' . $file)) { return false; }
+            $ext = pathinfo($file, PATHINFO_EXTENSION);
+            return $ext !== '' && in_array($ext, $allowedGalleryExt, true);
+        });
+        natcasesort($files);
+        foreach ($files as $file) {
+            $galleryImages[] = [
+                'full' => $galleryBaseDir . '/' . $file,
+                'thumb' => is_file($galleryDir . '/thumbs/' . $file) ? $galleryBaseDir . '/thumbs/' . $file : $galleryBaseDir . '/' . $file,
+            ];
+        }
+    }
+?>
+<style>
+    /* Galerie-Navigation mit eigenen Buttons */
+    #galerie .rg-image-wrapper {
+        position: relative;
+    }
+    #galerie .rg-image-nav {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+    #galerie .rg-image-nav a {
+        position: relative;
+        width: 56px;
+        height: 56px;
+        background: rgba(0, 0, 0, 0.45) url('images/galerie_buttons/nav.png') no-repeat left center;
+        background-size: 200% 100%;
+        border-radius: 50%;
+        text-indent: -9999px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+        transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.2s ease;
+        pointer-events: auto;
+        margin: 0 6px;
+    }
+    #galerie .rg-image-nav a.rg-image-nav-prev {
+        background-position: left center;
+    }
+    #galerie .rg-image-nav a.rg-image-nav-next {
+        background-position: right center;
+    }
+    #galerie .rg-image-nav a:hover {
+        transform: scale(1.05);
+        background-color: rgba(0, 0, 0, 0.65);
+        box-shadow: 0 14px 26px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    /* Thumbnails-Navigation mit eigenen Buttons */
+    #galerie .es-nav span {
+        background-image: url('images/galerie_buttons/nav_thumbs.png');
+        width: 18px;
+        height: 32px;
+    }
+</style>
 <article id="galerie">
     
     <!-- Galerie -->
@@ -908,27 +974,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                         </div>
                         <div class="es-carousel">
                             <ul>
-                                <li><a href="#"><img src="images/galerie/thumbs/1.jpg" data-large="images/galerie/1.jpg" alt="image01" data-description="From off a hill whose concave womb reworded" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/2.jpg" data-large="images/galerie/2.jpg" alt="image02" data-description="A plaintful story from a sistering vale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/3.JPG" data-large="images/galerie/3.JPG" alt="image03" data-description="A plaintful story from a sistering vale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/4.jpg" data-large="images/galerie/4.jpg" alt="image04" data-description="My spirits to attend this double voice accorded" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/5.jpg" data-large="images/galerie/5.jpg" alt="image05" data-description="And down I laid to list the sad-tuned tale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/6.jpg" data-large="images/galerie/6.jpg" alt="image06" data-description="Ere long espied a fickle maid full pale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/7.jpg" data-large="images/galerie/7.jpg" alt="image07" data-description="Tearing of papers, breaking rings a-twain" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/8.jpg" data-large="images/galerie/8.jpg" alt="image08" data-description="Storming her world with sorrow's wind and rain" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/9.jpg" data-large="images/galerie/9.jpg" alt="image09" data-description="Upon her head a platted hive of straw" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/10.jpg" data-large="images/galerie/10.jpg" alt="image10" data-description="Which fortified her visage from the sun" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/11.jpg" data-large="images/galerie/11.jpg" alt="image11" data-description="Whereon the thought might think sometime it saw" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/12.jpg" data-large="images/galerie/12.jpg" alt="image12" data-description="The carcass of beauty spent and done" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/13.jpg" data-large="images/galerie/13.jpg" alt="image13" data-description="Time had not scythed all that youth begun" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/14.jpg" data-large="images/galerie/14.jpg" alt="image14" data-description="Nor youth all quit; but, spite of heaven's fell rage" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/15.jpg" data-large="images/galerie/15.jpg" alt="image15" data-description="Some beauty peep'd through lattice of sear'd age" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/16.jpg" data-large="images/galerie/16.jpg" alt="image16" data-description="Oft did she heave her napkin to her eyne" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/17.jpg" data-large="images/galerie/17.jpg" alt="image17" data-description="Which on it had conceited characters" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/18.jpg" data-large="images/galerie/18.jpg" alt="image18" data-description="Laundering the silken figures in the brine" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/19.jpg" data-large="images/galerie/19.jpg" alt="image19" data-description="That season'd woe had pelleted in tears" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/20.jpg" data-large="images/galerie/20.jpg" alt="image20" data-description="And often reading what contents it bears" /></a></li>
-                                
+                                <?php if (!empty($galleryImages)) { ?>
+                                <?php foreach ($galleryImages as $img) { ?>
+                                <li><a href="#"><img src="<?php echo htmlspecialchars($img['thumb'], ENT_QUOTES, 'UTF-8'); ?>" data-large="<?php echo htmlspecialchars($img['full'], ENT_QUOTES, 'UTF-8'); ?>" alt="Galeriebild" /></a></li>
+                                <?php } ?>
+                                <?php } else { ?>
+                                <li><span>Aktuell keine Bilder vorhanden.</span></li>
+                                <?php } ?>
                             </ul>
                         </div>
                     </div>
@@ -1609,9 +1661,3 @@ $('#bookmark-this').click(function (e) {
 
 	</body>
 </html>
-
-
-
-
-
-
