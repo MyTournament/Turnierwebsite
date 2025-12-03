@@ -12,7 +12,8 @@
     // Configure whether snow should disappear after x seconds (0=never):
     var hidesnowtime = 0;
     // Configure how much snow should drop down before fading ("windowheight" or "pageheight")
-    var snowdistance = "pageheight";
+    // Use windowheight so flakes recycle as soon as they leave the viewport and stay visible while scrolling.
+    var snowdistance = "windowheight";
     //0 before start, after that 1
     var startbool=0;
     var size=50;
@@ -39,10 +40,6 @@
     doc_width = iecompattest().clientWidth;
     doc_height = iecompattest().clientHeight;
     }
-    var body = document.body, html = document.documentElement;
-    doc_height = Math.max(   document.body.scrollHeight, document.documentElement.scrollHeight,
-    document.body.offsetHeight, document.documentElement.offsetHeight,
-    document.body.clientHeight, document.documentElement.clientHeight);
 
     dx = new Array();
     xp = new Array();

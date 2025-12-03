@@ -12,7 +12,8 @@
     // Configure whether snow should disappear after x seconds (0=never):
     var hidesnowtime = 0;
     // Configure how much snow should drop down before fading ("windowheight" or "pageheight")
-    var snowdistance = "pageheight";
+    // Use windowheight so cookies recycle once they leave the viewport.
+    var snowdistance = "windowheight";
     //0 before start, after that 1
     var startbool=0;
     var size=50;
@@ -39,10 +40,6 @@
     doc_width = iecompattest().clientWidth;
     doc_height = iecompattest().clientHeight;
     }
-    var body = document.body, html = document.documentElement;
-    doc_height = Math.max(   document.body.scrollHeight, document.documentElement.scrollHeight,
-    document.body.offsetHeight, document.documentElement.offsetHeight,
-    document.body.clientHeight, document.documentElement.clientHeight);
 
     dx = new Array();
     xp = new Array();
@@ -61,9 +58,9 @@
     sty[i] = 0.7 + Math.random();     // set step variables
                 if (ie4up||ns6up) {
         if (i == 0) {
-        document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
+        document.write("<div id=\"dot"+ i +"\" style=\"position: fixed; pointer-events: none; z-index: "+ 1 +"; visibility: hidden; top: 15px; left: 15px;\"><a href=\"http://dynamicdrive.com\"><img width= "+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/a><\/div>");
         } else {
-        document.write("<div id=\"dot"+ i +"\" style=\"POSITION: absolute; Z-INDEX: "+ i +"; VISIBILITY: hidden; TOP: 15px; LEFT: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
+        document.write("<div id=\"dot"+ i +"\" style=\"position: fixed; pointer-events: none; z-index: "+ 1 +"; visibility: hidden; top: 15px; left: 15px;\"><img width= '"+size+"px' height='"+size+"px' src='"+snowsrc+"' border=\"0\"><\/div>");
         }
     }
     }
@@ -73,7 +70,7 @@
     
 
     function snowIE_NS6() {  // IE and NS6 main animation function
-    doc_width = ns6up?window.innerWidth-10 : iecompattest().clientWidth-10;
+    doc_width = (ns6up?window.innerWidth : iecompattest().clientWidth) - (size + 4);
                 doc_height=(window.innerHeight && snowdistance=="windowheight")? window.innerHeight : (ie4up && snowdistance=="windowheight")?  iecompattest().clientHeight : (ie4up && !window.opera && snowdistance=="pageheight")? iecompattest().scrollHeight : iecompattest().offsetHeight;
     for (i = 0; i < no; ++ i) {  // iterate for every dot
         
@@ -86,8 +83,12 @@
         sty[i] = 0.7 + Math.random();
         }
         dx[i] += stx[i];
-        document.getElementById("dot"+i).style.top=yp[i]+"px";
-        document.getElementById("dot"+i).style.left=xp[i] + am[i]*Math.sin(dx[i])+"px";
+        var leftPos = xp[i] + am[i]*Math.sin(dx[i]);
+        if (leftPos < 2) leftPos = 2;
+        if (leftPos > doc_width) leftPos = doc_width;
+        var el = document.getElementById("dot"+i);
+        el.style.top = yp[i]+"px";
+        el.style.left = leftPos+"px";
         }
     }
     snowtimer=setTimeout("snowIE_NS6()", 10);
