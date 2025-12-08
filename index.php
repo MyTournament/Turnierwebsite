@@ -999,7 +999,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- schiedsrichter*innen -->
 <article id="history">
     <h1>Vergangene Turniere</h1>
-    <p>W�hle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
+    <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
     <p>Hier geht's zur alten Website (2017-2020)</p>
     <a href="https://2018-20.REDACTED.de" class="button primary">Alte Website (2017-2020)</a>
