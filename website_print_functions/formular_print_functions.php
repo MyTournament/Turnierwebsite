@@ -322,9 +322,9 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <input type="text" id="spieler1" name="Spieler1" class="Eingabe" placeholder="1. Bierballer*in &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['Spieler1']) ? htmlspecialchars($prev['Spieler1'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
     <input type="text" id="tel1" name="tel1" class="Eingabe" placeholder="1. Telefonnummer &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['tel1']) ? htmlspecialchars($prev['tel1'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
     <input type="text" id="spieler2" name="Spieler2" class="Eingabe" placeholder="2. Bierballer*in &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['Spieler2']) ? htmlspecialchars($prev['Spieler2'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
-    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['tel2']) ? htmlspecialchars($prev['tel2'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="tel2" name="tel2" class="Eingabe" placeholder="2. Telefonnummer" style="color: white" maxlength="40" value="<?php echo isset($prev['tel2']) ? htmlspecialchars($prev['tel2'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
     <input type="text" id="spieler3" name="Spieler3" class="Eingabe" placeholder="3. Bierballer*in &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['Spieler3']) ? htmlspecialchars($prev['Spieler3'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
-    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer &#9733;" style="color: white" maxlength="40" required value="<?php echo isset($prev['tel3']) ? htmlspecialchars($prev['tel3'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
+    <input type="text" id="tel3" name="tel3" class="Eingabe" placeholder="3. Telefonnummer" style="color: white" maxlength="40" value="<?php echo isset($prev['tel3']) ? htmlspecialchars($prev['tel3'], ENT_QUOTES, 'UTF-8') : ''; ?>"><br/>
     <i>Die Einträge dürfen nicht länger als 20 Buchstaben sein.</i>
     <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
     <p></br></p>
