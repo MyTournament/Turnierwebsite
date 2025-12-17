@@ -3,6 +3,10 @@
 //########################
 include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
+// Output-Buffer aktivieren, damit Debug-/Backup-Logs die Header-Weiterleitung nicht blockieren
+if (!headers_sent()) {
+    ob_start();
+}
 //DATENBANKBACKUP MACHEN
 //include_once '../database/db_backup.php';
 //########################
