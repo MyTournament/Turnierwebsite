@@ -476,9 +476,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 echo "<br/><br/>";
             } ?>
             <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-            
-            
-            
         </div>
     </div>
 </header>
@@ -537,6 +534,310 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
     <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
+    <p></br></p>
+</article>
+<!-- ADVENTSCUP SPECIAL -->
+<article id="adventscup-special">
+    <h2>Special-Regeln für den Adventscup</h2>
+    <p>Zieh per Knopfdruck eine zufällige Sonderregel für den Adventscup.</p>
+    <div class="advent-lottery" id="advent-lottery">
+        <div class="advent-pot">
+            <div class="pot-lid"></div>
+            <div class="pot-ribbon"></div>
+            <div class="pot-dots">
+                <span style="--d:0s;"></span>
+                <span style="--d:0.08s;"></span>
+                <span style="--d:0.16s;"></span>
+                <span style="--d:0.24s;"></span>
+            </div>
+            <div class="pot-glow"></div>
+            <div class="pot-aura"></div>
+            <div class="pot-label">Lostopf</div>
+        </div>
+        <div class="advent-result">
+            <p class="muted" id="advent-draw-status">Bereit zum Ziehen</p>
+            <h3 id="advent-draw-title">---</h3>
+            <p id="advent-draw-text" class="advent-rule-text">Tippe auf den Button, um eine Regel zu ziehen.</p>
+            <button type="button" class="button primary" id="advent-draw-btn">Regel ziehen</button>
+        </div>
+    </div>
+    <style>
+        #adventscup-special h2 {
+            font-size: clamp(2rem, 3vw, 2.6rem);
+            margin-bottom: 0.4rem;
+        }
+        #adventscup-special p {
+            font-size: 1rem;
+        }
+        #advent-lottery {
+            display: grid;
+            grid-template-columns: minmax(180px, 220px) 1fr;
+            gap: 1.2rem;
+            align-items: center;
+            padding: 1.2rem;
+            margin-top: 0.8rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            box-shadow: 0 22px 40px rgba(0,0,0,0.25);
+        }
+        @media (max-width: 720px) {
+            #advent-lottery {
+                grid-template-columns: 1fr;
+            }
+        }
+        #advent-lottery .advent-pot {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background: linear-gradient(160deg, #1a2839, #1f3f56 45%, #122031);
+            border-radius: 26px;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 12px 26px rgba(0,0,0,0.35);
+        }
+        #advent-lottery .advent-pot::before {
+            content: "";
+            position: absolute;
+            inset: 10%;
+            border-radius: 22px;
+            background: conic-gradient(from 0deg, rgba(255,255,255,0.14), rgba(255,255,255,0), rgba(255,255,255,0.22));
+            opacity: 0.8;
+            filter: blur(8px);
+            transform-origin: center;
+            animation: potGlow 6s linear infinite;
+            pointer-events: none;
+        }
+        #advent-lottery .advent-pot::after {
+            content: "";
+            position: absolute;
+            inset: 6%;
+            border-radius: 22px;
+            background:
+                linear-gradient(135deg, rgba(255,215,0,0.6), rgba(255,215,0,0)),
+                linear-gradient(225deg, rgba(200,0,0,0.3), rgba(200,0,0,0)),
+                linear-gradient(0deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+            mix-blend-mode: screen;
+            opacity: 0.7;
+        }
+        #advent-lottery .pot-lid {
+            position: absolute;
+            top: 12%;
+            left: 12%;
+            right: 12%;
+            height: 14%;
+            background: linear-gradient(120deg, #b4232e, #e94545 50%, #b4232e);
+            border-radius: 14px 14px 10px 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25), inset 0 0 0 2px rgba(255,255,255,0.15);
+        }
+        #advent-lottery.is-drawing .pot-lid {
+            animation: lidWobble 0.9s ease-in-out infinite;
+            transform-origin: 50% 110%;
+        }
+        #advent-lottery .pot-ribbon {
+            position: absolute;
+            inset: 38% 0 38% 0;
+            background: linear-gradient(90deg, #c5152f, #f54b4b, #c5152f);
+            opacity: 0.9;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.08);
+        }
+        #advent-lottery .pot-ribbon::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -28%;
+            width: 40%;
+            height: 70%;
+            transform: translateX(-50%) rotate(-2deg);
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.6), rgba(255,255,255,0));
+            filter: blur(4px);
+        }
+        #advent-lottery .pot-dots {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+        }
+        #advent-lottery .pot-dots span {
+            width: 28%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffd16b, #ff7f7f 65%, #5a3f7c 100%);
+            opacity: 0.15;
+            transform: scale(0.7);
+        }
+        #advent-lottery.is-drawing .pot-dots span {
+            animation: lottoBounce 0.9s ease-in-out infinite;
+            animation-delay: var(--d);
+            opacity: 0.5;
+        }
+        #advent-lottery .pot-glow {
+            position: absolute;
+            inset: 28% 14% 14% 14%;
+            background: radial-gradient(circle at 50% 35%, rgba(255,255,255,0.25), rgba(255,255,255,0));
+            filter: blur(10px);
+            pointer-events: none;
+        }
+        #advent-lottery .pot-aura {
+            position: absolute;
+            inset: -12%;
+            background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.14), rgba(255,255,255,0));
+            filter: blur(22px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #advent-lottery.is-drawing .pot-aura {
+            opacity: 1;
+            animation: auraPulse 1.2s ease-in-out infinite;
+        }
+        #advent-lottery.is-drawing .advent-pot {
+            animation: potShake 0.9s ease-in-out infinite;
+        }
+        #advent-lottery .pot-label {
+            position: absolute;
+            bottom: 11%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.85);
+            font-size: 0.95rem;
+        }
+        #advent-lottery .advent-result h3 {
+            margin: 0.1rem 0 0.4rem;
+            font-size: clamp(1.4rem, 2.8vw, 1.9rem);
+        }
+        #advent-lottery .advent-rule-text {
+            margin-bottom: 0.9rem;
+            font-size: 1rem;
+            opacity: 0.92;
+        }
+        #advent-lottery button.button {
+            min-width: 180px;
+        }
+        #advent-lottery .muted {
+            opacity: 0.8;
+            margin: 0;
+        }
+        @keyframes lottoBounce {
+            0%, 100% { transform: translateY(0) scale(0.82); }
+            50% { transform: translateY(-14%) scale(1); opacity: 0.7; }
+        }
+        @keyframes potGlow {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes auraPulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes potShake {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-2%) rotate(-1deg); }
+            50% { transform: translateY(1%) rotate(1deg); }
+            75% { transform: translateY(-1%) rotate(-0.5deg); }
+        }
+        @keyframes lidWobble {
+            0%, 100% { transform: rotate(0deg); }
+            30% { transform: rotate(-6deg); }
+            60% { transform: rotate(6deg); }
+        }
+    </style>
+    <script>
+    (function(){
+        var dataUrl = 'assets/data/adventcup_rules.json';
+        var drawBtn = document.getElementById('advent-draw-btn');
+        var statusEl = document.getElementById('advent-draw-status');
+        var titleEl = document.getElementById('advent-draw-title');
+        var textEl = document.getElementById('advent-draw-text');
+        var lottery = document.getElementById('advent-lottery');
+        var rulesCache = null;
+
+        function sanitizeWeight(value) {
+            var num = parseInt(value, 10);
+            if (isNaN(num) || num < 1) { return 1; }
+            return num;
+        }
+
+        function pickWeightedRule(rules) {
+            var valid = rules.filter(function(rule){ return rule && typeof rule.description === 'string'; });
+            if (!valid.length) { return null; }
+            var total = valid.reduce(function(sum, rule){
+                return sum + sanitizeWeight(rule.weight);
+            }, 0);
+            var ticket = Math.random() * total;
+            for (var i = 0; i < valid.length; i++) {
+                ticket -= sanitizeWeight(valid[i].weight);
+                if (ticket <= 0) { return valid[i]; }
+            }
+            return valid[valid.length - 1] || null;
+        }
+
+        function endDraw(chosen) {
+            if (lottery) { lottery.classList.remove('is-drawing'); }
+            if (drawBtn) { drawBtn.disabled = false; }
+            if (chosen) {
+                statusEl.textContent = 'Gezogene Regel';
+                titleEl.textContent = chosen.title || 'Regel';
+                textEl.textContent = chosen.description || '';
+            } else {
+                statusEl.textContent = 'Keine Regel gefunden';
+                titleEl.textContent = 'Bitte Datei prüfen';
+                textEl.textContent = 'assets/data/adventcup_rules.json';
+            }
+        }
+
+        function drawRule() {
+            if (!drawBtn || !statusEl || !titleEl || !textEl || !lottery) { return; }
+            drawBtn.disabled = true;
+            lottery.classList.add('is-drawing');
+            statusEl.textContent = 'Lostopf mischt...';
+            titleEl.textContent = '???';
+            textEl.textContent = '...';
+
+            var finalizeDraw = function(chosen){
+                setTimeout(function(){ endDraw(chosen); }, 900);
+            };
+
+            var onError = function(message){
+                if (lottery) { lottery.classList.remove('is-drawing'); }
+                if (drawBtn) { drawBtn.disabled = false; }
+                statusEl.textContent = 'Konnte Regeln nicht laden';
+                titleEl.textContent = 'assets/data/adventcup_rules.json';
+                textEl.textContent = message || 'Bitte Datei prüfen.';
+            };
+
+            var useRules = function(rules){
+                finalizeDraw(pickWeightedRule(rules));
+            };
+
+            if (rulesCache) {
+                useRules(rulesCache);
+                return;
+            }
+
+            fetch(dataUrl, { cache: 'no-store' })
+                .then(function(response){
+                    if (!response.ok) { throw new Error('HTTP ' + response.status); }
+                    return response.json();
+                })
+                .then(function(data){
+                    rulesCache = Array.isArray(data) ? data : [];
+                    useRules(rulesCache);
+                })
+                .catch(function(err){
+                    onError(err && err.message ? err.message : 'Unbekannter Fehler');
+                });
+        }
+
+        if (drawBtn) {
+            drawBtn.addEventListener('click', drawRule);
+        }
+    })();
+    </script>
+    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 <!-- TEAMS -->
