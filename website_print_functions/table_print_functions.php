@@ -171,11 +171,12 @@
             $pw = $_POST['pw'];
             $successfulLogin = 0; //false
             $teamBearbeitungsrecht = 0; // Veraltet?
+            $spielerinfoMaxRecht = 15; // darf Spieler*innen-Infos sehen
             foreach ($benutzerliste as $b){
                 if(
                     $b['Benutzername'] == $bn and
                     $b['Passwort'] == $pw and
-                    $b['fk_rechte'] <= 15
+                    intval($b['fk_rechte']) <= $spielerinfoMaxRecht
                 ){
                     $successfulLogin = 1;
                     $teamBearbeitungsrecht = 1;

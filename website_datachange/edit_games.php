@@ -34,11 +34,11 @@ $pw = $_POST['pw'];
 $benutzerliste = getBenutzerListe($conn);
 $accountDarfSpieleBearbeiten = 0; //false
 while ($row = $benutzerliste->fetch_assoc()) {
-  if(
-    $row['Benutzername'] == $bn and
-    $row['Passwort'] == $pw and
-    $row['fk_rechte'] <= 1
-  ){
+  if (
+    $row['Benutzername'] == $bn &&
+    $row['Passwort'] == $pw &&
+    $row['fk_rechte'] <= 20
+  ) {
     $accountDarfSpieleBearbeiten = 1;
   }
 }
