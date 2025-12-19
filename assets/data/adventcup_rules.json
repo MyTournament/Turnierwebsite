@@ -81,7 +81,7 @@
   },
   {
     "title": "Dreier-Reihe",
-    "description": "Drei Flaschen werden hintereinander in die Mitte gestellt mit jeweils 2 Schritte Anstand, sodass die mittlere genau in der Mitte des Spielfelds steht und die anderen beiden jeweils in Richtung eines Teams. Ziel ist ist immernoch die Mittelflasche zu treffen, wenn man nur eine der anderen trifft passiert nichts. Wenn aber die Mittelflasche und mind. 1 andere umfallen müssen auch alle Flaschen zusammen aufgestellt werden.",
+    "description": "Drei Flaschen werden hintereinander in die Mitte gestellt mit jeweils 2 Schritte Abstand, sodass die mittlere genau in der Mitte des Spielfelds steht und die anderen beiden jeweils in Richtung eines Teams. Ziel ist ist immernoch die Mittelflasche zu treffen, wenn man nur eine der anderen trifft passiert nichts. Wenn aber die Mittelflasche und mind. 1 andere umfallen müssen auch alle Flaschen zusammen aufgestellt werden.",
     "weight": 1
   },
   {
