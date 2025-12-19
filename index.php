@@ -595,6 +595,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             overflow: hidden;
             box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 12px 26px rgba(0,0,0,0.35);
         }
+        @media (max-width: 720px) {
+            #advent-lottery .advent-pot {
+                padding-top: 55%; /* in der mobilen Ansicht etwa halb so hoch */
+            }
+        }
         #advent-lottery .advent-pot::before {
             content: "";
             position: absolute;
