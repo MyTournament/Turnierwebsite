@@ -1,75 +1,71 @@
 <?php
-    /*
-    $db_server = "REDACTED";
-    $db_benutzer = "REDACTED";
-    $db_passwort = "";
-    $db_name = "REDACTED";
+    $cfg = [
+        'db_server' => getenv('DB_SERVER') ?: '',
+        'db_username' => getenv('DB_USERNAME') ?: '',
+        'db_password' => getenv('DB_PASSWORD') ?: '',
+        'db_name' => getenv('DB_NAME') ?: '',
+    ];
 
-    // Create connection
-    $conn = new mysqli($db_server, $db_benutzer, $db_passwort,$db_name);
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
+    $local_cfg_path = __DIR__ . '/db_connection.local.php';
+    if (file_exists($local_cfg_path)) {
+        $local_cfg = include $local_cfg_path;
+        if (is_array($local_cfg)) {
+            $cfg = array_merge($cfg, $local_cfg);
+        }
     }
-    */
-    
-    class Database{
 
-        // specify your own database credentials
-        /*private $db_server = "REDACTED";
-        private $db_username = "REDACTED";
-        private $db_password = "REDACTED";
-        private $db_name = "REDACTED";*/
-        private $db_server = "REDACTED";
-        private $db_username = "REDACTED";
-        private $db_password = "REDACTED";
-        private $db_name = "REDACTED";
-        
+    class Database{
+        private $db_server;
+        private $db_username;
+        private $db_password;
+        private $db_name;
+
         public $PDOconn;
 
-        public function getConnectionMySQLi(){ //Für Website
-            
-            // Create connection
-            $mysqliconn = new mysqli($this->db_server, $this->db_username, $this->db_password,$this->db_name);
-            // Check connection
+        public function __construct(array $cfg){
+            $this->db_server = $cfg['db_server'] ?? '';
+            $this->db_username = $cfg['db_username'] ?? '';
+            $this->db_password = $cfg['db_password'] ?? '';
+            $this->db_name = $cfg['db_name'] ?? '';
+        }
+
+        public function getConnectionMySQLi(){ //Fuer Website
+            $mysqliconn = new mysqli(
+                $this->db_server,
+                $this->db_username,
+                $this->db_password,
+                $this->db_name
+            );
             if ($mysqliconn->connect_error) {
                 die("Connection failed: " . $mysqliconn->connect_error);
             }
-            
-            // Will NOT affect $mysqli->real_escape_string();
+
             $mysqliconn->query("SET NAMES utf8mb4");
-
-            // Will NOT affect $mysqli->real_escape_string();
             $mysqliconn->query("SET CHARACTER SET utf8mb4");
-
-            // But, this will affect $mysqli->real_escape_string();
             $mysqliconn->set_charset('utf8mb4');
 
-            // But, this will NOT affect it (UTF-8 vs utf8mb4) -- don't use dashes here
-            //$mysqliconn->set_charset('UTF-8');
-
             return $mysqliconn;
-            
         }
-        
 
-        // get the PDO database connection
         public function getConnection(){
-    
             $this->PDOconn = null;
-    
+
             try{
-                $this->PDOconn = new PDO("mysql:host=" . $this->db_server . ";dbname=" . $this->db_name, $this->db_username, $this->db_password);
+                $this->PDOconn = new PDO(
+                    "mysql:host=" . $this->db_server . ";dbname=" . $this->db_name,
+                    $this->db_username,
+                    $this->db_password
+                );
                 $this->PDOconn->exec("set names utf8");
             }catch(PDOException $exception){
                 //echo "Connection error: " . $exception->getMessage();
             }
-    
+
             return $this->PDOconn;
         }
     }
 
-    $temp_db = new Database();
-    $conn = $temp_db->getConnectionMySQLi(); //Für Richards Website-Teile. Jonas inizialisiert jeweils an der nutzenden Klasse mit ->getConnection()
+    $temp_db = new Database($cfg);
+    $conn = $temp_db->getConnectionMySQLi();
 
 ?>
