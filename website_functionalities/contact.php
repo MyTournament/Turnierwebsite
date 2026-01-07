@@ -1,39 +1,55 @@
 <?php
-$name = $_POST['name'];
-$email = $_POST['email'];
-$message = $_POST['message'];
+if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
 
-include_once 'send_mail.php';
+require_once __DIR__ . '/captcha_blanki.php';
+require_once __DIR__ . '/mail_transport.php';
 
-$SECRET_KEY = "REDACTED";    # replace with your secret key
-$VERIFY_URL = "https://hcaptcha.com/siteverify";
-# Retrieve token from post data with key 'h-captcha-response'.
-$token = request.POST_DATA['h-captcha-response'];
-# Build payload with secret key and token.
-$data = { 'secret': $SECRET_KEY, 'response': $token };
-# Make POST request with data payload to hCaptcha API endpoint.
-$response = http.post(url=$VERIFY_URL, data=$data);
-# Parse JSON from response. Check for success or error codes.
-$response_json = JSON.parse(response.content);
-$success = response_json['success'];
-/*
-{
-    "success": true|false,     // is the passcode valid, and does it meet security criteria you specified, e.g. sitekey?
-    "challenge_ts": timestamp, // timestamp of the challenge (ISO format yyyy-MM-dd'T'HH:mm:ssZZ)
-    "hostname": string,        // the hostname of the site where the challenge was solved
-    "credit": true|false,      // optional: whether the response will be credited
-    "error-codes": [...]       // optional: any error codes
-    "score": float,            // ENTERPRISE feature: a score denoting malicious activity.
-    "score_reason": [...]      // ENTERPRISE feature: reason(s) for score.
- }
-*/
-if($success){
-    $action = $_POST['action'];
-    if($action == "send_message"){
-        //PER MAIL VERSENDEN
-        mail_att("kummerkasten@REDACTED.de", $email, $name." hat das Kontaktformular benutzt", $message);
-    }
+$name    = trim($_POST['name'] ?? '');
+$email   = trim($_POST['email'] ?? '');
+$message = trim($_POST['message'] ?? '');
+
+// Captcha prüfen
+if (!CaptchaBlanki::passed('contact')) {
+    $_SESSION['flash_error_contact'] = 'Bitte zuerst das Captcha bestätigen.';
+    header('Location: /#kontakt');
+    exit;
 }
 
-header("Location: /#kontakt_success");
-?>
+// Basale Validierung
+if ($name === '' || $email === '' || $message === '') {
+    $_SESSION['flash_error_contact'] = 'Bitte alle Felder ausfüllen.';
+    header('Location: /#kontakt');
+    exit;
+}
+
+// E-Mail grob prüfen, Telefonnummer erlauben (dann keine klassische Mail-Validierung)
+$emailValid = filter_var($email, FILTER_VALIDATE_EMAIL);
+if (!$emailValid && !preg_match('/^[+0-9 ()-]{6,}$/', $email)) {
+    $_SESSION['flash_error_contact'] = 'Bitte eine gültige E-Mail-Adresse oder Telefonnummer angeben.';
+    header('Location: /#kontakt');
+    exit;
+}
+
+// Nachricht vorbereiten
+$subject = 'Neue Kontaktanfrage (Website)';
+$body = "Es gab eine neue Nachricht über das Kontaktformular.\n\n";
+$body .= "Name: {$name}\n";
+$body .= "Email/Tel: {$email}\n";
+$body .= "Nachricht:\n{$message}\n\n";
+$body .= "Gesendet am: " . date('Y-m-d H:i:s');
+
+$result = send_contact_message([
+    'subject'    => $subject,
+    'body_text'  => $body,
+    'reply_to'   => $email,
+    'reply_name' => $name,
+]);
+
+if ($result['success']) {
+    header('Location: /#kontakt_success');
+    exit;
+}
+
+$_SESSION['flash_error_contact'] = 'Senden fehlgeschlagen: ' . ($result['error'] ?? 'Unbekannter Fehler');
+header('Location: /#kontakt');
+exit;

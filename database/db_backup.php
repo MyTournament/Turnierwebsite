@@ -174,22 +174,16 @@ function cleanupBackups($backupDir, $backupLimits) {
         }
     }
 
-    foreach ($groups['monthly'] as $files) {
-        if (count($files) > $backupLimits['monthly']) {
-            evenlyDelete($files, $backupLimits['monthly'], 'monthly');
-        }
+    if (count($groups['monthly']) > $backupLimits['monthly']) {
+        $groups['monthly'] = evenlyDelete($groups['monthly'], $backupLimits['monthly'], 'monthly');
     }
 
-    foreach ($groups['yearly'] as $files) {
-        if (count($files) > $backupLimits['yearly']) {
-            evenlyDelete($files, $backupLimits['yearly'], 'yearly');
-        }
+    if (count($groups['yearly']) > $backupLimits['yearly']) {
+        $groups['yearly'] = evenlyDelete($groups['yearly'], $backupLimits['yearly'], 'yearly');
     }
 
-    foreach ($groups['older'] as $files) {
-        if (count($files) > $backupLimits['older']) {
-            evenlyDelete($files, $backupLimits['older'], 'older');
-        }
+    if (count($groups['older']) > $backupLimits['older']) {
+        $groups['older'] = evenlyDelete($groups['older'], $backupLimits['older'], 'older');
     }
 }
 

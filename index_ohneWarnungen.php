@@ -867,12 +867,19 @@ include_once 'database/traffic_analytics.php';
             while ($rowTurnier = $resultTurnier->fetch_assoc()) {
                 $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
             }
-            if($teilnahmebeitrag == 1){
-                echo "
-                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
-                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
-                ";
+            if (is_string($teilnahmebeitrag)) {
+                $teilnahmebeitrag = str_replace(',', '.', $teilnahmebeitrag);
+            }
+            $teilnahmebeitragValue = (is_numeric($teilnahmebeitrag)) ? (float)$teilnahmebeitrag : 0.0;
+            if ($teilnahmebeitragValue > 0) {
+                if (floor($teilnahmebeitragValue) == $teilnahmebeitragValue) {
+                    $teilnahmebeitragText = number_format($teilnahmebeitragValue, 0, ',', '.');
+                } else {
+                    $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
+                }
+                echo "<h3><a href='" . $link_solibeitrag . "'>&#128147;Teilnahmebeitrag&#128147;</a></h3>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
         ?>
         
@@ -935,12 +942,19 @@ include_once 'database/traffic_analytics.php';
             while ($rowTurnier = $resultTurnier->fetch_assoc()) {
                 $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
             }
-            if($teilnahmebeitrag == 1){
-                echo "
-                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
-                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
-                ";
+            if (is_string($teilnahmebeitrag)) {
+                $teilnahmebeitrag = str_replace(',', '.', $teilnahmebeitrag);
+            }
+            $teilnahmebeitragValue = (is_numeric($teilnahmebeitrag)) ? (float)$teilnahmebeitrag : 0.0;
+            if ($teilnahmebeitragValue > 0) {
+                if (floor($teilnahmebeitragValue) == $teilnahmebeitragValue) {
+                    $teilnahmebeitragText = number_format($teilnahmebeitragValue, 0, ',', '.');
+                } else {
+                    $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
+                }
+                echo "<h3><a href='" . $link_solibeitrag . "'>&#128147;Teilnahmebeitrag&#128147;</a></h3>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
             echo "</br></br></br>
             <h3><img src='images/icon/whatsapp.png' width='20' height='20' border='5' alt='Home'> Komm in die Gruppe</h3>
@@ -965,7 +979,7 @@ include_once 'database/traffic_analytics.php';
 <!-- logincheck_failure -->
 <article id="logincheck_failure">
     <h1>Login fehlgeschlagen</h1>
-    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an kummerkasten@REDACTED.de</p>
+    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an <a href="#kontakt">die Orga</a></p>
     <a class="button" href='#'>Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
@@ -974,7 +988,7 @@ include_once 'database/traffic_analytics.php';
 <!-- edit_games_success -->
 <article id="edit_games_success">
     <h1>Danke für deinen Eintrag!</h1>
-    <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an <a href="#kontakt">die Orga</a>!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
@@ -983,7 +997,7 @@ include_once 'database/traffic_analytics.php';
 <!-- edit_games_failure -->
 <article id="edit_games_failure">
     <h1>Ups, da ist wohl etwas schiefgelaufen!</h1>
-    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an <a href="#kontakt">die Orga</a>!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>

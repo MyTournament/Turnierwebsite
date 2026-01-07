@@ -3,19 +3,19 @@ include_once '../database/db_backup.php';
 
 function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray) {
     //DATABASE_BACKUP
-    backup_main($conn);
+    echo "<script>console.log('myDb_execute before backup')</script>";
+    try{
+        backup_main($conn);
+    }catch(Throwable $e){
+        error_log("backup_main failed: ".$e->getMessage());
+        echo "<script>console.error('backup_main failed: " . addslashes($e->getMessage()) . "');</script>";
+    }
+    echo "<script>console.log('myDb_execute after backup')</script>";
 
-    
-    //echo "<hr>";
-    //echo "NEUE DB-INTERFACE-AUSFUEHRUNG";
-    //echo "<br/><br/>SQL: \"$sql\" <br/>";
-    /*$stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        die("Fehler beim Prepare: " . $conn->error);
-    }*/
-
-
-    echo"<script>console.log('myDb_execute Checkpoint 1 $argArray[4]')</script>";
+    echo "<script>console.log('myDb_execute start')</script>";
+    echo "<script>console.log('myDb_execute SQL', " . json_encode($sql) . ");</script>";
+    echo "<script>console.log('myDb_execute args', " . json_encode($argArray) . ");</script>";
+    error_log("myDb_execute start | SQL: $sql | Args: " . json_encode($argArray));
     /*
     //zählen wie viele Parameter ich habe
     $argCount = count($argArray); //weil erster Parameter ja der sql Befehl ist
@@ -44,13 +44,24 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
     try {
         $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            $err = $conn->error;
+            echo "<script>console.error('myDb_execute prepare failed: " . addslashes($err) . "');</script>";
+            echo "<pre>SQL-Fehler (prepare): " . htmlspecialchars($err, ENT_QUOTES, 'UTF-8') . "</pre>";
+            die("SQL-Fehler (prepare): " . $err);
+        }
         $argCount = count($argArray);
         $types = str_repeat("s", $argCount);
         $stmt->bind_param($types, ...$argArray);
         $stmt->execute();
         echo "<script>console.log('myDb_execute Checkpoint 2')</script>";
+        error_log("myDb_execute ok | SQL: $sql");
     } catch (mysqli_sql_exception $e) {
         error_log("Fehler bei SQL: " . $e->getMessage());
+        echo "<script>console.error('myDb_execute SQL error: " . addslashes($e->getMessage()) . "');</script>";
+        echo "<script>console.error('SQL: " . addslashes($sql) . "');</script>";
+        echo "<script>console.error('Args: " . addslashes(json_encode($argArray)) . "');</script>";
+        echo "<pre>SQL-Fehler: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "\nSQL: " . htmlspecialchars($sql, ENT_QUOTES, 'UTF-8') . "\nArgs: " . htmlspecialchars(json_encode($argArray), ENT_QUOTES, 'UTF-8') . "</pre>";
         die("SQL-Fehler: " . $e->getMessage());
     }
 
@@ -79,12 +90,16 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
         echo"<script>console.log('myDb_execute Checkpoint 3')</script>";
 
         //SQL-Befehle werden mit prepare und bind_param ausgeführt. Dies ist der empfohlene Ansatz, um SQL-Injections zu verhindern
-        $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, ort_auf_website, content, fk_website) VALUES (?, ?, ?, ?)');
-        $paramArr = [$bn, $ort_auf_website, $content, 1];
-        $stmtDbVerlauf->bind_param("ssss", ...$paramArr);
-        $stmtDbVerlauf->execute();
+        try {
+            $stmtDbVerlauf = $conn->prepare('INSERT INTO System_Data_DB_Verlauf (fk_who, ort_auf_website, content, fk_website) VALUES (?, ?, ?, ?)');
+            $paramArr = [$bn, $ort_auf_website, $content, 1];
+            $stmtDbVerlauf->bind_param("ssss", ...$paramArr);
+            $stmtDbVerlauf->execute();
 
-        echo"<script>console.log('myDb_execute Checkpoint 4')</script>";
+            echo"<script>console.log('myDb_execute Checkpoint 4')</script>";
+        } catch (mysqli_sql_exception $e) {
+            echo "<script>console.error('DB_Verlauf insert failed: " . addslashes($e->getMessage()) . "')</script>";
+        }
 
         //echo "<br/>";
         //printf("SQL: Datenaetze eingefuegt: %d.\n", $stmt->affected_rows); //echo "<br/>";
