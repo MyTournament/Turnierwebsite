@@ -44,5 +44,9 @@ Local and environment-specific configuration lives outside the repo to avoid
 committing secrets. See `SETUP.md` for local development guidance and use
 `local_secrets/*.local.php` for your private values.
 
+Some content in this repository is event-specific (e.g., emails, donation links,
+social handles). For a new tournament, update those values in configuration or
+content files as needed.
+
 ## License
 See repository details or add a license file if you plan to open-source this project.

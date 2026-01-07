@@ -1,2 +1,5 @@
 debug.log
 local_secrets/*.local.php
+*.bak
+tmp_*
+temp_*
