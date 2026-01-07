@@ -62,7 +62,12 @@ if (!headers_sent()) {
 
         // ALT: hCaptcha-Validierung (deaktiviert, nur auskommentiert belassen)
         /*
-        $SECRET_KEY = "REDACTED";    # replace with your secret key
+        $hcaptcha_cfg = [];
+        $hcaptcha_cfg_path = __DIR__ . '/../local_secrets/hcaptcha.local.php';
+        if (file_exists($hcaptcha_cfg_path)) {
+            $hcaptcha_cfg = include $hcaptcha_cfg_path;
+        }
+        $SECRET_KEY = $hcaptcha_cfg['secret_key'] ?? '';    # replace with your secret key
         $VERIFY_URL = "https://hcaptcha.com/siteverify";
         $token = $_POST['h-captcha-response'];
         $data = array('secret'=>$SECRET_KEY,'response'=>$token,'remoteip'=>$_SERVER['REMOTE_ADDR']);

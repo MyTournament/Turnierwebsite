@@ -6,7 +6,7 @@
         'db_name' => getenv('DB_NAME') ?: '',
     ];
 
-    $local_cfg_path = __DIR__ . '/db_connection.local.php';
+    $local_cfg_path = __DIR__ . '/../local_secrets/db_connection.local.php';
     if (file_exists($local_cfg_path)) {
         $local_cfg = include $local_cfg_path;
         if (is_array($local_cfg)) {

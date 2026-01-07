@@ -1,2 +1,2 @@
 debug.log
-database/db_connection.local.php
+local_secrets/*.local.php
