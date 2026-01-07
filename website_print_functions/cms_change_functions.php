@@ -1,6 +1,9 @@
 <?php
 
 function changeContent($conn, $TurnierID, $contentID, $content, $content_style_tag, $function, $content_order_in_group){
+    // Zugriff auf globale Testturnier-ID absichern
+    global $test_turnier_id;
+    if (!isset($test_turnier_id)) { $test_turnier_id = 0; }
     //$contentID = $_POST['contentID'];
     //$content = $_POST['content']; //?id=$contentID
     echo "<i>Content mit der ID $contentID wird bearbeitet</i>";

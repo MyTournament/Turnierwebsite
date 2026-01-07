@@ -1,0 +1,127 @@
+[
+  {
+    "title": "Blankiball Invers",
+    "description": "Wenn Team A daneben wirft, darf Team B solange trinken, bis Team A die Wurfflasche wiedergeholt und die Standflasche umgetreten hat. Bei einem Treffer wird nicht getrunken. Die Wurfflasche geht danach natürlich immer das Team was grad nicht geworfen hat",
+    "weight": 3
+  },
+  {
+    "title": "Seitenwechsel nach Treffern",
+    "description": "Bei jedem Treffer gibts einen Seitenwechsel während des Aufstellens/Trinkens. Das aufstellende Team muss dabei zuerst rüberrennen, die Biere abstellen und danach aufstellen. Sobald aufstellendes Team Stopp ruft muss auch trinkendes Team an neuer Haltelinie stehen, ansonsten gibts nen Strafshot. Hierbei gilt natürlich die StVO",
+    "weight": 3
+  },
+  {
+    "title": "Zwei Extraregeln",
+    "description": "Zieht noch zwei weitere Regeln dazu, die beide gelten",
+    "weight": 1
+  },
+  {
+    "title": "Shot nach Fehlwurf",
+    "description": "Werfer*in muss shotten nach jedem Nicht-Treffer (immer direkt nach dem Wurf). Ansonsten Strafschluck für das gegnerische Team.",
+    "weight": 1
+  },
+  {
+    "title": "Zu dritt vier Bier",
+    "description": "Zu dritt vier Bier (Jede*r darf aus jedem Bier trinken)",
+    "weight": 1
+  },
+  {
+    "title": "Gleichzeitig werfen",
+    "description": "Es gibt 2 Standflaschen und 2 Wurfflaschen und beide Teams werfen (& eventuell laufen & trinken) gleichzeitig",
+    "weight": 1
+  },
+  {
+    "title": "Nur Trickshots",
+    "description": "Nur Trickshots erlaubt. Bitte keine zu einfachen.",
+    "weight": 1
+  },
+  {
+    "title": "Blind näher ran",
+    "description": "Beide Teams 1m näher ran und Werfer*in ist blind",
+    "weight": 1
+  },
+  {
+    "title": "Blind trinken vorab",
+    "description": "Trinkspiel vor der Bierballrunde: Blind trinken bis zu einer vorher festgelegten Markierung. Schiri entscheidet, welches Team im Schnitt näher an der Markierung ist. Gewinnerteam spielt mit dem Bier die Blankiball-Runde, Verliererteam bekommt neues Bier (Je weiter unten die gewählte Markierung, desto mehr Risiko).",
+    "weight": 1
+  },
+  {
+    "title": "Bier erst bei Treffer öffnen",
+    "description": "Werfer*in darf erst Bier bei Treffer öffnen (auch wirklich nur die Person die geworfen hat). Man darf dann direkt trinken. Solange noch nicht alle Biere offen sind, ist Make it take it ausgesetzt.",
+    "weight": 1
+  },
+  {
+    "title": "Werfen von der Flasche",
+    "description": "Man muss von da werfen wo die Wurfflasche liegen bleibt. Das Team muss sich auch dort aufstellen",
+    "weight": 1
+  },
+  {
+    "title": "Rückwärts laufen",
+    "description": "Es darf nur noch rückwärts gelaufen werden. Dafür darf werfendes Team erst zwei Sekunden später anfangen zu trinken. Schiri zählt laut die zwei Sekunden.",
+    "weight": 1
+  },
+  {
+    "title": "Rückwärts durch die Beine",
+    "description": "Beide Teams 1m näher ran und nur noch rückwärts durch Beine werfen",
+    "weight": 1
+  },
+  {
+    "title": "Immer schnicken",
+    "description": "Jedes mal schnicken! Teams schnicken vor jedem Wurf gegeneinander. Gewinnerteam darf werfen",
+    "weight": 1
+  },
+  {
+    "title": "Fußball",
+    "description": "Die Wurfflasche darf ab jetzt nur noch mit dem Fuß getreten werden.",
+    "weight": 1
+  },
+  {
+    "title": "Wurfchaos",
+    "description": "Genauso viele Wurf und Standflaschen wie Leute im Team. Wenn ein Team dran ist mit werfen, dann werfen alle drei Personen gleichzeitig. Falls mindestens eine Person trifft, darf so lange getrunken werden, bis das gegnerische Team alle umgefallenen Flaschen wieder aufgestellt und alle Wurfflaschen geholt hat. Es ist aber nicht erlaubt, dass z.B. eine Person die Wurffalsche taktisch irgendwo anders hin auf die Wiese schmettert um Zeit zu erkaufen. Hier darf der Schiri nach Ermessen Strafschlücke verteilen",
+    "weight": 1
+  },
+  {
+    "title": "Dreier-Reihe",
+    "description": "Drei Flaschen werden hintereinander in die Mitte gestellt mit jeweils 2 Schritte Abstand, sodass die mittlere genau in der Mitte des Spielfelds steht und die anderen beiden jeweils in Richtung eines Teams. Ziel ist ist immernoch die Mittelflasche zu treffen, wenn man nur eine der anderen trifft passiert nichts. Wenn aber die Mittelflasche und mind. 1 andere umfallen müssen auch alle Flaschen zusammen aufgestellt werden.",
+    "weight": 1
+  },
+  {
+    "title": "Zieltest",
+    "description": "Drei Flaschen werden nebeneinander in die Mitte gestellt mit je ein Fuß Abstand. Die mittlere Flasche ist die normale Standflasche. Die beiden Flaschen daneben zählen als Strafschluck fürs gegnerische Team.",
+    "weight": 1
+  },
+  {
+    "title": "Tornado",
+    "description": "Nach jedem Treffer müssen sich alle einmal um die eigene Achse drehen und dann erst trinken.",
+    "weight": 1
+  },
+  {
+    "title": "Duell parallel",
+    "description": "Es werden parallel drei 1 vs 1 Bierballrunden nebeneinander auf dem gleichen Spielfeld gespielt. Es braucht also drei Stand- und drei Wurfflaschen. Die Zuteilung der Personen kann entweder ausgemacht oder bei Unstimmigkeiten gelost werden. Gewonnen hat das Team, welches mindestens zwei 1 vs 1 Duelle gewinnt.",
+    "weight": 1
+  },
+  {
+    "title": "Duell nacheinander",
+    "description": "Es werden nacheinander drei 1 vs 1 Bierballrunden gespielt. Jede Person muss mindestens einmal antreten. Die Zuteilung der Personen kann entweder ausgemacht oder bei Unstimmigkeiten gelost werden. Gewonnen hat das Team, welches mindestens zwei 1 vs 1 Duelle gewinnt",
+    "weight": 1
+  },
+  {
+    "title": "Schwache Hand",
+    "description": "Werfen nur mit schwacher Hand (ehrlich sein bitte)",
+    "weight": 1
+  },
+  {
+    "title": "Neue Regel erfinden",
+    "description": "Die Person, die getroffen hat, darf sich eine Regel ausdenken, die für beide Teams gilt. Alte Regeln bleiben bestehen.",
+    "weight": 1
+  },
+  {
+    "title": "Schneeballmatch entscheidet",
+    "description": "Statt einer Bierballrunde entscheidet ein Schneeballmatch. 20 Würfe pro Team, Abstand wie bei Bierball, kein Ausweichen mit den Füßen erlaubt, sondern nur durch Neigung des Oberköpers. Sonst Strafschlücke. Sollte kein Schnee liegen, dann neue Regel ziehen",
+    "weight": 1
+  },
+  {
+    "title": "Immer Schneebälle",
+    "description": "Falls Schnee liegt, darf ab jetzt nur noch mit Schneebällen geworfen werden - und zwar parallel. Also alle aus dem Team dürfen sich zu jeder Zeit Schneebälle machen und von der Grundlinie asynchron werfen. Sobald ein Team trifft, darf es trinken und das andere muss aufstellen. Falls kein Schnee liegt, zieht eine neue Regel",
+    "weight": 1
+  }
+]

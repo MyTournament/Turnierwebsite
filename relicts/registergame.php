@@ -68,7 +68,7 @@ include_once '../variables.php';
                   $begegnungID = $row["id"]; // ID der Begegnung speichern
               }
               if ($begegnungID == 0){ //fehlerhafter Login
-                $message = "Leider keine passende Begegnung gefunden. Wende dich gerne an kummerkasten@REDACTED.de";
+                $message = "Leider keine passende Begegnung gefunden. Wende dich gerne an <a href='#kontakt'>die Ogra</a>";
                 echo "<script type='text/javascript'>alert('$message');</script>";
               }else{}
               echo "<script>console.log('BegegnungsID: $begegnungID')</script>";
@@ -150,7 +150,7 @@ include_once '../variables.php';
 						<div class="content">
 						  <div class="inner">
                 <h1>Vielen Dank für deinen Eintrag!</h1>
-								<p>Wenn alles geklappt hat (du also gerade keine Fehlermeldung bekommen hast), sollte deine Änderung direkt sichtbar sein. Falls nicht, lade die Seite entweder einmal neu oder schreibe eine Mail an kummerkasten@REDACTED.de</a></p>
+								<p>Wenn alles geklappt hat (du also gerade keine Fehlermeldung bekommen hast), sollte deine Änderung direkt sichtbar sein. Falls nicht, lade die Seite entweder einmal neu oder schreibe eine Mail an <a href="#kontakt">Kontakt</a></a></p>
 							</div>
 						</div>
 						<nav>
@@ -185,7 +185,7 @@ include_once '../variables.php';
                 
 				<!-- Footer -->
 					<footer id="footer">
-              <p class="copyright">Bei Fragen, wende dich an <a>kummerkasten@REDACTED.de</a></p>
+              <a href="#kontakt" class="button primary">Kontakt</a>
               <p class="copyright">&copy; Blankiball. <a href="https://REDACTED.de#impressum">Impressum</a></p>  
 					</footer>
                     

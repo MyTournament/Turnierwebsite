@@ -343,7 +343,6 @@ $stmt->bind_param($fk_random);*/
 
 <h2 class="major">Impressum</h2>
     <p>Das Turnier ist ausschließlich ein privates Zusammentreffen und keine öffentliche Veranstaltung. Diese Website ist keine offizielle Veranstaltungswebsite und Inhaber der Website sind keine Veranstalter.</p>
-    <p>Bei Fragen: kummerkasten@REDACTED.de</p>
     <p></br></p>
 
 
@@ -425,7 +424,7 @@ $stmt->bind_param($fk_random);*/
 
     <hr>
 
-    <p class="copyright">Bei Fragen, wende dich an <a href="mailto:kummerkasten@REDACTED.de">kummerkasten@REDACTED.de</a></p>
+    
     <p class="copyright">&copy; Blankiball. <a href="#impressum">Impressum</a></p> 
     <p></p> 
     <p class="copyright"><a href="#platzhalter">Platzhalter</a> ... <a href="#elements">Testumgebung</a> ... <a href="#backstage">Backstage</a> ... <a href="#login">Login</a></p> 

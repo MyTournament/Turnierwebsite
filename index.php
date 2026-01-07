@@ -1,4 +1,7 @@
 <?php
+// Start PHP session early so captcha tokens persist via cookie
+if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 //include_once 'database/db_backup.php';
@@ -11,10 +14,13 @@ include_once 'variables.php'; //Variablen einbinden (Turniernummer) //Wichtig da
 // error_log($debug_message, 3, $log_file_path);
 
 //BULLEREI KOMMT
+// Fallback-Initialisierungen f�r lokale Umgebung
+if (!isset($websiteId)) { $websiteId = 1; }
+if (!isset($sperrung)) { $sperrung = 0; }
 $sqlWebsite = 'SELECT * FROM `System_Website` WHERE id = '. $websiteId .' ORDER BY ID';
 $resultWebsite = $conn->query($sqlWebsite);
 while ($rowWebsite = $resultWebsite->fetch_assoc()) {
-    $sperrung = $rowWebsite['sperrung'];
+    $sperrung = isset($rowWebsite['sperrung']) ? $rowWebsite['sperrung'] : 0;
 }
 
 if($sperrung == 1){
@@ -23,20 +29,41 @@ if($sperrung == 1){
 
 include_once 'website_functionalities/load_website.php';
 $website_array = determine_domain_id($conn);
-$websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #Übersicht
+$websiteId = 1; //$website_array[0]; //TODO: auch die anderen Websites die der Domain zugeordnet sind irgendwie nutzen #übersicht
 if ($websiteId == null){
     echo "WEBSITE nicht gefunden";
 }
 
+// Umgebungsprüfung (Localhost/Private Netzwerke)
+if (!function_exists('is_local_env')) {
+    function is_local_env(): bool {
+        $hosts = [];
+        if (isset($_SERVER['REMOTE_ADDR'])) { $hosts[] = $_SERVER['REMOTE_ADDR']; }
+        if (isset($_SERVER['SERVER_ADDR'])) { $hosts[] = $_SERVER['SERVER_ADDR']; }
+        if (isset($_SERVER['HTTP_HOST']))   { $hosts[] = $_SERVER['HTTP_HOST']; }
+        foreach ($hosts as $h) {
+            $h = strtolower((string)$h);
+            if ($h === 'localhost' || $h === '127.0.0.1' || $h === '::1') { return true; }
+            if (strpos($h, 'localhost') !== false || str_ends_with($h, '.local')) { return true; }
+            if (preg_match('/^10\./', $h)) { return true; }
+            if (preg_match('/^192\.168\./', $h)) { return true; }
+            if (preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $h)) { return true; }
+        }
+        return false;
+    }
+}
+if (!isset($is_localhost)) { $is_localhost = is_local_env(); }
+
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
-insert_traffic($conn, $websiteId, 'anonym', 3 , ' hat die Website besucht');
+if (!$is_localhost) { insert_traffic($conn, $websiteId, 'anonym', 3 , ' hat die Website besucht'); }
 
-$sqlAnzahlWebsiteBesuche = 'SELECT * FROM `System_Traffic` WHERE fk_kategorie = 3 AND fk_website = '. $websiteId .' ORDER BY ID';
+$sqlAnzahlWebsiteBesuche = 'SELECT COUNT(*) AS c FROM `System_Traffic` WHERE fk_kategorie = 3 AND fk_website = '. (int)$websiteId;
 $restultAnzahlWebsiteBesuche = $conn->query($sqlAnzahlWebsiteBesuche);
 $anzahlWebsiteBesuche = 0;
-while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
-    $anzahlWebsiteBesuche+=1;
+if ($restultAnzahlWebsiteBesuche) {
+    $rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc();
+    if ($rowAnzahlWebsiteBesuche && isset($rowAnzahlWebsiteBesuche['c'])) { $anzahlWebsiteBesuche = (int)$rowAnzahlWebsiteBesuche['c']; }
 }
 ?>
 
@@ -46,21 +73,71 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         <title>Blankiball Bierball Turnier</title>
         <meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <meta name="description" content="Berlins größtes Bierball-Turnier">
+        <meta name="description" content="Blankiball ist Berlins groesstes Bierball- und Flunkyball-Turnier. Infos, Regeln, Teams und Anmeldung.">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
-        <meta name="keywords" content="REDACTED, bierball, turnier, flunkyball, bier" />
+        <meta name="keywords" content="Blankiball, Bierball, Bierball Berlin, Bierball Turnier, Flunkyball, Flunkyball Turnier, Flunkyball Berlin, Bierball Team Anmeldung, Bierball Regeln, Blankiball Turnier" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
         <link href="images/icon/logo_export_icon/transparent/favicon-96x96.png" rel="shortcut icon" type="image/png">
         
-         <!-- für Galerie -->
+         <!-- f�r Galerie -->
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <link rel="stylesheet" type="text/css" href="assets/css/elastislide.css" />
+        <?php /* JS für Captcha deaktiviert: server-submit Modus */ ?>
+        <!-- hCaptcha: Altcode auskommentiert und durch eigenes Bild-Captcha ersetzt
+        <?php if (!(isset($is_localhost) && $is_localhost)) { ?>
+        <script>
+        (function(){ /* hCaptcha Lazy-Loader deaktiviert */ })();
+        </script>
+        <?php } ?>
+        -->
+        <script>
+            // Unterdr?cke laute Debug-Logs aus eingebundenem PHP/JS
+            try { if (!window.__suppressLogs) { window.__suppressLogs = true; console.log = function(){}; } } catch(e){}
+            // Entsch?rfe doppelte IDs, um DOM-Warnungen zu vermeiden
+            (function(){
+                var ids = ['benutzercheck','passwdcheck','changegame_bn','changegame_pw','email','kuerzel','message','name','passwort'];
+                function deDupe(id){
+                    var nodes = document.querySelectorAll('#'+CSS.escape(id));
+                    if (nodes.length > 1){
+                        for (var i=1;i<nodes.length;i++){
+                            var el = nodes[i];
+                            // nur anpassen, wenn exakt dieser id-Wert gesetzt ist
+                            if (el.id === id) el.id = id + '_' + (i+1);
+                        }
+                    }
+                }
+                if (document.readyState === 'loading'){
+                    document.addEventListener('DOMContentLoaded', function(){ ids.forEach(deDupe); });
+                } else {
+                    ids.forEach(deDupe);
+                }
+            })();
+        </script>
+        <?php
+        // Strukturierte Navigation f�r Suchmaschinen (Sitelinks-Hinweis)
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $baseUrl = $scheme . '://' . $host;
+        $siteNav = [
+            ['@type' => 'SiteNavigationElement', 'name' => 'Teams', 'url' => $baseUrl . '/#teams'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Team Anmelden', 'url' => $baseUrl . '/#anmelden'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Vergangene Turniere', 'url' => $baseUrl . '/#history'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Info', 'url' => $baseUrl . '/#info'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Regeln', 'url' => $baseUrl . '/#regeln'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Instagram', 'url' => 'https://www.instagram.com/REDACTED_official/?hl=de/'],
+        ];
+        ?>
+        <script type="application/ld+json">
+            <?php echo json_encode(['@context' => 'https://schema.org', '@graph' => $siteNav], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT); ?>
+        </script>
+        <?php if (!(isset($is_localhost) && $is_localhost)) { ?>
         <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow&v1' rel='stylesheet' type='text/css' />
         <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css' />
+        <?php } ?>
 
-        <!-- für Captcha -->
-        <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+        <!-- f�r Captcha -->
+        <?php /* if (!(isset($is_localhost) && $is_localhost)) { ?><script src="https://js.hcaptcha.com/1/api.js" async defer></script><?php } */ ?>
         
         <noscript>
             <style>
@@ -73,8 +150,8 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             <div class="rg-image-wrapper">
                 {{if itemsCount > 1}}
                 <div class="rg-image-nav">
-                    <a href="#" class="rg-image-nav-prev">Previous Image</a>
-                    <a href="#" class="rg-image-nav-next">Next Image</a>
+                    <a href="#" class="rg-image-nav-prev" aria-label="Previous image"></a>
+                    <a href="#" class="rg-image-nav-next" aria-label="Next image"></a>
                 </div>
                 {{/if}}
                 <div class="rg-image"></div>
@@ -89,21 +166,109 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         <!--Ende Galerie -->
 
         <!-- HOME SCREEN LINK -->
-        <!--<link rel="stylesheet" href="css/addtohomescreen.css">-->
-        <script rel="stylesheet" type="text/css" src="website_functionalities/add_to_homescreen/style/addtohomescreen.css"></script>
-        <script src="website_functionalities/add_to_homescreen/src/addtohomescreen.js"></script>
-        <script>
-            if(
-                (("standalone" in window.navigator) && !window.navigator.standalone) //ios
-                ||
-                ( !window.matchMedia('(display-mode: standalone').matches ) //android
-            ){
-                addToHomescreen();
-            }
-        </script>
+        <!-- AddToHomeScreen entfernt (nicht genutzt / lokal teuer) -->
 
-        <!-- Additionally, include jQuery (necessary for the bookmark script) -->
+        <!-- jQuery: lokal aus Assets statt CDN -->
+        <?php if (isset($is_localhost) && $is_localhost) { ?>
+        <script src="assets/js/jquery.min.js"></script>
+        <?php } else { ?>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <?php } ?>
+        <style>
+            /* Eigenes Design nur für die KO-Navigation (Turnierbaum / Rangliste) */
+            .ko-phase-cta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.85rem;
+                width: 100%;
+                margin: 1.5rem 0 0;
+            }
+            .ko-phase-cta--single {
+                max-width: 440px;
+            }
+            .ko-phase-btn {
+                position: relative;
+                display: flex;
+                flex: 1 1 260px;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.9rem;
+                min-height: 78px;
+                padding: 0.9rem 1.35rem;
+                border-radius: 18px;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                font-weight: 800;
+                line-height: 1.35;
+                white-space: normal;
+                color: #ffffff !important;
+                box-shadow: 0 18px 32px rgba(8, 21, 45, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+                border: 1px solid rgba(255,255,255,0.08);
+                background-clip: padding-box;
+                overflow: hidden;
+                transition: transform 0.16s ease, box-shadow 0.3s ease, filter 0.35s ease;
+            }
+            .ko-phase-btn,
+            .ko-phase-btn:visited,
+            .ko-phase-btn .ko-btn-label,
+            .ko-phase-btn .ko-btn-sub {
+                color: #ffffff !important;
+            }
+            .ko-phase-btn::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(120deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 40%);
+                mix-blend-mode: screen;
+                opacity: 0.8;
+                transition: opacity 0.35s ease;
+            }
+            .ko-phase-btn::after {
+                content: "";
+                position: absolute;
+                right: -18%;
+                top: -40%;
+                width: 42%;
+                height: 180%;
+                background: radial-gradient(circle at center, rgba(255,255,255,0.32), rgba(255,255,255,0));
+                transform: rotate(18deg);
+                opacity: 0.7;
+                transition: transform 0.35s ease, opacity 0.35s ease;
+            }
+            .ko-phase-btn .ko-btn-label {
+                font-size: 1.08rem;
+                letter-spacing: 0.08em;
+            }
+            .ko-phase-btn .ko-btn-sub {
+                font-size: 0.84rem;
+                letter-spacing: 0.02em;
+                opacity: 0.95;
+                display: block;
+            }
+            .ko-phase-btn--tree {
+                background: linear-gradient(135deg, #15457c 0%, #0f7ed6 45%, #11b7c6 100%);
+            }
+            .ko-phase-btn--rank {
+                background: linear-gradient(135deg, #130b1d 0%, #5d1784 45%, #d24678 100%);
+            }
+            .ko-phase-btn--points {
+                background: linear-gradient(135deg, #0d2f2a 0%, #0f8a6d 45%, #3fc7a9 100%);
+            }
+            .ko-phase-btn:hover {
+                transform: translateY(-1px) scale(1.005);
+                box-shadow: 0 22px 38px rgba(8, 21, 45, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+                filter: saturate(1.05);
+            }
+            .ko-phase-btn:hover::before { opacity: 1; }
+            .ko-phase-btn:hover::after {
+                opacity: 0.9;
+                transform: rotate(12deg) translateX(4%);
+            }
+            .ko-phase-btn:active {
+                transform: translateY(0);
+                box-shadow: 0 12px 24px rgba(8, 21, 45, 0.36);
+            }
+        </style>
 	</head>
 <body class="is-preload">
 
@@ -111,29 +276,50 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <div id="wrapper">
 
 <?php
-    echo "<script>console.log('WebsiteId: ' + $websiteId)</script>";
+
+// Ensure UTF-8 output for correct umlaut rendering
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+}
+if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
+    // Debug-Ausgabe entfernt: WebsiteId
     include_once 'website_functionalities/countdown.php';
     include_once 'website_functionalities/test_turnier_mode.php'; //Test-Modus
     include_once 'database/db_update.php'; //Wichtig dass das nach Test-Modus-Abfrage kommt damit das mit aktualisierter TurnierID passiert
-    try{
-        db_update($conn, $TurnierID); //db_update.php AUSFÜHREN
+    // Localhost erkennen und DB-Update standardm??ig deaktivieren
+    $is_localhost = false;
+    if (isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1','::1'])) { $is_localhost = true; }
+    if (isset($_SERVER['HTTP_HOST']) && stripos($_SERVER['HTTP_HOST'], 'localhost') !== false) { $is_localhost = true; }
+    $should_run_update = true;
+    if ($is_localhost) {
+        $should_run_update = (isset($_POST['run_db_update']) && $_POST['run_db_update'] == '1');
+    }
+    // Hinweis: im lokalen Testmodus wird db_update nur manuell per Button ausgef?hrt (siehe Banner oben)
+    if ($should_run_update) { try{
+        db_update($conn, $TurnierID); //db_update.php AUSF?HREN
     }catch (Exception $e) {
         $message = $e->getMessage();
         print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***$message*** ###</i>";
     }catch (Throwable $e) { //Alles was nicht schon vorher abgefangen wird
         print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***unbekannter Fehler*** ###</i>";
     }
+    }
     foreach (glob("website_print_functions/*.php") as $filename){
         include_once $filename;
     }
-    $siteID = 1; // SITE ID (Für CMS)
+    $siteID = 1; // SITE ID (F�r CMS)
+    // Lokale Defaults für optionale POST-Werte
+    if (!isset($_POST['gameEditMode'])) { $_POST['gameEditMode'] = 0; }
+    if (!isset($_POST['expertenmodus'])) { $_POST['expertenmodus'] = 0; }
+    if (!isset($_POST['bn'])) { $_POST['bn'] = null; }
+    if (!isset($_POST['pw'])) { $_POST['pw'] = null; }
 
     $gameEditMode = 0; //
     $expertenmodus = 0;
     $gameEditMode = $_POST['gameEditMode'];
     $expertenmodus = $_POST['expertenmodus'];
 
-    //ANMELDUNG FÜR CMS
+    //ANMELDUNG für CMS
     $bn = $_POST["bn"];
     $pw = $_POST["pw"];
     
@@ -144,8 +330,9 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
                 $edit_content_mode = False;
             }
         }
+    if (!isset($edit_content_mode)) { $edit_content_mode = False; }
     if($LoggedInWithCMSorHigher){
-        $edit_content_mode = $_POST["edit_content_mode"];
+        $edit_content_mode = isset($_POST["edit_content_mode"]) ? $_POST["edit_content_mode"] : False;
         //align-items: right;webkit-align-items: right;
         echo "
         <div style='position: absolute; text-align: right;width:100%'>
@@ -182,6 +369,26 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 ?>
 
 <header id="header"> 
+    <?php if (isset($is_localhost) && $is_localhost && isset($should_run_update) && !$should_run_update) { ?>
+        <div id="local-db-update-banner" style="position:fixed; top:10px; right:10px; z-index:9999; background: rgba(0,0,0,0.7); color:#fff; padding:8px 12px; border-radius:8px; font-size:12px; line-height:1.3; box-shadow:0 2px 8px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px;">
+            <span>Lokaler Modus: Automatisches DB-Update deaktiviert.</span>
+            <form method="POST" style="margin:0;">
+                <?php
+                    // Vorhandene relevante POST-Felder erhalten
+                    $preserve_fields = ['bn','pw','edit_content_mode','gameEditMode','expertenmodus'];
+                    foreach ($preserve_fields as $f) {
+                        if (isset($_POST[$f])) {
+                            $v = is_scalar($_POST[$f]) ? (string)$_POST[$f] : json_encode($_POST[$f]);
+                            $v = htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+                            echo "<input type='hidden' name='".$f."' value='".$v."'>";
+                        }
+                    }
+                ?>
+                <input type="hidden" name="run_db_update" value="1">
+                <button type="submit" style="background:#28a745; color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px;">Update jetzt ausf?hren</button>
+            </form>
+        </div>
+    <?php } ?>
     <div > <!-- class="logo" -->
         <!-- <img src="images/icon/sterni1.png" width="70" height="70" border="10" alt="Home"> -->
         <img src="images/sterni_logo/logo_sterni.png" width="150" height=auto border="10" alt="Home">
@@ -200,15 +407,15 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             echo"<h1>$anzeige_titel</h1>";
             echo"<p>$anzeige_subtitel</p>";
             ?>
-            <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+            <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
         </div>
     </div>
     <!--<button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>-->
     <nav>
         <ul>
-            <li><a href="#info">📚 Info</a></li>
-            <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">👮🏽‍♀️ Regeln</a></li>
-            <li class='button'><a href='#teams'>👨‍👧‍👧 Teams</a></li>
+            <li><a href="#info">ℹ️ Info</a></li>
+            <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">📖 Regeln</a></li>
+            <li class='button'><a href='#teams'>👩‍👧‍👦Teams</a></li>
             <?php 
             //Aktuelle Turnierphase herausfinden - erstmal ID
                 $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
@@ -219,14 +426,14 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
                 }
 
                 //SPIELPLAN
-                if($turnier_phase_ID == 4 ||$turnier_phase_ID == 5 || $turnier_phase_ID == 7 || $turnier_phase_ID == 9 || $turnier_phase_ID == 11){
-                    echo"<li><a href='#spielplan' >🎯 Spielplan</a></li>";
+                if($turnier_phase_ID == 4 ||$turnier_phase_ID == 5 || $turnier_phase_ID == 7 || $turnier_phase_ID == 9 || $turnier_phase_ID == 11 || $turnier_phase_ID == 13){
+                    echo"<li><a href='#spielplan' >🗓️ Spielplan</a></li>";
                     //onclick='"insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich den Spielplan angesehen');"
                 }else{
-                    echo"<li class='button disabled'><a href='#spielplan'>🎯 Spielplan</a></li>";
+                    echo"<li class='button disabled'><a href='#spielplan'>🗓️ Spielplan</a></li>";
                 }
             ?>    
-            <li><a href="https://www.paypal.com/paypalme/REDACTED?country.x=DE&locale.x=de_DE">❤ Spenden</a></li>        
+            <li><a href="https://www.paypal.com/paypalme/REDACTED?country.x=DE&locale.x=de_DE">♥️ Spenden</a></li>        
         </ul>
     </nav>
     <div class="content">
@@ -245,18 +452,22 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 
             <h2 id='demo' style='color: white'></h2>
             <p id="test"></p>
-            <script> 
-            var datum_aus_db = "<?php echo $countdown_date?>";//"Sep 26, 2022 14:00:00";
-            let countDownDate = new Date(datum_aus_db).getTime(); 
-            //document.write(datum_aus_db);
-            countdown(countDownDate); 
-            </script> 
+            <script>
+            (function(){
+                var datum_aus_db = "<?php echo $countdown_date?>"; // "Sep 26, 2022 14:00:00"
+                if (!window.__countdownInit) {
+                    window.__countdownInit = true;
+                    var _cd = new Date(datum_aus_db).getTime();
+                    countdown(_cd);
+                }
+            })();
+            </script>
             <!-- "Sep 26, 2022 14:00:00" -->
             <?php //ANMELDUNG
             if($turnier_phase_ID == 1){
                 echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
                 cmsPrintSection($websiteId, $siteID, $TurnierID, 32, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
-            }else if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
+            }else if($turnier_phase_ID == 3 || $turnier_phase_ID == 11 || $turnier_phase_ID == 13){
                 echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
                 cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
             }else if($turnier_phase_ID == 12){ //WARTELISTE
@@ -264,10 +475,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
                 echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
                 echo "<br/><br/>";
             } ?>
-            <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-            
-            
-            
+            <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
         </div>
     </div>
 </header>
@@ -283,39 +491,357 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <article id="changecontent">
     <h2>Content ändern</h2>
     <p></p>
-    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 3, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <?php changeContent($conn, $TurnierID, $_POST['contentID'], $_POST['content'], $_POST['content_style_tag'], $_POST['function'], $_POST['content_order_in_group']); ?>
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 3, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <?php 
+        if (isset($_POST['contentID'])) {
+            $cid = $_POST['contentID'];
+            $ccontent = isset($_POST['content']) ? $_POST['content'] : null;
+            $cstyle = isset($_POST['content_style_tag']) ? $_POST['content_style_tag'] : null;
+            $cfunc = isset($_POST['function']) ? $_POST['function'] : null;
+            $corder = isset($_POST['content_order_in_group']) ? $_POST['content_order_in_group'] : null;
+            changeContent($conn, $TurnierID, $cid, $ccontent, $cstyle, $cfunc, $corder);
+        }
+    ?>
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- ADD CONTENT -->
 <article id="addcontent">
     <h2>Content hinzufügen</h2>
     <p></p>
-    <?php addContent($_POST['contentID'], $TurnierID); ?>
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php if (isset($_POST['contentID'])) { addContent($_POST['contentID'], $TurnierID); } ?>
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="allgemeine_info">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 4, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#info" class="button">Zurück</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 4, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <!--<a href="#info" class="button">Zurück</a>-_>
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="map">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 6, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#info" class="button">Zurück</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 6, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <!--<a href="#info" class="button">Zurück</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- REGELN -->
 <article id="regeln">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#" class="button">Zurück zur Startseite</a>
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 1, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
+    <p></br></p>
+</article>
+<!-- ADVENTSCUP SPECIAL -->
+<article id="adventscup-special">
+    <h2>Special-Regeln für den Adventscup</h2>
+    <p>Zieh per Knopfdruck eine zufällige Sonderregel für den Adventscup.</p>
+    <div class="advent-lottery" id="advent-lottery">
+        <div class="advent-pot">
+            <div class="pot-lid"></div>
+            <div class="pot-ribbon"></div>
+            <div class="pot-dots">
+                <span style="--d:0s;"></span>
+                <span style="--d:0.08s;"></span>
+                <span style="--d:0.16s;"></span>
+                <span style="--d:0.24s;"></span>
+            </div>
+            <div class="pot-glow"></div>
+            <div class="pot-aura"></div>
+            <div class="pot-label">Lostopf</div>
+        </div>
+        <div class="advent-result">
+            <p class="muted" id="advent-draw-status">Bereit zum Ziehen</p>
+            <h3 id="advent-draw-title">---</h3>
+            <p id="advent-draw-text" class="advent-rule-text">Tippe auf den Button, um eine Regel zu ziehen.</p>
+            <button type="button" class="button primary" id="advent-draw-btn">Regel ziehen</button>
+        </div>
+    </div>
+    <style>
+        #adventscup-special h2 {
+            font-size: clamp(2rem, 3vw, 2.6rem);
+            margin-bottom: 0.4rem;
+        }
+        #adventscup-special p {
+            font-size: 1rem;
+        }
+        #advent-lottery {
+            display: grid;
+            grid-template-columns: minmax(180px, 220px) 1fr;
+            gap: 1.2rem;
+            align-items: center;
+            padding: 1.2rem;
+            margin-top: 0.8rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            box-shadow: 0 22px 40px rgba(0,0,0,0.25);
+        }
+        @media (max-width: 720px) {
+            #advent-lottery {
+                grid-template-columns: 1fr;
+            }
+        }
+        #advent-lottery .advent-pot {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background: linear-gradient(160deg, #1a2839, #1f3f56 45%, #122031);
+            border-radius: 26px;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 12px 26px rgba(0,0,0,0.35);
+        }
+        @media (max-width: 720px) {
+            #advent-lottery .advent-pot {
+                padding-top: 55%; /* in der mobilen Ansicht etwa halb so hoch */
+            }
+        }
+        #advent-lottery .advent-pot::before {
+            content: "";
+            position: absolute;
+            inset: 10%;
+            border-radius: 22px;
+            background: conic-gradient(from 0deg, rgba(255,255,255,0.14), rgba(255,255,255,0), rgba(255,255,255,0.22));
+            opacity: 0.8;
+            filter: blur(8px);
+            transform-origin: center;
+            animation: potGlow 6s linear infinite;
+            pointer-events: none;
+        }
+        #advent-lottery .advent-pot::after {
+            content: "";
+            position: absolute;
+            inset: 6%;
+            border-radius: 22px;
+            background:
+                linear-gradient(135deg, rgba(255,215,0,0.6), rgba(255,215,0,0)),
+                linear-gradient(225deg, rgba(200,0,0,0.3), rgba(200,0,0,0)),
+                linear-gradient(0deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+            mix-blend-mode: screen;
+            opacity: 0.7;
+        }
+        #advent-lottery .pot-lid {
+            position: absolute;
+            top: 12%;
+            left: 12%;
+            right: 12%;
+            height: 14%;
+            background: linear-gradient(120deg, #b4232e, #e94545 50%, #b4232e);
+            border-radius: 14px 14px 10px 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25), inset 0 0 0 2px rgba(255,255,255,0.15);
+        }
+        #advent-lottery.is-drawing .pot-lid {
+            animation: lidWobble 0.9s ease-in-out infinite;
+            transform-origin: 50% 110%;
+        }
+        #advent-lottery .pot-ribbon {
+            position: absolute;
+            inset: 38% 0 38% 0;
+            background: linear-gradient(90deg, #c5152f, #f54b4b, #c5152f);
+            opacity: 0.9;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.08);
+        }
+        #advent-lottery .pot-ribbon::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -28%;
+            width: 40%;
+            height: 70%;
+            transform: translateX(-50%) rotate(-2deg);
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.6), rgba(255,255,255,0));
+            filter: blur(4px);
+        }
+        #advent-lottery .pot-dots {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+        }
+        #advent-lottery .pot-dots span {
+            width: 28%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffd16b, #ff7f7f 65%, #5a3f7c 100%);
+            opacity: 0.15;
+            transform: scale(0.7);
+        }
+        #advent-lottery.is-drawing .pot-dots span {
+            animation: lottoBounce 0.9s ease-in-out infinite;
+            animation-delay: var(--d);
+            opacity: 0.5;
+        }
+        #advent-lottery .pot-glow {
+            position: absolute;
+            inset: 28% 14% 14% 14%;
+            background: radial-gradient(circle at 50% 35%, rgba(255,255,255,0.25), rgba(255,255,255,0));
+            filter: blur(10px);
+            pointer-events: none;
+        }
+        #advent-lottery .pot-aura {
+            position: absolute;
+            inset: -12%;
+            background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.14), rgba(255,255,255,0));
+            filter: blur(22px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #advent-lottery.is-drawing .pot-aura {
+            opacity: 1;
+            animation: auraPulse 1.2s ease-in-out infinite;
+        }
+        #advent-lottery.is-drawing .advent-pot {
+            animation: potShake 0.9s ease-in-out infinite;
+        }
+        #advent-lottery .pot-label {
+            position: absolute;
+            bottom: 11%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.85);
+            font-size: 0.95rem;
+        }
+        #advent-lottery .advent-result h3 {
+            margin: 0.1rem 0 0.4rem;
+            font-size: clamp(1.4rem, 2.8vw, 1.9rem);
+        }
+        #advent-lottery .advent-rule-text {
+            margin-bottom: 0.9rem;
+            font-size: 1rem;
+            opacity: 0.92;
+        }
+        #advent-lottery button.button {
+            min-width: 180px;
+        }
+        #advent-lottery .muted {
+            opacity: 0.8;
+            margin: 0;
+        }
+        @keyframes lottoBounce {
+            0%, 100% { transform: translateY(0) scale(0.82); }
+            50% { transform: translateY(-14%) scale(1); opacity: 0.7; }
+        }
+        @keyframes potGlow {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes auraPulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes potShake {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-2%) rotate(-1deg); }
+            50% { transform: translateY(1%) rotate(1deg); }
+            75% { transform: translateY(-1%) rotate(-0.5deg); }
+        }
+        @keyframes lidWobble {
+            0%, 100% { transform: rotate(0deg); }
+            30% { transform: rotate(-6deg); }
+            60% { transform: rotate(6deg); }
+        }
+    </style>
+    <script>
+    (function(){
+        var dataUrl = 'assets/data/adventcup_rules.json';
+        var drawBtn = document.getElementById('advent-draw-btn');
+        var statusEl = document.getElementById('advent-draw-status');
+        var titleEl = document.getElementById('advent-draw-title');
+        var textEl = document.getElementById('advent-draw-text');
+        var lottery = document.getElementById('advent-lottery');
+        var rulesCache = null;
+
+        function sanitizeWeight(value) {
+            var num = parseInt(value, 10);
+            if (isNaN(num) || num < 1) { return 1; }
+            return num;
+        }
+
+        function pickWeightedRule(rules) {
+            var valid = rules.filter(function(rule){ return rule && typeof rule.description === 'string'; });
+            if (!valid.length) { return null; }
+            var total = valid.reduce(function(sum, rule){
+                return sum + sanitizeWeight(rule.weight);
+            }, 0);
+            var ticket = Math.random() * total;
+            for (var i = 0; i < valid.length; i++) {
+                ticket -= sanitizeWeight(valid[i].weight);
+                if (ticket <= 0) { return valid[i]; }
+            }
+            return valid[valid.length - 1] || null;
+        }
+
+        function endDraw(chosen) {
+            if (lottery) { lottery.classList.remove('is-drawing'); }
+            if (drawBtn) { drawBtn.disabled = false; }
+            if (chosen) {
+                statusEl.textContent = 'Gezogene Regel';
+                titleEl.textContent = chosen.title || 'Regel';
+                textEl.textContent = chosen.description || '';
+            } else {
+                statusEl.textContent = 'Keine Regel gefunden';
+                titleEl.textContent = 'Bitte Datei prüfen';
+                textEl.textContent = 'assets/data/adventcup_rules.json';
+            }
+        }
+
+        function drawRule() {
+            if (!drawBtn || !statusEl || !titleEl || !textEl || !lottery) { return; }
+            drawBtn.disabled = true;
+            lottery.classList.add('is-drawing');
+            statusEl.textContent = 'Lostopf mischt...';
+            titleEl.textContent = '???';
+            textEl.textContent = '...';
+
+            var finalizeDraw = function(chosen){
+                setTimeout(function(){ endDraw(chosen); }, 900);
+            };
+
+            var onError = function(message){
+                if (lottery) { lottery.classList.remove('is-drawing'); }
+                if (drawBtn) { drawBtn.disabled = false; }
+                statusEl.textContent = 'Konnte Regeln nicht laden';
+                titleEl.textContent = 'assets/data/adventcup_rules.json';
+                textEl.textContent = message || 'Bitte Datei prüfen.';
+            };
+
+            var useRules = function(rules){
+                finalizeDraw(pickWeightedRule(rules));
+            };
+
+            if (rulesCache) {
+                useRules(rulesCache);
+                return;
+            }
+
+            fetch(dataUrl, { cache: 'no-store' })
+                .then(function(response){
+                    if (!response.ok) { throw new Error('HTTP ' + response.status); }
+                    return response.json();
+                })
+                .then(function(data){
+                    rulesCache = Array.isArray(data) ? data : [];
+                    useRules(rulesCache);
+                })
+                .catch(function(err){
+                    onError(err && err.message ? err.message : 'Unbekannter Fehler');
+                });
+        }
+
+        if (drawBtn) {
+            drawBtn.addEventListener('click', drawRule);
+        }
+    })();
+    </script>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
@@ -328,18 +854,19 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         $loggedInValue = $_COOKIE['turnier-loggedin'];
     }
 
-    if($loggedInValue){
-        if($turnier_phase_ID == 3 || $turnier_phase_ID == 11){
+    //if($loggedInValue){ //Wieder einkommentieren wenn login wieder soll
+    if(TRUE){
+        if($turnier_phase_ID == 3 || $turnier_phase_ID == 11 || $turnier_phase_ID == 13){
             echo"<a href='#anmelden' class='button primary'>Team anmelden</a>";
             cmsPrintSection($websiteId, $siteID, $TurnierID, 19, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ANMELDEFRIST
         }else if($turnier_phase_ID == 12){ //WARTELISTE
-            echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir können nur nicht versprechen dass wir noch Kapazität haben.</i></p>";
+            echo "<p><i>Hinweis: Der Anmeldezeitraum ist leider schon beendet. Es gibt aber eine Warteliste. Du kannst dein Team also trotzdem noch anmelden, wir k�nnen nur nicht versprechen dass wir noch Kapazit�t haben.</i></p>";
             echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
         }else{
             echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
         }
     
-        cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) 
+        cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID überGEBEN (F�r CMS) 
     }else{
         // login form
         echo "<div style='color:white; text-align: center;'>";
@@ -348,7 +875,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
             echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
             echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
-            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='password' style='color: white' required>";
+            echo "<input type='password' class='Eingabe' name='turnier_pw' placeholder='turnierpassword' style='color: white' required>";
             echo "<input type='hidden' name='TurnierID' value='" . $TurnierID . "'/>";
             echo "<input type='hidden' name='NextSection' value='teams'/>";
             
@@ -367,44 +894,44 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         echo "</div>";
     }
     ?> 
-    <a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>                 
 </article>
 <!-- SPIELER INFO - LOGIN -->                       
 <article id="spielerinfo_login">
-    <a href="#teams" class="button">Zurück zu den Teams</a></br></br>
+    <!--<a href="#teams" class="button">Zurück zu den Teams</a></br></br>-->
     <?php 
-    $spielerId = $_GET['spielerId'];
+    $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
     printSpielerInfoLogin($TurnierID, $conn, $spielerId); 
     ?>
-    </br></br><a href="#teams" class="button">Zurück zu den Teams</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <!--</br></br><a href="#teams" class="button">Zurück zu den Teams</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- SPIELER INFO -->                       
 <article id="spielerinfo">
-    <a href="#teams" class="button">Zurück zu den Teams</a></br></br>
+    <!--<a href="#teams" class="button">Zurück zu den Teams</a></br></br>-->
     <?php 
-    $spielerId = $_GET['spielerId'];
+    $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
     printSpielerInfo($TurnierID, $conn, $spielerId); 
     ?>
-    </br></br><a href="#teams" class="button">Zurück zu den Teams</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <!--</br></br><a href="#teams" class="button">Zurück zu den Teams</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- TEAM INFO -->                       
 <article id="teaminfo">
-    <a href="#" class="button">Zurück zur Startseite</a></br></br>
+    <!--<a href="#" class="button">Zurück zur Startseite</a></br></br>-->
     <?php 
-    $teamId = $_GET['teamId'];
+    $teamId = isset($_GET['teamId']) ? $_GET['teamId'] : null;
     printTeamInfo($TurnierID, $conn, $teamId); 
     ?>
-    </br></br><a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <!--</br></br><a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
-<!-- SPIELPLAN ÜBERSICHT -->                       
+<!-- SPIELPLAN überSICHT -->                       
 <article id="spielplan">
     <!-- Lgin check und Spielplan-Anzeige -->
     <?php
@@ -414,7 +941,8 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         $loggedInValue = $_COOKIE['turnier-loggedin'];
     }
 
-    if($loggedInValue){
+    //if($loggedInValue){ //Wieder einkommentieren wenn login wieder soll
+    if(TRUE){
         // Check if Excel is been used
         $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
         $resultTurnier = $conn->query($sqlTurnier);
@@ -424,7 +952,39 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         }
     
         if($use_excel==0){
-            cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);  // ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS)
+            //cmsPrintSection($websiteId, $siteID, $TurnierID, 10, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);  // ALS PARAMETER SECTION ID überGEBEN (F�r CMS)
+            echo '<h1 class="section-header">Spielplan <img src="images/icon/sterni1.png" width="40" height="40" alt="Home"></h1>
+
+            <!-- <iframe loading="lazy" width="100%" height="600" frameborder="0" scrolling="no" src="https://onedrive.live.com/embed?resid=35950B6E8DF41A30%21156&authkey=%21AMoZmMl3Yb55bbY&em=2&wdAllowInteractivity=False&ActiveCell=Spielplan!A3&wdHideGridlines=True&wdHideHeaders=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edesNext=false&resen=false" async></iframe>
+            -->
+            <div class="section-intro" style="text-align:center">
+
+            <p class="muted">Das Turnier besteht aus Gruppenphase und KO-Phase.</p>
+
+            <!-- Alte Bilder ausgeblendet: ersetzen wir durch kompakte Karten mit Icons
+            <img src="images/Sonstiges/Gruppenhase.jpg" alt="Gruppenphase Bild"  style="width:30%;"/>
+            <img src="images/Sonstiges/KO.jpg" alt="KO-Phase Bild" style="width:30%;"/>
+            -->
+
+            <div class="phase-cards">
+              <div class="phase-card">
+                <h3><img class="icon" src="images/icon/sterni1.png" alt="Icon"> Gruppenphase</h3>
+                <p class="muted">Alle Teams werden in Gruppen eingeteilt und spielen dort im Modus Jede*r gegen Jede*n. Die besten Teams jeder Gruppe ziehen in die KO-Phase ein.</p>
+                <a href="#gruppenphase" class="button primary">Zur Gruppenphase</a>
+              </div>
+              <div class="phase-card">
+                <h3><img class="icon" src="images/icon/sterni2.png" alt="Icon"> KO-Phase</h3>
+                <p class="muted">In der KO-Phase entscheidet jedes Spiel: Sieg bedeutet Weiterkommen - eine Niederlage das Ausscheiden. Verfolge den Weg durch den Turnierbaum.</p>
+                <a href="#kophase" class="button primary">Zur KO-Phase</a>
+              </div>
+              <div class="phase-card">
+                <h3><img class="icon" src="images/icon/logo_export_icon/transparent/favicon-96x96.png" alt="Icon"> Losing-Bracket</h3>
+                <p class="muted">Im Losing-Bracket geht es für ausgeschiedene Teams weiter - mit Chancen auf eine bessere Endplatzierung und zusätzliche Matches.</p>
+                <a href="#losingbracket" class="button primary">Zum Losing-Bracket</a>
+              </div>
+            </div>
+
+            </div>';
         }else{
             echo"<h1>Der Spielplan <img src='images/icon/sterni1.png' width='40' height='40' border='10' alt='Home'></h1>
             <iframe loading='lazy' width='100%' height='600' frameborder='0' scrolling='no' src='$excel_link' async></iframe>";
@@ -435,7 +995,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         echo "</form>";
         echo "<div style='color:white; text-align: center;'>";
             echo "<h2>Turnierpasswort</h2>";
-            echo "<p>Aus Datenschutzgründen sind die Personendaten mit einem Passwort geschützt.</p>";
+            echo "<p>Aus Datenschutzgr�nden sind die Personendaten mit einem Passwort gesch�tzt.</p>";
             echo "<p>Das Passwort kannst du bei den Organisator*innen erfragen</p>";
             echo "<form id='turnier-login-form' action='website_functionalities/turnier_logincheck.php' method='POST' autocomplete='on'>";
             echo "<input type='text' name='turnier_username' value='Turnierpasswort' autocomplete='Turnierusername' readonly style='background-color: lightgrey; color: grey;'>";
@@ -459,118 +1019,233 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         echo "</div>";
     }
     ?>
-    <a href='#' class='button'>Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <!--<a href='#' class='button'>Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- SPIELPLAN GRUPPEN -->
 <article id="gruppen">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 28, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#teams" class="button">Zurück zu den Teams</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 28, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <!--<a href="#teams" class="button">Zurück zu den Teams</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- GRUPPENPHASE - SPIELPLAN -->
 <article id="gruppenphase">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <?php //printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <a href="#spielplan" class="button">Zurück zur Übersicht</a>  
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 11, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <h1 class="section-header">Gruppenphase</h1>
+    <div class='note' style="font-size: 0.8rem;">Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. Würde das Verliererteam keine Flasche leeren, wäre der Spielstand "3:0".</div>
+    <div class="ko-phase-cta ko-phase-cta--single">
+        <a href="#punktetabelle" class="button primary ko-phase-btn ko-phase-btn--points">
+            <span class="ko-btn-label">Punktetabelle</span>
+            <span class="ko-btn-sub">Gruppenphase</span>
+        </a>
+    </div>
+    <br/><br/>
+    <?php  printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+    <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>  -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>                          
 </article>
 <!-- Punktetabelle -->
 <article id="punktetabelle">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 12, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->                      
-    <a href="#gruppenphase" class="button">Zurück zum Spielplan</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 12, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->                      
+    <!--<a href="#gruppenphase" class="button">Zurück zum Spielplan</a>-->
+    <h1>Punktetabelle der Gruppenphase</h1>
+    <?php printPunktetabelleGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?>
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>  
 </article>
 <!-- KO-Phase -->
 <article id="kophase">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->   
-    <a href="#spielplan" class="button">Zurück zur Übersicht</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <h2>KnockOut-Phase</h2>
+    <div class="ko-phase-cta">
+        <a href="#turnierbaum" class="button primary ko-phase-btn ko-phase-btn--tree">
+            <span class="ko-btn-label">Turnierbaum</span>
+            <span class="ko-btn-sub">Alle KO-Matches</span>
+        </a>
+        <a href="#rangliste" class="button primary ko-phase-btn ko-phase-btn--rank">
+            <span class="ko-btn-label">Rangliste</span>
+            <span class="ko-btn-sub">Live-Positionen</span>
+        </a>
+    </div>
+    <br/><br/>
+    <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+    <?php printKO_PhaseTabellen($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+    <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>-->
+    <p></br></p>
+    <p></br></p>
+<!-- Losing Bracket -->
+</article>
+<article id="losingbracket">
+    <h1 class="section-header">Losing-Bracket <img src="images/icon/sterni2.png" width="32" height="32" alt="Icon"></h1>
+    <div class="note">Teams, die aus der KO-Phase ausgeschieden sind, spielen hier weitere Partien um bessere Platzierungen.</div>
+    <?php 
+    //cmsPrintSection($websiteId, $siteID, $TurnierID, 35, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
+    // Direkte Ausgabe: nur Losing-Bracket-Gruppe, aber mit den gleichen Tabellen wie Gruppenphase
+    include_once 'website_print_functions/table_print_functions.php';
+    printSpielplanLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
+    printPunktetabelleLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
+    ?>
+    <!--<a href="#spielplan" class="button">Zurück zur Übersicht</a>-->
+    <div class="ko-phase-cta">
+        <a href="#rangliste" class="button primary ko-phase-btn ko-phase-btn--rank">
+            <span class="ko-btn-label">Rangliste</span>
+            <span class="ko-btn-sub">Losing-Bracket</span>
+        </a>
+    </div>
+    <p></br></p> <!-- Abst??nde unten damit Button auf Handys nicht von Cookiewarnung Oberdeckt wird -->
     <p></br></p>  
 </article>
 <!-- Turnierbaum -->
 <article id="turnierbaum">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->   
-    <a href="#kophase" class="button">Zurück zur KO-Phase</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 29, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->   
+    <h1>Turnierbaum der KO-Phase <img src="images/icon/sterni1.png" width="40" height="40" border="10" alt="Home"></h1>
+    <div class="note">Hier könnt ihr nachverfolgen, wie sich die verschiedenen Matches ergeben. In einem Kästchen steht immer das Gewinnerteam eines Matches und in der Spalte rechts daneben das Gewinnerteam der nächsten Stufe.</div>
+    <?php printTurnierbaum($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus); ?>
+    
+    <!--<a href="#kophase" class="button">Zurück zur KO-Phase</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>  
 </article>
 <!-- IMPRESSUM -->
 <article id="impressum">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 14, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
-    <a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 14, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
-<!-- datenschutzerklärung -->
+<!-- datenschutzerkl�rung -->
 <article id="datenschutzerklaerung">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 17, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
-    <a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 17, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- INFOS -->
 <article id="info">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 15, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
-    <a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 15, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- ZEITPLAN -->
 <article id="zeitplan">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 20, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
-    <a href="#info" class="button">Zurück</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 20, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
+    <!--<a href="#info" class="button">Zurück</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- FAQ -->
 <article id="faq">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 21, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
-    <a href="#info" class="button">Zurück</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 21, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
+    <!--<a href="#info" class="button">Zurück</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 <!-- PLATZHALTER -->
 <article id="platzhalter">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 16, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
-    <a href="/" class="button">Zurück zur Startseite</a>
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 16, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
+    <!--<a href="/" class="button">Zurück zur Startseite</a>-->
     <h5><br/></h5>  
 </article>
 
 <!-- schiedsrichter*innen -->
 <article id="schiedsrichterinnen">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 24, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#info" class="button">Zurück</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 24, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <!--<a href="#info" class="button">Zurück</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- schiedsrichter*innen -->
 <article id="REDACTED_simulator">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- Merch -->
 <article id="merch">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 34, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 34, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <article id="telefonjoker">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 33, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####--> 
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 33, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####--> 
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
+<?php
+    // Bilder aus dem Galerie-Ordner dynamisch laden
+    $galleryBaseDir = 'images/galerie';
+    $galleryDir = __DIR__ . '/images/galerie';
+    $galleryImages = [];
+    $allowedGalleryExt = ['jpg','jpeg','png','gif','webp','JPG','JPEG','PNG','GIF','WEBP'];
+    if (is_dir($galleryDir)) {
+        $files = array_filter(scandir($galleryDir), function($file) use ($galleryDir, $allowedGalleryExt) {
+            if ($file === '.' || $file === '..') { return false; }
+            if (is_dir($galleryDir . '/' . $file)) { return false; }
+            $ext = pathinfo($file, PATHINFO_EXTENSION);
+            return $ext !== '' && in_array($ext, $allowedGalleryExt, true);
+        });
+        natcasesort($files);
+        foreach ($files as $file) {
+            $galleryImages[] = [
+                'full' => $galleryBaseDir . '/' . $file,
+                'thumb' => is_file($galleryDir . '/thumbs/' . $file) ? $galleryBaseDir . '/thumbs/' . $file : $galleryBaseDir . '/' . $file,
+            ];
+        }
+    }
+?>
+<style>
+    /* Galerie-Navigation mit eigenen Buttons */
+    #galerie .rg-image-wrapper {
+        position: relative;
+    }
+    #galerie .rg-image-nav {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+    #galerie .rg-image-nav a {
+        position: relative;
+        width: 56px;
+        height: 56px;
+        background: rgba(0, 0, 0, 0.45) url('images/galerie_buttons/nav.png') no-repeat left center;
+        background-size: 200% 100%;
+        border-radius: 50%;
+        text-indent: -9999px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+        transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.2s ease;
+        pointer-events: auto;
+        margin: 0 6px;
+    }
+    #galerie .rg-image-nav a.rg-image-nav-prev {
+        background-position: left center;
+    }
+    #galerie .rg-image-nav a.rg-image-nav-next {
+        background-position: right center;
+    }
+    #galerie .rg-image-nav a:hover {
+        transform: scale(1.05);
+        background-color: rgba(0, 0, 0, 0.65);
+        box-shadow: 0 14px 26px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    /* Thumbnails-Navigation mit eigenen Buttons */
+    #galerie .es-nav span {
+        background-image: url('images/galerie_buttons/nav_thumbs.png');
+        width: 18px;
+        height: 32px;
+    }
+</style>
 <article id="galerie">
     
     <!-- Galerie -->
@@ -605,27 +1280,13 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
                         </div>
                         <div class="es-carousel">
                             <ul>
-                                <li><a href="#"><img src="images/galerie/thumbs/1.jpg" data-large="images/galerie/1.jpg" alt="image01" data-description="From off a hill whose concave womb reworded" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/2.jpg" data-large="images/galerie/2.jpg" alt="image02" data-description="A plaintful story from a sistering vale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/3.JPG" data-large="images/galerie/3.JPG" alt="image03" data-description="A plaintful story from a sistering vale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/4.jpg" data-large="images/galerie/4.jpg" alt="image04" data-description="My spirits to attend this double voice accorded" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/5.jpg" data-large="images/galerie/5.jpg" alt="image05" data-description="And down I laid to list the sad-tuned tale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/6.jpg" data-large="images/galerie/6.jpg" alt="image06" data-description="Ere long espied a fickle maid full pale" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/7.jpg" data-large="images/galerie/7.jpg" alt="image07" data-description="Tearing of papers, breaking rings a-twain" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/8.jpg" data-large="images/galerie/8.jpg" alt="image08" data-description="Storming her world with sorrow's wind and rain" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/9.jpg" data-large="images/galerie/9.jpg" alt="image09" data-description="Upon her head a platted hive of straw" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/10.jpg" data-large="images/galerie/10.jpg" alt="image10" data-description="Which fortified her visage from the sun" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/11.jpg" data-large="images/galerie/11.jpg" alt="image11" data-description="Whereon the thought might think sometime it saw" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/12.jpg" data-large="images/galerie/12.jpg" alt="image12" data-description="The carcass of beauty spent and done" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/13.jpg" data-large="images/galerie/13.jpg" alt="image13" data-description="Time had not scythed all that youth begun" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/14.jpg" data-large="images/galerie/14.jpg" alt="image14" data-description="Nor youth all quit; but, spite of heaven's fell rage" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/15.jpg" data-large="images/galerie/15.jpg" alt="image15" data-description="Some beauty peep'd through lattice of sear'd age" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/16.jpg" data-large="images/galerie/16.jpg" alt="image16" data-description="Oft did she heave her napkin to her eyne" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/17.jpg" data-large="images/galerie/17.jpg" alt="image17" data-description="Which on it had conceited characters" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/18.jpg" data-large="images/galerie/18.jpg" alt="image18" data-description="Laundering the silken figures in the brine" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/19.jpg" data-large="images/galerie/19.jpg" alt="image19" data-description="That season'd woe had pelleted in tears" /></a></li>
-                                <li><a href="#"><img src="images/galerie/thumbs/20.jpg" data-large="images/galerie/20.jpg" alt="image20" data-description="And often reading what contents it bears" /></a></li>
-                                
+                                <?php if (!empty($galleryImages)) { ?>
+                                <?php foreach ($galleryImages as $img) { ?>
+                                <li><a href="#"><img src="<?php echo htmlspecialchars($img['thumb'], ENT_QUOTES, 'UTF-8'); ?>" data-large="<?php echo htmlspecialchars($img['full'], ENT_QUOTES, 'UTF-8'); ?>" alt="Galeriebild" /></a></li>
+                                <?php } ?>
+                                <?php } else { ?>
+                                <li><span>Aktuell keine Bilder vorhanden.</span></li>
+                                <?php } ?>
                             </ul>
                         </div>
                     </div>
@@ -636,8 +1297,8 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         </div><!-- content -->
     </div><!-- container -->
     
-    <a href="#info" class="button">Zurück</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <!--<a href="#info" class="button">Zurück</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
@@ -649,8 +1310,8 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
     <p>Hier geht's zur alten Website (2017-2020)</p>
     <a href="https://2018-20.REDACTED.de" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
-    <a href="#" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <!--<a href="#" class="button">Zurück zur Startseite</a>-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
@@ -661,7 +1322,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             </br>
             <h1>History</h1>
             <p> Du befindest dich in der History-Ansicht! </p>
-            <!--Alle Informationen, die Teams und Spiele betreffen, wurden vom gewünschten Turnier geladen. 
+            <!--Alle Informationen, die Teams und Spiele betreffen, wurden vom gew�nschten Turnier geladen. 
             Alle sonstigen Infos bleiben aber die vom aktuellen Turnier. -->
             <p>Zum verlassen des History-Modus, klicke oben rechts auf "Leave".</p>
             <a href="#" class="button">Ok</a>
@@ -680,14 +1341,14 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <!-- EDIT GAME -->
 <article id="changegame">
     <?php printEditGames($TurnierID, $test_turnier_id); ?>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- BEGEGNUNG VERWALTEN -->
 <article id="begegnung_verwalten">
     <?php printEditGames($TurnierID, $test_turnier_id); ?>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
@@ -701,21 +1362,21 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             }
         ?>
     <?php printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag); ?>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- SIEGER_INNEN TREPPE -->
 <article id="sieger_innen_treppe">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- SIEGER_INNEN TREPPE -->
 <article id="rangliste">
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 23, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (Für CMS) #####-->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
@@ -723,7 +1384,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <article id='bullerei_kommt'>
     <div style='text-align: center'> 
         <?php printBullereiKommt($conn, $websiteId, $TurnierID) ?>
-        <a href='#' class='button'>Zurück</a>
+        <!--<a href='#' class='button'>Zurück</a>-->
         <h5><br /></h5>  
     </div>
 </article>
@@ -732,13 +1393,18 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <!-- ELEMENTS -->
 <?php include_once 'elements.php'; ?>
 
-<!-- PAUSENRAUM -->
-<?php include_once 'pausenraum.php'; ?>
+<!-- PAUSENRAUM: lokal deaktiviert -->
+<?php if (!(isset($is_localhost) && $is_localhost)) { include_once 'pausenraum.php'; } ?>
 
 <!-- KONTAKT -->
 <article id="kontakt">
     <h2 class="major">Kontakt</h2>
+    <?php if (isset($_SESSION['flash_error_contact']) && $_SESSION['flash_error_contact']) { 
+        echo '<div style="margin:10px 0;padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">'. htmlspecialchars($_SESSION['flash_error_contact']) .'</div>'; 
+        unset($_SESSION['flash_error_contact']);
+    } ?>
     <p>Falls du Dinge hast, die du uns gerne mitteilen möchtest oder zum Beispiel dein Team wieder abmelden wollen solltest, ist hier der perfekte Ort dafür. Falls du dein Team abmelden möchtest, schreib bitte dein Teampasswort dazu.</p>
+    <!-- Alt: Kontaktformular (auskommentiert, um Spam zu vermeiden)
     <form method="post" action="website_functionalities/contact.php">
         <div class="fields">
             <div class="field half">
@@ -754,7 +1420,11 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
                 <textarea name="message" id="message" rows="4" required></textarea>
             </div>
             <br/><br/>
-            <div class="h-captcha" data-sitekey="REDACTED"></div>
+            <?php 
+                // Neues Bild-Captcha einbinden
+                require_once 'website_functionalities/captcha_blanki.php';
+                CaptchaBlanki::render('contact');
+            ?>
         </div>
         
         <ul class="actions">
@@ -763,6 +1433,77 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             <li><input type="reset" value="Abbrechen" /></li>
         </ul>
     </form>
+    -->
+
+    <?php 
+        // Captcha vor E-Mail-Anzeige
+        require_once 'website_functionalities/captcha_blanki.php';
+        CaptchaBlanki::render('contact');
+    ?>
+    <div style="margin-top:20px;">
+        <button id="show-mail" class="button primary" disabled>E-Mail anzeigen</button>
+        <span id="mail-link" style="margin-left:10px;"></span>
+        <div id="mail-error" style="margin-top:8px;color:#c0392b;"></div>
+    </div>
+    <script>
+        (function() {
+            var btn = document.getElementById('show-mail');
+            var span = document.getElementById('mail-link');
+            var err = document.getElementById('mail-error');
+            var captcha = document.querySelector('#kontakt .captcha-blanki');
+
+            function captchaPassed() {
+                if (!captcha) return false;
+                if (captcha.dataset && captcha.dataset.passed === '1') return true;
+                var passInput = captcha.querySelector('input[name=cb_pass]');
+                return passInput && passInput.value === '1';
+            }
+
+            function setBtnState() {
+                if (!btn) return;
+                var ok = captchaPassed();
+                btn.disabled = !ok;
+                if (!ok) {
+                    span.innerHTML = '';
+                    if (err) { err.textContent = 'Bitte zuerst das Captcha best\u00e4tigen.'; }
+                } else if (err) {
+                    err.textContent = '';
+                }
+            }
+
+            function revealMail() {
+                var user = 'kummerkasten';
+                var domain = 'REDACTED.de';
+                var addr = user + '@' + domain;
+                var a = document.createElement('a');
+                a.href = 'mailto:' + addr;
+                a.textContent = addr;
+                span.innerHTML = '';
+                span.appendChild(a);
+                btn.style.display = 'none';
+            }
+
+            if (btn) {
+                btn.addEventListener('click', function(ev) {
+                    if (!captchaPassed()) {
+                        ev.preventDefault();
+                        setBtnState();
+                        return;
+                    }
+                    revealMail();
+                });
+            }
+
+            if (captcha) {
+                // Beobachte Captcha-Status (dataset / hidden input) und schalte Button frei
+                var observer = new MutationObserver(setBtnState);
+                observer.observe(captcha, { attributes: true, attributeFilter: ['data-passed', 'class'] });
+                setInterval(setBtnState, 800); // Fallback, falls weder Mutation noch Events feuern
+            } else {
+                if (btn) btn.disabled = true;
+            }
+        })();
+    </script>
 </article>
 
 <!-- ANMELDEN -->
@@ -771,7 +1512,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
     <h2>Vielen Dank für deine Nachricht!</h2>
     <p>Wir werden dir sobald wie möglich eine Antwort schicken.</p>
     <a href="/" class="button">Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 </article>
 
@@ -804,12 +1545,12 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
     <ul class="actions">
             <li><a href="#info" class="button">Zurück</a></li>
     </ul> 
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>                 
 </article>
 
 
-<!-- LOGIN - FÜR WORDPRESS -->
+<!-- LOGIN - für WORDPRESS -->
 <article id="login">
 <title>Backstage-Login</title>
     <h2>Anzahl Websitebesuche</h2>
@@ -874,17 +1615,17 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 
     <p></br></p>
     
-    <a href="#pausenraum">🏓 Pausenraum</a>
+    <a href="#pausenraum">?? Pausenraum</a>
 
     <p></br></p>
 
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
     <a href='#rangliste' class='button primary'>Rangliste</a>
     <a id="bookmark-this" href="#" title="Bookmark This Page">Bookmark This Page</a>
 
     
     
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
@@ -898,7 +1639,32 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         </br>
         <h1>Vielen Dank für deine Anmeldung!</h1>
         <p>Deine Anmeldung wird jetzt bearbeitet und bald kannst du dein Team in der Team-Liste sehen.</a></p>
-        </br>
+
+        
+        <?php
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
+            }
+            if (is_string($teilnahmebeitrag)) {
+                $teilnahmebeitrag = str_replace(',', '.', $teilnahmebeitrag);
+            }
+            $teilnahmebeitragValue = (is_numeric($teilnahmebeitrag)) ? (float)$teilnahmebeitrag : 0.0;
+            if ($teilnahmebeitragValue > 0) {
+                if (floor($teilnahmebeitragValue) == $teilnahmebeitragValue) {
+                    $teilnahmebeitragText = number_format($teilnahmebeitragValue, 0, ',', '.');
+                } else {
+                    $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
+                }
+                echo "<h3><a href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
+            }
+        ?>
+
+
+        </br></br></br>
         <h2>Hier kannst du testen ob dein Login funktioniert.</h2>
         </br>
         <?php
@@ -916,24 +1682,10 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         <button value="Anmelden" type="submit">Anmelden</button>
         </form>
 
-        </br></br></br>
-        <?php
-            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
-            $resultTurnier = $conn->query($sqlTurnier);
-            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
-                $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
-            }
-            if($teilnahmebeitrag == 1){
-                echo "
-                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
-                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
-                ";
-            }
-        ?>
+        
         
     </div>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
@@ -961,7 +1713,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         <button value="Anmelden" type="submit">Anmelden</button>
         </form>
     </div>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
@@ -980,9 +1732,9 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
                 $link_whatsapp_chat = $rowTurnier['link_whatsapp_chat'];
                 $link_telegram = $rowTurnier['link_telegram'];
             }
-            /*echo"<h3><a href=$link_solibeitrag>💓Unterstütze uns💓</a></h3>";
+            /*echo"<h3><a href=$link_solibeitrag>??Unterst�tze uns??</a></h3>";
             echo"
-            <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
+            <p>Gerne kannst du uns mit einem Solibeitrag unterst�tzen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
             <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
             */
             $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
@@ -990,12 +1742,19 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
             while ($rowTurnier = $resultTurnier->fetch_assoc()) {
                 $teilnahmebeitrag = $rowTurnier['teilnahmebeitrag'];
             }
-            if($teilnahmebeitrag == 1){
-                echo "
-                    <h3><a href=$link_solibeitrag>💓Teilnahmebeitrag💓</a></h3>
-                    <p><b>Nicht vergessen, die 10€ Teilnahmegebühr pro Team per Paypal an kummerkasten@REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest fließt in Bier fürs Turnier.</p>                  
-                    <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>
-                ";
+            if (is_string($teilnahmebeitrag)) {
+                $teilnahmebeitrag = str_replace(',', '.', $teilnahmebeitrag);
+            }
+            $teilnahmebeitragValue = (is_numeric($teilnahmebeitrag)) ? (float)$teilnahmebeitrag : 0.0;
+            if ($teilnahmebeitragValue > 0) {
+                if (floor($teilnahmebeitragValue) == $teilnahmebeitragValue) {
+                    $teilnahmebeitragText = number_format($teilnahmebeitragValue, 0, ',', '.');
+                } else {
+                    $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
+                }
+                echo "<h3><a href='" . $link_solibeitrag . "'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
             
             
@@ -1015,34 +1774,34 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
         
         
     </div>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- logincheck_failure -->
 <article id="logincheck_failure">
     <h1>Login fehlgeschlagen</h1>
-    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an kummerkasten@REDACTED.de</p>
+    <p>Entweder du hast das Kürzel/Passwort falschgeschrieben oder der Anmeldezeitraum ist abgelaufen und du wurdest jetzt in die Warteliste eingefügt. Falls der Anmeldezeitraum noch läuft, versuche entweder noch einmal dein Team anzumelden oder wende dich an <a href="#kontakt">die Orga</a></p>
     <a class="button" href='#'>Zurück zur Startseite</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
 
 <!-- edit_games_success -->
 <article id="edit_games_success">
     <h1>Danke für deinen Eintrag!</h1>
-    <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Dein Eintrag sollte direkt auf der Website sichtbar sein. Falls du Fragen oder Probleme hast, wende dich an <a href="#kontakt">die Orga</a>!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>		
 
 <!-- edit_games_failure -->
 <article id="edit_games_failure">
     <h1>Ups, da ist wohl etwas schiefgelaufen!</h1>
-    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an kummerkasten@REDACTED.de!</p>
+    <p>Vielleicht war dein Passwort falsch, vielleicht hast du nicht die nötigen Rechte. Vielleicht hat Hermann auch einen Fehler gemacht. Falls du Fragen oder Probleme hast, wende dich an <a href="#kontakt">die Orga</a>!</p>
     <a class="button" href='#spielplan'>Zum Spielplan</a>
-    <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>		
                
@@ -1056,11 +1815,71 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <!-- ########################## -->  
 <footer id="footer">
     <!--SIEGER*INNEN_TREPPE-->
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+    <?php  cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+                    <!--<div><b><p>Folge uns auf Instagram, um alle aktuellen Infos und Updates zu bekommen:</p></b>
+                    <b><p style="font-size: 30px"><a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/"><img src="images/icon/insta.png" width="30" height="30" border="0" alt="Home"> @REDACTED_official</a></p></b><!--<h3>📢Offizieller Start:</h3>
+                    <p>t.b.a.<br/> -->
+                    <!--Freitag (16.12.22) - 18:00 Uhr / -->
+                    <!--Treffpunkt: <a href="#map">Blankensteinpark</a><p>-->
+                    <!--<h3>📢Anmeldezeitraum:</h3>
+                    <p>bis zum 15.12.22<br/><p>-->
+                    <!--Montag (06.09.) - 16:00 Uhr--><br/>
+                    <!--<a href="#history" class="button primary">Vergangene Turniere</a>
+                    <br/><br/><br/><h3><a href="#merch">👘Offizieller Merch</a></h3>
+                    <h3><a href="https://www.seedshirt.de/shop/REDACTED22">👘Offizieller Merch</a></h3>
+                    <h3><a href="https://www.shirtee.com/en/store/REDACTEDmerch">👘Offizieller Merch</a></h3>
+                    <p>upgrade deinen Style und supporte das Turnier</p>
+                    <img src="images/Sonstiges/Merch/front-organic-basic-hoodie-f8f8f8-558x.png" alt=""  style="width:10rem;"/>
+                    <br/><br/><h3>
+                    <a href="https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE">💓Spende fürs Turnier</a>
+                    </h3>
+                    <p>
+                    finanziere krassere Preise und noch mehr Bier
+                    </p></div>
 
-    <!-- Lädt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  -->
-    
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
+                         Lädt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  
+                        <div><br/><br/>
+                    <img src="images/Sonstiges/REDACTED_simulator.jpg" alt=""  style="width:20rem;"/>
+                    <br/>
+                    <a href="#REDACTED_simulator" class="button primary">Blankiball-Simulator</a>
+                    <br/><br/>
+
+                    <img src="images/Sonstiges/the_one_logo_weinglas_mit_schriftzug.png" alt=""  style="width:20rem;"/>
+                    <br/>
+                    <h4>Die eine Trinkspielapp, die alle anderen ersetzt</h4>
+                    <a href="https://www.instagram.com/app.theone/" class="button primary">zur App</a>
+                    <br/><br/><h3><br/>
+                    <a style="color: white;font-size:15px;" href="https://open.spotify.com/user/11129583931/playlist/3K13BWkhzAVwHdRM2F6P8Z">Der offizielle S<img src="images/icon/spoti.png" width="15" height="15" border="5" alt="Home">undtrack zum Turnier<br/></a></h3><h4><br/>
+                    <img src="images/icon/insta.png" width="20" height="20" border="0" alt="Home">
+                    <br/>
+                    <a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/">@REDACTED_official</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/REDACTED_memes/?hl=de/">@REDACTED_memes</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/REDACTED_simulator/?hl=de/">@REDACTED_simulator</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/explore/tags/REDACTED/">#REDACTED</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/app.theone/">@app.theone - Trinkspielapp</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/roehrlitrinkhalme/?hl=de/">@roehrlitrinkhalme</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/sternburg.brauerei/?hl=de/">@sternburg.official</a>
+                    <br />
+                    <a style="color: white" href="https://www.instagram.com/gretarthouse/?hl=de/">@gretarthouse</a></h4><NULL><br/>
+                    
+                    <a href="#kontakt" class="button">Kontakt & Feedback</a>
+                    <br/><br/
+                    <a href="https://www.youtube.com/watch?v=DLzxrzFCyOs" class="button">Secret Stuff</a></NULL><NULL><br/><br/>
+                    <h4>Für den Notfall</h4>
+                    <audio id="audio_with_controls" controls>
+                            <source src="assets/audio/kein_bier_mehr_da.mp3" type="audio/mp3" />
+                            Ihr Browser kann dieses Tondokument nicht wiedergeben.<br>
+                            Es enth�lt eine Auff�hrung der Europahymne. 
+                            Sie k�nnen es unter <a href="#">Link-Addresse</a> abrufen.
+                    </audio></NULL><p><hr></p><p><a href="#bullerei_kommt" class="button">BK</a></p><p class="copyright">Bei Fragen, nutze das <a href="#kontakt">Kontaktformular</a></p class="copyright"><p class="copyright">© Blankiball <a href="#impressum">Impressum</a></p class="copyright"><p class="copyright"><br/>
+                    <a href="#login">Backstage</a></p class="copyright"></div>-->
+    <?php  cmsPrintSection($websiteId, $siteID, $TurnierID, 7, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID OberGEBEN (F�r CMS) #####-->
 </footer>
 
 </div>
@@ -1078,6 +1897,7 @@ while ($rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc()) {
 <script src="assets/js/breakpoints.min.js"></script>
 <script src="assets/js/util.js"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/captcha_blanki.js"></script>
 
 <!-- GALERIE -->
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
