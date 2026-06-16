@@ -1,8 +1,22 @@
 <?php
-$dbhost = "REDACTED";
-$dbuser = "REDACTED";
-$dbpassword = "REDACTED";
-$dbname = "REDACTED";
+$cfg = [
+    'db_server' => getenv('DB_SERVER') ?: '',
+    'db_username' => getenv('DB_USERNAME') ?: '',
+    'db_password' => getenv('DB_PASSWORD') ?: '',
+    'db_name' => getenv('DB_NAME') ?: '',
+];
+$local_cfg_path = __DIR__ . '/../local_secrets/db_connection.local.php';
+if (file_exists($local_cfg_path)) {
+    $local_cfg = include $local_cfg_path;
+    if (is_array($local_cfg)) {
+        $cfg = array_merge($cfg, $local_cfg);
+    }
+}
+
+$dbhost = $cfg['db_server'] ?? '';
+$dbuser = $cfg['db_username'] ?? '';
+$dbpassword = $cfg['db_password'] ?? '';
+$dbname = $cfg['db_name'] ?? '';
 
 //Gibt Pfad von Server aus:
 //echo getcwd();
@@ -73,8 +87,8 @@ function mail_att($to, $from, $subject, $message, $file) {
     return mail($to, $subject, $content, $header);
 }  
 
-mail_att("backup_collector@REDACTED.de", "backup_collector@REDACTED.de", "Backup ".$dumpfile, "Hier kommt mal wieder ein Update. Greetings Hermann", $dumpfile);
-//echo "<br>sent to backup_collector@REDACTED.de";
+mail_att("backup_collector@blankiball.de", "backup_collector@blankiball.de", "Backup ".$dumpfile, "Hier kommt mal wieder ein Update. Greetings Hermann", $dumpfile);
+//echo "<br>sent to backup_collector@blankiball.de";
 
 //DATEIEN AUS BACKUP VERZEICHNIS WIEDER LÖSCHEN
 function deleteFilesFromDirectory($ordnername){
@@ -97,6 +111,6 @@ function deleteFilesFromDirectory($ordnername){
 }
 //Funktionsaufruf - Directory immer mit endendem / angeben
 // TODO keinen absoluten Pfad benutzen, sondern dynamisch Pfad zu db_backups abrufen. Dadurch kann die Website in verschiedenen Umgebungen laufen. (https://stackoverflow.com/questions/7835948/include-once-relative-path-in-php)
-//deleteFilesFromDirectory("/mnt/web508/d1/34/510124634/htdocs/REDACTED/website/database/db_backups/");
+//deleteFilesFromDirectory("/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna-dev/database/db_backups/");
 
 ?>

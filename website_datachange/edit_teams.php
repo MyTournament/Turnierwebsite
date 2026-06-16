@@ -22,18 +22,18 @@ if (!headers_sent()) {
 //if(strlen($Teamname)>2 && strlen($Spieler1)>2){
 
     $action = isset($_POST['action']) ? $_POST['action'] : '';
-    // Captcha-Check: nur Captcha prüfen, Formularwerte merken und zurück zu #anmelden
+    // Captcha-Check: nur Captcha prï¿½fen, Formularwerte merken und zurï¿½ck zu #anmelden
     if (isset($_POST['cb_action']) && $_POST['cb_action'] === 'check') {
         if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
         $res = CaptchaBlanki::preverify($_POST);
-        // Eingaben für erneutes Anzeigen merken
+        // Eingaben fï¿½r erneutes Anzeigen merken
         $keep = ['Teamname','Spieler1','tel1','Spieler2','tel2','Spieler3','tel3','Kuerzel','Passwort','Mail','woher_erfahren'];
         $snap = [];
         foreach ($keep as $k) { if (isset($_POST[$k])) { $snap[$k] = $_POST[$k]; } }
         $_SESSION['register_form_data'] = $snap;
         $statusMessage = $res['ok']
-            ? 'Captcha bestätigt. Du kannst jetzt absenden.'
+            ? 'Captcha bestï¿½tigt. Du kannst jetzt absenden.'
             : (($res['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$res['remaining']) : 'Captcha 3x fehlgeschlagen. Die Seite wurde neu geladen.');
         
         $_SESSION['flash_error_register'] = $statusMessage;
@@ -47,12 +47,12 @@ if (!headers_sent()) {
     if($action == 'Anmelden'){
         echo "<script>console.log('Step: Anmeldeprozess gestartet')</script>";
 
-        // Neues Bild-Captcha prüfen
+        // Neues Bild-Captcha prï¿½fen
         require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
-        // Nur Absenden erlauben, wenn vorher über den Captcha-Button bestätigt wurde
+        // Nur Absenden erlauben, wenn vorher ï¿½ber den Captcha-Button bestï¿½tigt wurde
         if (!CaptchaBlanki::passed('register')){
             if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
-            $_SESSION['flash_error_register'] = 'Bitte zuerst das Captcha bestätigen.';
+            $_SESSION['flash_error_register'] = 'Bitte zuerst das Captcha bestï¿½tigen.';
             $_SESSION['captcha_attempted_register'] = 1;
             $_SESSION['captcha_remaining_register'] = 0;
             
@@ -83,7 +83,7 @@ if (!headers_sent()) {
         if($captchaOk){
 			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
 
-			$TurnierID = $_POST['TurnierID']; //die übergebene TurnierID benutzen und nicht die aus variables.php
+			$TurnierID = $_POST['TurnierID']; //die ï¿½bergebene TurnierID benutzen und nicht die aus variables.php
 
 			//SONDERFALL: WARTELISTE
 				echo "<script>console.log('Step: WARTELISTE - Aktuelle Turnierphase herausfinden')</script>";
@@ -93,7 +93,7 @@ if (!headers_sent()) {
 				while ($rowPhase = $resultPhase->fetch_assoc()) {
 					$turnier_phase_ID = $rowPhase['fk_turnier_phase'];
         }
-				//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfügen
+				//Falls Turnierphase = Warteliste -> Teams in entsprechende Warteliste einfï¿½gen
 				//Warteliste finden
 				echo "<script>console.log('Step: WARTELISTE - Warteliste finden')</script>";
 				if($turnier_phase_ID==12){
@@ -116,17 +116,17 @@ if (!headers_sent()) {
 			
 			echo "<script>console.log('Step: SQL vorbereiten')</script>";
 			$sql = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
-			echo "<script>console.log('Step: SQL ausführen')</script>";
+			echo "<script>console.log('Step: SQL ausfï¿½hren')</script>";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 3",$sql, array($teamID, $_POST['Spieler1'], $_POST['tel1']));
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 4",$sql, array($teamID, $_POST['Spieler2'], $_POST['tel2']));
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 5",$sql, array($teamID, $_POST['Spieler3'], $_POST['tel3']));
 			
 
-			echo "<script>console.log('Step: Text für beide Mails vorbereiten')</script>";
-			//Text für beide Mails vorbereiten
+			echo "<script>console.log('Step: Text fï¿½r beide Mails vorbereiten')</script>";
+			//Text fï¿½r beide Mails vorbereiten
 			$infoVomAngemeldetenTeam = "";
 			$infoVomAngemeldetenTeam .= "Teamname: " . $_POST['Teamname'] . "\r\n";
-			$infoVomAngemeldetenTeam .= "Team-Kürzel: " . $_POST['Kuerzel'] . "\r\n";
+			$infoVomAngemeldetenTeam .= "Team-Kï¿½rzel: " . $_POST['Kuerzel'] . "\r\n";
 			$infoVomAngemeldetenTeam .= "Team-Passwort: " . $_POST['Passwort'] . "\r\n \r\n";
 			$infoVomAngemeldetenTeam .= "Spieler 1: " . $_POST['Spieler1'] . " - Telefonnummer: " . $_POST['tel1'] . " \r\n \r\n";
 			$infoVomAngemeldetenTeam .= "Spieler 2: " . $_POST['Spieler2'] . " - Telefonnummer: " . $_POST['tel2'] . " \r\n \r\n";
@@ -138,45 +138,45 @@ if (!headers_sent()) {
 			//PER MAIL VERSENDEN
 			echo "<script>console.log('Step: PER MAIL VERSENDEN')</script>";
 			//an kummerkasten
-			//$fromEmail = "kummerkasten@REDACTED.de";
+			//$fromEmail = "kummerkasten@blankiball.de";
 			$name = $_POST['Teamname'];
 			$message = "";
 			$message .= $infoVomAngemeldetenTeam;
 			$message = wordwrap($message, 70, "\r\n");
-			$header = 'From: Blankiball Bierball Turnier <kummerkasten@REDACTED.de>' . "\r\n" .
-				'Reply-To: Blankiball Bierball Turnier <kummerkasten@REDACTED.de>' . "\r\n" .
+			$header = 'From: Blankiball Bierball Turnier <kummerkasten@blankiball.de>' . "\r\n" .
+				'Reply-To: Blankiball Bierball Turnier <kummerkasten@blankiball.de>' . "\r\n" .
 				'X-Mailer: PHP/' . phpversion();
 			//Verschicken
-			mail("kummerkasten@REDACTED.de", "Teamregistrierung Blankiball-Turnier", $message, $header);
+			mail("kummerkasten@blankiball.de", "Teamregistrierung Blankiball-Turnier", $message, $header);
 			
 
 			//an Team
-			//$fromEmail = "kummerkasten@REDACTED.de";
+			//$fromEmail = "kummerkasten@blankiball.de";
 			$empfaenger = $_POST['Mail'];
 			$name = $_POST['Teamname'];
 			if($turnier_phase_ID==12){ // Falls Warteliste
-				$message2 = "Leider sind die Plaetze des Turniers vorläufig voll. Dein Team wurde der Warteliste hinzugefügt und kann eventuell noch nachrücken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
+				$message2 = "Leider sind die Plaetze des Turniers vorlï¿½ufig voll. Dein Team wurde der Warteliste hinzugefï¿½gt und kann eventuell noch nachrï¿½cken. Falls Plaetze frei werden, sagen wir euch Bescheid. \r\n \r\n";
 			}else{
-				$message2 = "Dein Team wurde erfolgreich für das Blankiball-Turnier registriert! \r\n \r\n";
+				$message2 = "Dein Team wurde erfolgreich fï¿½r das Blankiball-Turnier registriert! \r\n \r\n";
 			}
-			$message2 .= "Hier kannst du noch einmal deine Angaben überprüfen und hast euer Team-Passwort auch nochmal zum Abspeichern. \r\n \r\n";
+			$message2 .= "Hier kannst du noch einmal deine Angaben ï¿½berprï¿½fen und hast euer Team-Passwort auch nochmal zum Abspeichern. \r\n \r\n";
 			$message2 .= $infoVomAngemeldetenTeam;
 			$message2 .= "Bei Fragen oder Wuenschen, schreib uns gern eine Mail!";
 
 			// Verschicken
 			$betreff = 'Der Betreff';
 			//$nachricht = "Zeile 1\r\nZeile 2\r\nZeile 3";
-			// Falls eine Zeile der Nachricht mehr als 70 Zeichen enthälten könnte,
+			// Falls eine Zeile der Nachricht mehr als 70 Zeichen enthï¿½lten kï¿½nnte,
 			// sollte wordwrap() benutzt werden
 			$message2 = wordwrap($message2, 70, "\r\n");
-			$header = 'From: Blankiball <kummerkasten@REDACTED.de>' . "\r\n" .
-				'Reply-To: Blankiball <kummerkasten@REDACTED.de>' . "\r\n" .
+			$header = 'From: Blankiball <kummerkasten@blankiball.de>' . "\r\n" .
+				'Reply-To: Blankiball <kummerkasten@blankiball.de>' . "\r\n" .
 				'X-Mailer: PHP/' . phpversion();
 			mail($empfaenger, 'Deine Blankiball-Anmeldung', $message2, $header);
 			
 			//Beide Mails versenden
 			//mail_att($team_mail, $fromEmail, "Teamregistrierung Blankiball-Turnier", $message);
-			//mail_att("kummerkasten@REDACTED.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
+			//mail_att("kummerkasten@blankiball.de", $fromEmail, "Neues Team angemeldet: ".$name, $message);
 
 			if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
 			unset($_SESSION['register_form_data'], $_SESSION['flash_error_register'], $_SESSION['captcha_attempted_register'], $_SESSION['captcha_remaining_register']);
@@ -185,8 +185,8 @@ if (!headers_sent()) {
 			}
 			
 
-			echo "<script>console.log('Step: WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID')</script>";
-			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+			echo "<script>console.log('Step: WEITERLEITUNG ZURï¿½CK - mit eventueller TestTurnierID')</script>";
+			//WEITERLEITUNG ZURï¿½CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				if($turnier_phase_ID==12){ //WARTELISTE
@@ -202,7 +202,7 @@ if (!headers_sent()) {
 				}
 			}
 		}else{
-			//echo "Du Keck, du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...";
+			//echo "Du Keck, du musst das Captcha ausfï¿½llen, damit dein Team angemeldet wird. Fï¿½r die Dummheit designen wir dir die Seite hier nichtmal schï¿½n. Klicke einfach auf Zurï¿½ck in deinem Browser und probiere es noch einmal...";
 			echo '
 				<!DOCTYPE html>
 				<html lang="de">
@@ -240,7 +240,7 @@ if (!headers_sent()) {
 				<body>
 					<div class="message">
 						<h1>Du Keck!</h1>
-						<p>Du musst das Captcha ausfüllen, damit dein Team angemeldet wird. Für die Dummheit designen wir dir die Seite hier nichtmal schön. Klicke einfach auf Zurück in deinem Browser und probiere es noch einmal...</p>
+						<p>Du musst das Captcha ausfï¿½llen, damit dein Team angemeldet wird. Fï¿½r die Dummheit designen wir dir die Seite hier nichtmal schï¿½n. Klicke einfach auf Zurï¿½ck in deinem Browser und probiere es noch einmal...</p>
 					</div>
 				</body>
 				</html>';
@@ -270,7 +270,7 @@ if (!headers_sent()) {
 		}
 		//Teams
 		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant
-		//FALL: Team-Login -> Bearbeitungsrechte nur für eigene Begegnungen
+		//FALL: Team-Login -> Bearbeitungsrechte nur fï¿½r eigene Begegnungen
 		/*$teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);
 		$successfulLogin = 0; //false
 		while ($row = $teamListeFuerTurnier->fetch_assoc()) {
@@ -287,15 +287,15 @@ if (!headers_sent()) {
 		
 		
 		if($action == 'Abmelden'){
-			if($teamId == "auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss"){
-				$message = "Du musst schon ein Team auswählen du Keck";
+			if($teamId == "auffangbeckenfueralledienichtcheckendassmanhierwasauswï¿½hlenmuss"){
+				$message = "Du musst schon ein Team auswï¿½hlen du Keck";
 				//echo "<script type='text/javascript'>alert('$message');</script>";
 			}else{
-				//LOGIN ÜBERPRÜFEN
+				//LOGIN ï¿½BERPRï¿½FEN
 				if ($successfulLogin == 0){ //fehlerhafter Login
 					$message = "Login leider nicht erfolgreich!";
 					//echo "<script type='text/javascript'>alert('$message');</script>";
-				}else if($successfulLogin == 1 || $successfulLogin == 2){ //Account-Login oder Team-Login && Spiel gehört zu Team
+				}else if($successfulLogin == 1 || $successfulLogin == 2){ //Account-Login oder Team-Login && Spiel gehï¿½rt zu Team
 					//$sql = "DELETE FROM Spieler WHERE fk_team = ?";
 					//myDb_execute($conn, $TurnierID, $bn, "edit_teams.php x",$sql, array($teamId));
 	
@@ -314,7 +314,7 @@ if (!headers_sent()) {
 				}
 			}
 
-			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURï¿½CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#teams");
@@ -328,7 +328,7 @@ if (!headers_sent()) {
 			$sql = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ?";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 7",$sql, array($gruppeId, $teamId));
 			
-			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURï¿½CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#login");
@@ -341,7 +341,7 @@ if (!headers_sent()) {
 			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 8",$sql, array($teamId));
 			
-			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURï¿½CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#login");
@@ -354,7 +354,7 @@ if (!headers_sent()) {
 			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
 			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 9",$sql, array($teamId));
 			
-			//WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+			//WEITERLEITUNG ZURï¿½CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#login");

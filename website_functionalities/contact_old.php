@@ -13,7 +13,12 @@ $isHuman = CaptchaBlanki::passed('contact');
 
 // ALT: hCaptcha-Validierung (deaktiviert)
 /*
-$SECRET_KEY = "REDACTED";    # replace with your secret key
+$hcaptcha_cfg = [];
+$hcaptcha_cfg_path = __DIR__ . '/../local_secrets/hcaptcha.local.php';
+if (file_exists($hcaptcha_cfg_path)) {
+    $hcaptcha_cfg = include $hcaptcha_cfg_path;
+}
+$SECRET_KEY = $hcaptcha_cfg['secret_key'] ?? '';    # replace with your secret key
 $VERIFY_URL = "https://hcaptcha.com/siteverify";
 # Retrieve token from post data with key 'h-captcha-response'.
 $token = $_POST['h-captcha-response'] ?? '';
@@ -27,7 +32,7 @@ $data = [ 'secret' => $SECRET_KEY, 'response' => $token ];
 if ($isHuman) {
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     if ($action === 'send_message') {
-        mail_att("kummerkasten@REDACTED.de", $email, $name . " hat das Kontaktformular benutzt", $message);
+        mail_att("kummerkasten@blankiball.de", $email, $name . " hat das Kontaktformular benutzt", $message);
     }
 }
 else {

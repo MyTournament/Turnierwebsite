@@ -1,5 +1,5 @@
 <?php
-//https://REDACTED.de/website_functionalities/generate_team_certificate/generate_team_certificate.php
+//https://blankiball.de/website_functionalities/generate_team_certificate/generate_team_certificate.php
 
 
 

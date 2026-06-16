@@ -1,5 +1,5 @@
 <?php
-//zum Testen des Interfaces einfach auf die Seite gehen: https://REDACTED.de/website_datachange/edit_interface_test.php
+//zum Testen des Interfaces einfach auf die Seite gehen: https://blankiball.de/website_datachange/edit_interface_test.php
 $name = 'ich';
 $description = 'lalala';
 $fk_random = '5';

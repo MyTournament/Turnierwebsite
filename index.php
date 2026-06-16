@@ -125,7 +125,7 @@ if ($restultAnzahlWebsiteBesuche) {
             ['@type' => 'SiteNavigationElement', 'name' => 'Vergangene Turniere', 'url' => $baseUrl . '/#history'],
             ['@type' => 'SiteNavigationElement', 'name' => 'Info', 'url' => $baseUrl . '/#info'],
             ['@type' => 'SiteNavigationElement', 'name' => 'Regeln', 'url' => $baseUrl . '/#regeln'],
-            ['@type' => 'SiteNavigationElement', 'name' => 'Instagram', 'url' => 'https://www.instagram.com/REDACTED_official/?hl=de/'],
+            ['@type' => 'SiteNavigationElement', 'name' => 'Instagram', 'url' => 'https://www.instagram.com/blankiball_official/?hl=de/'],
         ];
         ?>
         <script type="application/ld+json">
@@ -433,7 +433,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     echo"<li class='button disabled'><a href='#spielplan'>🗓️ Spielplan</a></li>";
                 }
             ?>    
-            <li><a href="https://www.paypal.com/paypalme/REDACTED?country.x=DE&locale.x=de_DE">♥️ Spenden</a></li>        
+            <li><a href="https://www.paypal.com/paypalme/blankiball?country.x=DE&locale.x=de_DE">♥️ Spenden</a></li>
         </ul>
     </nav>
     <div class="content">
@@ -1159,7 +1159,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 <!-- schiedsrichter*innen -->
-<article id="REDACTED_simulator">
+<article id="blankiball_simulator">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
     <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
@@ -1308,7 +1308,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
     <p>Hier geht's zur alten Website (2017-2020)</p>
-    <a href="https://2018-20.REDACTED.de" class="button primary">Alte Website (2017-2020)</a>
+    <a href="https://2018-20.blankiball.de" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
     <!--<a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
@@ -1472,15 +1472,31 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             }
 
             function revealMail() {
-                var user = 'kummerkasten';
-                var domain = 'REDACTED.de';
-                var addr = user + '@' + domain;
-                var a = document.createElement('a');
-                a.href = 'mailto:' + addr;
-                a.textContent = addr;
-                span.innerHTML = '';
-                span.appendChild(a);
-                btn.style.display = 'none';
+                fetch('website_functionalities/reveal_contact_email.php', {
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('captcha_required');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (!data || !data.ok || !data.email) {
+                        throw new Error('missing_email');
+                    }
+                    var a = document.createElement('a');
+                    a.href = 'mailto:' + data.email;
+                    a.textContent = data.email;
+                    span.innerHTML = '';
+                    span.appendChild(a);
+                    btn.style.display = 'none';
+                    if (err) { err.textContent = ''; }
+                })
+                .catch(function() {
+                    if (err) { err.textContent = 'Bitte zuerst das Captcha best\u00e4tigen.'; }
+                });
             }
 
             if (btn) {
@@ -1657,9 +1673,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 } else {
                     $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
                 }
-                echo "<h3><a href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
-                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
-                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
+                echo "<h3><a href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @blankiball zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
         ?>
 
@@ -1735,7 +1751,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             /*echo"<h3><a href=$link_solibeitrag>??Unterst�tze uns??</a></h3>";
             echo"
             <p>Gerne kannst du uns mit einem Solibeitrag unterst�tzen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
-            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
+            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
             */
             $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
             $resultTurnier = $conn->query($sqlTurnier);
@@ -1753,8 +1769,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
                 }
                 echo "<h3><a href='" . $link_solibeitrag . "'>&#128176; Teilnahmebeitrag &#128176;</a></h3>";
-                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
-                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @blankiball zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
             
             
@@ -1817,7 +1833,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <!--SIEGER*INNEN_TREPPE-->
     <?php  cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
                     <!--<div><b><p>Folge uns auf Instagram, um alle aktuellen Infos und Updates zu bekommen:</p></b>
-                    <b><p style="font-size: 30px"><a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/"><img src="images/icon/insta.png" width="30" height="30" border="0" alt="Home"> @REDACTED_official</a></p></b><!--<h3>📢Offizieller Start:</h3>
+                    <b><p style="font-size: 30px"><a style="color: white" href="https://www.instagram.com/blankiball_official/?hl=de/"><img src="images/icon/insta.png" width="30" height="30" border="0" alt="Home"> @blankiball_official</a></p></b><!--<h3>📢Offizieller Start:</h3>
                     <p>t.b.a.<br/> -->
                     <!--Freitag (16.12.22) - 18:00 Uhr / -->
                     <!--Treffpunkt: <a href="#map">Blankensteinpark</a><p>-->
@@ -1826,12 +1842,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <!--Montag (06.09.) - 16:00 Uhr--><br/>
                     <!--<a href="#history" class="button primary">Vergangene Turniere</a>
                     <br/><br/><br/><h3><a href="#merch">👘Offizieller Merch</a></h3>
-                    <h3><a href="https://www.seedshirt.de/shop/REDACTED22">👘Offizieller Merch</a></h3>
-                    <h3><a href="https://www.shirtee.com/en/store/REDACTEDmerch">👘Offizieller Merch</a></h3>
+                    <h3><a href="https://www.seedshirt.de/shop/blankiball22">👘Offizieller Merch</a></h3>
+                    <h3><a href="https://www.shirtee.com/en/store/blankiballmerch">👘Offizieller Merch</a></h3>
                     <p>upgrade deinen Style und supporte das Turnier</p>
                     <img src="images/Sonstiges/Merch/front-organic-basic-hoodie-f8f8f8-558x.png" alt=""  style="width:10rem;"/>
                     <br/><br/><h3>
-                    <a href="https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE">💓Spende fürs Turnier</a>
+                    <a href="https://paypal.me/blankiball?country.x=DE&locale.x=de_DE">💓Spende fürs Turnier</a>
                     </h3>
                     <p>
                     finanziere krassere Preise und noch mehr Bier
@@ -1839,9 +1855,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
                          Lädt Song runter: style="display: none" autostart='true' <section><embed name='Songtitel' src='assets/audio/kein_bier_mehr_da.opus' border='0' width='152' height='10' style="color: black"  Delay='0' VOLUME='100' loop='true' controls='smallconsole'> </section>  
                         <div><br/><br/>
-                    <img src="images/Sonstiges/REDACTED_simulator.jpg" alt=""  style="width:20rem;"/>
+                    <img src="images/Sonstiges/blankiball_simulator.jpg" alt=""  style="width:20rem;"/>
                     <br/>
-                    <a href="#REDACTED_simulator" class="button primary">Blankiball-Simulator</a>
+                    <a href="#blankiball_simulator" class="button primary">Blankiball-Simulator</a>
                     <br/><br/>
 
                     <img src="images/Sonstiges/the_one_logo_weinglas_mit_schriftzug.png" alt=""  style="width:20rem;"/>
@@ -1852,13 +1868,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <a style="color: white;font-size:15px;" href="https://open.spotify.com/user/11129583931/playlist/3K13BWkhzAVwHdRM2F6P8Z">Der offizielle S<img src="images/icon/spoti.png" width="15" height="15" border="5" alt="Home">undtrack zum Turnier<br/></a></h3><h4><br/>
                     <img src="images/icon/insta.png" width="20" height="20" border="0" alt="Home">
                     <br/>
-                    <a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/">@REDACTED_official</a>
+                    <a style="color: white" href="https://www.instagram.com/blankiball_official/?hl=de/">@blankiball_official</a>
                     <br />
-                    <a style="color: white" href="https://www.instagram.com/REDACTED_memes/?hl=de/">@REDACTED_memes</a>
+                    <a style="color: white" href="https://www.instagram.com/blankiball_memes/?hl=de/">@blankiball_memes</a>
                     <br />
-                    <a style="color: white" href="https://www.instagram.com/REDACTED_simulator/?hl=de/">@REDACTED_simulator</a>
+                    <a style="color: white" href="https://www.instagram.com/blankiball_simulator/?hl=de/">@blankiball_simulator</a>
                     <br />
-                    <a style="color: white" href="https://www.instagram.com/explore/tags/REDACTED/">#REDACTED</a>
+                    <a style="color: white" href="https://www.instagram.com/explore/tags/blankiball/">#blankiball</a>
                     <br />
                     <a style="color: white" href="https://www.instagram.com/app.theone/">@app.theone - Trinkspielapp</a>
                     <br />

@@ -240,7 +240,7 @@ if($test_turnier_id == 0){ //FALL: NORMALES TURNIER
         <!-- ########  PLATZHALTER  ######### -->
             <article id='platzhalter'>
                 <h2>Hier gibt es (noch) nichts zu sehen.</h2> <!--class='major'-->
-                <span class='image main'><img src='images/fotos/lennard_REDACTED.JPG' alt='' /></span>
+                <span class='image main'><img src='images/fotos/lennard_blankiball.JPG' alt='' /></span>
                 <p>Geh woanders hin.</p>
                 <a href='#' class='button'>Zurück</a>
                 <h5><br /></h5>  

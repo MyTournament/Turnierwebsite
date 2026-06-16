@@ -16,7 +16,7 @@ function backup_main($conn){
     ];
 
     // Hauptfunktionalität
-    $backupDir = '/var/www/html/REDACTED/automatic_db_backups';
+    $backupDir = '/var/www/html/blankiball/automatic_db_backups';
     // Backup erstellen und aufräumen
     try {
         backupDatabase($conn, $backupDir);
@@ -66,15 +66,24 @@ Die Bereinigung erfolgt gleichmäßig über den jeweiligen Zeitraum, um eine sin
 function backupDatabase($conn, $backupDir) {
     //file_put_contents('backup_log_test.txt', 'Testinhalt');
 
-    // Holen der Zugangsdaten aus der Datenbankverbindung
-    //$db_host = $conn->host_info; // Host-Info enthält auch den Port
-    //$db_name = $conn->query("SELECT DATABASE()")->fetch_row()[0]; // Aktuelle Datenbank
-    //$db_user = $conn->user; // Benutzername
-    //$db_pass = $conn->passwd; // Passwort
-    $db_host = "REDACTED";
-    $db_user = "REDACTED";
-    $db_pass = "REDACTED";
-    $db_name = "REDACTED";
+    $cfg = [
+        'db_server' => getenv('DB_SERVER') ?: '',
+        'db_username' => getenv('DB_USERNAME') ?: '',
+        'db_password' => getenv('DB_PASSWORD') ?: '',
+        'db_name' => getenv('DB_NAME') ?: '',
+    ];
+    $local_cfg_path = __DIR__ . '/../local_secrets/db_connection.local.php';
+    if (file_exists($local_cfg_path)) {
+        $local_cfg = include $local_cfg_path;
+        if (is_array($local_cfg)) {
+            $cfg = array_merge($cfg, $local_cfg);
+        }
+    }
+
+    $db_host = $cfg['db_server'] ?? '';
+    $db_user = $cfg['db_username'] ?? '';
+    $db_pass = $cfg['db_password'] ?? '';
+    $db_name = $cfg['db_name'] ?? '';
     
     // Prüfen, ob die Zugangsdaten korrekt gelesen wurden
     if (!$db_host || !$db_name || !$db_user) {

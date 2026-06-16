@@ -321,7 +321,7 @@ $stmt->bind_param($fk_random);*/
 
 
 <h2>Hier gibt es (noch) nichts zu sehen.</h2> <!--class="major"-->
-    <span class="image main"><img src="images/fotos/lennard_REDACTED.JPG" alt="" /></span>
+    <span class="image main"><img src="images/fotos/lennard_blankiball.JPG" alt="" /></span>
     <p>Geh woanders hin.</p>
 
 
@@ -413,13 +413,13 @@ $stmt->bind_param($fk_random);*/
     <h3><a style="color: white;font-size:15px;" href="https://open.spotify.com/user/11129583931/playlist/3K13BWkhzAVwHdRM2F6P8Z">Der offizielle S<img src="images/icon/spoti.png" width="15" height="15" border="5" alt="Home">undtrack zum Turnier<br/></a></h3>
     <h6 style="color: white"><br /></h6>
     <img src="images/icon/insta.png" width="20" height="20" border="0" alt="Home">
-    <h4><a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/">@REDACTED_official</a><br />
-    <a style="color: white" href="https://www.instagram.com/explore/tags/REDACTED/">#REDACTED</a><br />
+    <h4><a style="color: white" href="https://www.instagram.com/blankiball_official/?hl=de/">@blankiball_official</a><br />
+    <a style="color: white" href="https://www.instagram.com/explore/tags/blankiball/">#blankiball</a><br />
     <a style="color: white" href="https://www.instagram.com/roehrlitrinkhalme/?hl=de/">@roehrlitrinkhalme</a><br />
     <a style="color: white" href="https://www.instagram.com/sternburg.brauerei/?hl=de/">@sternburg.official</a><br />
     <a style="color: white" href="https://www.instagram.com/gretarthouse/?hl=de/">@gretarthouse</a></h4>                         
     <h6 style="color: white"><br /></h6>
-    <a href="http://2019.REDACTED.de" class="button">Website von 2020</a>
+    <a href="http://2019.blankiball.de" class="button">Website von 2020</a>
     <h6 style="color: white"><br/></h6>
 
     <hr>
@@ -433,11 +433,11 @@ $stmt->bind_param($fk_random);*/
 
 
 <h2 class="major">Über uns</h2>
-    <span class="image main"><img src="images/fotos/zoe_wirft_REDACTED.JPG" alt="" /></span>
+    <span class="image main"><img src="images/fotos/zoe_wirft_blankiball.JPG" alt="" /></span>
     <p>Das Blankiball-Turnier ist Berlins größtes (privates) Bierball-Turnier. Einmal jährlich finden sich Spieler*innen aus ganz Berlin (natürlich alles Freund*innen und Bekannte - keine Veranstaltung) im <a style="color: white" href=http://www.berlin.de/senuvk/umwelt/stadtgruen/gruenanlagen/de/gruenanlagen_plaetze/pankow/blankensteinpark/index.shtml><u>Blankensteinpark</u></a> zusammen und spielen gegeneinander um den Titel des/der Bierball-Königs*in.</p>
     
     <h2 class="major">Geschichte</h2>
-    <span class="image main"><img src="images/fotos/nico_jonas_REDACTED.JPG" alt="" /></span>
+    <span class="image main"><img src="images/fotos/nico_jonas_blankiball.JPG" alt="" /></span>
     <p>Gegründet wurde die Blankiball-Tradition 2017, wo es zunächst noch lokal von Heinrich-Hertz-Gymnasiast*innen ausgetragen wurde. Zwei Jahre in Folge wurde das Turnier noch unter dem Namen "Heinrich-Hertz-Bierball-Turnier" ausgetragen, an die 100 Anmeldungen erreichte das Turnier 2018. Mit Steigerung der Popularität nahmen auch berlinweit Spieler*innen am Turnier teil und mittlerweile wurde es zum Blankiball-Turnier umbenannt (setzt sich zusammen aus Blankensteinpark und Bierball).</p>
     
     <h2 class="major">Mitspielen</h2>
@@ -445,11 +445,11 @@ $stmt->bind_param($fk_random);*/
     <p>Es ist prinzipiell jedem*r erlaubt mitzuspielen, solange er/sie noch nüchtern genug ist um ein Bier zu halten. Außerdem können nur Teams aus genau drei Spieler*innen antreten und es muss sich an die <a style="color: white" href="index.php#regeln"><u>offiziellen Regeln</u></a> gehalten werden. Das Bier muss selbst bezahlt werden. Anmelden kann man sich ganz einfach <a style="color: white" href="#anmelden"><u>hier</u></a>.</p>
     
     <h2 class="major">Turnierablauf</h2>
-    <span class="image main"><img src="images/fotos/team1_REDACTED.JPG" alt="" /></span>
+    <span class="image main"><img src="images/fotos/team1_blankiball.JPG" alt="" /></span>
     <p>Ein durchschnittliches Blankiballturnier dauert ca. 1 Woche und der/die durchschnittliche Teilnehmer*in hat ca. 5 Bier pro Tag und 30 pro komplettem Tunier zu trinken. Ein Turnier durchläuft Gruppenphase und KO-Phase aber nur die besten und geübtesten Teams schaffen es bis zu den Finalspielen. Falls du mit deinem Team antreten möchtest, solltest du dir möglichst die ganze Woche freihalten, die Spiele finden in der Regel nachmittags bis abends statt. Die genauen Zeiten machen sich die Kontrahent*innen einfach untereinander aus.</p>
     
     <h2 class="major">Anforderungen</h2>
-    <span class="image main"><img src="images/fotos/bakthaan_REDACTED.jpg" alt="" /></span>
+    <span class="image main"><img src="images/fotos/bakthaan_blankiball.jpg" alt="" /></span>
     <p>Anders als bei anderen Sportturnieren kommt es beim Blankiballturnier auf sehr unterschiedliche Kompetenzen an. Neben dem schnellen Trinken werden vom Spieler*in Fähigkeiten im gezieltem Werfen und reaktionsschnellem und geradem Laufen verlangt. Je weiter die Rundenzahl vorschreitet, desto schwieriger kann es für das Team werden, eine konstante Trefferquote durchzuhalten.</p>
     
 
@@ -565,4 +565,3 @@ $stmt->bind_param($fk_random);*/
     <p></br></p>
 </article>
                              
- 

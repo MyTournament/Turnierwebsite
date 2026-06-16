@@ -8,9 +8,9 @@ return [
     'transport'      => 'mail',
 
     // Absender/Empfänger
-    'from_email'     => 'kummerkasten@REDACTED.de',
+    'from_email'     => 'kummerkasten@blankiball.de',
     'from_name'      => 'Blankiball Kontaktformular',
-    'to_email'       => 'kummerkasten@REDACTED.de',
+    'to_email'       => 'kummerkasten@blankiball.de',
 
     // SendGrid
     'sendgrid_api_key' => '',

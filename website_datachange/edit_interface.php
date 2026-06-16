@@ -117,7 +117,7 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
 //DB_UPDATE
 //TODO: den Part hier wieder includen
 // TODO keinen absoluten Pfad benutzen, sondern dynamisch Pfad der db_update abrufen. Dadurch kann die Website in verschiedenen Umgebungen laufen. (https://stackoverflow.com/questions/7835948/include-once-relative-path-in-php)
-/*include_once '/mnt/web508/d1/34/510124634/htdocs/REDACTED/website/database/db_update.php';
+/*include_once '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna-dev/database/db_update.php';
 try{
     db_update($conn, $TurnierID);
 }catch(Throwable $e){
@@ -127,6 +127,6 @@ try{
 
 //TODO: BACKUP
 // TODO keinen absoluten Pfad benutzen, sondern dynamisch Pfad der db_update abrufen. Dadurch kann die Website in verschiedenen Umgebungen laufen. (https://stackoverflow.com/questions/7835948/include-once-relative-path-in-php)
-//include_once '/mnt/web508/d1/34/510124634/htdocs/REDACTED/website/database/db_backup.php';
+//include_once '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna-dev/database/db_backup.php';
 
 ?>

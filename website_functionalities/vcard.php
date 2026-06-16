@@ -1,6 +1,6 @@
 <?php
     $result = 'Generated string that is different every time. 20121107160322';
-    $filename = 'REDACTED_contacts.vcf';
+    $filename = 'blankiball_contacts.vcf';
     
     header("Content-Type: text/plain");
     header('Content-Disposition: attachment; filename="'.$filename.'"');
@@ -23,7 +23,7 @@
 
 // define here all the variable like $name,$image,$company_name & all other
   //header('Content-Type: text/x-vcard; charset=utf-8');  
-  //header('Content-Disposition: inline; filename= "REDACTED_contacts.vcf"');  
+  //header('Content-Disposition: inline; filename= "blankiball_contacts.vcf"');
 
   $vCard;
 

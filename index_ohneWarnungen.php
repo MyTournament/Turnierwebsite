@@ -42,7 +42,7 @@ include_once 'database/traffic_analytics.php';
         <meta name="description" content="Berlins größtes Bierball-Turnier">
         <meta name="author" content="Hermann Blankenstein">
 		<link rel="stylesheet" href="assets/css/main.css" />
-        <meta name="keywords" content="REDACTED, bierball, turnier, flunkyball, bier" />
+        <meta name="keywords" content="Blankiball, bierball, turnier, flunkyball, bier" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
         <link href="images/icon/logo_export_icon/transparent/favicon-96x96.png" rel="shortcut icon" type="image/png">
         
@@ -509,7 +509,7 @@ include_once 'database/traffic_analytics.php';
 </article>
 
 <!-- schiedsrichter*innen -->
-<article id="REDACTED_simulator">
+<article id="blankiball_simulator">
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 30, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID ÜBERGEBEN (Für CMS) #####-->
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
@@ -606,7 +606,7 @@ include_once 'database/traffic_analytics.php';
     <p>Wähle ein Turnier aus der folgenden Liste aus oder klicke unten auf die alte Website.</p>
     <?php history_auswahl($history, $TurnierName); ?>
     <p>Hier geht's zur alten Website (2017-2020)</p>
-    <a href="http://2020.REDACTED.de/" class="button primary">Alte Website (2017-2020)</a>
+    <a href="http://2020.blankiball.de/" class="button primary">Alte Website (2017-2020)</a>
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
@@ -706,7 +706,15 @@ include_once 'database/traffic_analytics.php';
                 <textarea name="message" id="message" rows="4" required></textarea>
             </div>
             <br/><br/>
-            <div class="h-captcha" data-sitekey="REDACTED"></div>
+            <?php
+                $hcaptcha_cfg = [];
+                $hcaptcha_cfg_path = __DIR__ . '/local_secrets/hcaptcha.local.php';
+                if (file_exists($hcaptcha_cfg_path)) {
+                    $hcaptcha_cfg = include $hcaptcha_cfg_path;
+                }
+                $hcaptchaSiteKey = $hcaptcha_cfg['site_key'] ?? '';
+            ?>
+            <div class="h-captcha" data-sitekey="<?php echo htmlspecialchars($hcaptchaSiteKey, ENT_QUOTES, 'UTF-8'); ?>"></div>
         </div>
         
         <ul class="actions">
@@ -878,8 +886,8 @@ include_once 'database/traffic_analytics.php';
                     $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
                 }
                 echo "<h3><a href='" . $link_solibeitrag . "'>&#128147;Teilnahmebeitrag&#128147;</a></h3>";
-                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
-                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @blankiball zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
         ?>
         
@@ -935,7 +943,7 @@ include_once 'database/traffic_analytics.php';
             /*echo"<h3><a href=$link_solibeitrag>💓Unterstütze uns💓</a></h3>";
             echo"
             <p>Gerne kannst du uns mit einem Solibeitrag unterstützen. Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website und das Grillevent am letzten Tag.</p>                  
-            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
+            <a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Zum Solibeitrag</a> ";
             */
             $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
             $resultTurnier = $conn->query($sqlTurnier);
@@ -953,8 +961,8 @@ include_once 'database/traffic_analytics.php';
                     $teilnahmebeitragText = rtrim(rtrim(number_format($teilnahmebeitragValue, 2, ',', '.'), '0'), ',');
                 }
                 echo "<h3><a href='" . $link_solibeitrag . "'>&#128147;Teilnahmebeitrag&#128147;</a></h3>";
-                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @REDACTED.de zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
-                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/REDACTED?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
+                echo "<p><b>Nicht vergessen, die " . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team per Paypal an @blankiball zu bezahlen! (Verwendungszweck: Euer Teamname)</b> Das Geld stecken wir zu 100% ins Turnier, beispielsweise in die Preise, die Website, Sticker und der Rest flie&szlig;t in Bier f&uuml;rs Turnier.</p>";
+                echo "<a class='button' style='background-color: pink; color: black' href='https://paypal.me/blankiball?country.x=DE&locale.x=de_DE'>Direkt zu Paypal</a>";
             }
             echo "</br></br></br>
             <h3><img src='images/icon/whatsapp.png' width='20' height='20' border='5' alt='Home'> Komm in die Gruppe</h3>
