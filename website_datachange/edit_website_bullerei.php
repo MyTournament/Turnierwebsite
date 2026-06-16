@@ -60,10 +60,10 @@ if($action == 'take_offline'){
 		//TODO:
 		//PER MAIL VERSENDEN
 		//include_once '../website_functionalities/send_mail.php';
-		//$fromEmail = "kummerkasten@REDACTED.de";
+		//$fromEmail = "kummerkasten@blankiball.de";
 		//$name = $_POST['bn'];
 		//$message = "";
-		//mail_att("kummerkasten@REDACTED.de", $fromEmail, "WEBSITE OFFLINE GENOMMEN von ".$name, $message);
+		//mail_att("kummerkasten@blankiball.de", $fromEmail, "WEBSITE OFFLINE GENOMMEN von ".$name, $message);
 	}
 	//WEITERLEITUNG ZURÜCK
 	header("Location: /");
@@ -78,10 +78,10 @@ if($action == 'take_offline'){
 	//TODO:
 	//PER MAIL VERSENDEN
 	//include_once '../website_functionalities/send_mail.php';
-	//$fromEmail = "kummerkasten@REDACTED.de";
+	//$fromEmail = "kummerkasten@blankiball.de";
 	//$name = $_POST['bn'];
 	//$message = "";
-	//mail_att("kummerkasten@REDACTED.de", $fromEmail, "WEBSITE WIEDER ONLINE".$name, $message);
+	//mail_att("kummerkasten@blankiball.de", $fromEmail, "WEBSITE WIEDER ONLINE".$name, $message);
 
 	//WEITERLEITUNG ZURÜCK
 	header("Location: /");

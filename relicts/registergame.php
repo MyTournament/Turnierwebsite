@@ -155,7 +155,7 @@ include_once '../variables.php';
 						</div>
 						<nav>
 						  <ul>
-								<li><a href=https://REDACTED.de/>Zurück zur Startseite</a></li>
+								<li><a href=https://blankiball.de/>Zurück zur Startseite</a></li>
 							</ul>
 						</nav>         
                         <div class="content">
@@ -164,7 +164,7 @@ include_once '../variables.php';
                     <h6 style="color: white"><br /></h6>
             
                     <img src="../images/icon/insta.png" width="20" height="20" border="0" alt="Home">
-                    <p><a style="color: white" href="https://www.instagram.com/REDACTED_official/?hl=de/">@REDACTED_official</a><br />
+                    <p><a style="color: white" href="https://www.instagram.com/blankiball_official/?hl=de/">@blankiball_official</a><br />
                     <a style="color: white" href="https://www.instagram.com/roehrlitrinkhalme/?hl=de/">@roehrlitrinkhalme</a><br />
                     <a style="color: white" href="https://www.instagram.com/sternburg.brauerei/?hl=de/">@sternburg.official</a><br />
                     <a style="color: white" href="https://www.instagram.com/gretarthouse/?hl=de/">@gretarthouse</a></p>                         
@@ -186,7 +186,7 @@ include_once '../variables.php';
 				<!-- Footer -->
 					<footer id="footer">
               <a href="#kontakt" class="button primary">Kontakt</a>
-              <p class="copyright">&copy; Blankiball. <a href="https://REDACTED.de#impressum">Impressum</a></p>  
+              <p class="copyright">&copy; Blankiball. <a href="https://blankiball.de#impressum">Impressum</a></p>
 					</footer>
                     
 

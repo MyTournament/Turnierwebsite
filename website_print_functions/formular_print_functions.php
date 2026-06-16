@@ -299,7 +299,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
         <li>3 Spieler*innen pro Team</li>
         <?php
             if ($teilnahmebeitragValue > 0 && $teilnahmebeitragText !== null) {
-                echo "<li><b>" . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team - nach Anmeldung &uuml;berweisen per Paypal an @REDACTED &#10145;&#65039; Verwendungszweck: *Euer Teamname*</b></li>";
+                echo "<li><b>" . $teilnahmebeitragText . "&nbsp;&euro; Teilnahmegeb&uuml;hr pro Team - nach Anmeldung &uuml;berweisen per Paypal an @blankiball &#10145;&#65039; Verwendungszweck: *Euer Teamname*</b></li>";
             }
         ?>
         
@@ -371,7 +371,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
             echo "<div style='text-align:center;'>";
             echo "<h1>Wichtig!</h1>";
             echo "<p>&#10071;Euer Team ist erst angemeldet, wenn ihr die <b>Teilnahmegeb&uuml;hr</b> von <b>" . $teilnahmebeitragText . "&nbsp;&euro;</b> pro Team &uuml;berwiesen habt&#10071;</p>";
-            echo "<p>&#128176; &Uuml;berweisen per <b>Paypal an @REDACTED mit eurem Teamnamen als Verwendungszweck</b> &#128176;</p>";
+            echo "<p>&#128176; &Uuml;berweisen per <b>Paypal an @blankiball mit eurem Teamnamen als Verwendungszweck</b> &#128176;</p>";
             echo "</div>";
         }
     ?>

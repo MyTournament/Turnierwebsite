@@ -25,4 +25,4 @@ $num_of_rows = $result->num_rows;
 echo " ".__DIR__." ";
 
 
-include_once '/mnt/web508/d1/34/510124634/htdocs/REDACTED/website/database/db_update.php';
+include_once '/mnt/web508/d1/34/510124634/htdocs/Turnierwebsite/tourna-dev/database/db_update.php';
