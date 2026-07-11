@@ -38,7 +38,7 @@ if (php_sapi_name() !== 'cli') {
                     return; // Begegnung ist geblockt -> keine Änderungen
                 }
                 //TODO: Auch Fall bedenken, dass es zwei gleiche Begegnungen gibt, dann würden hier beide als nicht unnötig markiert werden. -> Gibts da ne Lösung?
-                $stmtStatuseBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_turnierbaumposition .' WHERE status <> 4 AND status <> 5 AND status <> 6 AND fk_heimteam = '. $team1ID .' AND fk_auswaertsteam = '. $team2ID .' AND ko_finallevel = '. $ko_finallevel .'');
+                $stmtStatuseBegegnung = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = '. $ko_turnierbaumposition .' WHERE status <> 4 AND status <> 5 AND status <> 6 AND status <> 7 AND fk_heimteam = '. $team1ID .' AND fk_auswaertsteam = '. $team2ID .' AND ko_finallevel = '. $ko_finallevel .'');
                 if ( $stmtStatuseBegegnung === false ){
                     throw new Exception('Status konnte nicht geupdated werden');
                 }
@@ -169,7 +169,7 @@ if (php_sapi_name() !== 'cli') {
                     SELECT CASE WHEN b.fk_siegerteam = b.fk_heimteam THEN b.fk_auswaertsteam ELSE b.fk_heimteam END AS loser_id,
                            b.ko_finallevel AS lvl
                     FROM Turnier_Begegnung b
-                    WHERE b.status IN (4,5)
+                    WHERE b.status IN (4,5,7)
                       AND b.ko_finallevel > 0 AND b.ko_finallevel < 20
                       AND b.fk_siegerteam IS NOT NULL
                 ) ko ON ko.loser_id = t.id
@@ -244,7 +244,7 @@ if (php_sapi_name() !== 'cli') {
         }
         // Fallback: falls platziert_level nicht gesetzt, Begegnung Spiel um Platz 3 auslesen
         if (count($team_ids) < 2) {
-            $sqlSuP3Fb = 'SELECT fk_heimteam, fk_auswaertsteam, fk_siegerteam FROM Turnier_Begegnung WHERE ko_finallevel = 1 AND status IN (4,5) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) LIMIT 1';
+            $sqlSuP3Fb = 'SELECT fk_heimteam, fk_auswaertsteam, fk_siegerteam FROM Turnier_Begegnung WHERE ko_finallevel = 1 AND status IN (4,5,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) LIMIT 1';
             $resSuP3Fb = $conn->query($sqlSuP3Fb);
             if ($resSuP3Fb && ($r = $resSuP3Fb->fetch_assoc())) {
                 $team_ids = array((int)$r['fk_heimteam'], (int)$r['fk_auswaertsteam']);
@@ -294,7 +294,7 @@ if (php_sapi_name() !== 'cli') {
         }
         // Fallback falls platziert_level nicht gesetzt: Final-Begegnung lesen
         if (count($team_ids) < 2) {
-            $sqlFinaleFb = 'SELECT fk_heimteam, fk_auswaertsteam, fk_siegerteam FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND status IN (4,5) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) LIMIT 1';
+            $sqlFinaleFb = 'SELECT fk_heimteam, fk_auswaertsteam, fk_siegerteam FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND status IN (4,5,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = '. (int)$TurnierID .' AND geloescht = 0) LIMIT 1';
             $resFinaleFb = $conn->query($sqlFinaleFb);
             if ($resFinaleFb && ($r = $resFinaleFb->fetch_assoc())) {
                 $team_ids = array((int)$r['fk_heimteam'], (int)$r['fk_auswaertsteam']);
@@ -480,7 +480,7 @@ if (php_sapi_name() !== 'cli') {
             $stmt->execute();
         }else{
             //echo "<script>console.log('gewinnerTeam1ID: $gewinnerTeam1ID')</script>";
-            if($gewinnerTeam1ID != "platzhalter" && $verliererTeam1ID != "platzhalter" && $rowBegegnung['status'] == 5){ //NUR WENN FINAL
+            if($gewinnerTeam1ID != "platzhalter" && $verliererTeam1ID != "platzhalter" && ($rowBegegnung['status'] == 5 || $rowBegegnung['status'] == 7)){ //NUR WENN FINAL
                 $stmt = $conn->prepare('UPDATE Turnier_Begegnung SET `fk_siegerteam` = '. $gewinnerTeam1ID .' WHERE id = ' . $rowBegegnung['id'] . ' ORDER BY id');
                 if ( $stmt === false ){
                     throw new Exception('Siegerteam konnte nicht berechnet werden.');
@@ -520,7 +520,7 @@ if (php_sapi_name() !== 'cli') {
             $resChk = $conn->query($sqlChk);
             while ($resChk && ($rb = $resChk->fetch_assoc())) {
                 $st = $rb['status'];
-                if ($st != '5' && $st != '4') { $alleGruppenFinal = 0; }
+                if ($st != '5' && $st != '4' && $st != '7') { $alleGruppenFinal = 0; }
             }
         }
 
@@ -571,7 +571,7 @@ if (php_sapi_name() !== 'cli') {
                                       JOIN Turnier_Team th ON th.id = b.fk_heimteam
                                       JOIN Turnier_Team ta ON ta.id = b.fk_auswaertsteam
                                       WHERE b.ko_finallevel >= 4 AND b.ko_finallevel < 20
-                                        AND b.status IN (4,5)
+                                        AND b.status IN (4,5,7)
                                         AND b.fk_siegerteam IS NOT NULL
                                         AND th.fk_turnier = ?
                                         AND ta.fk_turnier = ?");
@@ -617,7 +617,7 @@ if (php_sapi_name() !== 'cli') {
                     $stmt->execute();
                 } else {
                     // Falls vorhanden, als aktiv markieren
-                    $stmt = $conn->prepare("UPDATE Turnier_Begegnung SET status = 1 WHERE ko_finallevel = 20 AND ((fk_heimteam = ? AND fk_auswaertsteam = ?) OR (fk_heimteam = ? AND fk_auswaertsteam = ?)) AND status <> 4 AND status <> 5 AND status <> 6");
+                    $stmt = $conn->prepare("UPDATE Turnier_Begegnung SET status = 1 WHERE ko_finallevel = 20 AND ((fk_heimteam = ? AND fk_auswaertsteam = ?) OR (fk_heimteam = ? AND fk_auswaertsteam = ?)) AND status <> 4 AND status <> 5 AND status <> 6 AND status <> 7");
                     $stmt->bind_param("iiii", $a, $b, $b, $a);
                     $stmt->execute();
                 }
@@ -647,7 +647,7 @@ if (php_sapi_name() !== 'cli') {
                           ON LEAST(t.fk_heimteam, t.fk_auswaertsteam) = k.a
                          AND GREATEST(t.fk_heimteam, t.fk_auswaertsteam) = k.b
                         SET t.status = CASE WHEN t.id = k.keep_id THEN 1 ELSE 3 END
-                        WHERE t.ko_finallevel = 20 AND t.status <> 4 AND t.status <> 5 AND th.fk_turnier = $tid AND ta.fk_turnier = $tid
+                        WHERE t.ko_finallevel = 20 AND t.status <> 4 AND t.status <> 5 AND t.status <> 7 AND th.fk_turnier = $tid AND ta.fk_turnier = $tid
                           AND th.id IN ($teilnehmerList) AND ta.id IN ($teilnehmerList)";
             $conn->query($sqlKeep);
         } catch (Throwable $e) {
@@ -675,7 +675,7 @@ if (php_sapi_name() !== 'cli') {
                     $conn->query('UPDATE Turnier_Begegnung SET status = 1 WHERE id = ' . $keep);
                     // rest veralten
                     for ($k = 1; $k < count($ids); $k++) {
-                        $conn->query('UPDATE Turnier_Begegnung SET status = 3 WHERE id = ' . (int)$ids[$k] . ' AND status <> 4 AND status <> 5 AND status <> 6');
+                        $conn->query('UPDATE Turnier_Begegnung SET status = 3 WHERE id = ' . (int)$ids[$k] . ' AND status <> 4 AND status <> 5 AND status <> 6 AND status <> 7');
                     }
                 }
             }
@@ -1050,7 +1050,7 @@ if (php_sapi_name() !== 'cli') {
                                         }
                                         $stmtBegegnungGruppenphase->execute();
                                     }else{ //Wenn Begegnung schon existiert, dann muss der Status geupdated werden
-                                        $stmtNichtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET status = $statusGruppenphaseNeu WHERE status <> 4 AND status <> 5 AND status <> 6 AND fk_heimteam = '$TeamZeileID' AND fk_auswaertsteam = '$TeamSpalteID' AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID')");
+                                        $stmtNichtVeralteteBegegnung = $conn->prepare("UPDATE Turnier_Begegnung SET status = $statusGruppenphaseNeu WHERE status <> 4 AND status <> 5 AND status <> 6 AND status <> 7 AND fk_heimteam = '$TeamZeileID' AND fk_auswaertsteam = '$TeamSpalteID' AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '$TurnierID')");
                                         if ( $stmtNichtVeralteteBegegnung === false ){
                                             throw new Exception('veraltet-Status der Gruppenphase konnte nicht geupdated werden.');
                                         }
@@ -1264,7 +1264,7 @@ if (php_sapi_name() !== 'cli') {
                                 $resultFirstBegegnungen = $conn->query($sqlFirstBegegnungen);
                                 while (!empty($rowFirstBegegnungen = $resultFirstBegegnungen->fetch_assoc())) {
                                     $begegnungsStatus = $rowFirstBegegnungen['status'];
-                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
+                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4' && $begegnungsStatus!='7'){
                                         $allebegegnungenInGruppeFinal=0; //FALSE
                                     }
                                 }
@@ -1273,7 +1273,7 @@ if (php_sapi_name() !== 'cli') {
                                 $resultSecondBegegnungen = $conn->query($sqlSecondBegegnungen);
                                 while (!empty($rowSecondBegegnungen = $resultSecondBegegnungen->fetch_assoc())) {
                                     $begegnungsStatus = $rowSecondBegegnungen['status'];
-                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
+                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4' && $begegnungsStatus!='7'){
                                         $allebegegnungenInGruppeFinal=0; //FALSE
                                     }
                                 }
@@ -1401,7 +1401,7 @@ if (php_sapi_name() !== 'cli') {
                                 $resultFirstBegegnungen = $conn->query($sqlFirstBegegnungen);
                                 while (!empty($rowFirstBegegnungen = $resultFirstBegegnungen->fetch_assoc())) {
                                     $begegnungsStatus = $rowFirstBegegnungen['status'];
-                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4'){
+                                    if($begegnungsStatus!='5' && $begegnungsStatus!='4' && $begegnungsStatus!='7'){
                                         $allebegegnungenInGruppeFinal=0; //FALSE
                                     }
                                 }
@@ -1479,7 +1479,7 @@ if (php_sapi_name() !== 'cli') {
                                 $verliererTeam1ID = 0;
                                 $verliererTeam2ID = 0;
                             }
-                            $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND status = 5 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
+                            $sqlBegegnung = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = ' . $ko_finallevel . ' AND ko_turnierbaumposition = '. $zaehlerForKoPosition .' AND status IN (5,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition, id'; //AND NOT fk_siegerteam = NULL 
                             $resultBegegnung = $conn->query($sqlBegegnung);
                             while (!empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
                                 //Checken ob ich das erste oder das zweite Team gefunden habe

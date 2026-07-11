@@ -432,7 +432,7 @@
                     $siegerGefunden = false;
                     $zumindestBegegnungGefunden = false;
                     while (!empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){
-                        if($rowBegegnung['status'] == 5){
+                        if($rowBegegnung['status'] == 5 || $rowBegegnung['status'] == 7){
                             //ID ablesen
                             $teamId = $rowBegegnung['fk_siegerteam'];
                             //Namen zur ID finden
@@ -745,7 +745,7 @@
             //$gameID=$rowSpiel["id"];
             //echo " <a class='height: 1px;' name='gameId' href='#changegame' value='$gameID' class='button primary'>$a:$b</a> "; <!--value=$gameID-->
             $spielId = $rowSpiel['id'];
-            if($gameEditMode == 1 && $status != '5'){ //editMode & noch nicht final
+            if($gameEditMode == 1 && $status != '5' && $status != '7'){ //editMode & noch nicht final
                 ?>
                 <form method='post' action='#changegame' style='margin: 0 0 0 0;'>
                     <button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'><?php echo $a?>:<?php echo $b?></button>
@@ -764,7 +764,7 @@
             }
         }
 
-        if($gameEditMode == 1 && $status == '5'){ //SCHON FINAL
+        if($gameEditMode == 1 && ($status == '5' || $status == '7')){ //SCHON FINAL
             //BEGEGNUNG UNFINALISIEREN
             ?>
             <form method='post' action='#changegame' style='margin: 0 0 0 0;'>
