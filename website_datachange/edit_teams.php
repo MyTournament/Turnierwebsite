@@ -260,7 +260,6 @@ if (!headers_sent()) {
 		$rollenInfoTeams = getUserRollenInfo($conn, $bn, $pw);
 		if ($rollenInfoTeams !== null && ($rollenInfoTeams['flags']['teams'] || $rollenInfoTeams['ist_admin'] || $rollenInfoTeams['ist_co_admin'])) {
 			$successfulLogin = 1;
-			$rechte = $rollenInfoTeams['legacy_rolle'];
 		}
 		//Teams
 		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant

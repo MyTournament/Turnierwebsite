@@ -82,7 +82,6 @@ $successfulLogin = 0; //false
 $rollenInfoContent = getUserRollenInfo($conn, $bn, $pw);
 if ($rollenInfoContent !== null && ($rollenInfoContent['flags']['cms'] || $rollenInfoContent['ist_admin'] || $rollenInfoContent['ist_co_admin'])) {
   $successfulLogin = 1;
-  $rechte = $rollenInfoContent['legacy_rolle'];
 }
 
 
