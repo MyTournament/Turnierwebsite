@@ -1684,6 +1684,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <a href='#backstage_platzhalter' class='admin-menu-button'>Beliebige Daten bearbeiten</a>
             <a href='#backstage_turnier_phase' class='admin-menu-button'>Turnierphase</a>
             <a href='#backstage_turnier_settings' class='admin-menu-button'>Turnier Settings</a>
+            <?php if ($istAdminOderCoAdmin) { ?>
+            <a href='#backstage_nutzermanagement' class='admin-menu-button'>Nutzermanagement</a>
+            <?php } ?>
         </div>
         <h5><br/></h5>
         <a href='#' class='button'>Zurück</a>
@@ -2164,6 +2167,110 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </ul>
     </form>
     <h5><br /></h5>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  NUTZERMANAGEMENT  ######### -->
+<!-- ########################## -->
+<article id="backstage_nutzermanagement">
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h1>Nutzermanagement</h1>
+    <?php if (!$istAdminOderCoAdmin) { ?>
+        <p>Keine ausreichende Berechtigung.</p>
+    <?php } else {
+        $sqlEigeneRolle = 'SELECT * FROM System_Benutzer_in_Rolle WHERE id = ' . (int)$loggedInUserRechte;
+        $resultEigeneRolle = $conn->query($sqlEigeneRolle);
+        $rowEigeneRolle = $resultEigeneRolle ? $resultEigeneRolle->fetch_assoc() : null;
+        $darfNeueAdmins = $rowEigeneRolle && $rowEigeneRolle['rechte_neue_admins'] == 1;
+        $darfNeueCoAdmins = $rowEigeneRolle && $rowEigeneRolle['rechte_neue_co_admins'] == 1;
+        $darfRestlicheRollenVergeben = $rowEigeneRolle && $rowEigeneRolle['rechte_restliche_rollen_vergeben'] == 1;
+    ?>
+    <h2>Neuen Nutzer anlegen</h2>
+    <form action='website_datachange/edit_account.php' method='POST' onSubmit='return checkAGBNutzerAnlegen()'>
+        <input type='hidden' name='action' value='admin_erstellt_nutzer'/>
+        <div class='field'>
+            <label for='demo-category'>Benutzername</label>
+            <input type='text' name='neuer_bn' class='Eingabe' style='color: white' required>
+            <h5><br/></h5>
+            <label for='demo-category'>Passwort</label>
+            <input type='text' name='neuer_pw' class='Eingabe' style='color: white' required>
+            <h5><br/></h5>
+            <label for='demo-category'>Rolle</label>
+            <select name='neue_rolle' required>
+                <?php
+                $sqlRollenAuswahl = 'SELECT * FROM System_Benutzer_in_Rolle ORDER BY hierarchie_ebene';
+                $resultRollenAuswahl = $conn->query($sqlRollenAuswahl);
+                while ($rowRollenAuswahl = $resultRollenAuswahl->fetch_assoc()) {
+                    $rId = $rowRollenAuswahl['id'];
+                    $rName = $rowRollenAuswahl['name'];
+                    $darfDieseRolle = ($rId == 1 && $darfNeueAdmins) || ($rId == 2 && $darfNeueCoAdmins) || ($rId != 1 && $rId != 2 && $darfRestlicheRollenVergeben);
+                    if ($darfDieseRolle) {
+                        echo "<option value='$rId'>$rName</option>";
+                    }
+                }
+                ?>
+            </select>
+            <p><i>Nur Rollen, die du laut deinen Rechten vergeben darfst, stehen zur Auswahl.</i></p>
+        </div>
+        <label for='demo-category'>Dein Login (zur Bestätigung)</label>
+        <input type='text' id='nutzeranlegen_bn' name='admin_bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
+        <input type='password' id='nutzeranlegen_pw' name='admin_pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
+        <script type='text/javascript'>
+            function checkAGBNutzerAnlegen() {
+                if (document.getElementById('demo-human-nutzer-anlegen').checked) {
+                    return true;
+                }
+                alert('Du musst unten noch das Häkchen setzen!');
+                return false;
+            }
+        </script>
+        <div>
+            <div class='field half'>
+                <input type='checkbox' id='demo-human-nutzer-anlegen' name='demo-human-nutzer-anlegen' unchecked>
+                <label for='demo-human-nutzer-anlegen'>Ich habe Benutzername/Passwort/Rolle geprüft.</label>
+                <h5><br/></h5>
+            </div>
+        </div>
+        <ul class='actions'>
+            <li><input type='submit' value='Anlegen' class='primary' /></li>
+            <li><input type='reset' value='Abbrechen' /></li>
+        </ul>
+    </form>
+
+    <h5><br/></h5>
+    <h2>Rollen &amp; Nutzer</h2>
+    <?php
+    $sqlRollenListe = 'SELECT * FROM System_Benutzer_in_Rolle ORDER BY hierarchie_ebene';
+    $resultRollenListe = $conn->query($sqlRollenListe);
+    while ($rowRollenListe = $resultRollenListe->fetch_assoc()) {
+        $rId = $rowRollenListe['id'];
+        $rName = $rowRollenListe['name'];
+        $rBeschreibung = $rowRollenListe['beschreibung'];
+        echo "<details style='margin-bottom:0.6rem;'>";
+        echo "<summary style='cursor:pointer;'><b>$rName</b> <span style='font-size:0.8rem;color:#9fd8ff;'>($rBeschreibung)</span></summary>";
+        echo "<table class='withBorderCollapse'><thead><tr><th>Benutzername</th><th>Passwort</th><th></th></tr></thead><tbody>";
+        $sqlNutzerProRolle = 'SELECT * FROM System_Benutzer_in WHERE fk_rechte = ' . (int)$rId . ' ORDER BY Benutzername';
+        $resultNutzerProRolle = $conn->query($sqlNutzerProRolle);
+        while ($rowNutzerProRolle = $resultNutzerProRolle->fetch_assoc()) {
+            $nutzerBn = $rowNutzerProRolle['Benutzername'];
+            $nutzerPw = $rowNutzerProRolle['Passwort'];
+            $loginAlsAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
+            echo "<tr><td>$nutzerBn</td><td>$nutzerPw</td><td>
+                <form action='$loginAlsAction' method='POST' style='margin:0;display:inline;'>
+                    <input type='hidden' name='bn' value='$nutzerBn'>
+                    <input type='hidden' name='pw' value='$nutzerPw'>
+                    <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.35rem 0.7rem;font-size:0.75rem;'>Als dieser User einloggen</button>
+                </form>
+            </td></tr>";
+        }
+        echo "</tbody></table>";
+        echo "</details>";
+    }
+    ?>
+    <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
