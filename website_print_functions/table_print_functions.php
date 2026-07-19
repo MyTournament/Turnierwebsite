@@ -1076,7 +1076,7 @@
         } 
     }
 
-    function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id){
+    function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id, $istAdminOderCoAdmin = false, $bnEingeloggt = '', $pwEingeloggt = ''){
         //Button, mit dem man den Bearbeitungsmodus starten kann
         printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#kophase", $test_turnier_id);
 
@@ -1210,6 +1210,34 @@
             echo"   </tr>
                 </tbody>
             </table>";
+
+            // Direkt unter der ersten Finalstufe: großer Umschalter für "Gruppenphase vorbei / KO-Einzug fertig",
+            // nur für Admin (1) und Co-Admin (2), da das die automatische KO-Berechnung auslöst.
+            if ($ko_finallevel == $start_ko_finallevel && $istAdminOderCoAdmin) {
+                $sqlEinzugFertig = 'SELECT einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . $TurnierID;
+                $resultEinzugFertig = $conn->query($sqlEinzugFertig);
+                $rowEinzugFertig = $resultEinzugFertig->fetch_assoc();
+                $einzugFertig = (int)$rowEinzugFertig['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'];
+
+                echo "
+                <div style='text-align:center;margin:1rem 0;'>
+                <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;'>
+                    <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                    <input type='hidden' name='action' value='Einzug_KO_Fertig_Umschalten'/>
+                    <input type='hidden' name='bn' value='$bnEingeloggt'/>
+                    <input type='hidden' name='pw' value='$pwEingeloggt'/>
+                ";
+                if ($einzugFertig == 1) {
+                    echo "<button type='submit' class='button primary' style='font-size:1.1rem;padding:0.9rem 1.6rem;background:#c0392b;'>K.-o.-Einzug zurücknehmen (Gruppenphase wieder offen)</button>";
+                } else {
+                    echo "<button type='submit' class='button primary' style='font-size:1.1rem;padding:0.9rem 1.6rem;background:#27ae60;'>Gruppenphase für beendet erklären (K.-o.-Phase startet)</button>";
+                }
+                echo "
+                </form>
+                </div>
+                ";
+            }
+
             $ko_finallevel--; //Zähler dekrementieren (nächste Finalstufe)
         }
     }

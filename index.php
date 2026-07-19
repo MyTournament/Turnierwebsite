@@ -331,10 +331,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
     $LoggedInWithCMSorHigher = False;
     $LoggedInWithBackstageOrHigher = False;
+    $loggedInUserRechte = null;
     if ($bn !== null && $pw !== null) {
         foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 15") as $row) {
             if ($bn == $row["Benutzername"] && $pw == $row["Passwort"]) {
                 $LoggedInWithBackstageOrHigher = True;
+                $loggedInUserRechte = (int)$row["fk_rechte"];
                 if ($row["fk_rechte"] <= 5) {
                     $LoggedInWithCMSorHigher = True;
                     $edit_content_mode = False;
@@ -342,6 +344,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             }
         }
     }
+    // Admin (1) oder Co-Admin (2): dürfen strukturelle Turnier-Settings ändern
+    $istAdminOderCoAdmin = ($loggedInUserRechte === 1 || $loggedInUserRechte === 2);
     if ($LoggedInWithBackstageOrHigher) {
         // Login in der Session merken, damit er nach einem Redirect (z.B. edit_variables.php, edit_teams.php) erhalten bleibt
         $_SESSION['admin_bn'] = $bn;
@@ -390,7 +394,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         if ($LoggedInWithBackstageOrHigher) {
             echo "
                 <a href='#backstage_info' class='button'>Infos</a>
-                <a href='#backstage_daten_bearbeiten' class='button'>Edit Data</a>
+                <a href='#backstage_daten_bearbeiten' class='button'>Settings</a>
                 <a href='#backstage_verlauf' class='button'>Verlauf</a>
             ";
         }
@@ -1105,7 +1109,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </div>
     <br/><br/>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <?php printKO_PhaseTabellen($TurnierID, $conn, $LoggedInWithBackstageOrHigher, $gameEditMode, $expertenmodus, $test_turnier_id); ?>
+    <?php printKO_PhaseTabellen($TurnierID, $conn, $LoggedInWithBackstageOrHigher, $gameEditMode, $expertenmodus, $test_turnier_id, $istAdminOderCoAdmin, $bn, $pw); ?>
     <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>-->
     <p></br></p>
     <p></br></p>
@@ -1673,12 +1677,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########  Daten bearbeiten  ######### -->
 <article id="backstage_daten_bearbeiten">
     <div style='text-align: center'>
-        <h2>Daten bearbeiten</h2>
+        <h2>Settings</h2>
         <div class='admin-menu-wrap'>
             <a href='#backstage_teams_bearbeiten' class='admin-menu-button'>Teams bearbeiten</a>
             <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'>Begegnungen bearbeiten</a>
             <a href='#backstage_platzhalter' class='admin-menu-button'>Beliebige Daten bearbeiten</a>
             <a href='#backstage_turnier_phase' class='admin-menu-button'>Turnierphase</a>
+            <a href='#backstage_turnier_settings' class='admin-menu-button'>Turnier Settings</a>
         </div>
         <h5><br/></h5>
         <a href='#' class='button'>Zurück</a>
@@ -1927,11 +1932,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_teams_bearbeiten">
     <div style='text-align: center'>
         <h2>Teams bearbeiten</h2>
-        <a href='#backstage_abmelden' class='button primary'>Team abmelden</a>
-        <br/><br/>
-        <a href='#backstage_changeteam' class='button primary'>Sonstiges (Gruppe, Bearbeitungsrechte)</a>
-        <h5><br /></h5>
-        <h5><br /></h5>
+        <div class='admin-menu-wrap'>
+            <a href='#backstage_abmelden' class='admin-menu-button'>Team abmelden</a>
+            <a href='#backstage_changeteam' class='admin-menu-button'>Sonstiges (Gruppe, Bearbeitungsrechte)</a>
+        </div>
+        <h5><br/></h5>
         <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
         <h5><br /></h5>
     </div>
@@ -2082,6 +2087,79 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </div>
         <ul class='actions'>
             <li><input name='action' type='submit' value='Tunierphase ändern' class='primary' /></li>
+            <li><input name='action' type='reset' value='Abbrechen' /></li>
+        </ul>
+    </form>
+    <h5><br /></h5>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  TURNIER SETTINGS  ######### -->
+<!-- ########################## -->
+<article id="backstage_turnier_settings">
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h1>Turnier Settings</h1>
+    <p>Grundeinstellungen für das aktuelle Turnier. Nur für Admin und Co-Admin.</p>
+    <?php
+    $sqlTurnierSettings = 'SELECT * FROM `Turnier_Main` WHERE id = ' . $TurnierID . ' ORDER BY id';
+    $resultTurnierSettings = $conn->query($sqlTurnierSettings);
+    $rowTurnierSettings = $resultTurnierSettings->fetch_assoc();
+    $curAnzahlGruppen = $rowTurnierSettings['anzahl_gruppen'];
+    $curStartKoFinallevel = $rowTurnierSettings['start_ko_finallevel'];
+    $curEinzugKoManuellAnlegen = $rowTurnierSettings['einzug_ko_manuell_anlegen'];
+    ?>
+    <form action='website_datachange/edit_variables.php' method='POST' onSubmit='return checkAGBTurnierSettings()'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <div class='field'>
+            <label for='demo-category'>Anzahl Gruppen</label>
+            <input type='number' name='anzahl_gruppen' min='1' value='<?php echo (int)$curAnzahlGruppen; ?>' class='Eingabe' style='color: white' required>
+            <p><i>Bestimmt, in wie viele Gruppen die Teams in der Gruppenphase aufgeteilt werden.</i></p>
+            <h5><br/></h5>
+            <label for='demo-category'>Start-Finalstufe (K.-o.-Phase)</label>
+            <select name='start_ko_finallevel' required>
+                <?php
+                $sqlKoLevelSettings = 'SELECT * FROM `Turnier_KO_Finallevel` ORDER BY id DESC';
+                $resultKoLevelSettings = $conn->query($sqlKoLevelSettings);
+                while ($rowKoLevelSettings = $resultKoLevelSettings->fetch_assoc()) {
+                    $koId = $rowKoLevelSettings['id'];
+                    $koName = $rowKoLevelSettings['name'];
+                    $sel = ($koId == $curStartKoFinallevel) ? "selected" : "";
+                    echo "<option value=$koId $sel>$koName</option>";
+                }
+                ?>
+            </select>
+            <p><i>Legt fest, mit welcher Finalstufe die K.-o.-Phase beginnt (z.B. Achtelfinale, Viertelfinale, ...) - abhängig von der Teamanzahl.</i></p>
+            <h5><br/></h5>
+            <label for='demo-category'>
+                <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
+                Einzug in die K.-o.-Phase manuell anlegen (statt automatisch aus der Gruppenphase berechnen)
+            </label>
+            <p><i>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch aus den Gruppenplatzierungen, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden.</i></p>
+        </div>
+        <label for='demo-category'>Login</label>
+        <input type='text' id='turnier_settings_bn' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
+        <input type='password' id='turnier_settings_pw' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
+        <script type='text/javascript'>
+            function checkAGBTurnierSettings() {
+                if (document.getElementById('demo-human-turnier-settings').checked) {
+                    return true;
+                }
+                alert('Du musst unten noch das Häkchen setzen!');
+                return false;
+            }
+        </script>
+        <div>
+            <div class='field half'>
+                <input type='checkbox' id='demo-human-turnier-settings' name='demo-human-turnier-settings' unchecked>
+                <label for='demo-human-turnier-settings'>Ich weiß, was diese Einstellungen bewirken.</label>
+                <h5><br/></h5>
+            </div>
+        </div>
+        <ul class='actions'>
+            <li><input name='action' type='submit' value='Turnier_Settings_Aendern' class='primary' /></li>
             <li><input name='action' type='reset' value='Abbrechen' /></li>
         </ul>
     </form>
