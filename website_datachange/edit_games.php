@@ -441,6 +441,36 @@ if ($action == 'Ändern') {
     }
 
   }
+}else if($action == 'Begegnung_Sperren'){
+  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
+    $begegnungIdSperren = (int)$_POST['begegnungIdSperren'];
+
+    if ($begegnungIdSperren > 0) {
+      // Status 6 = "gesperrt": db_update.php lässt Begegnungen mit diesem Status unangetastet
+      // (siehe begegnungErstellen() in database/db_update.php)
+      $sql = "UPDATE Turnier_Begegnung SET status = 6 WHERE id = ?";
+      myDb_execute($conn, $TurnierID, $bn, "edit_games.php 11", $sql, array($begegnungIdSperren));
+    }
+
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+  }else{ //keine ausreichenden Rechte
+
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+  }
 }else{
   
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
