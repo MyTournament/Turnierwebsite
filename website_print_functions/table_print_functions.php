@@ -1235,7 +1235,10 @@
                         <input type='hidden' name='bn' value='$bnEingeloggt'/>
                         <input type='hidden' name='pw' value='$pwEingeloggt'/>
                         <span>Gruppenphase beendet / K.-o.-Einzug fertig angelegt (<i>$statusText</i>):</span>
-                        <input type='checkbox' name='einzug_ko_fertig' value='1' $checkedAttr>
+                        <label class='admin-toggle'>
+                            <input type='checkbox' name='einzug_ko_fertig' value='1' $checkedAttr>
+                            <span>aktiviert</span>
+                        </label>
                         <label class='admin-toggle'>
                             <input type='checkbox' onchange='this.form.submit()'>
                             <span>bestätigen</span>

@@ -369,7 +369,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
             .admin-menu-button:hover { background: linear-gradient(135deg, var(--admin-accent), #a78bfa); }
             .admin-toggle { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 8px; background: rgba(139, 92, 246, 0.12); border: 1px solid var(--admin-accent); color: var(--admin-accent-light); cursor: pointer; }
-            .admin-toggle input[type='checkbox'] { accent-color: var(--admin-accent); width: 1.1rem; height: 1.1rem; }
+            /* Das Theme versteckt input[type=checkbox] global (opacity:0, float:left, negativer margin, z-index:-1)
+               und erwartet stattdessen ein direkt folgendes <label> mit eigener :before-Box. Da wir die Checkbox
+               hier bewusst innerhalb des Labels verschachteln (kompaktere Chips), müssen wir das Verstecken für
+               .admin-toggle wieder aufheben, sonst ist die Checkbox unsichtbar. */
+            .admin-toggle input[type='checkbox'] { opacity: 1; float: none; margin: 0; z-index: auto; position: static; display: inline-block; accent-color: var(--admin-accent); width: 1.1rem; height: 1.1rem; }
             #main article[id^='backstage_'] { border-top: 3px solid var(--admin-accent); box-shadow: 0 0 24px rgba(139, 92, 246, 0.25); }
         </style>
         <div id='admin-bar'>
@@ -2218,22 +2222,22 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 ?>
             </select>
             <h5><br/></h5>
-            <label for='demo-category'><input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo (($altesTurnier['einzug_ko_manuell_anlegen'] ?? 0) == 1) ? "checked" : ""; ?>> Einzug in die K.-o.-Phase manuell anlegen</label>
+            <label class='admin-toggle'><input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo (($altesTurnier['einzug_ko_manuell_anlegen'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Einzug in die K.-o.-Phase manuell anlegen</span></label>
             <h5><br/></h5>
-            <label for='demo-category'><input type='checkbox' name='einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei' value='1'> Gruppenphase beendet / K.-o.-Einzug fertig angelegt (für ein neues Turnier i.d.R. nicht ankreuzen)</label>
+            <label class='admin-toggle'><input type='checkbox' name='einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei' value='1'> <span>Gruppenphase beendet / K.-o.-Einzug fertig angelegt (für ein neues Turnier i.d.R. nicht ankreuzen)</span></label>
             <h5><br/></h5>
-            <label for='demo-category'><input type='checkbox' name='nurOberesDreieckInGruppenphase' value='1' <?php echo (($altesTurnier['nurOberesDreieckInGruppenphase'] ?? 0) == 1) ? "checked" : ""; ?>> Nur oberes Dreieck in Gruppenphase</label>
+            <label class='admin-toggle'><input type='checkbox' name='nurOberesDreieckInGruppenphase' value='1' <?php echo (($altesTurnier['nurOberesDreieckInGruppenphase'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Nur oberes Dreieck in Gruppenphase</span></label>
             <h5><br/></h5>
-            <label for='demo-category'><input type='checkbox' name='loescheErsteZeileUndSpalte' value='1' <?php echo (($altesTurnier['loescheErsteZeileUndSpalte'] ?? 0) == 1) ? "checked" : ""; ?>> Lösche erste Zeile und Spalte (Gruppentabelle)</label>
+            <label class='admin-toggle'><input type='checkbox' name='loescheErsteZeileUndSpalte' value='1' <?php echo (($altesTurnier['loescheErsteZeileUndSpalte'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Lösche erste Zeile und Spalte (Gruppentabelle)</span></label>
             <h5><br/></h5>
-            <label for='demo-category'><input type='checkbox' name='losingbracket_open_for_ko_losers' value='1' <?php echo (($altesTurnier['losingbracket_open_for_ko_losers'] ?? 0) == 1) ? "checked" : ""; ?>> Losing Bracket offen für K.-o.-Verlierer</label>
+            <label class='admin-toggle'><input type='checkbox' name='losingbracket_open_for_ko_losers' value='1' <?php echo (($altesTurnier['losingbracket_open_for_ko_losers'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Losing Bracket offen für K.-o.-Verlierer</span></label>
             <h5><br/></h5>
-            <label for='demo-category'><input type='checkbox' name='use_excel' value='1' <?php echo (($altesTurnier['use_excel'] ?? 0) == 1) ? "checked" : ""; ?>> Excel-Verknüpfung nutzen</label>
+            <label class='admin-toggle'><input type='checkbox' name='use_excel' value='1' <?php echo (($altesTurnier['use_excel'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Excel-Verknüpfung nutzen</span></label>
             <h5><br/></h5>
             <label for='demo-category'>Excel-Link</label>
             <input type='text' name='excel_link' value='<?php echo htmlspecialchars($altesTurnier['excel_link'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
-            <label for='demo-category'><input type='checkbox' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>> Schnee-Effekt</label>
+            <label class='admin-toggle'><input type='checkbox' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Schnee-Effekt</span></label>
         </div>
         <script type='text/javascript'>
             function checkAGBNeuesTurnier() {
