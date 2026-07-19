@@ -2337,8 +2337,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
             <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
             <input type='hidden' name='action' value='Turnier_Settings_EinzugKoManuell_Aendern'/>
-            <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
-            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
+            <label class='admin-toggle'>
+                <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
+                <span>aktiviert</span>
+            </label>
+            <label class='admin-toggle'>
+                <input type='checkbox' onchange='this.form.submit()'>
+                <span>bestätigen</span>
+            </label>
         </form>
     </div>
 
