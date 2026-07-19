@@ -30,15 +30,13 @@ include_once 'login_interface.php';
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
 
-//Benutzer
-$benutzerliste = getBenutzerListe($conn);
+//Benutzer - Rollen-System: Schiedsrichter*in (alle_spiele-Flag) oder Admin/Co-Admin dürfen (fremde) Spiele bearbeiten
 $accountDarfSpieleBearbeiten = 0; //false
-while ($row = $benutzerliste->fetch_assoc()) {
-  if (
-    $row['Benutzername'] == $bn &&
-    $row['Passwort'] == $pw &&
-    $row['fk_rechte'] <= 20
-  ) {
+$istAdminOderCoAdminEditGames = false; //nur Admin/Co-Admin dürfen Begegnungen anlegen/sperren
+$rollenInfoGames = getUserRollenInfo($conn, $bn, $pw);
+if ($rollenInfoGames !== null) {
+  $istAdminOderCoAdminEditGames = ($rollenInfoGames['ist_admin'] || $rollenInfoGames['ist_co_admin']);
+  if ($rollenInfoGames['flags']['alle_spiele'] || $istAdminOderCoAdminEditGames) {
     $accountDarfSpieleBearbeiten = 1;
   }
 }
@@ -399,7 +397,7 @@ if ($action == 'Ändern') {
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
 }else if($action == 'Begegnung_Hinzufuegen'){
-  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
+  if($istAdminOderCoAdminEditGames){ //Nur Admin/Co-Admin dürfen Green-Card-Begegnungen anlegen
     $team1 = (int)$_POST['team1'];
     $team2 = (int)$_POST['team2'];
     $koFinallevel = (int)$_POST['ko_finallevel'];
@@ -442,7 +440,7 @@ if ($action == 'Ändern') {
 
   }
 }else if($action == 'Begegnung_Sperren'){
-  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
+  if($istAdminOderCoAdminEditGames){ //Nur Admin/Co-Admin dürfen Begegnungen sperren
     $begegnungIdSperren = (int)$_POST['begegnungIdSperren'];
 
     if ($begegnungIdSperren > 0) {

@@ -21,18 +21,12 @@ if($action == 'take_offline'){
 	$bn = $_POST['bn'];
 	$pw = $_POST['pw'];
 
-	//Benutzer
-	$benutzerliste = getBenutzerListe($conn);
+	//Benutzer - Rollen-System: Autor*in (cms-Flag) oder Admin/Co-Admin dürfen die Website offline nehmen
 	$successfulLogin = 0; //false
-	while ($row = $benutzerliste->fetch_assoc()) {
-		if(
-			$row['Benutzername'] == $bn and
-			$row['Passwort'] == $pw and
-			$row['fk_rechte'] <= 5
-		){
-			$successfulLogin = 1;
-			$rechte = $row['fk_rechte'];
-		}
+	$rollenInfoBullerei = getUserRollenInfo($conn, $bn, $pw);
+	if ($rollenInfoBullerei !== null && ($rollenInfoBullerei['flags']['cms'] || $rollenInfoBullerei['ist_admin'] || $rollenInfoBullerei['ist_co_admin'])) {
+		$successfulLogin = 1;
+		$rechte = $rollenInfoBullerei['legacy_rolle'];
 	}
 	//Teams
 	/*$teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);

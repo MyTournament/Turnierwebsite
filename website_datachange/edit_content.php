@@ -77,18 +77,12 @@ include_once 'login_interface.php';
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
 
-//Benutzer
-$benutzerliste = getBenutzerListe($conn);
+//Benutzer - Rollen-System: Autor*in (cms-Flag) oder Admin/Co-Admin dürfen CMS-Inhalte bearbeiten
 $successfulLogin = 0; //false
-while ($row = $benutzerliste->fetch_assoc()) {
-  if(
-    $row['Benutzername'] == $bn and
-    $row['Passwort'] == $pw and
-    $row['fk_rechte'] <= 5
-  ){
-    $successfulLogin = 1;
-    $rechte = $row['fk_rechte'];
-  }
+$rollenInfoContent = getUserRollenInfo($conn, $bn, $pw);
+if ($rollenInfoContent !== null && ($rollenInfoContent['flags']['cms'] || $rollenInfoContent['ist_admin'] || $rollenInfoContent['ist_co_admin'])) {
+  $successfulLogin = 1;
+  $rechte = $rollenInfoContent['legacy_rolle'];
 }
 
 

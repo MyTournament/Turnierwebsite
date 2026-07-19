@@ -410,7 +410,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <?php
 }
 
-function printTeamAbmelden($conn, $TurnierID){
+function printTeamAbmelden($conn, $TurnierID, $bnEingeloggt = '', $pwEingeloggt = ''){
     ?>
     <title>Adressbuch</title>
     <div id="LogIn">
@@ -430,9 +430,9 @@ function printTeamAbmelden($conn, $TurnierID){
         } ?>
     </select>
     <p></br></p>
-    <h4>Kürzel/Account & Passwort</h4>
-    <input type="text" id="luerzel" name="bn" class="Eingabe" placeholder="Kürzel/Account" style="color: white" required><br/>
-    <input type="password" id="passwort" name="pw" class="Eingabe" placeholder="Passwort" style="color: white" required><br/>
+    <input type="hidden" name="bn" value="<?php echo htmlspecialchars($bnEingeloggt, ENT_QUOTES); ?>">
+    <input type="hidden" name="pw" value="<?php echo htmlspecialchars($pwEingeloggt, ENT_QUOTES); ?>">
+    <input type="hidden" name="TurnierID" value="<?php echo $TurnierID; ?>">
     <h5><br/></h5>
     <title>[ untitled ]</title>                                
     <script type="text/javascript">

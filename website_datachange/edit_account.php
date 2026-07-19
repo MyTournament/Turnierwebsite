@@ -11,6 +11,16 @@ $pw = $_POST['pw'];
 $fk_rechte = '30';
 echo "<script>console.log('edit_account Checkpoint 2')</script>";
 
+// Prüft, ob der anlegende/verwaltende Admin bzw. Co-Admin laut seiner(n) eigenen Rolle(n)
+// die angegebene Ziel-Rolle vergeben (oder wieder entziehen) darf.
+function darfRolleVergeben($rollenInfoAdmin, $zielRolle) {
+    if ($rollenInfoAdmin === null) { return false; }
+    $flags = $rollenInfoAdmin['flags'];
+    if ($zielRolle == 1) { return $flags['neue_admins']; }
+    if ($zielRolle == 2) { return $flags['neue_co_admins']; }
+    return $flags['restliche_rollen_vergeben'];
+}
+
 if($action == 'register'){
     $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort, fk_rechte) VALUES (?, ?, ?)";
     //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: $accountId = myDb_execute($conn, $TurnierID, $bn, "edit_account.php", $sql, array($bn, $pw, $fk_rechte));
@@ -24,36 +34,67 @@ if($action == 'register'){
     $neuerPw = $_POST['neuer_pw'];
     $neueRolle = (int)$_POST['neue_rolle'];
 
-    //Rechte des anlegenden Admins/Co-Admins herausfinden
-    $benutzerliste = getBenutzerListe($conn);
-    $adminRechte = null;
-    while ($row = $benutzerliste->fetch_assoc()) {
-        if ($row['Benutzername'] == $adminBn && $row['Passwort'] == $adminPw) {
-            $adminRechte = (int)$row['fk_rechte'];
-        }
-    }
+    $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
 
-    $darfAnlegen = false;
-    if ($adminRechte == 1 || $adminRechte == 2) {
-        $sqlEigeneRolle = "SELECT * FROM System_Benutzer_in_Rolle WHERE id = " . $adminRechte;
-        $resultEigeneRolle = $conn->query($sqlEigeneRolle);
-        $rowEigeneRolle = $resultEigeneRolle ? $resultEigeneRolle->fetch_assoc() : null;
-        if ($rowEigeneRolle) {
-            if ($neueRolle == 1 && $rowEigeneRolle['rechte_neue_admins'] == 1) { $darfAnlegen = true; }
-            else if ($neueRolle == 2 && $rowEigeneRolle['rechte_neue_co_admins'] == 1) { $darfAnlegen = true; }
-            else if ($neueRolle != 1 && $neueRolle != 2 && $rowEigeneRolle['rechte_restliche_rollen_vergeben'] == 1) { $darfAnlegen = true; }
-        }
-    }
-
-    if ($darfAnlegen && $neuerBn !== '' && $neuerPw !== '') {
+    if (darfRolleVergeben($rollenInfoAdmin, $neueRolle) && $neuerBn !== '' && $neuerPw !== '') {
+        // fk_rechte bleibt aus Abwärtskompatibilitätsgründen die "erste" Rolle des neuen Nutzers,
+        // zusätzlich wird die Rolle auch im neuen Mehrfach-Rollen-System eingetragen.
         $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort, fk_rechte) VALUES (?, ?, ?)";
-        myDb_execute($conn, 0, $adminBn, "edit_account.php 2", $sql, array($neuerBn, $neuerPw, $neueRolle));
+        $neuerBenutzerId = myDb_execute($conn, 0, $adminBn, "edit_account.php 2", $sql, array($neuerBn, $neuerPw, $neueRolle));
+        try {
+            $sqlRel = "INSERT INTO System_Benutzer_in_Relation_Rolle (fk_benutzer_in, fk_rolle) VALUES (?, ?)";
+            myDb_execute($conn, 0, $adminBn, "edit_account.php 3", $sqlRel, array($neuerBenutzerId, $neueRolle));
+        } catch (Throwable $e) {
+            // Relation-Tabelle (noch) nicht vorhanden - fk_rechte allein reicht dann als Rolle
+        }
+    }
+
+}else if($action == 'Rolle_Hinzufuegen'){
+    $adminBn = $_POST['admin_bn'];
+    $adminPw = $_POST['admin_pw'];
+    $zielBenutzerId = (int)$_POST['ziel_benutzer_id'];
+    $neueRolle = (int)$_POST['neue_rolle'];
+
+    $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
+
+    if (darfRolleVergeben($rollenInfoAdmin, $neueRolle) && $zielBenutzerId > 0) {
+        try {
+            $sqlPruefen = "SELECT 1 FROM System_Benutzer_in_Relation_Rolle WHERE fk_benutzer_in = ? AND fk_rolle = ?";
+            $stmtPruefen = $conn->prepare($sqlPruefen);
+            $stmtPruefen->bind_param("ii", $zielBenutzerId, $neueRolle);
+            $stmtPruefen->execute();
+            $bereitsVorhanden = $stmtPruefen->get_result()->fetch_assoc();
+            if (!$bereitsVorhanden) {
+                $sqlRel = "INSERT INTO System_Benutzer_in_Relation_Rolle (fk_benutzer_in, fk_rolle) VALUES (?, ?)";
+                myDb_execute($conn, 0, $adminBn, "edit_account.php 4", $sqlRel, array($zielBenutzerId, $neueRolle));
+            }
+        } catch (Throwable $e) {
+            // Relation-Tabelle (noch) nicht vorhanden
+        }
+    }
+
+}else if($action == 'Rolle_Entfernen'){
+    $adminBn = $_POST['admin_bn'];
+    $adminPw = $_POST['admin_pw'];
+    $zielBenutzerId = (int)$_POST['ziel_benutzer_id'];
+    $entferneRolle = (int)$_POST['entferne_rolle'];
+
+    $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
+
+    if (darfRolleVergeben($rollenInfoAdmin, $entferneRolle) && $zielBenutzerId > 0) {
+        try {
+            $sqlRel = "DELETE FROM System_Benutzer_in_Relation_Rolle WHERE fk_benutzer_in = ? AND fk_rolle = ?";
+            myDb_execute($conn, 0, $adminBn, "edit_account.php 5", $sqlRel, array($zielBenutzerId, $entferneRolle));
+        } catch (Throwable $e) {
+            // Relation-Tabelle (noch) nicht vorhanden
+        }
     }
 }
 
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 $test_turnier_id = $_GET['test_turnier_id'];
-if ($action == 'admin_erstellt_nutzer') {
+$nutzermanagementActions = ['admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen'];
+if (in_array($action, $nutzermanagementActions, true)) {
     if($test_turnier_id==NULL){
         header("Location: /#backstage_nutzermanagement");
     }else{

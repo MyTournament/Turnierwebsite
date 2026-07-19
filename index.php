@@ -324,28 +324,25 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $gameEditMode = $_POST['gameEditMode'];
     $expertenmodus = $_POST['expertenmodus'];
 
-    //ANMELDUNG für CMS & Backstage (gemeinsames Login-Feld, Rechte-Schwellen bleiben wie bisher)
+    //ANMELDUNG für CMS & Backstage (gemeinsames Login-Feld)
     // Fallback auf die Session, damit der Login nach einem Redirect (z.B. nach dem Speichern in Edit Data) erhalten bleibt
     $bn = $_POST["bn"] !== null ? $_POST["bn"] : (isset($_SESSION['admin_bn']) ? $_SESSION['admin_bn'] : null);
     $pw = $_POST["pw"] !== null ? $_POST["pw"] : (isset($_SESSION['admin_pw']) ? $_SESSION['admin_pw'] : null);
 
-    $LoggedInWithCMSorHigher = False;
-    $LoggedInWithBackstageOrHigher = False;
-    $loggedInUserRechte = null;
-    if ($bn !== null && $pw !== null) {
-        foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 15") as $row) {
-            if ($bn == $row["Benutzername"] && $pw == $row["Passwort"]) {
-                $LoggedInWithBackstageOrHigher = True;
-                $loggedInUserRechte = (int)$row["fk_rechte"];
-                if ($row["fk_rechte"] <= 5) {
-                    $LoggedInWithCMSorHigher = True;
-                    $edit_content_mode = False;
-                }
-            }
-        }
-    }
-    // Admin (1) oder Co-Admin (2): dürfen strukturelle Turnier-Settings ändern
-    $istAdminOderCoAdmin = ($loggedInUserRechte === 1 || $loggedInUserRechte === 2);
+    include_once 'website_datachange/login_interface.php';
+    $rollenInfo = ($bn !== null && $pw !== null) ? getUserRollenInfo($conn, $bn, $pw) : null;
+    $loggedInUserRechte = $rollenInfo['legacy_rolle'] ?? null; // Legacy-Wert, nur noch für Altlasten/Anzeige
+    $rechteFlags = $rollenInfo['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
+
+    // Admin (Rolle 1) oder Co-Admin (Rolle 2): dürfen strukturelle Turnier-Settings ändern
+    $istAdminOderCoAdmin = $rollenInfo !== null && ($rollenInfo['ist_admin'] || $rollenInfo['ist_co_admin']);
+    $LoggedInWithCMSorHigher = $rollenInfo !== null && ($rechteFlags['cms'] || $istAdminOderCoAdmin);
+    // Backstage-Bereich: sichtbar für jede Rolle mit mindestens einer der Teil-Berechtigungen -
+    // welche einzelnen Backstage-Unterseiten dann konkret zu sehen sind, wird weiter unten je Rolle geprüft
+    $LoggedInWithBackstageOrHigher = $rollenInfo !== null && (
+        $rechteFlags['backstage'] || $rechteFlags['teams'] || $rechteFlags['alle_spiele']
+        || $rechteFlags['cms'] || $rechteFlags['turnier_settings'] || $istAdminOderCoAdmin
+    );
     if ($LoggedInWithBackstageOrHigher) {
         // Login in der Session merken, damit er nach einem Redirect (z.B. edit_variables.php, edit_teams.php) erhalten bleibt
         $_SESSION['admin_bn'] = $bn;
@@ -395,12 +392,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             }
             echo "</form>";
         }
+        $hatInfosVerlaufZugang = $rechteFlags['backstage'] || $istAdminOderCoAdmin;
+        if ($hatInfosVerlaufZugang) {
+            echo "<a href='#backstage_info' class='button'>Infos</a>";
+        }
         if ($LoggedInWithBackstageOrHigher) {
-            echo "
-                <a href='#backstage_info' class='button'>Infos</a>
-                <a href='#backstage_daten_bearbeiten' class='button'>Settings</a>
-                <a href='#backstage_verlauf' class='button'>Verlauf</a>
-            ";
+            echo "<a href='#backstage_daten_bearbeiten' class='button'>Settings</a>";
+        }
+        if ($hatInfosVerlaufZugang) {
+            echo "<a href='#backstage_verlauf' class='button'>Verlauf</a>";
         }
         echo "
             </div>
@@ -1683,12 +1683,18 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <div style='text-align: center'>
         <h2>Settings</h2>
         <div class='admin-menu-wrap'>
+            <?php if ($rechteFlags['teams'] || $istAdminOderCoAdmin) { ?>
             <a href='#backstage_teams_bearbeiten' class='admin-menu-button'>Teams bearbeiten</a>
-            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'>Begegnungen bearbeiten</a>
+            <?php } ?>
             <a href='#backstage_platzhalter' class='admin-menu-button'>Beliebige Daten bearbeiten</a>
-            <a href='#backstage_turnier_phase' class='admin-menu-button'>Turnierphase</a>
-            <a href='#backstage_turnier_settings' class='admin-menu-button'>Turnier Settings</a>
             <?php if ($istAdminOderCoAdmin) { ?>
+            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'>Begegnungen bearbeiten</a>
+            <?php } ?>
+            <?php if ($rollenInfo !== null && $rollenInfo['ist_admin']) { ?>
+            <a href='#backstage_turnier_phase' class='admin-menu-button'>Turnierphase</a>
+            <?php } ?>
+            <?php if ($istAdminOderCoAdmin) { ?>
+            <a href='#backstage_turnier_settings' class='admin-menu-button'>Turnier Settings</a>
             <a href='#backstage_nutzermanagement' class='admin-menu-button'>Nutzermanagement</a>
             <?php } ?>
         </div>
@@ -1714,10 +1720,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########  Begegnungen bearbeiten  ######### -->
 <article id="backstage_begegnungen_bearbeiten">
     <h1>Begegnungen bearbeiten</h1>
+    <?php if (!$istAdminOderCoAdmin) { ?>
+    <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen Begegnungen anlegen oder sperren.</p>
+    <?php } else { ?>
     <h2 class='major'>Hinzufügen</h2>
     <p>Legt eine neue Begegnung manuell an (z.B. Freundschaftsspiel oder Nachtrag). Sie bekommt automatisch den Status <b>"Green Card"</b> und wird dadurch von der automatischen Spielplan-Berechnung nie wieder überschrieben oder verworfen.</p>
     <form action='website_datachange/edit_games.php' method='POST' onSubmit='return checkAGBBegegnungHinzufuegen()'>
         <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
         <div class='field'>
             <label for='demo-category'>Team 1 (Heimteam):</label>
             <select name='team1' required>
@@ -1768,9 +1779,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='number' name='ko_turnierbaumposition' min='1' class='Eingabe' placeholder='z.B. 1' style='color: white'>
             <p><i>Die Position bestimmt den Platz im Turnierbaum dieser K.-o.-Runde. Bei falscher Position kann der Turnierbaum falsch angezeigt werden - im Zweifel vorher im "Turnierbaum" auf der Startseite nachsehen, welche Positionen in der gewählten Runde schon belegt sind.</i></p>
         </div>
-        <label for='demo-category'>Login</label>
-        <input type='text' id='begegnung_hinzufuegen_bn' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
-        <input type='password' id='begegnung_hinzufuegen_pw' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
         <script type='text/javascript'>
             function checkAGBBegegnungHinzufuegen() {
                 if (document.getElementById('demo-human-begegnung-hinzufuegen').checked) {
@@ -1797,6 +1805,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p>Sperrt eine bestehende Begegnung (Status "gesperrt"). Gesperrte Begegnungen werden von der automatischen Spielplan-Berechnung nie wieder angefasst oder neu angelegt - genau dafür ist diese Funktion gedacht, wenn die Website versehentlich eine falsche Begegnung erzeugt hat. Für eingeloggte Personen mit ausreichender Berechtigung werden gesperrte Begegnungen danach weiterhin (ausgegraut) in der KO-Phase angezeigt, damit nachvollziehbar bleibt, was gesperrt wurde.</p>
     <form action='website_datachange/edit_games.php' method='POST' onSubmit='return checkAGBBegegnungSperren()'>
         <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
         <div class='field'>
             <label for='demo-category'>Begegnung wählen:</label>
             <select name='begegnungIdSperren' required>
@@ -1828,9 +1838,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 ?>
             </select>
         </div>
-        <label for='demo-category'>Login</label>
-        <input type='text' id='begegnung_sperren_bn' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
-        <input type='password' id='begegnung_sperren_pw' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
         <script type='text/javascript'>
             function checkAGBBegegnungSperren() {
                 if (document.getElementById('demo-human-begegnung-sperren').checked) {
@@ -1852,6 +1859,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <li><input name='action' type='reset' value='Abbrechen' /></li>
         </ul>
     </form>
+    <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -1867,7 +1875,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
 <!-- ABMELDEN -->
 <article id="backstage_abmelden">
-    <?php printTeamAbmelden($conn, $TurnierID); ?>
+    <?php if (!($rechteFlags['teams'] || $istAdminOderCoAdmin)) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else {
+        printTeamAbmelden($conn, $TurnierID, $bn, $pw);
+    } ?>
     <p></br></p>
     <p></br></p>
 </article>
@@ -1939,10 +1951,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_teams_bearbeiten">
     <div style='text-align: center'>
         <h2>Teams bearbeiten</h2>
+        <?php if (!($rechteFlags['teams'] || $istAdminOderCoAdmin)) { ?>
+        <p>Keine ausreichende Berechtigung.</p>
+        <?php } else { ?>
         <div class='admin-menu-wrap'>
             <a href='#backstage_abmelden' class='admin-menu-button'>Team abmelden</a>
             <a href='#backstage_changeteam' class='admin-menu-button'>Sonstiges (Gruppe, Bearbeitungsrechte)</a>
         </div>
+        <?php } ?>
         <h5><br/></h5>
         <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
         <h5><br /></h5>
@@ -2029,9 +2045,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_turnier_phase">
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
+    <?php if (!($rollenInfo !== null && $rollenInfo['ist_admin'])) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else { ?>
     <h1>Turnier-Phase</h1>
     <form action='website_datachange/edit_variables.php' method='POST' onSubmit='return checkAGB2()'>
         <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
         <div class='field'>
             <h3>Bitte den Abschnitt komplett lesen, bevor du die Turnierphase änderst!</h3>
             <p>Im Backend wird bei jedem Aufruf der Website ein php-Script ausgeführt, was die gesamte Datenbank durchgeht und überprüft, ob etwas geupdated werden muss. Das sind Dinge wie ein Team, was noch keine Gruppe bekommen hat, einer Gruppe zuordnen oder das Geiwnnerteam einer Finalstufe in die nächste Finalstufe weiterleiten.</p>
@@ -2073,9 +2094,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "</select>";
             ?>
         </div>
-        <label for='demo-category'>Login</label>
-        <input type='text' id='bnid' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
-        <input type='password' id='pwid' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
         <script type='text/javascript'>
             function checkAGB2() {
                 if (document.getElementById('demo-human-registergame').checked) {
@@ -2098,6 +2116,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </ul>
     </form>
     <h5><br /></h5>
+    <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -2108,69 +2127,74 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_turnier_settings">
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
+    <?php if (!$istAdminOderCoAdmin) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else { ?>
     <h1>Turnier Settings</h1>
-    <p>Grundeinstellungen für das aktuelle Turnier. Nur für Admin und Co-Admin.</p>
+    <p>Grundeinstellungen für das aktuelle Turnier. Nur für Admin und Co-Admin. Jede Einstellung wirkt einzeln und sofort, sobald das jeweilige Häkchen "bestätigen" gesetzt wird - du bist ja schon eingeloggt, ein erneutes Login ist nicht nötig.</p>
     <?php
     $sqlTurnierSettings = 'SELECT * FROM `Turnier_Main` WHERE id = ' . $TurnierID . ' ORDER BY id';
     $resultTurnierSettings = $conn->query($sqlTurnierSettings);
     $rowTurnierSettings = $resultTurnierSettings->fetch_assoc();
-    $curAnzahlGruppen = $rowTurnierSettings['anzahl_gruppen'];
-    $curStartKoFinallevel = $rowTurnierSettings['start_ko_finallevel'];
-    $curEinzugKoManuellAnlegen = $rowTurnierSettings['einzug_ko_manuell_anlegen'];
+    $curAnzahlGruppen = (int)$rowTurnierSettings['anzahl_gruppen'];
+    $curStartKoFinallevel = (int)$rowTurnierSettings['start_ko_finallevel'];
+    $curEinzugKoManuellAnlegen = (int)$rowTurnierSettings['einzug_ko_manuell_anlegen'];
+    $bnAttr = htmlspecialchars($bn, ENT_QUOTES);
+    $pwAttr = htmlspecialchars($pw, ENT_QUOTES);
     ?>
-    <form action='website_datachange/edit_variables.php' method='POST' onSubmit='return checkAGBTurnierSettings()'>
+
+    <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
         <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
-        <div class='field'>
-            <label for='demo-category'>Anzahl Gruppen</label>
-            <input type='number' name='anzahl_gruppen' min='1' value='<?php echo (int)$curAnzahlGruppen; ?>' class='Eingabe' style='color: white' required>
-            <p><i>Bestimmt, in wie viele Gruppen die Teams in der Gruppenphase aufgeteilt werden.</i></p>
-            <h5><br/></h5>
-            <label for='demo-category'>Start-Finalstufe (K.-o.-Phase)</label>
-            <select name='start_ko_finallevel' required>
-                <?php
-                $sqlKoLevelSettings = 'SELECT * FROM `Turnier_KO_Finallevel` ORDER BY id DESC';
-                $resultKoLevelSettings = $conn->query($sqlKoLevelSettings);
-                while ($rowKoLevelSettings = $resultKoLevelSettings->fetch_assoc()) {
-                    $koId = $rowKoLevelSettings['id'];
-                    $koName = $rowKoLevelSettings['name'];
-                    $sel = ($koId == $curStartKoFinallevel) ? "selected" : "";
-                    echo "<option value=$koId $sel>$koName</option>";
-                }
-                ?>
-            </select>
-            <p><i>Legt fest, mit welcher Finalstufe die K.-o.-Phase beginnt (z.B. Achtelfinale, Viertelfinale, ...) - abhängig von der Teamanzahl.</i></p>
-            <h5><br/></h5>
-            <label for='demo-category'>
-                <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
-                Einzug in die K.-o.-Phase manuell anlegen (statt automatisch aus der Gruppenphase berechnen)
-            </label>
-            <p><i>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch aus den Gruppenplatzierungen, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden.</i></p>
-        </div>
-        <label for='demo-category'>Login</label>
-        <input type='text' id='turnier_settings_bn' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
-        <input type='password' id='turnier_settings_pw' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
-        <script type='text/javascript'>
-            function checkAGBTurnierSettings() {
-                if (document.getElementById('demo-human-turnier-settings').checked) {
-                    return true;
-                }
-                alert('Du musst unten noch das Häkchen setzen!');
-                return false;
-            }
-        </script>
-        <div>
-            <div class='field half'>
-                <input type='checkbox' id='demo-human-turnier-settings' name='demo-human-turnier-settings' unchecked>
-                <label for='demo-human-turnier-settings'>Ich weiß, was diese Einstellungen bewirken.</label>
-                <h5><br/></h5>
-            </div>
-        </div>
-        <ul class='actions'>
-            <li><input name='action' type='submit' value='Turnier_Settings_Aendern' class='primary' /></li>
-            <li><input name='action' type='reset' value='Abbrechen' /></li>
-        </ul>
+        <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+        <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+        <input type='hidden' name='action' value='Turnier_Settings_AnzahlGruppen_Aendern'/>
+        <label>Anzahl Gruppen</label>
+        <input type='number' name='anzahl_gruppen' min='1' value='<?php echo $curAnzahlGruppen; ?>' class='Eingabe ts-input'>
+        <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
     </form>
+    <p class='ts-hint'><i>Bestimmt, in wie viele Gruppen die Teams in der Gruppenphase aufgeteilt werden.</i></p>
+
+    <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+        <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+        <input type='hidden' name='action' value='Turnier_Settings_StartKoFinallevel_Aendern'/>
+        <label>Start-Finalstufe (K.-o.-Phase)</label>
+        <select name='start_ko_finallevel' class='ts-input'>
+            <?php
+            $sqlKoLevelSettings = 'SELECT * FROM `Turnier_KO_Finallevel` ORDER BY id DESC';
+            $resultKoLevelSettings = $conn->query($sqlKoLevelSettings);
+            while ($rowKoLevelSettings = $resultKoLevelSettings->fetch_assoc()) {
+                $koId = $rowKoLevelSettings['id'];
+                $koName = $rowKoLevelSettings['name'];
+                $sel = ($koId == $curStartKoFinallevel) ? "selected" : "";
+                echo "<option value=$koId $sel>$koName</option>";
+            }
+            ?>
+        </select>
+        <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
+    </form>
+    <p class='ts-hint'><i>Legt fest, mit welcher Finalstufe die K.-o.-Phase beginnt (z.B. Achtelfinale, Viertelfinale, ...) - abhängig von der Teamanzahl.</i></p>
+
+    <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+        <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+        <input type='hidden' name='action' value='Turnier_Settings_EinzugKoManuell_Aendern'/>
+        <label>Einzug K.-o.-Phase manuell anlegen</label>
+        <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
+        <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
+    </form>
+    <p class='ts-hint'><i>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch aus den Gruppenplatzierungen, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden.</i></p>
+
+    <style>
+        .ts-row { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; margin: 0.6rem 0 0.2rem; }
+        .ts-row label:first-of-type { min-width: 220px; }
+        .ts-input { width: auto; min-width: 140px; }
+        .ts-hint { margin: 0 0 0.8rem; opacity: 0.85; }
+    </style>
     <h5><br /></h5>
+    <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -2185,95 +2209,150 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php if (!$istAdminOderCoAdmin) { ?>
         <p>Keine ausreichende Berechtigung.</p>
     <?php } else {
-        $sqlEigeneRolle = 'SELECT * FROM System_Benutzer_in_Rolle WHERE id = ' . (int)$loggedInUserRechte;
-        $resultEigeneRolle = $conn->query($sqlEigeneRolle);
-        $rowEigeneRolle = $resultEigeneRolle ? $resultEigeneRolle->fetch_assoc() : null;
-        $darfNeueAdmins = $rowEigeneRolle && $rowEigeneRolle['rechte_neue_admins'] == 1;
-        $darfNeueCoAdmins = $rowEigeneRolle && $rowEigeneRolle['rechte_neue_co_admins'] == 1;
-        $darfRestlicheRollenVergeben = $rowEigeneRolle && $rowEigeneRolle['rechte_restliche_rollen_vergeben'] == 1;
-    ?>
-    <h2>Neuen Nutzer anlegen</h2>
-    <form action='website_datachange/edit_account.php' method='POST' onSubmit='return checkAGBNutzerAnlegen()'>
-        <input type='hidden' name='action' value='admin_erstellt_nutzer'/>
-        <div class='field'>
-            <label for='demo-category'>Benutzername</label>
-            <input type='text' name='neuer_bn' class='Eingabe' style='color: white' required>
-            <h5><br/></h5>
-            <label for='demo-category'>Passwort</label>
-            <input type='text' name='neuer_pw' class='Eingabe' style='color: white' required>
-            <h5><br/></h5>
-            <label for='demo-category'>Rolle</label>
-            <select name='neue_rolle' required>
-                <?php
-                $sqlRollenAuswahl = 'SELECT * FROM System_Benutzer_in_Rolle ORDER BY hierarchie_ebene';
-                $resultRollenAuswahl = $conn->query($sqlRollenAuswahl);
-                while ($rowRollenAuswahl = $resultRollenAuswahl->fetch_assoc()) {
-                    $rId = $rowRollenAuswahl['id'];
-                    $rName = $rowRollenAuswahl['name'];
-                    $darfDieseRolle = ($rId == 1 && $darfNeueAdmins) || ($rId == 2 && $darfNeueCoAdmins) || ($rId != 1 && $rId != 2 && $darfRestlicheRollenVergeben);
-                    if ($darfDieseRolle) {
-                        echo "<option value='$rId'>$rName</option>";
-                    }
-                }
-                ?>
-            </select>
-            <p><i>Nur Rollen, die du laut deinen Rechten vergeben darfst, stehen zur Auswahl.</i></p>
-        </div>
-        <label for='demo-category'>Dein Login (zur Bestätigung)</label>
-        <input type='text' id='nutzeranlegen_bn' name='admin_bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
-        <input type='password' id='nutzeranlegen_pw' name='admin_pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
-        <script type='text/javascript'>
-            function checkAGBNutzerAnlegen() {
-                if (document.getElementById('demo-human-nutzer-anlegen').checked) {
-                    return true;
-                }
-                alert('Du musst unten noch das Häkchen setzen!');
-                return false;
-            }
-        </script>
-        <div>
-            <div class='field half'>
-                <input type='checkbox' id='demo-human-nutzer-anlegen' name='demo-human-nutzer-anlegen' unchecked>
-                <label for='demo-human-nutzer-anlegen'>Ich habe Benutzername/Passwort/Rolle geprüft.</label>
-                <h5><br/></h5>
-            </div>
-        </div>
-        <ul class='actions'>
-            <li><input type='submit' value='Anlegen' class='primary' /></li>
-            <li><input type='reset' value='Abbrechen' /></li>
-        </ul>
-    </form>
-
-    <h5><br/></h5>
-    <h2>Rollen &amp; Nutzer</h2>
-    <?php
-    $sqlRollenListe = 'SELECT * FROM System_Benutzer_in_Rolle ORDER BY hierarchie_ebene';
-    $resultRollenListe = $conn->query($sqlRollenListe);
-    while ($rowRollenListe = $resultRollenListe->fetch_assoc()) {
-        $rId = $rowRollenListe['id'];
-        $rName = $rowRollenListe['name'];
-        $rBeschreibung = $rowRollenListe['beschreibung'];
-        echo "<details style='margin-bottom:0.6rem;'>";
-        echo "<summary style='cursor:pointer;'><b>$rName</b> <span style='font-size:0.8rem;color:#9fd8ff;'>($rBeschreibung)</span></summary>";
-        echo "<table class='withBorderCollapse'><thead><tr><th>Benutzername</th><th>Passwort</th><th></th></tr></thead><tbody>";
-        $sqlNutzerProRolle = 'SELECT * FROM System_Benutzer_in WHERE fk_rechte = ' . (int)$rId . ' ORDER BY Benutzername';
-        $resultNutzerProRolle = $conn->query($sqlNutzerProRolle);
-        while ($rowNutzerProRolle = $resultNutzerProRolle->fetch_assoc()) {
-            $nutzerBn = $rowNutzerProRolle['Benutzername'];
-            $nutzerPw = $rowNutzerProRolle['Passwort'];
-            $loginAlsAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
-            echo "<tr><td>$nutzerBn</td><td>$nutzerPw</td><td>
-                <form action='$loginAlsAction' method='POST' style='margin:0;display:inline;'>
-                    <input type='hidden' name='bn' value='$nutzerBn'>
-                    <input type='hidden' name='pw' value='$nutzerPw'>
-                    <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.35rem 0.7rem;font-size:0.75rem;'>Als dieser User einloggen</button>
-                </form>
-            </td></tr>";
+        $darfNeueAdmins = $rechteFlags['neue_admins'];
+        $darfNeueCoAdmins = $rechteFlags['neue_co_admins'];
+        $darfRestlicheRollenVergeben = $rechteFlags['restliche_rollen_vergeben'];
+        function nmDarfRolleVergeben($rId, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) {
+            if ($rId == 1) { return $darfNeueAdmins; }
+            if ($rId == 2) { return $darfNeueCoAdmins; }
+            return $darfRestlicheRollenVergeben;
         }
-        echo "</tbody></table>";
-        echo "</details>";
-    }
+
+        // Alle Rollen (für Übersicht + Badge-Namen)
+        $rollenNamenById = [];
+        $rollenListeFuerUebersicht = [];
+        $sqlRollen = 'SELECT * FROM System_Benutzer_in_Rolle ORDER BY hierarchie_ebene';
+        $resultRollen = $conn->query($sqlRollen);
+        while ($rowRolle = $resultRollen->fetch_assoc()) {
+            $rollenNamenById[(int)$rowRolle['id']] = $rowRolle['name'];
+            $rollenListeFuerUebersicht[] = $rowRolle;
+        }
+
+        // Alle Nutzer mit all ihren Rollen (Legacy fk_rechte + alle über die Relation-Tabelle zugewiesenen) sammeln
+        $alleNutzerMitRollen = [];
+        $sqlAlleNutzer = 'SELECT * FROM System_Benutzer_in ORDER BY Benutzername';
+        $resultAlleNutzer = $conn->query($sqlAlleNutzer);
+        while ($rowNutzer = $resultAlleNutzer->fetch_assoc()) {
+            $nutzerId = (int)$rowNutzer['id'];
+            $rolleIds = [(int)$rowNutzer['fk_rechte']];
+            try {
+                $sqlRel = 'SELECT fk_rolle FROM System_Benutzer_in_Relation_Rolle WHERE fk_benutzer_in = ' . $nutzerId;
+                $resultRel = $conn->query($sqlRel);
+                while ($rowRel = $resultRel->fetch_assoc()) { $rolleIds[] = (int)$rowRel['fk_rolle']; }
+            } catch (Throwable $e) { /* Relation-Tabelle (noch) nicht vorhanden */ }
+            $rolleIds = array_values(array_unique($rolleIds));
+            sort($rolleIds);
+            $alleNutzerMitRollen[] = [
+                'id' => $nutzerId,
+                'bn' => $rowNutzer['Benutzername'],
+                'pw' => $rowNutzer['Passwort'],
+                'rolle_ids' => $rolleIds,
+                'macht' => min($rolleIds),
+            ];
+        }
+        usort($alleNutzerMitRollen, function($a, $b) { return $a['macht'] <=> $b['macht']; });
+
+        $bnAttrNm = htmlspecialchars($bn, ENT_QUOTES);
+        $pwAttrNm = htmlspecialchars($pw, ENT_QUOTES);
+        $loginAlsAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
     ?>
+    <style>
+        .nm-rollen-tabelle { width: 100%; margin-bottom: 1.2rem; }
+        .nm-user { border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.6rem; }
+        .nm-user-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .nm-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 12px; padding: 0.15rem 0.6rem; font-size: 0.75rem; }
+        .nm-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.8rem; padding: 0; line-height: 1; }
+        .nm-login-als button { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
+        .nm-addrole-form { display: flex; gap: 0.4rem; align-items: center; margin-top: 0.4rem; flex-wrap: wrap; }
+        .nm-addrole-form select, .nm-addrole-form button, .nm-newuser-form input, .nm-newuser-form select, .nm-newuser-form button {
+            padding: 0.3rem 0.5rem; font-size: 0.78rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: #fff;
+        }
+        .nm-addrole-form button, .nm-newuser-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); cursor: pointer; }
+        .nm-newuser-form { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; margin: 0.6rem 0 1.5rem; }
+    </style>
+
+    <h2>Rollen</h2>
+    <table class='withBorderCollapse nm-rollen-tabelle'>
+        <thead><tr><th>Rolle</th><th>Beschreibung</th></tr></thead>
+        <tbody>
+        <?php foreach ($rollenListeFuerUebersicht as $r) {
+            echo "<tr><td>" . htmlspecialchars($r['name']) . "</td><td>" . htmlspecialchars($r['beschreibung']) . "</td></tr>";
+        } ?>
+        </tbody>
+    </table>
+
+    <h2>Nutzer</h2>
+    <p><i>Sortiert nach Berechtigungsstärke (Admin zuerst). Jeder Nutzer kann mehrere Rollen gleichzeitig haben.</i></p>
+    <?php foreach ($alleNutzerMitRollen as $nutzer) { ?>
+        <div class='nm-user'>
+            <div class='nm-user-head'>
+                <b><?php echo htmlspecialchars($nutzer['bn']); ?></b>
+                <?php foreach ($nutzer['rolle_ids'] as $rid) {
+                    $rname = $rollenNamenById[$rid] ?? ('Rolle ' . $rid);
+                    echo "<span class='nm-badge'>" . htmlspecialchars($rname);
+                    if (nmDarfRolleVergeben($rid, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) && count($nutzer['rolle_ids']) > 1) {
+                        echo "<form action='website_datachange/edit_account.php' method='POST' style='display:inline;margin:0;' onsubmit=\"return confirm('Rolle wirklich entfernen?');\">
+                            <input type='hidden' name='action' value='Rolle_Entfernen'>
+                            <input type='hidden' name='admin_bn' value='$bnAttrNm'>
+                            <input type='hidden' name='admin_pw' value='$pwAttrNm'>
+                            <input type='hidden' name='ziel_benutzer_id' value='{$nutzer['id']}'>
+                            <input type='hidden' name='entferne_rolle' value='$rid'>
+                            <button type='submit' title='Rolle entfernen'>&times;</button>
+                        </form>";
+                    }
+                    echo "</span>";
+                } ?>
+                <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als' style='margin:0;display:inline;'>
+                    <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
+                    <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
+                    <button type='submit' class='admin-menu-button' style='min-width:auto;'>Als dieser User einloggen (Passwort: <?php echo htmlspecialchars($nutzer['pw']); ?>)</button>
+                </form>
+            </div>
+            <?php
+            $verfuegbareRollen = [];
+            foreach ($rollenListeFuerUebersicht as $r) {
+                $rid = (int)$r['id'];
+                if (in_array($rid, $nutzer['rolle_ids'], true)) { continue; }
+                if (!nmDarfRolleVergeben($rid, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) { continue; }
+                $verfuegbareRollen[] = $r;
+            }
+            if (count($verfuegbareRollen) > 0) {
+            ?>
+            <form action='website_datachange/edit_account.php' method='POST' class='nm-addrole-form'>
+                <input type='hidden' name='action' value='Rolle_Hinzufuegen'>
+                <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
+                <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
+                <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
+                <select name='neue_rolle'>
+                    <?php foreach ($verfuegbareRollen as $r) {
+                        echo "<option value='" . (int)$r['id'] . "'>" . htmlspecialchars($r['name']) . "</option>";
+                    } ?>
+                </select>
+                <button type='submit'>Berechtigung hinzufügen</button>
+            </form>
+            <?php } ?>
+        </div>
+    <?php } ?>
+
+    <h2>Neuen Nutzer anlegen</h2>
+    <form action='website_datachange/edit_account.php' method='POST' class='nm-newuser-form'>
+        <input type='hidden' name='action' value='admin_erstellt_nutzer'/>
+        <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
+        <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
+        <input type='text' name='neuer_bn' placeholder='Benutzername' required>
+        <input type='text' name='neuer_pw' placeholder='Passwort' required>
+        <select name='neue_rolle' required>
+            <?php
+            foreach ($rollenListeFuerUebersicht as $r) {
+                $rId = (int)$r['id'];
+                if (nmDarfRolleVergeben($rId, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
+                    echo "<option value='$rId'>" . htmlspecialchars($r['name']) . "</option>";
+                }
+            }
+            ?>
+        </select>
+        <button type='submit'>Anlegen</button>
+    </form>
     <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
@@ -2337,9 +2416,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_changeteam">
     <div id='LogIn2'>
     <h2>Teams bearbeiten</h2>
+    <?php if (!($rechteFlags['teams'] || $istAdminOderCoAdmin)) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else { ?>
     <p>Hier kannst du jedes Attribut der Teams ändern, also zum Beispiel Gruppe oder auch Bearbeitungsrechte für die Website.</p>
     <?php printGroupsAsTable($TurnierID, $conn, $LoggedInWithBackstageOrHigher, 0, 0); ?>
     <form action='website_datachange/edit_teams.php' method='POST' onSubmit='return checkAGBchangeTeam()'>
+        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'>
+        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'>
         <div class='field'>
             <label for='demo-category'>Team wählen</label>
             <select name='team' id='teams_waehlen' required>
@@ -2375,10 +2459,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <p>Nur auswählen wenn Gruppe geändert werden soll.</p>
         </div>
         <h5><br/></h5>
-        <label for='demo-category'>Login</label>
-        <input type='text' id='changeteam_registergame_bn' name='bn' class='Eingabe' placeholder='Dein Team-Kürzel' style='color: white' required>
-        <input type='password' id='changeteam_registergame_pw' name='pw' class='Eingabe' placeholder='Dein Team-Passwort' style='color: white' required>
-        <h5><br/></h5>
         <script type='text/javascript'>
             function checkAGBchangeTeam() {
                 if (document.getElementById('demo-human-changeteam').checked) {
@@ -2401,6 +2481,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </form>
     <p></br></p>
     <p></br></p>
+    <?php } ?>
     </div>
 </article>
 <?php } ?>
