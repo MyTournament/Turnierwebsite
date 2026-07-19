@@ -1211,31 +1211,34 @@
                 </tbody>
             </table>";
 
-            // Direkt unter der ersten Finalstufe: großer Umschalter für "Gruppenphase vorbei / KO-Einzug fertig",
-            // nur für Admin (1) und Co-Admin (2), da das die automatische KO-Berechnung auslöst.
+            // Direkt unter der ersten Finalstufe: Umschalter für "Gruppenphase vorbei / KO-Einzug fertig".
+            // Nur für Admin (1) und Co-Admin (2), da das die automatische KO-Berechnung auslöst.
+            // Nur relevant/sichtbar, wenn der Einzug in die K.-o.-Phase laut Turnier Settings überhaupt manuell angelegt wird -
+            // im Automatik-Modus berechnet die Website das selbst, dieser Schalter hätte dort keine Wirkung.
             if ($ko_finallevel == $start_ko_finallevel && $istAdminOderCoAdmin) {
-                $sqlEinzugFertig = 'SELECT einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . $TurnierID;
+                $sqlEinzugFertig = 'SELECT einzug_ko_manuell_anlegen, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . $TurnierID;
                 $resultEinzugFertig = $conn->query($sqlEinzugFertig);
                 $rowEinzugFertig = $resultEinzugFertig->fetch_assoc();
+                $einzugKoManuellAnlegen = (int)$rowEinzugFertig['einzug_ko_manuell_anlegen'];
                 $einzugFertig = (int)$rowEinzugFertig['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'];
 
-                echo "
-                <div style='text-align:center;margin:1rem 0;'>
-                <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;'>
-                    <input type='hidden' name='TurnierID' value='$TurnierID'/>
-                    <input type='hidden' name='action' value='Einzug_KO_Fertig_Umschalten'/>
-                    <input type='hidden' name='bn' value='$bnEingeloggt'/>
-                    <input type='hidden' name='pw' value='$pwEingeloggt'/>
-                ";
-                if ($einzugFertig == 1) {
-                    echo "<button type='submit' class='button primary' style='font-size:1.1rem;padding:0.9rem 1.6rem;background:#c0392b;'>K.-o.-Einzug zurücknehmen (Gruppenphase wieder offen)</button>";
-                } else {
-                    echo "<button type='submit' class='button primary' style='font-size:1.1rem;padding:0.9rem 1.6rem;background:#27ae60;'>Gruppenphase für beendet erklären (K.-o.-Phase startet)</button>";
+                if ($einzugKoManuellAnlegen == 1) {
+                    $checkedAttr = ($einzugFertig == 1) ? "checked" : "";
+                    echo "
+                    <div style='text-align:center;margin:1rem 0;'>
+                    <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;'>
+                        <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                        <input type='hidden' name='action' value='Einzug_KO_Fertig_Umschalten'/>
+                        <input type='hidden' name='bn' value='$bnEingeloggt'/>
+                        <input type='hidden' name='pw' value='$pwEingeloggt'/>
+                        <label class='admin-toggle'>
+                            <input type='checkbox' name='einzug_ko_fertig' value='1' $checkedAttr onchange='this.form.submit()'>
+                            <span>Gruppenphase beendet / K.-o.-Einzug fertig angelegt</span>
+                        </label>
+                    </form>
+                    </div>
+                    ";
                 }
-                echo "
-                </form>
-                </div>
-                ";
             }
 
             $ko_finallevel--; //Zähler dekrementieren (nächste Finalstufe)

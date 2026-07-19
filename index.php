@@ -361,16 +361,20 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $adminBarActionUrl = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
         echo "
         <style>
-            #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(10, 20, 35, 0.94); box-shadow: 0 2px 10px rgba(0,0,0,0.35); box-sizing: border-box; }
-            #admin-bar-status { color: #9fd8ff; font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
+            :root { --admin-accent: #8b5cf6; --admin-accent-deep: #6d28d9; --admin-accent-light: #ddd6fe; }
+            #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(30, 12, 48, 0.94); border-bottom: 2px solid var(--admin-accent); box-shadow: 0 2px 12px rgba(139, 92, 246, 0.35); box-sizing: border-box; }
+            #admin-bar-status { color: var(--admin-accent-light); font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
             #admin-bar-status i { color: #fff; }
             #admin-bar-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
             #admin-bar-buttons form { margin: 0; display: inline; }
-            #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; }
+            #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); }
             #wrapper { padding-top: 64px; }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
-            .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, #1b2838, #223449); border: 1px solid rgba(255,255,255,0.1); color: #eaf1ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
-            .admin-menu-button:hover { background: linear-gradient(135deg, #223449, #2c4a68); }
+            .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
+            .admin-menu-button:hover { background: linear-gradient(135deg, var(--admin-accent), #a78bfa); }
+            .admin-toggle { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 8px; background: rgba(139, 92, 246, 0.12); border: 1px solid var(--admin-accent); color: var(--admin-accent-light); cursor: pointer; }
+            .admin-toggle input[type='checkbox'] { accent-color: var(--admin-accent); width: 1.1rem; height: 1.1rem; }
+            #main article[id^='backstage_'] { border-top: 3px solid var(--admin-accent); box-shadow: 0 0 24px rgba(139, 92, 246, 0.25); }
         </style>
         <div id='admin-bar'>
             <div id='admin-bar-status'>
