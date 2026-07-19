@@ -398,6 +398,49 @@ if ($action == 'Ändern') {
     $message = "Leider hast du nicht die nötigen Bearbeitungsrechte, um die gesamte Gruppe zu finalisieren. Wende dich am besten an einen Admininstrator";
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
+}else if($action == 'Begegnung_Hinzufuegen'){
+  if($accountDarfSpieleBearbeiten == 1){ //Account-Login
+    $team1 = (int)$_POST['team1'];
+    $team2 = (int)$_POST['team2'];
+    $koFinallevel = (int)$_POST['ko_finallevel'];
+    $koPositionRaw = isset($_POST['ko_turnierbaumposition']) ? trim($_POST['ko_turnierbaumposition']) : '';
+
+    // Bei Gruppenphase (0) und Losing Bracket (20) gibt es keine Bracket-Position.
+    // Bei allen anderen (K.-o.-)Finallevels muss sie explizit angegeben werden,
+    // sonst könnte die Begegnung an eine falsche/leere Stelle im Turnierbaum geraten.
+    $istBracketPhase = ($koFinallevel != 0 && $koFinallevel != 20);
+    $gueltig = ($team1 > 0 && $team2 > 0 && $team1 != $team2 && (!$istBracketPhase || $koPositionRaw !== ''));
+
+    if ($gueltig) {
+      if ($istBracketPhase) {
+        $koPosition = (int)$koPositionRaw;
+        $sql = "INSERT INTO Turnier_Begegnung (fk_heimteam, fk_auswaertsteam, fk_siegerteam, ko_finallevel, ko_turnierbaumposition, status) VALUES (?, ?, NULL, ?, ?, 4)";
+        myDb_execute($conn, $TurnierID, $bn, "edit_games.php 10", $sql, array($team1, $team2, $koFinallevel, $koPosition));
+      } else {
+        $sql = "INSERT INTO Turnier_Begegnung (fk_heimteam, fk_auswaertsteam, fk_siegerteam, ko_finallevel, ko_turnierbaumposition, status) VALUES (?, ?, NULL, ?, NULL, 4)";
+        myDb_execute($conn, $TurnierID, $bn, "edit_games.php 10", $sql, array($team1, $team2, $koFinallevel));
+      }
+    }
+
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+  }else{ //keine ausreichenden Rechte
+
+    //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+
+  }
 }else{
   
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
