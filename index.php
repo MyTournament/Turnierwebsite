@@ -1105,7 +1105,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </div>
     <br/><br/>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <?php printKO_PhaseTabellen($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
+    <?php printKO_PhaseTabellen($TurnierID, $conn, $LoggedInWithBackstageOrHigher, $gameEditMode, $expertenmodus, $test_turnier_id); ?>
     <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>-->
     <p></br></p>
     <p></br></p>
@@ -1781,35 +1781,65 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </ul>
     </form>
     <h5><br/></h5>
-    <h2 class='major'>Löschen</h2>
-    <select name='Phase' id='phase'>
-        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
-        <?php
-        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC';
-        $resultBegegnung = $conn->query($sqlBegegnung);
-        while ($rowBegegnung = $resultBegegnung->fetch_assoc()) {
-            $begegnungID = $rowBegegnung['id'];
-            $ko_finallevel = $rowBegegnung['ko_finallevel'];
-            //HEIMTEAM
-            $fk_heimteam = $rowBegegnung['fk_heimteam'];
-            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_heimteam .'';
-            $resultTeam = $conn->query($sqlTeam);
-            while ($rowTeam = $resultTeam->fetch_assoc()) {
-                $team1 = $rowTeam['name'];
-                $team1_kuerzel = $rowTeam['kuerzel'];
+    <h2 class='major'>Sperren / Löschen</h2>
+    <p>Sperrt eine bestehende Begegnung (Status "gesperrt"). Gesperrte Begegnungen werden von der automatischen Spielplan-Berechnung nie wieder angefasst oder neu angelegt - genau dafür ist diese Funktion gedacht, wenn die Website versehentlich eine falsche Begegnung erzeugt hat. Für eingeloggte Personen mit ausreichender Berechtigung werden gesperrte Begegnungen danach weiterhin (ausgegraut) in der KO-Phase angezeigt, damit nachvollziehbar bleibt, was gesperrt wurde.</p>
+    <form action='website_datachange/edit_games.php' method='POST' onSubmit='return checkAGBBegegnungSperren()'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <div class='field'>
+            <label for='demo-category'>Begegnung wählen:</label>
+            <select name='begegnungIdSperren' required>
+                <option value=''>-</option>
+                <?php
+                $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE status <> 6 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC';
+                $resultBegegnung = $conn->query($sqlBegegnung);
+                while ($rowBegegnung = $resultBegegnung->fetch_assoc()) {
+                    $begegnungID = $rowBegegnung['id'];
+                    $ko_finallevel = $rowBegegnung['ko_finallevel'];
+                    //HEIMTEAM
+                    $fk_heimteam = $rowBegegnung['fk_heimteam'];
+                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_heimteam .'';
+                    $resultTeam = $conn->query($sqlTeam);
+                    while ($rowTeam = $resultTeam->fetch_assoc()) {
+                        $team1 = $rowTeam['name'];
+                        $team1_kuerzel = $rowTeam['kuerzel'];
+                    }
+                    //AUSWÄRTSTEAM
+                    $fk_auswaertsteam = $rowBegegnung['fk_auswaertsteam'];
+                    $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_auswaertsteam .'';
+                    $resultTeam = $conn->query($sqlTeam);
+                    while ($rowTeam = $resultTeam->fetch_assoc()) {
+                        $team2 = $rowTeam['name'];
+                        $team2_kuerzel = $rowTeam['kuerzel'];
+                    }
+                    echo "<option value=$begegnungID>#$begegnungID | $ko_finallevel | $team1 ($team1_kuerzel) - $team2 ($team2_kuerzel)</option>";
+                }
+                ?>
+            </select>
+        </div>
+        <label for='demo-category'>Login</label>
+        <input type='text' id='begegnung_sperren_bn' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
+        <input type='password' id='begegnung_sperren_pw' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
+        <script type='text/javascript'>
+            function checkAGBBegegnungSperren() {
+                if (document.getElementById('demo-human-begegnung-sperren').checked) {
+                    return true;
+                }
+                alert('Du musst unten noch das Häkchen setzen!');
+                return false;
             }
-            //AUSWÄRTSTEAM
-            $fk_auswaertsteam = $rowBegegnung['fk_auswaertsteam'];
-            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_auswaertsteam .'';
-            $resultTeam = $conn->query($sqlTeam);
-            while ($rowTeam = $resultTeam->fetch_assoc()) {
-                $team2 = $rowTeam['name'];
-                $team2_kuerzel = $rowTeam['kuerzel'];
-            }
-            echo "<option value=$begegnungID>$ko_finallevel | $team1 ($team1_kuerzel) - $team2 ($team2_kuerzel)</option>";
-        }
-        ?>
-    </select>
+        </script>
+        <div>
+            <div class='field half'>
+                <input type='checkbox' id='demo-human-begegnung-sperren' name='demo-human-begegnung-sperren' unchecked>
+                <label for='demo-human-begegnung-sperren'>Ich habe die richtige Begegnung ausgewählt.</label>
+                <h5><br/></h5>
+            </div>
+        </div>
+        <ul class='actions'>
+            <li><input name='action' type='submit' value='Begegnung_Sperren' class='primary' /></li>
+            <li><input name='action' type='reset' value='Abbrechen' /></li>
+        </ul>
+    </form>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>

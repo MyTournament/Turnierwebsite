@@ -1076,10 +1076,22 @@
         } 
     }
 
-    function printKO_PhaseTabellen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
+    function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id){
         //Button, mit dem man den Bearbeitungsmodus starten kann
         printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#kophase", $test_turnier_id);
-        
+
+        if ($istBackstageEingeloggt) {
+            echo "
+            <style>
+                .green-card-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; margin-left: 3px; vertical-align: middle; }
+                .begegnung-gesperrt-row { opacity: 0.5; }
+                .begegnung-gesperrt-label { font-size: 10px; color: #e74c3c; }
+            </style>
+            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'>Begegnung bearbeiten</a>
+            <h5><br/></h5>
+            ";
+        }
+
         //$start_ko_finallevel herausfinden
         $sql = 'SELECT * FROM Turnier_Main WHERE id = ' . $TurnierID;
         $result_sql = $conn->query($sql);
@@ -1109,7 +1121,10 @@
                 <tbody>
                     <tr>";
                         // Erst alle Begegnungen des aktuellen Turniers (Heim oder Auswärtsspiel) filtern und dann dazu die passenden Spiele suchen
-                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE `status` <> 3 AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
+                        // Öffentlich: gesperrte (6) und veraltete (3) Begegnungen werden nie angezeigt.
+                        // Eingeloggt (Backstage-Rechte): gesperrte Begegnungen werden zusätzlich (ausgegraut) angezeigt, damit nachvollziehbar bleibt, was gesperrt wurde.
+                        $statusFilterKoPhase = $istBackstageEingeloggt ? '`status` <> 3' : '`status` NOT IN (3, 6)';
+                        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE ' . $statusFilterKoPhase . ' AND ko_finallevel = ' . $ko_finallevel . ' AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ko_turnierbaumposition';
                         $resultBegegnung = $conn->query($sqlBegegnung);
                         while ( !empty( $rowBegegnung = $resultBegegnung->fetch_assoc() ) ){ // wichtig für Felder, für die es keine Gegegnung gibt
                             //IDs der Teams speichern
@@ -1118,6 +1133,11 @@
                             $auswaertsteamID=$rowBegegnung["fk_auswaertsteam"];
                             $begegnungId=$rowBegegnung["id"];
                             $siegerteam=$rowBegegnung["fk_siegerteam"];
+                            $status = $rowBegegnung['status'];
+                            $istGesperrt = ($status == 6);
+                            $zellenStyle = $istGesperrt ? "opacity: 0.5;" : "";
+                            $greenCardDot = ($status == 4 || $status == 7) ? " <span class='green-card-dot' title='Green Card (manuell angelegt)'></span>" : '';
+                            $gesperrtLabel = $istGesperrt ? " <span class='begegnung-gesperrt-label'>(gesperrt)</span>" : '';
                             //Namen der Teams finden
                             //Team 1
                             $sqlTeam1 = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $heimteamID . ' ORDER BY ID';
@@ -1137,14 +1157,12 @@
                             }	
                             //Ausgeben
                             if($siegerteam == $heimteamID){
-                                echo "<td>$ko_turnierbaumposition. <p style='font-size: 10px'>#$begegnungId</p></td><td style='background-color:green;word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
+                                echo "<td style='$zellenStyle'>$ko_turnierbaumposition. <p style='font-size: 10px'>#$begegnungId$greenCardDot$gesperrtLabel</p></td><td style='$zellenStyle background-color:green;word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td style='$zellenStyle'>"; //Heimteam kommt ganz links hin
                             }else{
-                                echo "<td>$ko_turnierbaumposition. <p style='font-size: 10px'>#$begegnungId</p></td><td style='word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
+                                echo "<td style='$zellenStyle'>$ko_turnierbaumposition. <p style='font-size: 10px'>#$begegnungId$greenCardDot$gesperrtLabel</p></td><td style='$zellenStyle word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td style='$zellenStyle'>"; //Heimteam kommt ganz links hin
                             }
-                            
-                            
+
                             //Spiele zu den Begegnungen finden
-                            $status = $rowBegegnung['status']; //HERAUSFINDEN OB BEGEGNUNG FINAL
                             printGames($TurnierID, $conn, $begegnungId, $gameEditMode, $status);
                             /*
                             //Spiele zu den Begegnungen finden
@@ -1182,22 +1200,11 @@
                             //}	*/
                             //Ausgeben
                             if($siegerteam == $auswaertsteamID){
-                                echo "</td><td style='background-color:green;word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td>"; //Auswärtsteam kommt ganz rechts hin
+                                echo "</td><td style='$zellenStyle background-color:green;word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td>"; //Auswärtsteam kommt ganz rechts hin
                             }else{
-                                echo "</td><td style='word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td>"; //Auswärtsteam kommt ganz rechts hin
+                                echo "</td><td style='$zellenStyle word-wrap: break-word;'>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td>"; //Auswärtsteam kommt ganz rechts hin
                             }
 
-                            //EXPERTENMODUS: Begegnungen sperren
-                            if($expertenmodus==1){
-                                echo "<td style='word-wrap: break-word;'>
-                                <form method='post' action='#begegnung_verwalten' style='margin: 0 0 0 0;'>
-                                    <button style='<background-color:yellow;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>Sperren</button>
-                                    <input type='hidden' name='begegnungId' value='<?php echo $begegnungId ?>'/>
-                                </form>
-                                </td>
-                                ";
-                            }
-                            
                             echo "</tr><tr>";
                         }
             echo"   </tr>
