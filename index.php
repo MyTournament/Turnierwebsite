@@ -2284,56 +2284,64 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $pwAttr = htmlspecialchars($pw, ENT_QUOTES);
     ?>
 
-    <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
-        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
-        <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
-        <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
-        <input type='hidden' name='action' value='Turnier_Settings_AnzahlGruppen_Aendern'/>
-        <label>Anzahl Gruppen</label>
-        <input type='number' name='anzahl_gruppen' min='1' value='<?php echo $curAnzahlGruppen; ?>' class='Eingabe ts-input'>
-        <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
-    </form>
-    <p class='ts-hint'><i>Bestimmt, in wie viele Gruppen die Teams in der Gruppenphase aufgeteilt werden.</i></p>
-
-    <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
-        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
-        <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
-        <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
-        <input type='hidden' name='action' value='Turnier_Settings_StartKoFinallevel_Aendern'/>
-        <label>Start-Finalstufe (K.-o.-Phase)</label>
-        <select name='start_ko_finallevel' class='ts-input'>
-            <?php
-            $sqlKoLevelSettings = 'SELECT * FROM `Turnier_KO_Finallevel` ORDER BY id DESC';
-            $resultKoLevelSettings = $conn->query($sqlKoLevelSettings);
-            while ($rowKoLevelSettings = $resultKoLevelSettings->fetch_assoc()) {
-                $koId = $rowKoLevelSettings['id'];
-                $koName = $rowKoLevelSettings['name'];
-                $sel = ($koId == $curStartKoFinallevel) ? "selected" : "";
-                echo "<option value=$koId $sel>$koName</option>";
-            }
-            ?>
-        </select>
-        <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
-    </form>
-    <p class='ts-hint'><i>Legt fest, mit welcher Finalstufe die K.-o.-Phase beginnt (z.B. Achtelfinale, Viertelfinale, ...) - abhängig von der Teamanzahl.</i></p>
-
-    <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
-        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
-        <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
-        <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
-        <input type='hidden' name='action' value='Turnier_Settings_EinzugKoManuell_Aendern'/>
-        <label>Einzug K.-o.-Phase manuell anlegen</label>
-        <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
-        <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
-    </form>
-    <p class='ts-hint'><i>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch aus den Gruppenplatzierungen, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden.</i></p>
-
     <style>
-        .ts-row { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; margin: 0.6rem 0 0.2rem; }
-        .ts-row label:first-of-type { min-width: 220px; }
-        .ts-input { width: auto; min-width: 140px; }
-        .ts-hint { margin: 0 0 0.8rem; opacity: 0.85; }
+        .ts-setting { border: 1px solid rgba(139, 92, 246, 0.28); border-radius: 8px; padding: 0.6rem 0.9rem; margin-bottom: 0.7rem; text-align: left; }
+        .ts-setting-label { display: block; font-weight: bold; margin-bottom: 0.15rem; }
+        .ts-hint { display: block; font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.5rem; }
+        .ts-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0; }
+        .ts-input { min-width: 140px; }
     </style>
+
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Anzahl Gruppen</span>
+        <span class='ts-hint'>Bestimmt, in wie viele Gruppen die Teams in der Gruppenphase aufgeteilt werden.</span>
+        <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+            <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+            <input type='hidden' name='action' value='Turnier_Settings_AnzahlGruppen_Aendern'/>
+            <input type='number' name='anzahl_gruppen' min='1' value='<?php echo $curAnzahlGruppen; ?>' class='Eingabe ts-input'>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
+        </form>
+    </div>
+
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Start-Finalstufe (K.-o.-Phase)</span>
+        <span class='ts-hint'>Legt fest, mit welcher Finalstufe die K.-o.-Phase beginnt (z.B. Achtelfinale, Viertelfinale, ...) - abhängig von der Teamanzahl.</span>
+        <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+            <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+            <input type='hidden' name='action' value='Turnier_Settings_StartKoFinallevel_Aendern'/>
+            <select name='start_ko_finallevel' class='ts-input'>
+                <?php
+                $sqlKoLevelSettings = 'SELECT * FROM `Turnier_KO_Finallevel` ORDER BY id DESC';
+                $resultKoLevelSettings = $conn->query($sqlKoLevelSettings);
+                while ($rowKoLevelSettings = $resultKoLevelSettings->fetch_assoc()) {
+                    $koId = $rowKoLevelSettings['id'];
+                    $koName = $rowKoLevelSettings['name'];
+                    $sel = ($koId == $curStartKoFinallevel) ? "selected" : "";
+                    echo "<option value=$koId $sel>$koName</option>";
+                }
+                ?>
+            </select>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
+        </form>
+    </div>
+
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Einzug K.-o.-Phase manuell anlegen</span>
+        <span class='ts-hint'>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch aus den Gruppenplatzierungen, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden.</span>
+        <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+            <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+            <input type='hidden' name='action' value='Turnier_Settings_EinzugKoManuell_Aendern'/>
+            <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
+        </form>
+    </div>
+
     <h5><br /></h5>
     <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
