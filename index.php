@@ -2,6 +2,11 @@
 // Start PHP session early so captcha tokens persist via cookie
 if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
 
+// Admin-Login (CMS/Backstage) explizit ausloggen, bevor irgendwas anderes passiert
+if (isset($_GET['logout'])) {
+    unset($_SESSION['admin_bn'], $_SESSION['admin_pw']);
+}
+
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 //include_once 'database/db_backup.php';
@@ -319,51 +324,77 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $gameEditMode = $_POST['gameEditMode'];
     $expertenmodus = $_POST['expertenmodus'];
 
-    //ANMELDUNG für CMS
-    $bn = $_POST["bn"];
-    $pw = $_POST["pw"];
-    
+    //ANMELDUNG für CMS & Backstage (gemeinsames Login-Feld, Rechte-Schwellen bleiben wie bisher)
+    // Fallback auf die Session, damit der Login nach einem Redirect (z.B. nach dem Speichern in Edit Data) erhalten bleibt
+    $bn = $_POST["bn"] !== null ? $_POST["bn"] : (isset($_SESSION['admin_bn']) ? $_SESSION['admin_bn'] : null);
+    $pw = $_POST["pw"] !== null ? $_POST["pw"] : (isset($_SESSION['admin_pw']) ? $_SESSION['admin_pw'] : null);
+
     $LoggedInWithCMSorHigher = False;
-        foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 5") as $row) {
+    $LoggedInWithBackstageOrHigher = False;
+    if ($bn !== null && $pw !== null) {
+        foreach ($conn->query("SELECT * FROM System_Benutzer_in WHERE fk_rechte <= 15") as $row) {
             if ($bn == $row["Benutzername"] && $pw == $row["Passwort"]) {
-                $LoggedInWithCMSorHigher = True;
-                $edit_content_mode = False;
+                $LoggedInWithBackstageOrHigher = True;
+                if ($row["fk_rechte"] <= 5) {
+                    $LoggedInWithCMSorHigher = True;
+                    $edit_content_mode = False;
+                }
             }
         }
+    }
+    if ($LoggedInWithBackstageOrHigher) {
+        // Login in der Session merken, damit er nach einem Redirect (z.B. edit_variables.php, edit_teams.php) erhalten bleibt
+        $_SESSION['admin_bn'] = $bn;
+        $_SESSION['admin_pw'] = $pw;
+    } else {
+        unset($_SESSION['admin_bn'], $_SESSION['admin_pw']);
+    }
     if (!isset($edit_content_mode)) { $edit_content_mode = False; }
     if($LoggedInWithCMSorHigher){
         $edit_content_mode = isset($_POST["edit_content_mode"]) ? $_POST["edit_content_mode"] : False;
-        //align-items: right;webkit-align-items: right;
+    }
+    if ($LoggedInWithCMSorHigher || $LoggedInWithBackstageOrHigher) {
+        $adminBarActionUrl = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
         echo "
-        <div style='position: absolute; text-align: right;width:100%'>
-            <p style='color: green;text-align: right'>Du bist eingeloggt als <i>$bn</i></p>
-            <a style='text-align: right;background-color: green' href='/' class='button'>logout</a>
-        
+        <style>
+            #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(10, 20, 35, 0.94); box-shadow: 0 2px 10px rgba(0,0,0,0.35); box-sizing: border-box; }
+            #admin-bar-status { color: #9fd8ff; font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
+            #admin-bar-status i { color: #fff; }
+            #admin-bar-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+            #admin-bar-buttons form { margin: 0; display: inline; }
+            #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; }
+            #wrapper { padding-top: 64px; }
+        </style>
+        <div id='admin-bar'>
+            <div id='admin-bar-status'>
+                <span>Eingeloggt als <i>$bn</i></span>
+                <a href='/?logout=1' class='button' style='background-color:#555'>Logout</a>
+            </div>
+            <div id='admin-bar-buttons'>
         ";
-        if($test_turnier_id==0){ //Fall: normales Turnier
-            echo "<form action='/' method='POST'>";
-        }else{ //Testturniere
-            echo "<form action='/?test_turnier_id=$test_turnier_id' method='POST'>";
+        if ($LoggedInWithCMSorHigher) {
+            echo "<form action='$adminBarActionUrl' method='POST'>
+                <input type='hidden' name='bn' value='$bn'>
+                <input type='hidden' name='pw' value='$pw'>";
+            if ($edit_content_mode == True) {
+                echo "<button type='submit' class='button primary'>CMS verlassen</button>";
+            } else {
+                echo "<input type='hidden' name='edit_content_mode' value='True'>
+                <button type='submit' class='button primary'>CMS</button>";
+            }
+            echo "</form>";
+        }
+        if ($LoggedInWithBackstageOrHigher) {
+            echo "
+                <a href='#backstage_info' class='button'>Infos</a>
+                <a href='#backstage_verlauf' class='button'>Verlauf</a>
+                <a href='#backstage_daten_bearbeiten' class='button'>Edit Data</a>
+            ";
         }
         echo "
-        <input type='hidden' name='bn' value='$bn'>
-        <input type='hidden' name='pw' value='$pw'>
+            </div>
+        </div>
         ";
-        if ($edit_content_mode == True) {
-            echo"
-
-            <button type='submit'>normale Ansicht</button>
-            </form>
-            
-            </div>";
-        }else if($edit_content_mode == False){
-            echo"
-            <input type='hidden' name='edit_content_mode' value='True'>
-            <button type='submit'>bearbeiten</button>
-            </form>
-            
-            </div>";
-        }
     }
 
 ?>
@@ -1568,7 +1599,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
 <!-- LOGIN - für WORDPRESS -->
 <article id="login">
-<title>Backstage-Login</title>
     <h2>Anzahl Websitebesuche</h2>
     <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
 
@@ -1595,29 +1625,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p></br></p> 
 
     <div id="LogIn">
-    <h2>Backstage-Bereich</h2>
-    <?php 
+    <h2>Login (CMS &amp; Backstage)</h2>
+    <?php
     if($test_turnier_id==0){ //Fall: normales Turnier
-        echo "<form action='backstage.php' method='POST'>";
+        echo "<form action='/' method='POST'>";
     }else{ //Testturniere
-        echo "<form action='backstage.php?test_turnier_id=$test_turnier_id' method='POST'>";
+        echo "<form action='/?test_turnier_id=$test_turnier_id' method='POST'>";
     }
     ?>
     <input type="text" name="bn" class="Eingabe" placeholder="username" style="color: white" required>
     <input type="password" class="Eingabe" name="pw" placeholder="password" style="color: white" required>
-    <!--<input type="submit" value="Absenden" style="color: black"/> -->
-    <p></br></p>
-    <button value="Anmelden" type="submit">Anmelden</button>
-    </form>
-
-    <p></br></p> 
-
-    <title>Adressbuch</title>
-    <div id="LogIn">
-    <h2>Content-Management-System</h2>
-    <form action="/" method="POST">
-        <input type="text" name="bn" class="Eingabe" placeholder="username" style="color: white" required>
-        <input type="password" class="Eingabe" name="pw" placeholder="password" style="color: white" required>
     <!--<input type="submit" value="Absenden" style="color: black"/> -->
     <p></br></p>
     <button value="Anmelden" type="submit">Anmelden</button>
@@ -1645,9 +1662,496 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p></br></p>
 </article>
 
+<?php if ($LoggedInWithBackstageOrHigher) { ?>
+<!-- ###################################################################################################################################################################################################################################### -->
+<!-- ################################################################################################## BACKSTAGE (ehemals backstage.php) ############################################################################################## -->
+<!-- ###################################################################################################################################################################################################################################### -->
+
+<!-- ########  Daten bearbeiten  ######### -->
+<article id="backstage_daten_bearbeiten">
+    <div style='text-align: center'>
+        <h2>Daten bearbeiten</h2>
+        <a href='#backstage_teams_bearbeiten' class='button primary'>Teams bearbeiten</a>
+        <br/><br/>
+        <a href='#backstage_begegnungen_bearbeiten' class='button primary'>Begegnungen bearbeiten</a>
+        <br/><br/>
+        <a href='#backstage_platzhalter' class='button primary'>Beliebige Daten bearbeiten</a>
+        <br/><br/>
+        <a href='#backstage_turnier_phase' class='button primary'>Turnierphase</a>
+        <h5><br/></h5>
+        <h5><br/></h5>
+        <a href='#' class='button'>Zurück</a>
+        <h5><br /></h5>
+    </div>
+</article>
+
+<article id="backstage_verlauf">
+    <div style='text-align: center'>
+        <h2>Verlauf</h2>
+        <a href='#backstage_traffic' class='button primary'>Traffic</a>
+        <br/><br/>
+        <a href='#backstage_letzte_aenderung' class='button primary'>DB-Verlauf</a>
+        <h5><br/></h5>
+        <h5><br/></h5>
+        <a href='#' class='button'>Zurück</a>
+        <h5><br /></h5>
+    </div>
+</article>
+
+<!-- ########  Begegnungen bearbeiten  ######### -->
+<article id="backstage_begegnungen_bearbeiten">
+    <h1>Begegnungen bearbeiten</h1>
+    <h2 class='major'>Hinzufügen</h2>
+    <label for='demo-category'>Team 1 wählen:</label>
+    <select name='Phase' id='phase'>
+        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
+        <?php
+        $sqlTeam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID;
+        $resultTeam = $conn->query($sqlTeam);
+        while ($rowTeam = $resultTeam->fetch_assoc()) {
+            $TeamName = $rowTeam['name'];
+            $TeamKuerzel = $rowTeam['kuerzel'];
+            $TeamId = $rowTeam['id'];
+            echo "<option value=$TeamId>$TeamName</option>";
+        }
+        //!!!!!!!!!!!!!!!!!!!!STILL TODO!!!!!!!!!!!!!!!!!!!!!!
+        //Hiermit passiert auch danach noch nichts
+        ?>
+    </select>
+    <label for='demo-category'>Team 2 wählen:</label>
+    <select name='Phase' id='phase'>
+        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
+        <?php
+        $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+        $resultTurnierPhase = $conn->query($sqlTurnierPhase);
+        while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
+            $turnier_phase = $rowTurnierPhase['name'];
+            $turnier_phase_ID = $rowTurnierPhase['id'];
+            echo "<option value=$turnier_phase_ID>$turnier_phase</option>";
+        }
+        ?>
+    </select>
+    <label for='demo-category'>Finallevel wählen:</label>
+    <select name='Phase' id='phase'>
+        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
+        <?php
+        $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+        $resultTurnierPhase = $conn->query($sqlTurnierPhase);
+        while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
+            $turnier_phase = $rowTurnierPhase['name'];
+            $turnier_phase_ID = $rowTurnierPhase['id'];
+            echo "<option value=$turnier_phase_ID>$turnier_phase</option>";
+        }
+        ?>
+    </select>
+    <br/><br/>
+    <h2 class='major'>Löschen</h2>
+    <select name='Phase' id='phase'>
+        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
+        <?php
+        $sqlBegegnung = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY ko_turnierbaumposition ASC, id ASC';
+        $resultBegegnung = $conn->query($sqlBegegnung);
+        while ($rowBegegnung = $resultBegegnung->fetch_assoc()) {
+            $begegnungID = $rowBegegnung['id'];
+            $ko_finallevel = $rowBegegnung['ko_finallevel'];
+            //HEIMTEAM
+            $fk_heimteam = $rowBegegnung['fk_heimteam'];
+            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_heimteam .'';
+            $resultTeam = $conn->query($sqlTeam);
+            while ($rowTeam = $resultTeam->fetch_assoc()) {
+                $team1 = $rowTeam['name'];
+                $team1_kuerzel = $rowTeam['kuerzel'];
+            }
+            //AUSWÄRTSTEAM
+            $fk_auswaertsteam = $rowBegegnung['fk_auswaertsteam'];
+            $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_auswaertsteam .'';
+            $resultTeam = $conn->query($sqlTeam);
+            while ($rowTeam = $resultTeam->fetch_assoc()) {
+                $team2 = $rowTeam['name'];
+                $team2_kuerzel = $rowTeam['kuerzel'];
+            }
+            echo "<option value=$begegnungID>$ko_finallevel | $team1 ($team1_kuerzel) - $team2 ($team2_kuerzel)</option>";
+        }
+        ?>
+    </select>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########  PLATZHALTER  ######### -->
+<article id="backstage_platzhalter">
+    <h2>Hier gibt es (noch) nichts zu sehen.</h2>
+    <span class='image main'><img src='images/fotos/lennard_blankiball.JPG' alt='' /></span>
+    <p>Geh woanders hin.</p>
+    <a href='#' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ABMELDEN -->
+<article id="backstage_abmelden">
+    <?php printTeamAbmelden($conn, $TurnierID); ?>
+    <p></br></p>
+    <p></br></p>
+</article>
+
+<!-- ########################## -->
+<!-- ########  Telefonnummern  ######### -->
+<!-- ########################## -->
+<article id="backstage_tel">
+    <a href='#backstage_info' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h1>Telefonnummern</h1>
+    <h3>Hier eine Übersicht aller Telefonnumern, um alle in eine Whatsapp-Gruppe hinzuzufügen.</h3>
+    <h5><br /></h5>
+    <form action='website_functionalities/vcard.php' method='POST'>
+        <button id='btn_login_Absenden' class='button primary' value='Absenden' type='submit'>Kontakte aufs Handy importieren</button>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+    </form>
+    <h5><br /></h5>
+    <p>Bitte sensibel mit den Daten umgehen! Haben bisher noch nicht mal eine Datenschutzerklärung und keine Lust auf Stress^^</p>
+    <h5><br /></h5>
+    <?php
+    $sqlTelefon = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ID DESC';
+    $resultTelefon = $conn->query($sqlTelefon);
+    while ($rowTelefon = $resultTelefon->fetch_assoc()) {
+        $spielername = $rowTelefon['name'];
+        $telefonnummer = $rowTelefon['telefonnummer'];
+        $teamID = $rowTelefon['fk_team'];
+        $timestamp = $rowTelefon['timestamp'];
+        $sqlTeamname = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $teamID .'';
+        $resultTeamname = $conn->query($sqlTeamname);
+        while ($rowTeamname = $resultTeamname->fetch_assoc()) {
+            $teamname = $rowTeamname['name'];
+        }
+        echo "<p><b>$spielername</b> ( Telefonnummer: <b>$telefonnummer</b> | Team: <b>$teamname</b> | Spieler registriert seit: $timestamp )</p>";
+    }
+    ?>
+    <a href='#backstage_info' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  ER-DIAGRAMM  ######### -->
+<!-- ########################## -->
+<article id="backstage_er_diagram">
+    <a href='#backstage_info' class='button'>Zurück</a>
+    </br></br>
+    <h2>Unsere Datenbank als ER-Diagramm</h2>
+    <p>Hinweis: Einige Attribut-Namen haben sich mittlerweile geändert, es sind neue dazugekommen und einige wurden entfernt. Aber die Grundstruktur stimmt noch.</p>
+    <span class='image main'><img src='images/er_diagram.jpg' alt='' /></span>
+    <a href='#backstage_info' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  INFO zur dbupdate  ######### -->
+<!-- ########################## -->
+<article id="backstage_info_zur_dbupdate">
+    <h2>Automatische Berechnungen</h2>
+    <p>In die Website ist ein Berechnungs-Script integriert, das bei jeder Ausführung der Website einmal durchläuft und alle Datensätze aktualisiert. Hier gibt es einen kurzen Überblick, welche Daten dieses Script verändert.</p>
+    <p>...</p>
+    <p>...</p>
+    <a href='#' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  Teams bearbeiten  ######### -->
+<!-- ########################## -->
+<article id="backstage_teams_bearbeiten">
+    <div style='text-align: center'>
+        <h2>Teams bearbeiten</h2>
+        <a href='#backstage_abmelden' class='button primary'>Team abmelden</a>
+        <br/><br/>
+        <a href='#backstage_changeteam' class='button primary'>Sonstiges (Gruppe, Bearbeitungsrechte)</a>
+        <h5><br /></h5>
+        <h5><br /></h5>
+        <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+        <h5><br /></h5>
+    </div>
+</article>
+
+<!-- ########################## -->
+<!-- ########  INFO  ######### -->
+<!-- ########################## -->
+<article id="backstage_info">
+    <h2>Infos</h2>
+    <a href='#backstage_tel' class='button primary'>Telefonnummern</a>
+    </br></br>
+    <a href='#backstage_teampasswort' class='button primary'>Team-Passwörter</a>
+    </br></br>
+    <a href='#backstage_warteliste' class='button primary'>Warteliste</a>
+    </br></br>
+    <a href='#backstage_er_diagram' class='button primary'>ER-Diagramm</a>
+    </br></br>
+    <a href='#' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  WARTELISTE  ######### -->
+<!-- ########################## -->
+<article id="backstage_warteliste">
+    <h2>Warteliste</h2>
+    <?php
+    $sqlWarteliste = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_warteliste IN (SELECT id FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .')';
+    $resultWarteliste = $conn->query($sqlWarteliste);
+    $zeahler = 1;
+    while ($rowWarteliste = $resultWarteliste->fetch_assoc()) {
+        $a=$rowWarteliste["name"];
+        $teamId = $rowWarteliste["id"];
+        $b=printKuerzelWithLink($conn, $teamId);
+        $ausgabeString = "";
+        $ausgabeString .= "$zeahler. $a <em>($b)</em> &mdash;";
+        $sqlSpieler = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team = ' . $rowWarteliste["id"] . ' ORDER BY ID';
+        $resultSpieler = $conn->query($sqlSpieler);
+        while ($rowSpieler = $resultSpieler->fetch_assoc()) {
+            $x=$rowSpieler["name"];
+            $ausgabeString .=  " $x ";
+            $ausgabeString .=  "&#x007C;";
+        }
+        $zeahler++;
+        $ausgabeString = substr($ausgabeString, 0, -8);
+        echo "<li>$ausgabeString</li>";
+    }
+    ?>
+    <a href='#backstage_info' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  TEAM-PASSWORT  ######### -->
+<!-- ########################## -->
+<article id="backstage_teampasswort">
+    <h2>Team-Passwörter</h2>
+    <?php
+    $sqlPasswort = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .'';
+    $resultPasswort = $conn->query($sqlPasswort);
+    $zeahler = 1;
+    while ($rowPasswort = $resultPasswort->fetch_assoc()) {
+        $a=$rowPasswort["name"];
+        $teamId = $rowPasswort["id"];
+        $passwort = $rowPasswort["password"];
+        $b=printKuerzelWithLink($conn, $teamId);
+        $ausgabeString = "";
+        $ausgabeString .= "$zeahler. $a <em>($b)</em> &mdash;";
+        $zeahler++;
+        echo "<li>$ausgabeString | Passwort: $passwort</li>";
+    }
+    ?>
+    <h5><br /></h5>
+    <a href='#backstage_info' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  TURNIER-PHASE  ######### -->
+<!-- ########################## -->
+<article id="backstage_turnier_phase">
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h1>Turnier-Phase</h1>
+    <form action='website_datachange/edit_variables.php' method='POST' onSubmit='return checkAGB2()'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <div class='field'>
+            <h3>Bitte den Abschnitt komplett lesen, bevor du die Turnierphase änderst!</h3>
+            <p>Im Backend wird bei jedem Aufruf der Website ein php-Script ausgeführt, was die gesamte Datenbank durchgeht und überprüft, ob etwas geupdated werden muss. Das sind Dinge wie ein Team, was noch keine Gruppe bekommen hat, einer Gruppe zuordnen oder das Geiwnnerteam einer Finalstufe in die nächste Finalstufe weiterleiten.</p>
+            <p>Durch dieses Script entstehen aber einige Gefahren. Es könnte zum Beispiel passieren, dass sich während dem Halbfinale noch ein Team registiert und sich dadurch der gesamte Turnierbaum verschiebt. Wenn eine bestimmte Zahl von Teams überschritten wird, entscheidet die Datenbank auch, zum Beispiel die Anzahl der Gruppen zu ändern, dabei werden alle Teams neu in Gruppen zusammengewürfelt. Aus diesem Grund gibt es auf dieser Seite hier einen 'Schalter', der nur bestimmte Funktionen des php-Scripts zulässt.</p>
+            <p>Hier erhälst du einen kurzen Überblick, was die einzelnen Positionen des 'Schalters' bedeuten.</p>
+            <h3></h3>
+            <?php
+            $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+            $resultTurnierPhase = $conn->query($sqlTurnierPhase);
+            while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
+                $turnier_phase_name = $rowTurnierPhase['name'];
+                $turnier_phase_description = $rowTurnierPhase['description'];
+                echo "<label for='demo-category'><h3>'$turnier_phase_name'</h3></label>";
+                echo "<p>$turnier_phase_description</p>";
+            }
+            //Aktuelle Turnierphase herausfinden - erstmal ID
+            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+            $resultTurnier = $conn->query($sqlTurnier);
+            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
+                $turnier_phase_ID = $rowTurnier['fk_turnier_phase'];
+            }
+            //Jetzt Name dazu finden
+            $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` WHERE id = '. $turnier_phase_ID .' ORDER BY logical_order';
+            $resultTurnierPhase = $conn->query($sqlTurnierPhase);
+            while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
+                $turnier_phase_name = $rowTurnierPhase['name'];
+            }
+            echo "<label for='demo-category'>Aktuelle Turnierphase: <h2 style='color: green'><i>$turnier_phase_name</i></h2></label>
+            <label for='demo-category'>Neue Turnierphase auswählen:</label>
+            <select name='Phase' id='phase'>
+                <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>";
+            $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+            $resultTurnierPhase = $conn->query($sqlTurnierPhase);
+            while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
+                $turnier_phase = $rowTurnierPhase['name'];
+                $turnier_phase_ID = $rowTurnierPhase['id'];
+                echo "<option value=$turnier_phase_ID>$turnier_phase</option>";
+            }
+            echo "</select>";
+            ?>
+        </div>
+        <label for='demo-category'>Login</label>
+        <input type='text' id='bnid' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
+        <input type='password' id='pwid' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
+        <script type='text/javascript'>
+            function checkAGB2() {
+                if (document.getElementById('demo-human-registergame').checked) {
+                    return true;
+                }
+                alert('Du musst unten noch das Häkchen setzen!');
+                return false;
+            }
+        </script>
+        <div>
+            <div class='field half'>
+                <input type='checkbox' id='demo-human-registergame' name='demo-human-registergame' unchecked>
+                <label for='demo-human-registergame'>Ich habe die Regeln der Datenbank gelesen und verstanden.</label>
+                <h5><br/></h5>
+            </div>
+        </div>
+        <ul class='actions'>
+            <li><input name='action' type='submit' value='Tunierphase ändern' class='primary' /></li>
+            <li><input name='action' type='reset' value='Abbrechen' /></li>
+        </ul>
+    </form>
+    <h5><br /></h5>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  Letzte DB-Änderungen  ######### -->
+<!-- ########################## -->
+<article id="backstage_letzte_aenderung">
+    <a href='#' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h2>Letzte DB-Änderungen</h2>
+    <p>Hier werden alle Datenbankänderungen dokumentiert, egal ob es um Löschung, Änderung oder Einfügen geht. Wenn ein Team ständig versucht, Dinge zu bearbeiten, die es nicht bearbeiten soll, siehst du das hier und kannst dem Team die Rechte wegnehmen. Die Änderungen sind in SQL formuliert. Falls du nicht weißt, wie SQL funktioniert, klicke einfach <a href='https://studyflix.de/informatik/structured-query-language-606'>hier</a></p>
+    <?php /*
+    $sqlSystem_Data_DB_Verlauf = 'SELECT * FROM `System_Data_DB_Verlauf` ORDER BY ID desc';
+    $resultSystem_Data_DB_Verlauf = $conn->query($sqlSystem_Data_DB_Verlauf);
+    while ($rowSystem_Data_DB_Verlauf = $resultSystem_Data_DB_Verlauf->fetch_assoc()) {
+        $data_db_verlauf_timestamp = $rowSystem_Data_DB_Verlauf['timestamp'];
+        $data_db_verlauf_who = $rowSystem_Data_DB_Verlauf['fk_who'];
+        $data_db_verlauf_content = $rowSystem_Data_DB_Verlauf['content'];
+        echo "<hr>";
+        echo "<p><b>$data_db_verlauf_who:</b> $data_db_verlauf_content ($data_db_verlauf_timestamp)</p>";
+    }
+    */ ?>
+    <a href='#' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  Traffic  ######### -->
+<!-- ########################## -->
+<article id="backstage_traffic">
+    <a href='#' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h2>Website-Traffic</h2>
+    <p>Hier werden Website-Funktionalitäten getrackt.</p>
+    <?php /*
+    $sql = 'SELECT * FROM `System_Traffic` ORDER BY id desc';
+    $result = $conn->query($sql);
+    while ($row = $result->fetch_assoc()) {
+        $traffic_timestamp = $row['timestamp'];
+        $traffic_who = $row['fk_who'];
+        $traffic_kategorie_Id = $row['fk_kategorie'];
+        $sqlKat = 'SELECT * FROM `System_Traffic_Kategorien` WHERE id = '.$traffic_kategorie_Id.' ORDER BY id desc';
+        $resultKat = $conn->query($sqlKat);
+        while ($rowKat = $resultKat->fetch_assoc()) {
+            $traffic_kategorie = $rowKat['name'];
+        }
+        $traffic_text = $row['text'];
+        echo "<hr>";
+        echo "<p><b>$traffic_kategorie </b> $traffic_who $traffic_text ($traffic_timestamp)</p>";
+    }
+    */ ?>
+    <a href='#' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  CHANGETEAM  ######### -->
+<!-- ########################## -->
+<article id="backstage_changeteam">
+    <div id='LogIn2'>
+    <h2>Teams bearbeiten</h2>
+    <p>Hier kannst du jedes Attribut der Teams ändern, also zum Beispiel Gruppe oder auch Bearbeitungsrechte für die Website.</p>
+    <?php printGroupsAsTable($TurnierID, $conn, $LoggedInWithBackstageOrHigher, 0, 0); ?>
+    <form action='website_datachange/edit_teams.php' method='POST' onSubmit='return checkAGBchangeTeam()'>
+        <div class='field'>
+            <label for='demo-category'>Team wählen</label>
+            <select name='team' id='teams_waehlen' required>
+                <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Team wählen</i></option>
+                <?php
+                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY id';
+                $resultTeam = $conn->query($sqlTeam);
+                $zaehler = 1;
+                while ($rowTeam = $resultTeam->fetch_assoc()) {
+                    $teamName = $rowTeam['name'];
+                    $teamKuerzel = $rowTeam['kuerzel'];
+                    $teamId = $rowTeam['id'];
+                    echo "<option value=$teamId>$zaehler. $teamKuerzel | $teamName</option>";
+                    $zaehler++;
+                }
+                ?>
+            </select>
+            <h5><br/></h5>
+            <select name='gruppe' id='gruppe_waehlen'>
+                <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Gruppe wählen</i></option>
+                <?php
+                $sqlGruppe = 'SELECT * FROM `Turnier_Gruppe` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id';
+                $resultGruppe = $conn->query($sqlGruppe);
+                $zaehler = 1;
+                while ($rowGruppe = $resultGruppe->fetch_assoc()) {
+                    $gruppeName = $rowGruppe['name'];
+                    $gruppeId = $rowGruppe['id'];
+                    echo "<option value=$gruppeId>$zaehler. $gruppeName</option>";
+                    $zaehler++;
+                }
+                ?>
+            </select>
+            <p>Nur auswählen wenn Gruppe geändert werden soll.</p>
+        </div>
+        <h5><br/></h5>
+        <label for='demo-category'>Login</label>
+        <input type='text' id='changeteam_registergame_bn' name='bn' class='Eingabe' placeholder='Dein Team-Kürzel' style='color: white' required>
+        <input type='password' id='changeteam_registergame_pw' name='pw' class='Eingabe' placeholder='Dein Team-Passwort' style='color: white' required>
+        <h5><br/></h5>
+        <script type='text/javascript'>
+            function checkAGBchangeTeam() {
+                if (document.getElementById('demo-human-changeteam').checked) {
+                    return true;
+                }
+                alert('Du musst unten noch das Häkchen setzen!');
+                return false;
+            }
+        </script>
+        <div>
+            <div class='field half'>
+                <input type='checkbox' id='demo-human-changeteam' name='demo-human-changeteam' unchecked>
+                <label for='demo-human-changeteam'>Ergebnisse nicht gelogen auf Ehre.</label>
+                <h5><br/></h5>
+            </div>
+        </div>
+        <p><button id='btn_login2' name='action' value='change_group' type='submit'>Gruppe ändern</button></p>
+        <p><button id='btn_login2' name='action' value='rechte_weg' type='submit'>Bearbeitungsrechte wegnehmen</button></p>
+        <p><button id='btn_login2' name='action' value='rechte_geben' type='submit'>Bearbeitungsrechte zurückgeben</button></p>
+    </form>
+    <p></br></p>
+    <p></br></p>
+    </div>
+</article>
+<?php } ?>
+
 <!-- ###################################################################################################################################################################################################################################### -->
 <!-- ######################################################################################## SEITEN NACH WEBSITE_DATACHANGE ################################################################################################################################ -->
-<!-- ###################################################################################################################################################################################################################################### -->                
+<!-- ###################################################################################################################################################################################################################################### -->
 
 <!-- vielendankfuerdeineanmeldung -->
 <article id="vielendankfuerdeineanmeldung">
