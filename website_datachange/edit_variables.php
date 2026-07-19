@@ -123,8 +123,10 @@ if ($successfulLogin == 0){ //fehlerhafter Login
               $alteZeile[$feld] = isset($_POST[$feld]) ? 1 : 0;
             }
           }
-          // Systemfelder fix: neue Kopie wird das reale Turnier auf dieser Website
-          if (array_key_exists('type', $alteZeile)) { $alteZeile['type'] = 1; }
+          // Typ: 1 = reales Turnier (löst das aktuelle ab), 2 = Testturnier (aktuelles bleibt unangetastet)
+          $neuerTurnierTyp = isset($_POST['neuer_turnier_type']) ? (int)$_POST['neuer_turnier_type'] : 1;
+          if ($neuerTurnierTyp !== 1 && $neuerTurnierTyp !== 2) { $neuerTurnierTyp = 1; }
+          if (array_key_exists('type', $alteZeile)) { $alteZeile['type'] = $neuerTurnierTyp; }
           if (array_key_exists('fk_website', $alteZeile)) { $alteZeile['fk_website'] = 1; }
 
           $spalten = array_keys($alteZeile);
@@ -133,9 +135,12 @@ if ($successfulLogin == 0){ //fehlerhafter Login
           $sqlNeu = "INSERT INTO Turnier_Main ($spaltenListeSql) VALUES ($platzhalter)";
           $neueTurnierId = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Neu_Anlegen", $sqlNeu, array_values($alteZeile));
 
-          // Bisheriges Turnier wird zu "History" (type = 3)
-          $sqlHistory = "UPDATE Turnier_Main SET type = 3 WHERE id = ?";
-          myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Neu_Anlegen history", $sqlHistory, array($TurnierID));
+          if ($neuerTurnierTyp === 1) {
+            // Bisheriges Turnier wird zu "History" (type = 3) - nur beim Anlegen eines realen Turniers,
+            // ein Testturnier darf das aktuelle Turnier nicht verändern.
+            $sqlHistory = "UPDATE Turnier_Main SET type = 3 WHERE id = ?";
+            myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Neu_Anlegen history", $sqlHistory, array($TurnierID));
+          }
         }
       }else{
         $message = "Leider hast du nicht die nötigen Rechte, um ein neues Turnier anzulegen. Wende dich an Richard, um mehr Rechte zu erhalten.";
@@ -150,6 +155,13 @@ if ($successfulLogin == 0){ //fehlerhafter Login
 }
 
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+if ($action == 'Turnier_Neu_Anlegen' && isset($neuerTurnierTyp) && $neuerTurnierTyp === 2) {
+    // Neu angelegtes Testturnier hat immer die höchste id unter type=2 und landet damit in
+    // variables.php (ORDER BY id DESC, Index ab 1) automatisch auf test_turnier_id = 1.
+    header("Location: /?test_turnier_id=1#backstage_daten_bearbeiten");
+    exit;
+}
+
 $rueckAnkerMap = [
     'Einzug_KO_Fertig_Umschalten' => 'kophase',
     'Turnier_Abschliessen' => 'kophase',

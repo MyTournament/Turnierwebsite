@@ -2134,7 +2134,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $altesTurnier = $resultAltesTurnier ? $resultAltesTurnier->fetch_assoc() : null;
     ?>
     <h1>Neues Turnier anlegen</h1>
-    <p>Legt eine Kopie des aktuell laufenden Turniers ("<?php echo htmlspecialchars($altesTurnier['name'] ?? ''); ?>") als neues, reales Turnier an. Das bisherige Turnier wird dabei automatisch zu "History". Alle hier nicht aufgeführten Einstellungen werden 1:1 vom aktuellen Turnier übernommen und können danach über "Turnier Settings" weiter angepasst werden.</p>
+    <p>Legt eine Kopie des aktuell laufenden Turniers ("<?php echo htmlspecialchars($altesTurnier['name'] ?? ''); ?>") als Vorlage an. Bei einem <b>realen Turnier</b> wird das bisherige Turnier automatisch zu "History" und die Kopie zum neuen aktuellen Turnier. Bei einem <b>Testturnier</b> bleibt das aktuelle Turnier komplett unangetastet, die Kopie wird nur als zusätzliches Testturnier angelegt und du wirst direkt dorthin weitergeleitet. Alle hier nicht aufgeführten Einstellungen werden 1:1 von der Vorlage übernommen und können danach über "Turnier Settings" weiter angepasst werden.</p>
     <?php if ($altesTurnier === null) { ?>
         <p><i>Aktuelles Turnier konnte nicht geladen werden.</i></p>
     <?php } else { ?>
@@ -2144,6 +2144,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
         <input type='hidden' name='action' value='Turnier_Neu_Anlegen'/>
         <div class='field'>
+            <label for='demo-category'>Turnier-Typ</label>
+            <select name='neuer_turnier_type' required>
+                <option value='1'>Reales Turnier (aktuelles Turnier wird zu History)</option>
+                <option value='2'>Testturnier (aktuelles Turnier bleibt unangetastet)</option>
+            </select>
+            <h5><br/></h5>
             <label for='demo-category'>Name (intern)</label>
             <input type='text' name='name' value='<?php echo htmlspecialchars($altesTurnier['name'] ?? ''); ?>' class='Eingabe' style='color: white' required>
             <h5><br/></h5>
