@@ -1678,19 +1678,30 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_daten_bearbeiten">
     <div style='text-align: center'>
         <h2>Settings</h2>
-        <div class='admin-menu-wrap'>
-            <?php if ($rechteFlags['teams'] || $istAdminOderCoAdmin) { ?>
-            <a href='#backstage_teams_bearbeiten' class='admin-menu-button'>Teams bearbeiten</a>
+        <style>
+            .admin-menu-list { display: flex; flex-direction: column; gap: 0.5rem; max-width: 420px; margin: 1rem auto; }
+            .admin-menu-list a.admin-menu-button { display: flex; align-items: center; gap: 0.7rem; text-align: left; min-width: 0; }
+            .admin-menu-list .amn-num { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--admin-accent-deep); border: 1px solid var(--admin-accent); flex-shrink: 0; font-size: 0.75rem; }
+        </style>
+        <?php $amnZaehler = 1; ?>
+        <div class='admin-menu-list'>
+            <?php if ($istAdminOderCoAdmin) { ?>
+            <a href='#backstage_neues_turnier' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Neues Turnier anlegen</a>
             <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
-            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'>Begegnungen bearbeiten</a>
+            <a href='#backstage_turnier_settings' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Turnier Settings</a>
             <?php } ?>
             <?php if ($rollenInfo !== null && $rollenInfo['ist_admin']) { ?>
-            <a href='#backstage_turnier_phase' class='admin-menu-button'>Turnierphase</a>
+            <a href='#backstage_turnier_phase' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Turnierphase</a>
+            <?php } ?>
+            <?php if ($rechteFlags['teams'] || $istAdminOderCoAdmin) { ?>
+            <a href='#backstage_teams_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams bearbeiten</a>
             <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
-            <a href='#backstage_turnier_settings' class='admin-menu-button'>Turnier Settings</a>
-            <a href='#backstage_nutzermanagement' class='admin-menu-button'>Nutzermanagement</a>
+            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
+            <?php } ?>
+            <?php if ($istAdminOderCoAdmin) { ?>
+            <a href='#backstage_nutzermanagement' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Nutzermanagement</a>
             <?php } ?>
         </div>
         <h5><br/></h5>
@@ -2104,6 +2115,142 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </ul>
     </form>
     <h5><br /></h5>
+    <?php } ?>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
+<!-- ########  NEUES TURNIER ANLEGEN  ######### -->
+<!-- ########################## -->
+<article id="backstage_neues_turnier">
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <?php if (!$istAdminOderCoAdmin) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else {
+        $sqlAltesTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = ' . (int)$TurnierID;
+        $resultAltesTurnier = $conn->query($sqlAltesTurnier);
+        $altesTurnier = $resultAltesTurnier ? $resultAltesTurnier->fetch_assoc() : null;
+    ?>
+    <h1>Neues Turnier anlegen</h1>
+    <p>Legt eine Kopie des aktuell laufenden Turniers ("<?php echo htmlspecialchars($altesTurnier['name'] ?? ''); ?>") als neues, reales Turnier an. Das bisherige Turnier wird dabei automatisch zu "History". Alle hier nicht aufgeführten Einstellungen werden 1:1 vom aktuellen Turnier übernommen und können danach über "Turnier Settings" weiter angepasst werden.</p>
+    <?php if ($altesTurnier === null) { ?>
+        <p><i>Aktuelles Turnier konnte nicht geladen werden.</i></p>
+    <?php } else { ?>
+    <form action='website_datachange/edit_variables.php' method='POST' onSubmit='return checkAGBNeuesTurnier()'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='action' value='Turnier_Neu_Anlegen'/>
+        <div class='field'>
+            <label for='demo-category'>Name (intern)</label>
+            <input type='text' name='name' value='<?php echo htmlspecialchars($altesTurnier['name'] ?? ''); ?>' class='Eingabe' style='color: white' required>
+            <h5><br/></h5>
+            <label for='demo-category'>Anzeige-Titel</label>
+            <input type='text' name='anzeige_titel' value='<?php echo htmlspecialchars($altesTurnier['anzeige_titel'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Anzeige-Untertitel</label>
+            <input type='text' name='anzeige_subtitel' value='<?php echo htmlspecialchars($altesTurnier['anzeige_subtitel'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Anzeige-Datum (freier Text, z.B. "26.-28. September")</label>
+            <input type='text' name='anzeige_datum' value='<?php echo htmlspecialchars($altesTurnier['anzeige_datum'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Jahr</label>
+            <input type='text' name='jahr' value='<?php echo htmlspecialchars($altesTurnier['jahr'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Startdatum</label>
+            <input type='date' name='startdatum' value='<?php echo htmlspecialchars($altesTurnier['startdatum'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Startzeit</label>
+            <input type='text' name='startzeit' value='<?php echo htmlspecialchars($altesTurnier['startzeit'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Countdown-Start (Format wie bisher, z.B. "Sep 06, 2025 14:00:00")</label>
+            <input type='text' name='countdown_start' value='<?php echo htmlspecialchars($altesTurnier['countdown_start'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Enddatum</label>
+            <input type='date' name='enddatum' value='<?php echo htmlspecialchars($altesTurnier['enddatum'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Maximale Teamanzahl</label>
+            <input type='number' name='max_anzahl_teams' min='0' value='<?php echo (int)($altesTurnier['max_anzahl_teams'] ?? 0); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Teilnahmebeitrag</label>
+            <input type='text' name='teilnahmebeitrag' value='<?php echo htmlspecialchars($altesTurnier['teilnahmebeitrag'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Anzeige-Reihenfolge auf der Website (order_on_website)</label>
+            <input type='number' name='order_on_website' value='<?php echo (int)($altesTurnier['order_on_website'] ?? 0) + 1; ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Turnierphase (Start des neuen Turniers)</label>
+            <select name='fk_turnier_phase'>
+                <?php
+                $sqlPhaseNeuesTurnier = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+                $resultPhaseNeuesTurnier = $conn->query($sqlPhaseNeuesTurnier);
+                while ($rowPhaseNeuesTurnier = $resultPhaseNeuesTurnier->fetch_assoc()) {
+                    $pId = $rowPhaseNeuesTurnier['id'];
+                    $pName = $rowPhaseNeuesTurnier['name'];
+                    $sel = ($pId == 1) ? "selected" : ""; // Default: "Noch keine Anmeldung möglich" - frischer Start
+                    echo "<option value='$pId' $sel>" . htmlspecialchars($pName) . "</option>";
+                }
+                ?>
+            </select>
+            <p><i>Voreingestellt auf einen frischen Start. Kann auch auf die aktuelle Phase des alten Turniers gesetzt werden, falls gewünscht.</i></p>
+            <h5><br/></h5>
+            <label for='demo-category'>Anzahl Gruppen</label>
+            <input type='number' name='anzahl_gruppen' min='1' value='<?php echo (int)($altesTurnier['anzahl_gruppen'] ?? 1); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'>Start-Finalstufe (K.-o.-Phase)</label>
+            <select name='start_ko_finallevel'>
+                <?php
+                $sqlKoLevelNeuesTurnier = 'SELECT * FROM `Turnier_KO_Finallevel` ORDER BY id DESC';
+                $resultKoLevelNeuesTurnier = $conn->query($sqlKoLevelNeuesTurnier);
+                while ($rowKoLevelNeuesTurnier = $resultKoLevelNeuesTurnier->fetch_assoc()) {
+                    $koId = $rowKoLevelNeuesTurnier['id'];
+                    $koName = $rowKoLevelNeuesTurnier['name'];
+                    $sel = ($koId == ($altesTurnier['start_ko_finallevel'] ?? null)) ? "selected" : "";
+                    echo "<option value='$koId' $sel>" . htmlspecialchars($koName) . "</option>";
+                }
+                ?>
+            </select>
+            <h5><br/></h5>
+            <label for='demo-category'><input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo (($altesTurnier['einzug_ko_manuell_anlegen'] ?? 0) == 1) ? "checked" : ""; ?>> Einzug in die K.-o.-Phase manuell anlegen</label>
+            <h5><br/></h5>
+            <label for='demo-category'><input type='checkbox' name='einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei' value='1'> Gruppenphase beendet / K.-o.-Einzug fertig angelegt (für ein neues Turnier i.d.R. nicht ankreuzen)</label>
+            <h5><br/></h5>
+            <label for='demo-category'><input type='checkbox' name='nurOberesDreieckInGruppenphase' value='1' <?php echo (($altesTurnier['nurOberesDreieckInGruppenphase'] ?? 0) == 1) ? "checked" : ""; ?>> Nur oberes Dreieck in Gruppenphase</label>
+            <h5><br/></h5>
+            <label for='demo-category'><input type='checkbox' name='loescheErsteZeileUndSpalte' value='1' <?php echo (($altesTurnier['loescheErsteZeileUndSpalte'] ?? 0) == 1) ? "checked" : ""; ?>> Lösche erste Zeile und Spalte (Gruppentabelle)</label>
+            <h5><br/></h5>
+            <label for='demo-category'><input type='checkbox' name='losingbracket_open_for_ko_losers' value='1' <?php echo (($altesTurnier['losingbracket_open_for_ko_losers'] ?? 0) == 1) ? "checked" : ""; ?>> Losing Bracket offen für K.-o.-Verlierer</label>
+            <h5><br/></h5>
+            <label for='demo-category'><input type='checkbox' name='use_excel' value='1' <?php echo (($altesTurnier['use_excel'] ?? 0) == 1) ? "checked" : ""; ?>> Excel-Verknüpfung nutzen</label>
+            <h5><br/></h5>
+            <label for='demo-category'>Excel-Link</label>
+            <input type='text' name='excel_link' value='<?php echo htmlspecialchars($altesTurnier['excel_link'] ?? ''); ?>' class='Eingabe' style='color: white'>
+            <h5><br/></h5>
+            <label for='demo-category'><input type='checkbox' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>> Schnee-Effekt</label>
+        </div>
+        <script type='text/javascript'>
+            function checkAGBNeuesTurnier() {
+                if (document.getElementById('demo-human-neues-turnier').checked) {
+                    return true;
+                }
+                alert('Du musst unten noch das Häkchen setzen!');
+                return false;
+            }
+        </script>
+        <div>
+            <div class='field half'>
+                <input type='checkbox' id='demo-human-neues-turnier' name='demo-human-neues-turnier' unchecked>
+                <label for='demo-human-neues-turnier'>Mir ist bewusst, dass das aktuelle Turnier dadurch zu "History" wird und dieses hier zum neuen, aktuellen Turnier.</label>
+                <h5><br/></h5>
+            </div>
+        </div>
+        <ul class='actions'>
+            <li><input type='submit' value='Kopie anlegen' class='primary' /></li>
+            <li><input type='reset' value='Abbrechen' /></li>
+        </ul>
+    </form>
+    <?php } ?>
     <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
