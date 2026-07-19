@@ -1685,7 +1685,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php if ($rechteFlags['teams'] || $istAdminOderCoAdmin) { ?>
             <a href='#backstage_teams_bearbeiten' class='admin-menu-button'>Teams bearbeiten</a>
             <?php } ?>
-            <a href='#backstage_platzhalter' class='admin-menu-button'>Beliebige Daten bearbeiten</a>
             <?php if ($istAdminOderCoAdmin) { ?>
             <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'>Begegnungen bearbeiten</a>
             <?php } ?>
@@ -1864,14 +1863,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 <!-- ########  PLATZHALTER  ######### -->
-<article id="backstage_platzhalter">
-    <h2>Hier gibt es (noch) nichts zu sehen.</h2>
-    <span class='image main'><img src='images/fotos/lennard_blankiball.JPG' alt='' /></span>
-    <p>Geh woanders hin.</p>
-    <a href='#' class='button'>Zurück</a>
-    <h5><br /></h5>
-</article>
-
 <!-- ABMELDEN -->
 <article id="backstage_abmelden">
     <?php if (!($rechteFlags['teams'] || $istAdminOderCoAdmin)) { ?>
@@ -2368,17 +2359,29 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
     <h2>Letzte DB-Änderungen</h2>
     <p>Hier werden alle Datenbankänderungen dokumentiert, egal ob es um Löschung, Änderung oder Einfügen geht. Wenn ein Team ständig versucht, Dinge zu bearbeiten, die es nicht bearbeiten soll, siehst du das hier und kannst dem Team die Rechte wegnehmen. Die Änderungen sind in SQL formuliert. Falls du nicht weißt, wie SQL funktioniert, klicke einfach <a href='https://studyflix.de/informatik/structured-query-language-606'>hier</a></p>
-    <?php /*
-    $sqlSystem_Data_DB_Verlauf = 'SELECT * FROM `System_Data_DB_Verlauf` ORDER BY ID desc';
-    $resultSystem_Data_DB_Verlauf = $conn->query($sqlSystem_Data_DB_Verlauf);
-    while ($rowSystem_Data_DB_Verlauf = $resultSystem_Data_DB_Verlauf->fetch_assoc()) {
-        $data_db_verlauf_timestamp = $rowSystem_Data_DB_Verlauf['timestamp'];
-        $data_db_verlauf_who = $rowSystem_Data_DB_Verlauf['fk_who'];
-        $data_db_verlauf_content = $rowSystem_Data_DB_Verlauf['content'];
-        echo "<hr>";
-        echo "<p><b>$data_db_verlauf_who:</b> $data_db_verlauf_content ($data_db_verlauf_timestamp)</p>";
-    }
-    */ ?>
+    <?php if (!isset($_POST['load_db_verlauf'])) {
+        $ladeAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
+        echo "
+        <form action='$ladeAction' method='POST'>
+            <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
+            <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES) . "'>
+            <input type='hidden' name='load_db_verlauf' value='1'>
+            <button type='submit' class='admin-menu-button'>DB-Verlauf jetzt laden</button>
+        </form>
+        <p><i>Wird nicht automatisch geladen, da die Abfrage bei großen Turnieren spürbar dauern kann.</i></p>
+        ";
+    } else {
+        // Nur die letzten 500 Einträge, um die Website nicht wieder spürbar zu verlangsamen
+        $sqlSystem_Data_DB_Verlauf = 'SELECT * FROM `System_Data_DB_Verlauf` ORDER BY ID desc LIMIT 500';
+        $resultSystem_Data_DB_Verlauf = $conn->query($sqlSystem_Data_DB_Verlauf);
+        while ($rowSystem_Data_DB_Verlauf = $resultSystem_Data_DB_Verlauf->fetch_assoc()) {
+            $data_db_verlauf_timestamp = $rowSystem_Data_DB_Verlauf['timestamp'];
+            $data_db_verlauf_who = $rowSystem_Data_DB_Verlauf['fk_who'];
+            $data_db_verlauf_content = $rowSystem_Data_DB_Verlauf['content'];
+            echo "<hr>";
+            echo "<p><b>" . htmlspecialchars($data_db_verlauf_who) . ":</b> " . htmlspecialchars($data_db_verlauf_content) . " ($data_db_verlauf_timestamp)</p>";
+        }
+    } ?>
     <a href='#' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -2391,23 +2394,33 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
     <h2>Website-Traffic</h2>
     <p>Hier werden Website-Funktionalitäten getrackt.</p>
-    <?php /*
-    $sql = 'SELECT * FROM `System_Traffic` ORDER BY id desc';
-    $result = $conn->query($sql);
-    while ($row = $result->fetch_assoc()) {
-        $traffic_timestamp = $row['timestamp'];
-        $traffic_who = $row['fk_who'];
-        $traffic_kategorie_Id = $row['fk_kategorie'];
-        $sqlKat = 'SELECT * FROM `System_Traffic_Kategorien` WHERE id = '.$traffic_kategorie_Id.' ORDER BY id desc';
-        $resultKat = $conn->query($sqlKat);
-        while ($rowKat = $resultKat->fetch_assoc()) {
-            $traffic_kategorie = $rowKat['name'];
+    <?php if (!isset($_POST['load_traffic'])) {
+        $ladeAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
+        echo "
+        <form action='$ladeAction' method='POST'>
+            <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
+            <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES) . "'>
+            <input type='hidden' name='load_traffic' value='1'>
+            <button type='submit' class='admin-menu-button'>Traffic jetzt laden</button>
+        </form>
+        <p><i>Wird nicht automatisch geladen, da die Abfrage bei großen Turnieren spürbar dauern kann.</i></p>
+        ";
+    } else {
+        // Kategorie-Name per JOIN statt pro Zeile einzeln nachzuschlagen (das war vermutlich die
+        // eigentliche Ursache der früheren Langsamkeit) + nur die letzten 500 Einträge
+        $sql = 'SELECT t.*, k.name AS traffic_kategorie FROM `System_Traffic` t
+                LEFT JOIN `System_Traffic_Kategorien` k ON k.id = t.fk_kategorie
+                ORDER BY t.id DESC LIMIT 500';
+        $result = $conn->query($sql);
+        while ($row = $result->fetch_assoc()) {
+            $traffic_timestamp = $row['timestamp'];
+            $traffic_who = $row['fk_who'];
+            $traffic_kategorie = $row['traffic_kategorie'];
+            $traffic_text = $row['text'];
+            echo "<hr>";
+            echo "<p><b>" . htmlspecialchars($traffic_kategorie) . "</b> " . htmlspecialchars($traffic_who) . " " . htmlspecialchars($traffic_text) . " ($traffic_timestamp)</p>";
         }
-        $traffic_text = $row['text'];
-        echo "<hr>";
-        echo "<p><b>$traffic_kategorie </b> $traffic_who $traffic_text ($traffic_timestamp)</p>";
-    }
-    */ ?>
+    } ?>
     <a href='#' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
