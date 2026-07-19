@@ -2149,7 +2149,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <input type='hidden' name='action' value='Turnier_Neu_Anlegen'/>
         <div class='field'>
             <label for='demo-category'>Turnier-Typ</label>
-            <select name='neuer_turnier_type' required>
+            <select name='neuer_turnier_type' id='neuer_turnier_type_select' onchange='neuesTurnierTypGeaendert()' required>
                 <option value='1'>Reales Turnier (aktuelles Turnier wird zu History)</option>
                 <option value='2'>Testturnier (aktuelles Turnier bleibt unangetastet)</option>
             </select>
@@ -2240,7 +2240,19 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <label class='admin-toggle'><input type='checkbox' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Schnee-Effekt</span></label>
         </div>
         <script type='text/javascript'>
+            function neuesTurnierIstRealesTurnier() {
+                return document.getElementById('neuer_turnier_type_select').value === '1';
+            }
+            function neuesTurnierTypGeaendert() {
+                var istReal = neuesTurnierIstRealesTurnier();
+                document.getElementById('neues_turnier_history_warnung').style.display = istReal ? '' : 'none';
+            }
             function checkAGBNeuesTurnier() {
+                // Die History-Bestätigung ist nur nötig/sinnvoll, wenn wirklich ein reales Turnier
+                // angelegt wird - bei einem Testturnier bleibt das aktuelle Turnier ja unangetastet.
+                if (!neuesTurnierIstRealesTurnier()) {
+                    return true;
+                }
                 if (document.getElementById('demo-human-neues-turnier').checked) {
                     return true;
                 }
@@ -2248,7 +2260,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 return false;
             }
         </script>
-        <div>
+        <div id='neues_turnier_history_warnung'>
             <div class='field half'>
                 <input type='checkbox' id='demo-human-neues-turnier' name='demo-human-neues-turnier' unchecked>
                 <label for='demo-human-neues-turnier'>Mir ist bewusst, dass das aktuelle Turnier dadurch zu "History" wird und dieses hier zum neuen, aktuellen Turnier.</label>
