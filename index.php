@@ -384,22 +384,19 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <input type='hidden' name='bn' value='$bn'>
                 <input type='hidden' name='pw' value='$pw'>";
             if ($edit_content_mode == True) {
-                echo "<button type='submit' class='button primary'>CMS verlassen</button>";
+                echo "<button type='submit' class='button primary'>Website Inhalte verlassen</button>";
             } else {
                 echo "<input type='hidden' name='edit_content_mode' value='True'>
-                <button type='submit' class='button primary'>CMS</button>";
+                <button type='submit' class='button primary'>Website Inhalte bearbeiten</button>";
             }
             echo "</form>";
         }
         $hatInfosVerlaufZugang = $rechteFlags['backstage'] || $istAdminOderCoAdmin;
-        if ($hatInfosVerlaufZugang) {
-            echo "<a href='#backstage_info' class='button'>Infos</a>";
-        }
         if ($LoggedInWithBackstageOrHigher) {
             echo "<a href='#backstage_daten_bearbeiten' class='button'>Settings</a>";
         }
         if ($hatInfosVerlaufZugang) {
-            echo "<a href='#backstage_verlauf' class='button'>Verlauf</a>";
+            echo "<a href='#backstage_info' class='button'>Infos</a>";
         }
         echo "
             </div>
@@ -1710,7 +1707,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <a href='#backstage_letzte_aenderung' class='admin-menu-button'>DB-Verlauf</a>
         </div>
         <h5><br/></h5>
-        <a href='#' class='button'>Zurück</a>
+        <a href='#backstage_info' class='button'>Zurück</a>
         <h5><br /></h5>
     </div>
 </article>
@@ -1966,6 +1963,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <a href='#backstage_teampasswort' class='admin-menu-button'>Team-Passwörter</a>
             <a href='#backstage_warteliste' class='admin-menu-button'>Warteliste</a>
             <a href='#backstage_er_diagram' class='admin-menu-button'>ER-Diagramm</a>
+            <a href='#backstage_verlauf' class='admin-menu-button'>Verlauf</a>
         </div>
         <h5><br/></h5>
         <a href='#' class='button'>Zurück</a>
