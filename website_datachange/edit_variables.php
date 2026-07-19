@@ -92,6 +92,56 @@ if ($successfulLogin == 0){ //fehlerhafter Login
         echo "<script type='text/javascript'>alert('$message');</script>";
       }
 
+    }else if ($action == 'Turnier_Neu_Anlegen') {
+      if($istAdminOderCoAdminVariables){
+        // Aktuelle Turnier-Zeile komplett laden und als Basis für die Kopie nutzen - so ist die
+        // Kopie unabhängig davon, ob wir hier jede einzelne Spalte kennen.
+        $stmtAlt = $conn->prepare("SELECT * FROM Turnier_Main WHERE id = ?");
+        $stmtAlt->bind_param("i", $TurnierID);
+        $stmtAlt->execute();
+        $alteZeile = $stmtAlt->get_result()->fetch_assoc();
+
+        if ($alteZeile !== null) {
+          unset($alteZeile['id']); // AUTO_INCREMENT - neue ID wird beim Insert vergeben
+
+          // Werte aus dem Formular übernehmen, wo vorhanden
+          $textFelder = ['name', 'anzeige_titel', 'anzeige_subtitel', 'anzeige_datum', 'jahr',
+              'startdatum', 'startzeit', 'countdown_start', 'enddatum', 'max_anzahl_teams',
+              'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'anzahl_gruppen',
+              'start_ko_finallevel', 'excel_link'];
+          foreach ($textFelder as $feld) {
+            if (isset($_POST[$feld]) && array_key_exists($feld, $alteZeile)) {
+              $alteZeile[$feld] = $_POST[$feld];
+            }
+          }
+          // Checkboxen: nicht gesendet = 0
+          $checkboxFelder = ['einzug_ko_manuell_anlegen', 'einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei',
+              'nurOberesDreieckInGruppenphase', 'loescheErsteZeileUndSpalte', 'losingbracket_open_for_ko_losers',
+              'use_excel', 'schnee'];
+          foreach ($checkboxFelder as $feld) {
+            if (array_key_exists($feld, $alteZeile)) {
+              $alteZeile[$feld] = isset($_POST[$feld]) ? 1 : 0;
+            }
+          }
+          // Systemfelder fix: neue Kopie wird das reale Turnier auf dieser Website
+          if (array_key_exists('type', $alteZeile)) { $alteZeile['type'] = 1; }
+          if (array_key_exists('fk_website', $alteZeile)) { $alteZeile['fk_website'] = 1; }
+
+          $spalten = array_keys($alteZeile);
+          $platzhalter = implode(',', array_fill(0, count($spalten), '?'));
+          $spaltenListeSql = implode(',', array_map(function($s) { return "`$s`"; }, $spalten));
+          $sqlNeu = "INSERT INTO Turnier_Main ($spaltenListeSql) VALUES ($platzhalter)";
+          $neueTurnierId = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Neu_Anlegen", $sqlNeu, array_values($alteZeile));
+
+          // Bisheriges Turnier wird zu "History" (type = 3)
+          $sqlHistory = "UPDATE Turnier_Main SET type = 3 WHERE id = ?";
+          myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Neu_Anlegen history", $sqlHistory, array($TurnierID));
+        }
+      }else{
+        $message = "Leider hast du nicht die nötigen Rechte, um ein neues Turnier anzulegen. Wende dich an Richard, um mehr Rechte zu erhalten.";
+        echo "<script type='text/javascript'>alert('$message');</script>";
+      }
+
     }else if ($action == 'Abbrechen'){
       // Nix tun
     }
