@@ -364,6 +364,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             #admin-bar-buttons form { margin: 0; display: inline; }
             #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; }
             #wrapper { padding-top: 64px; }
+            .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
+            .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, #1b2838, #223449); border: 1px solid rgba(255,255,255,0.1); color: #eaf1ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
+            .admin-menu-button:hover { background: linear-gradient(135deg, #223449, #2c4a68); }
         </style>
         <div id='admin-bar'>
             <div id='admin-bar-status'>
@@ -387,8 +390,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         if ($LoggedInWithBackstageOrHigher) {
             echo "
                 <a href='#backstage_info' class='button'>Infos</a>
-                <a href='#backstage_verlauf' class='button'>Verlauf</a>
                 <a href='#backstage_daten_bearbeiten' class='button'>Edit Data</a>
+                <a href='#backstage_verlauf' class='button'>Verlauf</a>
             ";
         }
         echo "
@@ -1671,14 +1674,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_daten_bearbeiten">
     <div style='text-align: center'>
         <h2>Daten bearbeiten</h2>
-        <a href='#backstage_teams_bearbeiten' class='button primary'>Teams bearbeiten</a>
-        <br/><br/>
-        <a href='#backstage_begegnungen_bearbeiten' class='button primary'>Begegnungen bearbeiten</a>
-        <br/><br/>
-        <a href='#backstage_platzhalter' class='button primary'>Beliebige Daten bearbeiten</a>
-        <br/><br/>
-        <a href='#backstage_turnier_phase' class='button primary'>Turnierphase</a>
-        <h5><br/></h5>
+        <div class='admin-menu-wrap'>
+            <a href='#backstage_teams_bearbeiten' class='admin-menu-button'>Teams bearbeiten</a>
+            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'>Begegnungen bearbeiten</a>
+            <a href='#backstage_platzhalter' class='admin-menu-button'>Beliebige Daten bearbeiten</a>
+            <a href='#backstage_turnier_phase' class='admin-menu-button'>Turnierphase</a>
+        </div>
         <h5><br/></h5>
         <a href='#' class='button'>Zurück</a>
         <h5><br /></h5>
@@ -1688,10 +1689,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_verlauf">
     <div style='text-align: center'>
         <h2>Verlauf</h2>
-        <a href='#backstage_traffic' class='button primary'>Traffic</a>
-        <br/><br/>
-        <a href='#backstage_letzte_aenderung' class='button primary'>DB-Verlauf</a>
-        <h5><br/></h5>
+        <div class='admin-menu-wrap'>
+            <a href='#backstage_traffic' class='admin-menu-button'>Traffic</a>
+            <a href='#backstage_letzte_aenderung' class='admin-menu-button'>DB-Verlauf</a>
+        </div>
         <h5><br/></h5>
         <a href='#' class='button'>Zurück</a>
         <h5><br /></h5>
@@ -1702,49 +1703,84 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_begegnungen_bearbeiten">
     <h1>Begegnungen bearbeiten</h1>
     <h2 class='major'>Hinzufügen</h2>
-    <label for='demo-category'>Team 1 wählen:</label>
-    <select name='Phase' id='phase'>
-        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
-        <?php
-        $sqlTeam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID;
-        $resultTeam = $conn->query($sqlTeam);
-        while ($rowTeam = $resultTeam->fetch_assoc()) {
-            $TeamName = $rowTeam['name'];
-            $TeamKuerzel = $rowTeam['kuerzel'];
-            $TeamId = $rowTeam['id'];
-            echo "<option value=$TeamId>$TeamName</option>";
-        }
-        //!!!!!!!!!!!!!!!!!!!!STILL TODO!!!!!!!!!!!!!!!!!!!!!!
-        //Hiermit passiert auch danach noch nichts
-        ?>
-    </select>
-    <label for='demo-category'>Team 2 wählen:</label>
-    <select name='Phase' id='phase'>
-        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
-        <?php
-        $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
-        $resultTurnierPhase = $conn->query($sqlTurnierPhase);
-        while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
-            $turnier_phase = $rowTurnierPhase['name'];
-            $turnier_phase_ID = $rowTurnierPhase['id'];
-            echo "<option value=$turnier_phase_ID>$turnier_phase</option>";
-        }
-        ?>
-    </select>
-    <label for='demo-category'>Finallevel wählen:</label>
-    <select name='Phase' id='phase'>
-        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
-        <?php
-        $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
-        $resultTurnierPhase = $conn->query($sqlTurnierPhase);
-        while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
-            $turnier_phase = $rowTurnierPhase['name'];
-            $turnier_phase_ID = $rowTurnierPhase['id'];
-            echo "<option value=$turnier_phase_ID>$turnier_phase</option>";
-        }
-        ?>
-    </select>
-    <br/><br/>
+    <p>Legt eine neue Begegnung manuell an (z.B. Freundschaftsspiel oder Nachtrag). Sie bekommt automatisch den Status <b>"Green Card"</b> und wird dadurch von der automatischen Spielplan-Berechnung nie wieder überschrieben oder verworfen.</p>
+    <form action='website_datachange/edit_games.php' method='POST' onSubmit='return checkAGBBegegnungHinzufuegen()'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <div class='field'>
+            <label for='demo-category'>Team 1 (Heimteam):</label>
+            <select name='team1' required>
+                <option value=''>-</option>
+                <?php
+                $sqlTeamBegegnungHinzufuegen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY name';
+                $resultTeamBegegnungHinzufuegen = $conn->query($sqlTeamBegegnungHinzufuegen);
+                while ($rowTeamBegegnungHinzufuegen = $resultTeamBegegnungHinzufuegen->fetch_assoc()) {
+                    $TeamName = $rowTeamBegegnungHinzufuegen['name'];
+                    $TeamKuerzel = $rowTeamBegegnungHinzufuegen['kuerzel'];
+                    $TeamId = $rowTeamBegegnungHinzufuegen['id'];
+                    echo "<option value=$TeamId>$TeamName ($TeamKuerzel)</option>";
+                }
+                ?>
+            </select>
+            <h5><br/></h5>
+            <label for='demo-category'>Team 2 (Auswärtsteam):</label>
+            <select name='team2' required>
+                <option value=''>-</option>
+                <?php
+                $sqlTeamBegegnungHinzufuegen2 = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY name';
+                $resultTeamBegegnungHinzufuegen2 = $conn->query($sqlTeamBegegnungHinzufuegen2);
+                while ($rowTeamBegegnungHinzufuegen2 = $resultTeamBegegnungHinzufuegen2->fetch_assoc()) {
+                    $TeamName = $rowTeamBegegnungHinzufuegen2['name'];
+                    $TeamKuerzel = $rowTeamBegegnungHinzufuegen2['kuerzel'];
+                    $TeamId = $rowTeamBegegnungHinzufuegen2['id'];
+                    echo "<option value=$TeamId>$TeamName ($TeamKuerzel)</option>";
+                }
+                ?>
+            </select>
+            <h5><br/></h5>
+            <label for='demo-category'>Phase:</label>
+            <select name='ko_finallevel' required>
+                <option value='0'>Gruppenphase</option>
+                <?php
+                $sqlKoLevelBegegnungHinzufuegen = 'SELECT * FROM `Turnier_KO_Finallevel` ORDER BY id DESC';
+                $resultKoLevelBegegnungHinzufuegen = $conn->query($sqlKoLevelBegegnungHinzufuegen);
+                while ($rowKoLevelBegegnungHinzufuegen = $resultKoLevelBegegnungHinzufuegen->fetch_assoc()) {
+                    $koId = $rowKoLevelBegegnungHinzufuegen['id'];
+                    $koName = $rowKoLevelBegegnungHinzufuegen['name'];
+                    echo "<option value=$koId>$koName</option>";
+                }
+                ?>
+                <option value='20'>Losing Bracket</option>
+            </select>
+            <h5><br/></h5>
+            <label for='demo-category'>Bracket-Position (nur bei K.-o.-Phase nötig, bei Gruppenphase/Losing Bracket bitte leer lassen):</label>
+            <input type='number' name='ko_turnierbaumposition' min='1' class='Eingabe' placeholder='z.B. 1' style='color: white'>
+            <p><i>Die Position bestimmt den Platz im Turnierbaum dieser K.-o.-Runde. Bei falscher Position kann der Turnierbaum falsch angezeigt werden - im Zweifel vorher im "Turnierbaum" auf der Startseite nachsehen, welche Positionen in der gewählten Runde schon belegt sind.</i></p>
+        </div>
+        <label for='demo-category'>Login</label>
+        <input type='text' id='begegnung_hinzufuegen_bn' name='bn' class='Eingabe' placeholder='Benutzername' style='color: white' required>
+        <input type='password' id='begegnung_hinzufuegen_pw' name='pw' class='Eingabe' placeholder='Passwort' style='color: white' required>
+        <script type='text/javascript'>
+            function checkAGBBegegnungHinzufuegen() {
+                if (document.getElementById('demo-human-begegnung-hinzufuegen').checked) {
+                    return true;
+                }
+                alert('Du musst unten noch das Häkchen setzen!');
+                return false;
+            }
+        </script>
+        <div>
+            <div class='field half'>
+                <input type='checkbox' id='demo-human-begegnung-hinzufuegen' name='demo-human-begegnung-hinzufuegen' unchecked>
+                <label for='demo-human-begegnung-hinzufuegen'>Ich habe geprüft, dass Teams und Bracket-Position stimmen.</label>
+                <h5><br/></h5>
+            </div>
+        </div>
+        <ul class='actions'>
+            <li><input name='action' type='submit' value='Begegnung_Hinzufuegen' class='primary' /></li>
+            <li><input name='action' type='reset' value='Abbrechen' /></li>
+        </ul>
+    </form>
+    <h5><br/></h5>
     <h2 class='major'>Löschen</h2>
     <select name='Phase' id='phase'>
         <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>
@@ -1875,17 +1911,18 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########  INFO  ######### -->
 <!-- ########################## -->
 <article id="backstage_info">
-    <h2>Infos</h2>
-    <a href='#backstage_tel' class='button primary'>Telefonnummern</a>
-    </br></br>
-    <a href='#backstage_teampasswort' class='button primary'>Team-Passwörter</a>
-    </br></br>
-    <a href='#backstage_warteliste' class='button primary'>Warteliste</a>
-    </br></br>
-    <a href='#backstage_er_diagram' class='button primary'>ER-Diagramm</a>
-    </br></br>
-    <a href='#' class='button'>Zurück</a>
-    <h5><br /></h5>
+    <div style='text-align: center'>
+        <h2>Infos</h2>
+        <div class='admin-menu-wrap'>
+            <a href='#backstage_tel' class='admin-menu-button'>Telefonnummern</a>
+            <a href='#backstage_teampasswort' class='admin-menu-button'>Team-Passwörter</a>
+            <a href='#backstage_warteliste' class='admin-menu-button'>Warteliste</a>
+            <a href='#backstage_er_diagram' class='admin-menu-button'>ER-Diagramm</a>
+        </div>
+        <h5><br/></h5>
+        <a href='#' class='button'>Zurück</a>
+        <h5><br /></h5>
+    </div>
 </article>
 
 <!-- ########################## -->
