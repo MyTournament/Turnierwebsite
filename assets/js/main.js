@@ -67,7 +67,18 @@
 
 	// Main.
 		var	delay = 325,
-			locked = false;
+			pendingTimers = [];
+
+		// Cancel any transition steps still queued from a previous, interrupted
+		// show/hide call. Without this, a fast second click (e.g. switching tabs
+		// again before the ~650ms transition finished) lets the first call's
+		// delayed steps fire later and clobber the second call's end state
+		// (symptom: click does nothing, then a later click suddenly shows two
+		// articles active at once).
+			function clearPendingTimers() {
+				while (pendingTimers.length)
+					clearTimeout(pendingTimers.pop());
+			}
 
 		// Methods.
 			$main._show = function(id, initial) {
@@ -78,45 +89,41 @@
 					if ($article.length == 0)
 						return;
 
-				// Handle lock.
+				// Cancel whatever a previous, still in-flight call queued up.
+					clearPendingTimers();
 
-					// Already locked? Speed through "show" steps w/o delays.
-						if (locked || (typeof initial != 'undefined' && initial === true)) {
+				// Initial load with a hash already in the URL? Skip straight to the
+				// end state, no animation/delay.
+					if (typeof initial != 'undefined' && initial === true) {
 
-							// Mark as switching.
-								$body.addClass('is-switching');
+						// Mark as switching.
+							$body.addClass('is-switching');
 
-							// Mark as visible.
-								$body.addClass('is-article-visible');
+						// Mark as visible.
+							$body.addClass('is-article-visible');
 
-							// Deactivate all articles (just in case one's already active).
-								$main_articles.removeClass('active');
+						// Deactivate all articles (just in case one's already active).
+							$main_articles.removeClass('active');
 
-							// Hide header, footer.
-								$header.hide();
-								$footer.hide();
+						// Hide header, footer.
+							$header.hide();
+							$footer.hide();
 
-							// Show main, article.
-								$main.show();
-								$article.show();
+						// Show main, article.
+							$main.show();
+							$article.show();
 
-							// Activate article.
-								$article.addClass('active');
+						// Activate article.
+							$article.addClass('active');
 
-							// Unlock.
-								locked = false;
+						// Unmark as switching.
+							pendingTimers.push(setTimeout(function() {
+								$body.removeClass('is-switching');
+							}, 1000));
 
-							// Unmark as switching.
-								setTimeout(function() {
-									$body.removeClass('is-switching');
-								}, (initial ? 1000 : 0));
+						return;
 
-							return;
-
-						}
-
-					// Lock.
-						locked = true;
+					}
 
 				// Article already visible? Just swap articles.
 					if ($body.hasClass('is-article-visible')) {
@@ -127,7 +134,7 @@
 							$currentArticle.removeClass('active');
 
 						// Show article.
-							setTimeout(function() {
+							pendingTimers.push(setTimeout(function() {
 
 								// Hide current article.
 									$currentArticle.hide();
@@ -136,7 +143,7 @@
 									$article.show();
 
 								// Activate article.
-									setTimeout(function() {
+									pendingTimers.push(setTimeout(function() {
 
 										$article.addClass('active');
 
@@ -145,14 +152,9 @@
 												.scrollTop(0)
 												.triggerHandler('resize.flexbox-fix');
 
-										// Unlock.
-											setTimeout(function() {
-												locked = false;
-											}, delay);
+									}, 25));
 
-									}, 25);
-
-							}, delay);
+							}, delay));
 
 					}
 
@@ -164,7 +166,7 @@
 								.addClass('is-article-visible');
 
 						// Show article.
-							setTimeout(function() {
+							pendingTimers.push(setTimeout(function() {
 
 								// Hide header, footer.
 									$header.hide();
@@ -175,7 +177,7 @@
 									$article.show();
 
 								// Activate article.
-									setTimeout(function() {
+									pendingTimers.push(setTimeout(function() {
 
 										$article.addClass('active');
 
@@ -184,14 +186,9 @@
 												.scrollTop(0)
 												.triggerHandler('resize.flexbox-fix');
 
-										// Unlock.
-											setTimeout(function() {
-												locked = false;
-											}, delay);
+									}, 25));
 
-									}, 25);
-
-							}, delay);
+							}, delay));
 
 					}
 
@@ -210,51 +207,14 @@
 					&&	addState === true)
 						history.pushState(null, null, '#');
 
-				// Handle lock.
-
-					// Already locked? Speed through "hide" steps w/o delays.
-						if (locked) {
-
-							// Mark as switching.
-								$body.addClass('is-switching');
-
-							// Deactivate article.
-								$article.removeClass('active');
-
-							// Hide article, main.
-								$article.hide();
-								$main.hide();
-
-							// Show footer, header.
-								$footer.show();
-								$header.show();
-
-							// Unmark as visible.
-								$body.removeClass('is-article-visible');
-
-							// Unlock.
-								locked = false;
-
-							// Unmark as switching.
-								$body.removeClass('is-switching');
-
-							// Window stuff.
-								$window
-									.scrollTop(0)
-									.triggerHandler('resize.flexbox-fix');
-
-							return;
-
-						}
-
-					// Lock.
-						locked = true;
+				// Cancel whatever a previous, still in-flight call queued up.
+					clearPendingTimers();
 
 				// Deactivate article.
 					$article.removeClass('active');
 
 				// Hide article.
-					setTimeout(function() {
+					pendingTimers.push(setTimeout(function() {
 
 						// Hide article, main.
 							$article.hide();
@@ -265,7 +225,7 @@
 							$header.show();
 
 						// Unmark as visible.
-							setTimeout(function() {
+							pendingTimers.push(setTimeout(function() {
 
 								$body.removeClass('is-article-visible');
 
@@ -274,14 +234,9 @@
 										.scrollTop(0)
 										.triggerHandler('resize.flexbox-fix');
 
-								// Unlock.
-									setTimeout(function() {
-										locked = false;
-									}, delay);
+							}, 25));
 
-							}, 25);
-
-					}, delay);
+					}, delay));
 
 
 			};
