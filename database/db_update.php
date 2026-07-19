@@ -739,20 +739,6 @@ if (php_sapi_name() !== 'cli') {
 
 //main
     function db_update($conn, $TurnierID){
-        // Einmalige, idempotente Migration ins neue Mehrfach-Rollen-System: jeder Benutzer, der noch
-        // keinen einzigen Eintrag in System_Benutzer_in_Relation_Rolle hat, bekommt seine bisherige
-        // fk_rechte-Rolle dort eingetragen. Läuft bei jedem Aufruf mit, fügt aber nur fehlende Zeilen
-        // ein. Wenn die neuen Tabellen (noch) nicht existieren, passiert einfach nichts.
-        try {
-            $conn->query("INSERT INTO System_Benutzer_in_Relation_Rolle (fk_benutzer_in, fk_rolle)
-                          SELECT sb.id, sb.fk_rechte FROM System_Benutzer_in sb
-                          WHERE NOT EXISTS (
-                              SELECT 1 FROM System_Benutzer_in_Relation_Rolle rel WHERE rel.fk_benutzer_in = sb.id
-                          )");
-        } catch (Throwable $e) {
-            // Relation-Tabelle (noch) nicht vorhanden - keine Migration möglich, kein Problem
-        }
-
         echo "<script>console.log('TurnierID2: " . $TurnierID . "');</script>";
         // **ERROR HANDLING **
         //try {

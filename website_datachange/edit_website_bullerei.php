@@ -26,7 +26,6 @@ if($action == 'take_offline'){
 	$rollenInfoBullerei = getUserRollenInfo($conn, $bn, $pw);
 	if ($rollenInfoBullerei !== null && ($rollenInfoBullerei['flags']['cms'] || $rollenInfoBullerei['ist_admin'] || $rollenInfoBullerei['ist_co_admin'])) {
 		$successfulLogin = 1;
-		$rechte = $rollenInfoBullerei['legacy_rolle'];
 	}
 	//Teams
 	/*$teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);

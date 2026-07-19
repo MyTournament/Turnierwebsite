@@ -8,7 +8,6 @@ include_once 'login_interface.php';
 $action = $_POST['action'];
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
-$fk_rechte = '30';
 echo "<script>console.log('edit_account Checkpoint 2')</script>";
 
 // Prüft, ob der anlegende/verwaltende Admin bzw. Co-Admin laut seiner(n) eigenen Rolle(n)
@@ -22,8 +21,8 @@ function darfRolleVergeben($rollenInfoAdmin, $zielRolle) {
 }
 
 if($action == 'register'){
-    $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort, fk_rechte) VALUES (?, ?, ?)";
-    //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: $accountId = myDb_execute($conn, $TurnierID, $bn, "edit_account.php", $sql, array($bn, $pw, $fk_rechte));
+    $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort) VALUES (?, ?)";
+    //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: $accountId = myDb_execute($conn, $TurnierID, $bn, "edit_account.php", $sql, array($bn, $pw));
     //accountId könnte jetzt natürlich noch zurück zur index gegeben werden, damit man direkt eingeloggt ist
     //weiß aber leider nicht wie das geht ohne es im Klartext an die uri zu hängen
 
@@ -37,16 +36,12 @@ if($action == 'register'){
     $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
 
     if (darfRolleVergeben($rollenInfoAdmin, $neueRolle) && $neuerBn !== '' && $neuerPw !== '') {
-        // fk_rechte bleibt aus Abwärtskompatibilitätsgründen die "erste" Rolle des neuen Nutzers,
-        // zusätzlich wird die Rolle auch im neuen Mehrfach-Rollen-System eingetragen.
-        $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort, fk_rechte) VALUES (?, ?, ?)";
-        $neuerBenutzerId = myDb_execute($conn, 0, $adminBn, "edit_account.php 2", $sql, array($neuerBn, $neuerPw, $neueRolle));
-        try {
-            $sqlRel = "INSERT INTO System_Benutzer_in_Relation_Rolle (fk_benutzer_in, fk_rolle) VALUES (?, ?)";
-            myDb_execute($conn, 0, $adminBn, "edit_account.php 3", $sqlRel, array($neuerBenutzerId, $neueRolle));
-        } catch (Throwable $e) {
-            // Relation-Tabelle (noch) nicht vorhanden - fk_rechte allein reicht dann als Rolle
-        }
+        // Die Rolle wird ausschließlich im Mehrfach-Rollen-System eingetragen, fk_rechte wird
+        // nicht mehr benutzt (Spalte soll in einer der nächsten Versionen entfernt werden).
+        $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort) VALUES (?, ?)";
+        $neuerBenutzerId = myDb_execute($conn, 0, $adminBn, "edit_account.php 2", $sql, array($neuerBn, $neuerPw));
+        $sqlRel = "INSERT INTO System_Benutzer_in_Relation_Rolle (fk_benutzer_in, fk_rolle) VALUES (?, ?)";
+        myDb_execute($conn, 0, $adminBn, "edit_account.php 3", $sqlRel, array($neuerBenutzerId, $neueRolle));
     }
 
 }else if($action == 'Rolle_Hinzufuegen'){

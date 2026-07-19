@@ -160,28 +160,18 @@
             }
         }
         */
-        //LOGIN
+        //LOGIN - Rollen-System: Backstage-Zugang oder Admin/Co-Admin dürfen Spieler*innen-Infos sehen
             $TurnierID = isset($_POST['TurnierID']) ? $_POST['TurnierID'] : $TurnierID;
 
-            $stmt = $conn->prepare("SELECT * FROM `System_Benutzer_in` ORDER BY ID");
-            $stmt->execute();
-            $benutzerliste = $stmt->get_result();
-            
+            include_once __DIR__ . '/../website_datachange/login_interface.php';
             $bn = $_POST['bn'];
             $pw = $_POST['pw'];
             $successfulLogin = 0; //false
             $teamBearbeitungsrecht = 0; // Veraltet?
-            $spielerinfoMaxRecht = 15; // darf Spieler*innen-Infos sehen
-            foreach ($benutzerliste as $b){
-                if(
-                    $b['Benutzername'] == $bn and
-                    $b['Passwort'] == $pw and
-                    intval($b['fk_rechte']) <= $spielerinfoMaxRecht
-                ){
-                    $successfulLogin = 1;
-                    $teamBearbeitungsrecht = 1;
-                    $rechte = $b['fk_rechte'];
-                }
+            $rollenInfoSpielerinfo = getUserRollenInfo($conn, $bn, $pw);
+            if ($rollenInfoSpielerinfo !== null && ($rollenInfoSpielerinfo['flags']['backstage'] || $rollenInfoSpielerinfo['ist_admin'] || $rollenInfoSpielerinfo['ist_co_admin'])) {
+                $successfulLogin = 1;
+                $teamBearbeitungsrecht = 1;
             }
         
 
@@ -261,11 +251,20 @@
     function printSchiedsrichterInnen($TurnierID, $conn, $LoggedIn, $gameEditMode,$expertenmodus){
         echo"
         <ul class='alt'>";
-        $sql = 'SELECT * FROM `System_Benutzer_in` WHERE fk_rechte <= 20 ORDER BY id ASC';
-        $result = $conn->query($sql);
-        while ($row = $result->fetch_assoc()) {
-            $Benutzername = $row['Benutzername'];
-            echo "<li>$Benutzername</li>";
+        // Rollen-System: alle Nutzer mit der alle_spiele-Berechtigung (Schiedsrichter*in) oder Admin/Co-Admin
+        try {
+            $sql = "SELECT DISTINCT sb.Benutzername FROM System_Benutzer_in sb
+                    JOIN System_Benutzer_in_Relation_Rolle rel ON rel.fk_benutzer_in = sb.id
+                    JOIN System_Benutzer_in_Rolle sbr ON sbr.id = rel.fk_rolle
+                    WHERE sbr.rechte_alle_spiele = 1 OR rel.fk_rolle IN (1, 2)
+                    ORDER BY sb.Benutzername ASC";
+            $result = $conn->query($sql);
+            while ($row = $result->fetch_assoc()) {
+                $Benutzername = $row['Benutzername'];
+                echo "<li>$Benutzername</li>";
+            }
+        } catch (Throwable $e) {
+            // Rollen-Tabellen nicht erreichbar - Liste bleibt leer
         }
         echo"</ul>";
     }

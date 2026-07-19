@@ -331,7 +331,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
     include_once 'website_datachange/login_interface.php';
     $rollenInfo = ($bn !== null && $pw !== null) ? getUserRollenInfo($conn, $bn, $pw) : null;
-    $loggedInUserRechte = $rollenInfo['legacy_rolle'] ?? null; // Legacy-Wert, nur noch für Altlasten/Anzeige
     $rechteFlags = $rollenInfo['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
 
     // Admin (Rolle 1) oder Co-Admin (Rolle 2): dürfen strukturelle Turnier-Settings ändern
@@ -2228,13 +2227,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             $rollenListeFuerUebersicht[] = $rowRolle;
         }
 
-        // Alle Nutzer mit all ihren Rollen (Legacy fk_rechte + alle über die Relation-Tabelle zugewiesenen) sammeln
+        // Alle Nutzer mit all ihren Rollen (ausschließlich über die Relation-Tabelle zugewiesen) sammeln
         $alleNutzerMitRollen = [];
         $sqlAlleNutzer = 'SELECT * FROM System_Benutzer_in ORDER BY Benutzername';
         $resultAlleNutzer = $conn->query($sqlAlleNutzer);
         while ($rowNutzer = $resultAlleNutzer->fetch_assoc()) {
             $nutzerId = (int)$rowNutzer['id'];
-            $rolleIds = [(int)$rowNutzer['fk_rechte']];
+            $rolleIds = [];
             try {
                 $sqlRel = 'SELECT fk_rolle FROM System_Benutzer_in_Relation_Rolle WHERE fk_benutzer_in = ' . $nutzerId;
                 $resultRel = $conn->query($sqlRel);
@@ -2247,7 +2246,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 'bn' => $rowNutzer['Benutzername'],
                 'pw' => $rowNutzer['Passwort'],
                 'rolle_ids' => $rolleIds,
-                'macht' => min($rolleIds),
+                'macht' => count($rolleIds) > 0 ? min($rolleIds) : PHP_INT_MAX,
             ];
         }
         usort($alleNutzerMitRollen, function($a, $b) { return $a['macht'] <=> $b['macht']; });
@@ -2257,15 +2256,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $loginAlsAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
     ?>
     <style>
-        .nm-rollen-tabelle { width: 100%; margin-bottom: 1.2rem; }
-        .nm-user { border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.6rem; }
-        .nm-user-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-        .nm-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 12px; padding: 0.15rem 0.6rem; font-size: 0.75rem; }
-        .nm-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.8rem; padding: 0; line-height: 1; }
-        .nm-login-als button { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
-        .nm-addrole-form { display: flex; gap: 0.4rem; align-items: center; margin-top: 0.4rem; flex-wrap: wrap; }
+        .nm-rollen-tabelle { width: 100%; margin-bottom: 1.2rem; font-size: 0.82rem; }
+        .nm-userlist { margin-bottom: 1rem; }
+        .nm-user { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; padding: 0.25rem 0.1rem; border-bottom: 1px solid rgba(139, 92, 246, 0.15); font-size: 0.8rem; line-height: 1.1; }
+        .nm-user b { min-width: 110px; }
+        .nm-pw { opacity: 0.6; font-size: 0.7rem; }
+        .nm-badge { display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 10px; padding: 0.05rem 0.45rem; font-size: 0.68rem; white-space: nowrap; }
+        .nm-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; }
+        .nm-login-als, .nm-addrole-form { display: inline-flex; gap: 0.25rem; align-items: center; margin: 0; }
+        .nm-login-als button { padding: 0.12rem 0.4rem; font-size: 0.68rem; }
         .nm-addrole-form select, .nm-addrole-form button, .nm-newuser-form input, .nm-newuser-form select, .nm-newuser-form button {
-            padding: 0.3rem 0.5rem; font-size: 0.78rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: #fff;
+            padding: 0.12rem 0.35rem; font-size: 0.7rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: #fff;
         }
         .nm-addrole-form button, .nm-newuser-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); cursor: pointer; }
         .nm-newuser-form { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; margin: 0.6rem 0 1.5rem; }
@@ -2283,31 +2284,31 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
     <h2>Nutzer</h2>
     <p><i>Sortiert nach Berechtigungsstärke (Admin zuerst). Jeder Nutzer kann mehrere Rollen gleichzeitig haben.</i></p>
+    <div class='nm-userlist'>
     <?php foreach ($alleNutzerMitRollen as $nutzer) { ?>
         <div class='nm-user'>
-            <div class='nm-user-head'>
-                <b><?php echo htmlspecialchars($nutzer['bn']); ?></b>
-                <?php foreach ($nutzer['rolle_ids'] as $rid) {
-                    $rname = $rollenNamenById[$rid] ?? ('Rolle ' . $rid);
-                    echo "<span class='nm-badge'>" . htmlspecialchars($rname);
-                    if (nmDarfRolleVergeben($rid, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) && count($nutzer['rolle_ids']) > 1) {
-                        echo "<form action='website_datachange/edit_account.php' method='POST' style='display:inline;margin:0;' onsubmit=\"return confirm('Rolle wirklich entfernen?');\">
-                            <input type='hidden' name='action' value='Rolle_Entfernen'>
-                            <input type='hidden' name='admin_bn' value='$bnAttrNm'>
-                            <input type='hidden' name='admin_pw' value='$pwAttrNm'>
-                            <input type='hidden' name='ziel_benutzer_id' value='{$nutzer['id']}'>
-                            <input type='hidden' name='entferne_rolle' value='$rid'>
-                            <button type='submit' title='Rolle entfernen'>&times;</button>
-                        </form>";
-                    }
-                    echo "</span>";
-                } ?>
-                <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als' style='margin:0;display:inline;'>
-                    <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
-                    <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
-                    <button type='submit' class='admin-menu-button' style='min-width:auto;'>Als dieser User einloggen (Passwort: <?php echo htmlspecialchars($nutzer['pw']); ?>)</button>
-                </form>
-            </div>
+            <b><?php echo htmlspecialchars($nutzer['bn']); ?></b>
+            <span class='nm-pw'>pw: <?php echo htmlspecialchars($nutzer['pw']); ?></span>
+            <?php foreach ($nutzer['rolle_ids'] as $rid) {
+                $rname = $rollenNamenById[$rid] ?? ('Rolle ' . $rid);
+                echo "<span class='nm-badge'>" . htmlspecialchars($rname);
+                if (nmDarfRolleVergeben($rid, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) && count($nutzer['rolle_ids']) > 1) {
+                    echo "<form action='website_datachange/edit_account.php' method='POST' style='display:inline;margin:0;' onsubmit=\"return confirm('Rolle wirklich entfernen?');\">
+                        <input type='hidden' name='action' value='Rolle_Entfernen'>
+                        <input type='hidden' name='admin_bn' value='$bnAttrNm'>
+                        <input type='hidden' name='admin_pw' value='$pwAttrNm'>
+                        <input type='hidden' name='ziel_benutzer_id' value='{$nutzer['id']}'>
+                        <input type='hidden' name='entferne_rolle' value='$rid'>
+                        <button type='submit' title='Rolle entfernen'>&times;</button>
+                    </form>";
+                }
+                echo "</span>";
+            } ?>
+            <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als'>
+                <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
+                <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
+                <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.12rem 0.4rem;font-size:0.68rem;'>Login als User</button>
+            </form>
             <?php
             $verfuegbareRollen = [];
             foreach ($rollenListeFuerUebersicht as $r) {
@@ -2328,11 +2329,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                         echo "<option value='" . (int)$r['id'] . "'>" . htmlspecialchars($r['name']) . "</option>";
                     } ?>
                 </select>
-                <button type='submit'>Berechtigung hinzufügen</button>
+                <button type='submit'>+</button>
             </form>
             <?php } ?>
         </div>
     <?php } ?>
+    </div>
 
     <h2>Neuen Nutzer anlegen</h2>
     <form action='website_datachange/edit_account.php' method='POST' class='nm-newuser-form'>
