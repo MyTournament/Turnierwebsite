@@ -255,18 +255,12 @@ if (!headers_sent()) {
 		$bn = $_POST['bn'];
 		$pw = $_POST['pw'];
 
-		//Benutzer
-		$benutzerliste = getBenutzerListe($conn);
+		//Benutzer - Rollen-System: Moderator*in (teams-Flag) oder Admin/Co-Admin dürfen Teams bearbeiten
 		$successfulLogin = 0; //false
-		while ($row = $benutzerliste->fetch_assoc()) {
-			if(
-				$row['Benutzername'] == $bn and
-				$row['Passwort'] == $pw and
-				$row['fk_rechte'] <= 10
-			){
-				$successfulLogin = 1;
-				$rechte = $row['fk_rechte'];
-			}
+		$rollenInfoTeams = getUserRollenInfo($conn, $bn, $pw);
+		if ($rollenInfoTeams !== null && ($rollenInfoTeams['flags']['teams'] || $rollenInfoTeams['ist_admin'] || $rollenInfoTeams['ist_co_admin'])) {
+			$successfulLogin = 1;
+			$rechte = $rollenInfoTeams['legacy_rolle'];
 		}
 		//Teams
 		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant

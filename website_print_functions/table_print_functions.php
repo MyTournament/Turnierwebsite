@@ -1223,18 +1223,44 @@
                 $einzugFertig = (int)$rowEinzugFertig['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'];
 
                 if ($einzugKoManuellAnlegen == 1) {
+                    // Eindeutige Darstellung: das Häkchen "Status" zeigt/setzt den aktuellen Wert,
+                    // ein separates "bestätigen"-Häkchen sendet die Änderung erst ab - man kann also
+                    // in Ruhe umschalten (auch zurück), ohne dass ein Klick sofort etwas auslöst.
                     $checkedAttr = ($einzugFertig == 1) ? "checked" : "";
+                    $statusText = ($einzugFertig == 1) ? "aktuell: aktiviert" : "aktuell: deaktiviert";
                     echo "
                     <div style='text-align:center;margin:1rem 0;'>
-                    <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;'>
+                    <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;display:inline-flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:center;'>
                         <input type='hidden' name='TurnierID' value='$TurnierID'/>
                         <input type='hidden' name='action' value='Einzug_KO_Fertig_Umschalten'/>
                         <input type='hidden' name='bn' value='$bnEingeloggt'/>
                         <input type='hidden' name='pw' value='$pwEingeloggt'/>
+                        <span>Gruppenphase beendet / K.-o.-Einzug fertig angelegt (<i>$statusText</i>):</span>
+                        <input type='checkbox' name='einzug_ko_fertig' value='1' $checkedAttr>
                         <label class='admin-toggle'>
-                            <input type='checkbox' name='einzug_ko_fertig' value='1' $checkedAttr onchange='this.form.submit()'>
-                            <span>Gruppenphase beendet / K.-o.-Einzug fertig angelegt</span>
+                            <input type='checkbox' onchange='this.form.submit()'>
+                            <span>bestätigen</span>
                         </label>
+                    </form>
+                    </div>
+                    ";
+                }
+            }
+
+            // Direkt unter dem Finale (Finallevel 2): Button, um das Turnier offiziell abzuschließen,
+            // sobald ein Sieger feststeht. Nur Admin/Co-Admin.
+            if ($ko_finallevel == 2 && $istAdminOderCoAdmin) {
+                $sqlFinaleSieger = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND status NOT IN (3,6) AND fk_siegerteam IS NOT NULL AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') LIMIT 1';
+                $resultFinaleSieger = $conn->query($sqlFinaleSieger);
+                if ($resultFinaleSieger && $resultFinaleSieger->fetch_assoc()) {
+                    echo "
+                    <div style='text-align:center;margin:1rem 0;'>
+                    <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;'>
+                        <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                        <input type='hidden' name='action' value='Turnier_Abschliessen'/>
+                        <input type='hidden' name='bn' value='$bnEingeloggt'/>
+                        <input type='hidden' name='pw' value='$pwEingeloggt'/>
+                        <button type='submit' class='admin-menu-button'>Turnier abschließen (Turnierphase &rarr; Turnier vorbei)</button>
                     </form>
                     </div>
                     ";
