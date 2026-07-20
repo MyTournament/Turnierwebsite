@@ -66,6 +66,9 @@
 			}
 
 	// Main.
+		// ==========================================================================
+		// FIX: RACE CONDITION BEIM SCHNELLEN KLICKEN AUF HASH-NAV-LINKS (TAB-WECHSEL)
+		// ==========================================================================
 		var	delay = 325,
 			pendingTimers = [];
 

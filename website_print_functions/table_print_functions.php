@@ -1126,6 +1126,14 @@
                 </thead>
                 <tbody>
                     <tr>";
+                        // ================================================================================================
+                        // GREEN-CARD-VISUALISIERUNG + GESPERRTE BEGEGNUNGEN AUSGRAUEN (nur für eingeloggte Backstage-Nutzer)
+                        // ================================================================================================
+                        // status: 1=normal, 3=veraltet (vom Auto-Scheduler ersetzt), 4=Green Card (manuell angelegt,
+                        // vor Überschreiben geschützt), 5=finalisiert normal, 6=gesperrt (vor Auto-Scheduler geschützt,
+                        // fuer die Oeffentlichkeit unsichtbar), 7=Green Card finalisiert. Der grüne Punkt neben der
+                        // Begegnungs-ID markiert Status 4/7, gesperrte Begegnungen werden für Backstage-Nutzer
+                        // zusätzlich (ausgegraut + Label) angezeigt, damit nachvollziehbar bleibt, was gesperrt wurde.
                         // Erst alle Begegnungen des aktuellen Turniers (Heim oder Auswärtsspiel) filtern und dann dazu die passenden Spiele suchen
                         // Öffentlich: gesperrte (6) und veraltete (3) Begegnungen werden nie angezeigt.
                         // Eingeloggt (Backstage-Rechte): gesperrte Begegnungen werden zusätzlich (ausgegraut) angezeigt, damit nachvollziehbar bleibt, was gesperrt wurde.
