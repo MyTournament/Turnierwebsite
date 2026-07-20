@@ -426,10 +426,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <input type='hidden' name='bn' value='$bn'>
                 <input type='hidden' name='pw' value='$pw'>";
             if ($edit_content_mode == True) {
-                echo "<button type='submit' class='button primary'>Website Inhalte verlassen</button>";
+                // Bewusst .button OHNE .primary (wie Settings/Infos) - .primary bringt eigene
+                // Schriftschnitt-Regeln aus dem Grundtheme mit, die hier für einen einheitlichen
+                // Look in der Admin-Leiste nicht gewünscht sind.
+                echo "<button type='submit' class='button'>Website Inhalte verlassen</button>";
             } else {
                 echo "<input type='hidden' name='edit_content_mode' value='True'>
-                <button type='submit' class='button primary'>Website Inhalte bearbeiten</button>";
+                <button type='submit' class='button'>Website Inhalte bearbeiten</button>";
             }
             echo "</form>";
         }
@@ -3262,15 +3265,37 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             // Passwörter anzeigen/ändern: bewusst nur für "echte" Admins (rollenInfo['ist_admin']),
             // nicht für Co-Admins - auch wenn Co-Admins sonst Zugriff auf Nutzermanagement haben.
             $binIchEchterAdmin = ($rollenInfo !== null && $rollenInfo['ist_admin']);
+            // "Login als User" bei einer Ziel-Person, die selbst Admin ist, nur für echte Admins:
+            // ein Co-Admin könnte sich sonst als Admin einloggen und darüber z.B. Passwörter anderer
+            // Nutzer einsehen/ändern - Rechte, die Co-Admin sonst gezielt NICHT hat. Flag-basiert
+            // geprüft (rechte_neue_admins der Ziel-Rolle), nicht über eine hart codierte Rollen-ID.
+            $zielIstAdmin = false;
+            foreach ($nutzer['rolle_ids'] as $ridCheck) {
+                if (!empty($rollenFlagsById[$ridCheck]['rechte_neue_admins'])) { $zielIstAdmin = true; break; }
+            }
+            $loginAlsErlaubt = $binIchEchterAdmin || !$zielIstAdmin;
             ?>
             <!-- Zeile 1: Identität/Login -->
             <div class='nm-user-row'>
-                <span class='nm-user-name'><?php echo htmlspecialchars($nutzer['bn']); ?></span>
+                <span class='nm-user-name' id='nm_bn_display_<?php echo $nutzer['id']; ?>'><?php echo htmlspecialchars($nutzer['bn']); ?></span>
+                <?php if ($binIchEchterAdmin) { ?>
+                <button type='button' class='nm-pw-toggle' title='Benutzernamen ändern' onclick="var f=document.getElementById('nm_bn_form_<?php echo $nutzer['id']; ?>'); f.style.display = (f.style.display==='inline-flex') ? 'none' : 'inline-flex';">&#9998;</button>
+                <form action='website_datachange/edit_account.php' method='POST' class='nm-pwchange-form' id='nm_bn_form_<?php echo $nutzer['id']; ?>' style='display:none;' onsubmit="return confirm('Benutzernamen von <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich ändern?');">
+                    <input type='hidden' name='action' value='Benutzername_Aendern'>
+                    <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
+                    <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
+                    <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
+                    <input type='text' name='neuer_benutzername' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>' required>
+                    <button type='submit'>ändern</button>
+                </form>
+                <?php } ?>
+                <?php if ($loginAlsErlaubt) { ?>
                 <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als'>
                     <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
                     <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
                     <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.15rem 0.5rem;font-size:0.7rem;'>Login als User</button>
                 </form>
+                <?php } ?>
             </div>
             <!-- Zeile 2: Rollen -->
             <div class='nm-user-row nm-user-roles'>
@@ -3367,9 +3392,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $nnPwAttr = htmlspecialchars($pw, ENT_QUOTES);
     ?>
     <h1>Neuen Nutzer anlegen</h1>
+    <?php // Rollen-Badges nutzen bewusst dasselbe .nm-badge/.nm-badge-remove-Design wie die
+    // Nutzerübersicht (kompaktes Badge, rotes "×" oben rechts außerhalb) statt eines eigenen,
+    // abweichenden Stils - die CSS-Regeln dafür kommen aus backstage_nutzermanagement weiter oben. ?>
     <style>
-        .nn-rolle-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(139, 92, 246, 0.18); border: 1px solid #8b5cf6; border-radius: 10px; padding: 0.15rem 0.55rem; font-size: 0.75rem; }
-        .nn-rolle-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.85rem; padding: 0; line-height: 1; }
         #nn_ausgewaehlte_rollen { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; min-height: 1.6rem; }
     </style>
     <form action='website_datachange/edit_account.php' method='POST' onsubmit="if (document.querySelectorAll('input[name=\'neue_rollen[]\']').length === 0) { alert('Bitte mindestens eine Rolle hinzufügen.'); return false; } return true;">
@@ -3415,11 +3441,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 container.appendChild(hidden);
 
                 var badge = document.createElement('span');
-                badge.className = 'nn-rolle-badge';
+                badge.className = 'nm-badge';
                 badge.id = 'nn_rolle_badge_' + rolleId;
-                badge.appendChild(document.createTextNode(rolleName + ' '));
+                badge.appendChild(document.createTextNode(rolleName));
                 var entfernenBtn = document.createElement('button');
                 entfernenBtn.type = 'button';
+                entfernenBtn.className = 'nm-badge-remove';
                 entfernenBtn.title = 'Rolle wieder entfernen';
                 entfernenBtn.textContent = '×';
                 entfernenBtn.onclick = function () { nnRolleEntfernen(rolleId); };

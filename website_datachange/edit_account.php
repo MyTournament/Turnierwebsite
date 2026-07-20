@@ -123,11 +123,36 @@ if($action == 'register'){
         $sqlPwAendern = "UPDATE System_Benutzer_in SET Passwort = ? WHERE id = ?";
         myDb_execute($conn, 0, $adminBn, "edit_account.php Passwort_Aendern", $sqlPwAendern, array($neuesPasswort, $zielBenutzerId));
     }
+
+// ================================================================================================
+// BENUTZERNAME EINES ANDEREN NUTZERS ÄNDERN - genau wie Passwort ändern bewusst nur für "echte"
+// Admins (ist_admin), nicht für Co-Admins.
+// ================================================================================================
+}else if($action == 'Benutzername_Aendern'){
+    $adminBn = $_POST['admin_bn'];
+    $adminPw = $_POST['admin_pw'];
+    $zielBenutzerId = (int)$_POST['ziel_benutzer_id'];
+    $neuerBenutzername = trim($_POST['neuer_benutzername']);
+
+    $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
+
+    if ($rollenInfoAdmin !== null && $rollenInfoAdmin['ist_admin'] && $zielBenutzerId > 0 && $neuerBenutzername !== '') {
+        // Eindeutigkeit prüfen - Benutzername wird beim Login zur Identifikation genutzt, darf also
+        // nicht doppelt vergeben werden (außer an den Nutzer selbst, dessen Name unverändert bleibt).
+        $stmtPruefen = $conn->prepare("SELECT id FROM System_Benutzer_in WHERE Benutzername = ? AND id != ?");
+        $stmtPruefen->bind_param("si", $neuerBenutzername, $zielBenutzerId);
+        $stmtPruefen->execute();
+        $bereitsVergeben = $stmtPruefen->get_result()->fetch_assoc();
+        if (!$bereitsVergeben) {
+            $sqlBnAendern = "UPDATE System_Benutzer_in SET Benutzername = ? WHERE id = ?";
+            myDb_execute($conn, 0, $adminBn, "edit_account.php Benutzername_Aendern", $sqlBnAendern, array($neuerBenutzername, $zielBenutzerId));
+        }
+    }
 }
 
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 $test_turnier_id = $_GET['test_turnier_id'];
-$nutzermanagementActions = ['admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen', 'Passwort_Aendern'];
+$nutzermanagementActions = ['admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen', 'Passwort_Aendern', 'Benutzername_Aendern'];
 if (in_array($action, $nutzermanagementActions, true)) {
     if($test_turnier_id==NULL){
         header("Location: /#backstage_nutzermanagement");
