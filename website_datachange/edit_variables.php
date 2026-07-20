@@ -35,6 +35,11 @@ $rollenInfoVariables = getUserRollenInfo($conn, $bn, $pw);
 $successfulLogin = ($rollenInfoVariables !== null) ? 1 : 0;
 $rechteFlagsVariables = $rollenInfoVariables['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
 $darfTurnierSettingsAendern = $rollenInfoVariables !== null && $rechteFlagsVariables['turnier_settings'];
+// "Neues Turnier anlegen" ist bewusst strenger als der Rest der Turnier-Settings: laut Nutzer soll
+// das (anders als Turnierphase/Turnier-Settings/Gruppen generieren/Gruppeneinteilung losen, die alle
+// schon mit dem turnier_settings-Flag gehen, also auch für z.B. die Rolle "Backstage-Zugang")
+// exklusiv Admin und Co-Admin vorbehalten bleiben.
+$istAdminOderCoAdminVariables = $rollenInfoVariables !== null && ($rollenInfoVariables['ist_admin'] || $rollenInfoVariables['ist_co_admin']);
 
 $action = isset($_POST['action']) ? $_POST['action'] : null;
 
@@ -226,7 +231,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     // lässt das aktuelle Turnier unangetastet, type=1 (reales Turnier) setzt das alte Turnier auf
     // type=3 (History).
     }else if ($action == 'Turnier_Neu_Anlegen') {
-      if($darfTurnierSettingsAendern){
+      if($istAdminOderCoAdminVariables){
         // Aktuelle Turnier-Zeile komplett laden und als Basis für die Kopie nutzen - so ist die
         // Kopie unabhängig davon, ob wir hier jede einzelne Spalte kennen.
         $stmtAlt = $conn->prepare("SELECT * FROM Turnier_Main WHERE id = ?");

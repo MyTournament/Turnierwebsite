@@ -38,14 +38,14 @@ $pw = $_POST['pw'];
 // in der Rollentabelle ohnehin direkt gesetzt - ein zusätzlicher Admin/Co-Admin-
 // Shortcut hier würde das Recht faktisch von der Rolle statt vom Flag abhängig
 // machen, was der Nutzer ausdrücklich nicht mehr will.
-// $istAdminOderCoAdminEditGames bleibt separat bestehen, weil "Begegnung anlegen"
-// und "Begegnung sperren" laut expliziter Vorgabe weiterhin Admin/Co-Admin-only
-// bleiben sollen (siehe weiter unten bei Begegnung_Hinzufuegen/Begegnung_Sperren).
+// $darfBegegnungenAnlegenSperren bleibt separat bestehen, weil "Begegnung anlegen" und
+// "Begegnung sperren" ein eigenes Recht sind (turnier_settings-Flag, wie die übrigen
+// Turnier-Settings - NICHT Admin/Co-Admin-only, siehe Begegnung_Hinzufuegen/Begegnung_Sperren).
 $accountDarfSpieleBearbeiten = 0; //false
-$istAdminOderCoAdminEditGames = false; //nur Admin/Co-Admin dürfen Begegnungen anlegen/sperren
+$darfBegegnungenAnlegenSperren = false; //turnier_settings-Flag (z.B. Admin, Co-Admin, Backstage-Zugang)
 $rollenInfoGames = getUserRollenInfo($conn, $bn, $pw);
 if ($rollenInfoGames !== null) {
-  $istAdminOderCoAdminEditGames = ($rollenInfoGames['ist_admin'] || $rollenInfoGames['ist_co_admin']);
+  $darfBegegnungenAnlegenSperren = $rollenInfoGames['flags']['turnier_settings'];
   if ($rollenInfoGames['flags']['alle_spiele']) {
     $accountDarfSpieleBearbeiten = 1;
   }
@@ -440,10 +440,11 @@ if ($action == 'Ändern') {
 // ================================================================================================
 // BEGEGNUNG HINZUFÜGEN (GREEN CARD): manuell angelegte Begegnung, vor dem Auto-Scheduler geschützt
 // ================================================================================================
-// Nur Admin/Co-Admin (explizite Vorgabe, kein eigenes Rollen-Flag dafür). Status wird fest auf 4
-// (Green Card) gesetzt, damit die automatische Spielplan-Berechnung diese Begegnung nie überschreibt.
+// Turnier_settings-Flag (wie die übrigen Turnier-Settings, z.B. auch Backstage-Zugang). Status wird
+// fest auf 4 (Green Card) gesetzt, damit die automatische Spielplan-Berechnung diese Begegnung nie
+// überschreibt.
 }else if($action == 'Begegnung_Hinzufuegen'){
-  if($istAdminOderCoAdminEditGames){ //Nur Admin/Co-Admin dürfen Green-Card-Begegnungen anlegen
+  if($darfBegegnungenAnlegenSperren){
     $team1 = (int)$_POST['team1'];
     $team2 = (int)$_POST['team2'];
     $koFinallevel = (int)$_POST['ko_finallevel'];
@@ -488,11 +489,11 @@ if ($action == 'Ändern') {
 // ================================================================================================
 // BEGEGNUNG SPERREN: vorher nicht-funktionaler Stub, jetzt echt wirksam
 // ================================================================================================
-// Nur Admin/Co-Admin. Setzt status=6 ("gesperrt") - db_update.php lässt diese Begegnung dadurch in
+// Turnier_settings-Flag. Setzt status=6 ("gesperrt") - db_update.php lässt diese Begegnung dadurch in
 // Ruhe (kein Überschreiben durch den Auto-Scheduler), Öffentlichkeit sieht sie nicht mehr,
 // Backstage-Nutzer sehen sie weiterhin (ausgegraut, siehe printKO_PhaseTabellen).
 }else if($action == 'Begegnung_Sperren'){
-  if($istAdminOderCoAdminEditGames){ //Nur Admin/Co-Admin dürfen Begegnungen sperren
+  if($darfBegegnungenAnlegenSperren){
     $begegnungIdSperren = (int)$_POST['begegnungIdSperren'];
 
     if ($begegnungIdSperren > 0) {
