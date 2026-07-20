@@ -55,11 +55,17 @@ if ($successfulLogin == 0){ //fehlerhafter Login
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 2",$sql, array($bn, $content));
       }
 
-    }else if ($action == 'Turnier_Abschliessen') {
+    // ============================================================================================
+    // TURNIER ABSCHLIESSEN ALS TOGGLE (ersetzt die alte Einbahnstraßen-Aktion "Turnier_Abschliessen")
+    // ============================================================================================
+    // Checkbox an: Phase 9 ("Turnier vorbei"). Checkbox aus: Phase 13 ("Turnier läuft, Anmeldung noch
+    // möglich") - damit kann ein versehentlich abgeschlossenes Turnier auch wieder geöffnet werden.
+    }else if ($action == 'Turnier_Abschliessen_Umschalten') {
       if($darfTurnierSettingsAendern){
-        // Phase 9 = "Turnier vorbei" (siehe Turnier_Setting_Phasen)
-        $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = 9 WHERE `id` = ?;";
-        $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 6", $sql, array($TurnierID));
+        $turnierAbgeschlossen = isset($_POST['turnier_abgeschlossen']) ? 1 : 0;
+        $zielPhase = $turnierAbgeschlossen ? 9 : 13;
+        $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
+        $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Abschliessen_Umschalten", $sql, array($zielPhase, $TurnierID));
       }else{
         $message = "Leider hast du nicht die nötigen Rechte, um das Turnier abzuschließen. Wende dich an Richard, um mehr Rechte zu erhalten.";
         echo "<script type='text/javascript'>alert('$message');</script>";
@@ -289,7 +295,7 @@ if ($action == 'Turnier_Neu_Anlegen' && isset($neuerTurnierTyp) && $neuerTurnier
 
 $rueckAnkerMap = [
     'Einzug_KO_Fertig_Umschalten' => 'kophase',
-    'Turnier_Abschliessen' => 'kophase',
+    'Turnier_Abschliessen_Umschalten' => 'kophase',
     'Turnier_Settings_AnzahlGruppen_Aendern' => 'backstage_turnier_settings',
     'Turnier_Settings_StartKoFinallevel_Aendern' => 'backstage_turnier_settings',
     'Turnier_Settings_EinzugKoManuell_Aendern' => 'backstage_turnier_settings',

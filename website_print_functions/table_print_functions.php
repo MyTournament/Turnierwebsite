@@ -1316,21 +1316,38 @@
                 }
             }
 
-            // Direkt unter dem Finale (Finallevel 2): Button, um das Turnier offiziell abzuschließen,
-            // sobald ein Sieger feststeht. Nur wer das turnier_settings-Flag hat.
+            // ============================================================================================
+            // TURNIER ABSCHLIESSEN - JETZT ALS TOGGLE (wie "Gruppenphase beendet"), nicht mehr Einbahnstraße
+            // ============================================================================================
+            // Direkt unter dem Finale (Finallevel 2), sobald ein Sieger feststeht: gleiches Muster wie der
+            // "Gruppenphase beendet"-Umschalter oben - eigenes Status-Häkchen + separates "bestätigen"-
+            // Häkchen, damit man in Ruhe umschalten (auch wieder zurück) kann, ohne dass ein Klick sofort
+            // etwas auslöst. Nur wer das turnier_settings-Flag hat.
             if ($ko_finallevel == 2 && $darfTurnierSettingsAendern) {
                 $sqlFinaleSieger = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND status NOT IN (3,6) AND fk_siegerteam IS NOT NULL AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') LIMIT 1';
                 $resultFinaleSieger = $conn->query($sqlFinaleSieger);
                 if ($resultFinaleSieger && $resultFinaleSieger->fetch_assoc()) {
+                    $rowPhaseAktuellTa = $conn->query('SELECT fk_turnier_phase FROM Turnier_Main WHERE id = ' . $TurnierID)->fetch_assoc();
+                    $turnierAbgeschlossen = ((int)$rowPhaseAktuellTa['fk_turnier_phase'] === 9);
+                    $taCheckedAttr = $turnierAbgeschlossen ? "checked" : "";
+                    $taStatusText = $turnierAbgeschlossen ? "aktuell: abgeschlossen" : "aktuell: nicht abgeschlossen";
                     echo "
                     <div style='text-align:center;margin:1rem 0;'>
-                    <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;'>
+                    <div style='display:inline-block; background: rgba(139, 92, 246, 0.15); border: 1px solid #8b5cf6; border-radius: 8px; padding: 0.6rem 1rem;'>
+                    <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;display:inline-flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:center;'>
                         <input type='hidden' name='TurnierID' value='$TurnierID'/>
-                        <input type='hidden' name='action' value='Turnier_Abschliessen'/>
+                        <input type='hidden' name='action' value='Turnier_Abschliessen_Umschalten'/>
                         <input type='hidden' name='bn' value='$bnEingeloggt'/>
                         <input type='hidden' name='pw' value='$pwEingeloggt'/>
-                        <button type='submit' class='admin-menu-button'>Turnier abschließen (Turnierphase &rarr; Turnier vorbei)</button>
+                        <span>Turnier abschließen (<i>$taStatusText</i>):</span>
+                        <input type='checkbox' id='ta_abgeschlossen' name='turnier_abgeschlossen' value='1' $taCheckedAttr>
+                        <label for='ta_abgeschlossen'>abgeschlossen</label>
+                        <label class='admin-toggle'>
+                            <input type='checkbox' onchange='this.form.submit()'>
+                            <span>bestätigen</span>
+                        </label>
                     </form>
+                    </div>
                     </div>
                     ";
                 }
