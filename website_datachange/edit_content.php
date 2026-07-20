@@ -77,10 +77,15 @@ include_once 'login_interface.php';
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
 
-//Benutzer - Rollen-System: Autor*in (cms-Flag) oder Admin/Co-Admin dürfen CMS-Inhalte bearbeiten
+// ============================================================================
+// RECHTE-AUDIT: CMS-BEARBEITUNG NUR NOCH ÜBER DAS "cms"-FLAG (Autor*in-Rolle)
+// ============================================================================
+// Kein Admin/Co-Admin-Shortcut mehr: Website-Inhalte bearbeiten darf nur, wer
+// tatsächlich das cms-Recht hat. Admin/Co-Admin haben dieses Flag in der
+// Rollentabelle ohnehin gesetzt, sind also weiterhin automatisch berechtigt.
 $successfulLogin = 0; //false
 $rollenInfoContent = getUserRollenInfo($conn, $bn, $pw);
-if ($rollenInfoContent !== null && ($rollenInfoContent['flags']['cms'] || $rollenInfoContent['ist_admin'] || $rollenInfoContent['ist_co_admin'])) {
+if ($rollenInfoContent !== null && $rollenInfoContent['flags']['cms']) {
   $successfulLogin = 1;
 }
 

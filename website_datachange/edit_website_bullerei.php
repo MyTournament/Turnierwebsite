@@ -21,10 +21,14 @@ if($action == 'take_offline'){
 	$bn = $_POST['bn'];
 	$pw = $_POST['pw'];
 
-	//Benutzer - Rollen-System: Autor*in (cms-Flag) oder Admin/Co-Admin dürfen die Website offline nehmen
+	// ========================================================================
+	// RECHTE-AUDIT: CMS-BEARBEITUNG NUR NOCH ÜBER DAS "cms"-FLAG (Autor*in-Rolle)
+	// ========================================================================
+	// Kein Admin/Co-Admin-Shortcut mehr - siehe edit_content.php für die
+	// ausführliche Begründung. Admin/Co-Admin haben das cms-Flag ohnehin gesetzt.
 	$successfulLogin = 0; //false
 	$rollenInfoBullerei = getUserRollenInfo($conn, $bn, $pw);
-	if ($rollenInfoBullerei !== null && ($rollenInfoBullerei['flags']['cms'] || $rollenInfoBullerei['ist_admin'] || $rollenInfoBullerei['ist_co_admin'])) {
+	if ($rollenInfoBullerei !== null && $rollenInfoBullerei['flags']['cms']) {
 		$successfulLogin = 1;
 	}
 	//Teams

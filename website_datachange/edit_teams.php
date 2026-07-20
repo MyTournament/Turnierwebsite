@@ -255,10 +255,14 @@ if (!headers_sent()) {
 		$bn = $_POST['bn'];
 		$pw = $_POST['pw'];
 
-		//Benutzer - Rollen-System: Moderator*in (teams-Flag) oder Admin/Co-Admin dürfen Teams bearbeiten
+		// ====================================================================
+		// RECHTE-AUDIT: TEAMS BEARBEITEN NUR NOCH ÜBER DAS "teams"-FLAG (Moderator*in)
+		// ====================================================================
+		// Kein Admin/Co-Admin-Shortcut mehr - Admin/Co-Admin haben das teams-Flag
+		// in der Rollentabelle ohnehin gesetzt und sind damit weiterhin berechtigt.
 		$successfulLogin = 0; //false
 		$rollenInfoTeams = getUserRollenInfo($conn, $bn, $pw);
-		if ($rollenInfoTeams !== null && ($rollenInfoTeams['flags']['teams'] || $rollenInfoTeams['ist_admin'] || $rollenInfoTeams['ist_co_admin'])) {
+		if ($rollenInfoTeams !== null && $rollenInfoTeams['flags']['teams']) {
 			$successfulLogin = 1;
 		}
 		//Teams
@@ -315,44 +319,61 @@ if (!headers_sent()) {
 				header("Location: /?test_turnier_id=$test_turnier_id#teams");
 			}	
 
+		// ====================================================================
+		// RECHTE-AUDIT-FIX: change_group/rechte_weg/rechte_geben hatten BISHER
+		// GAR KEINE Rechte-Prüfung (echte Sicherheitslücke - jeder x-beliebige
+		// POST-Request konnte ohne gültigen Login Gruppen ändern oder
+		// Bearbeitungsrechte wegnehmen/geben). Jetzt ebenfalls über
+		// $successfulLogin (= teams-Flag, s.o.) abgesichert - doppelte Prüfung
+		// wie überall: der Button ist im UI nur bei $rechteFlags['teams']
+		// sichtbar, UND das Backend prüft hier zusätzlich unabhängig nach.
+		// Außerdem war "rechte_geben" bisher ein Kopierfehler von "rechte_weg"
+		// und setzte bearbeitungsrechte fälschlich auch auf 0 statt auf 1.
+		// ====================================================================
 		}else if($action == 'change_group'){
-			$teamId = $_POST['team'];
-			$gruppeId = $_POST['gruppe'];
-			$sql = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 7",$sql, array($gruppeId, $teamId));
-			
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$gruppeId = $_POST['gruppe'];
+				$sql = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ?";
+				myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 7",$sql, array($gruppeId, $teamId));
+			}
+
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#login");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#login");
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
 		}else if($action == 'rechte_weg'){
-			$teamId = $_POST['team'];
-			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 8",$sql, array($teamId));
-			
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
+				myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 8",$sql, array($teamId));
+			}
+
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#login");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#login");
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
 		}else if($action == 'rechte_geben'){
-			$teamId = $_POST['team'];
-			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 9",$sql, array($teamId));
-			
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 1 WHERE id = ?";
+				myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 9",$sql, array($teamId));
+			}
+
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#login");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#login");
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
 		}

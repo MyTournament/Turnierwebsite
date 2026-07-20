@@ -160,7 +160,10 @@
             }
         }
         */
-        //LOGIN - Rollen-System: Backstage-Zugang oder Admin/Co-Admin dürfen Spieler*innen-Infos sehen
+        // ====================================================================================
+        // RECHTE-AUDIT: SPIELER*INNEN-INFOS NUR NOCH ÜBER DAS "backstage"-FLAG, KEIN ADMIN/CO-
+        // ADMIN-SHORTCUT MEHR (Admin/Co-Admin haben das backstage-Flag in der Rollentabelle ohnehin)
+        // ====================================================================================
             $TurnierID = isset($_POST['TurnierID']) ? $_POST['TurnierID'] : $TurnierID;
 
             include_once __DIR__ . '/../website_datachange/login_interface.php';
@@ -169,7 +172,7 @@
             $successfulLogin = 0; //false
             $teamBearbeitungsrecht = 0; // Veraltet?
             $rollenInfoSpielerinfo = getUserRollenInfo($conn, $bn, $pw);
-            if ($rollenInfoSpielerinfo !== null && ($rollenInfoSpielerinfo['flags']['backstage'] || $rollenInfoSpielerinfo['ist_admin'] || $rollenInfoSpielerinfo['ist_co_admin'])) {
+            if ($rollenInfoSpielerinfo !== null && $rollenInfoSpielerinfo['flags']['backstage']) {
                 $successfulLogin = 1;
                 $teamBearbeitungsrecht = 1;
             }
@@ -251,12 +254,14 @@
     function printSchiedsrichterInnen($TurnierID, $conn, $LoggedIn, $gameEditMode,$expertenmodus){
         echo"
         <ul class='alt'>";
-        // Rollen-System: alle Nutzer mit der alle_spiele-Berechtigung (Schiedsrichter*in) oder Admin/Co-Admin
+        // RECHTE-AUDIT: nur noch reines Flag rechte_alle_spiele=1, kein "OR fk_rolle IN (1,2)" mehr -
+        // Admin/Co-Admin haben dieses Flag in der Rollentabelle ohnehin gesetzt und tauchen daher
+        // automatisch mit auf, ohne dass hier nach Rollen-IDs gefragt werden muss.
         try {
             $sql = "SELECT DISTINCT sb.Benutzername FROM System_Benutzer_in sb
                     JOIN System_Benutzer_in_Relation_Rolle rel ON rel.fk_benutzer_in = sb.id
                     JOIN System_Benutzer_in_Rolle sbr ON sbr.id = rel.fk_rolle
-                    WHERE sbr.rechte_alle_spiele = 1 OR rel.fk_rolle IN (1, 2)
+                    WHERE sbr.rechte_alle_spiele = 1
                     ORDER BY sb.Benutzername ASC";
             $result = $conn->query($sql);
             while ($row = $result->fetch_assoc()) {
@@ -1075,7 +1080,9 @@
         } 
     }
 
-    function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id, $istAdminOderCoAdmin = false, $bnEingeloggt = '', $pwEingeloggt = ''){
+    // RECHTE-AUDIT: 7. Parameter hieß vorher $istAdminOderCoAdmin - jetzt reines turnier_settings-Flag,
+    // damit der Button/Toggle nur sichtbar ist, wenn edit_variables.php die Aktion auch wirklich annimmt.
+    function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id, $darfTurnierSettingsAendern = false, $bnEingeloggt = '', $pwEingeloggt = ''){
         //Button, mit dem man den Bearbeitungsmodus starten kann
         printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#kophase", $test_turnier_id);
 
@@ -1211,10 +1218,10 @@
             </table>";
 
             // Direkt unter der ersten Finalstufe: Umschalter für "Gruppenphase vorbei / KO-Einzug fertig".
-            // Nur für Admin (1) und Co-Admin (2), da das die automatische KO-Berechnung auslöst.
+            // Nur wer das turnier_settings-Flag hat, da das die automatische KO-Berechnung auslöst.
             // Nur relevant/sichtbar, wenn der Einzug in die K.-o.-Phase laut Turnier Settings überhaupt manuell angelegt wird -
             // im Automatik-Modus berechnet die Website das selbst, dieser Schalter hätte dort keine Wirkung.
-            if ($ko_finallevel == $start_ko_finallevel && $istAdminOderCoAdmin) {
+            if ($ko_finallevel == $start_ko_finallevel && $darfTurnierSettingsAendern) {
                 $sqlEinzugFertig = 'SELECT einzug_ko_manuell_anlegen, einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei FROM Turnier_Main WHERE id = ' . $TurnierID;
                 $resultEinzugFertig = $conn->query($sqlEinzugFertig);
                 $rowEinzugFertig = $resultEinzugFertig->fetch_assoc();
@@ -1235,10 +1242,8 @@
                         <input type='hidden' name='bn' value='$bnEingeloggt'/>
                         <input type='hidden' name='pw' value='$pwEingeloggt'/>
                         <span>Gruppenphase beendet / K.-o.-Einzug fertig angelegt (<i>$statusText</i>):</span>
-                        <label class='admin-toggle'>
-                            <input type='checkbox' name='einzug_ko_fertig' value='1' $checkedAttr>
-                            <span>aktiviert</span>
-                        </label>
+                        <input type='checkbox' id='ko_einzug_fertig' name='einzug_ko_fertig' value='1' $checkedAttr>
+                        <label for='ko_einzug_fertig'>aktiviert</label>
                         <label class='admin-toggle'>
                             <input type='checkbox' onchange='this.form.submit()'>
                             <span>bestätigen</span>
@@ -1250,8 +1255,8 @@
             }
 
             // Direkt unter dem Finale (Finallevel 2): Button, um das Turnier offiziell abzuschließen,
-            // sobald ein Sieger feststeht. Nur Admin/Co-Admin.
-            if ($ko_finallevel == 2 && $istAdminOderCoAdmin) {
+            // sobald ein Sieger feststeht. Nur wer das turnier_settings-Flag hat.
+            if ($ko_finallevel == 2 && $darfTurnierSettingsAendern) {
                 $sqlFinaleSieger = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND status NOT IN (3,6) AND fk_siegerteam IS NOT NULL AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') LIMIT 1';
                 $resultFinaleSieger = $conn->query($sqlFinaleSieger);
                 if ($resultFinaleSieger && $resultFinaleSieger->fetch_assoc()) {

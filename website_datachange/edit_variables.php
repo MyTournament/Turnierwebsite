@@ -11,12 +11,17 @@ include_once 'login_interface.php';
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
 
-//Benutzer - Rollen-System: alle strukturellen Turnier-Einstellungen brauchen mindestens Co-Admin,
-//die Turnierphase (inkl. "Turnier abgeschlossen") ausschließlich Admin
+// ============================================================================================
+// RECHTE-AUDIT: ALLE TURNIER-EINSTELLUNGEN (inkl. TURNIERPHASE) NUR NOCH ÜBER "turnier_settings"-FLAG
+// ============================================================================================
+// Vorher war die Turnierphase Admin-only (per Rollen-Identität) und der Rest Admin/Co-Admin-only.
+// Laut Nutzer gehört Turnierphase inhaltlich mit zu "Turniersettings bearbeiten" - alles hier hängt
+// jetzt einheitlich am rechte_turnier_settings-Flag, kein Admin/Co-Admin-Shortcut mehr. Admin und
+// Co-Admin haben dieses Flag in der Rollentabelle ohnehin gesetzt und bleiben damit berechtigt.
 $rollenInfoVariables = getUserRollenInfo($conn, $bn, $pw);
 $successfulLogin = ($rollenInfoVariables !== null) ? 1 : 0;
-$istAdminVariables = $rollenInfoVariables !== null && $rollenInfoVariables['ist_admin'];
-$istAdminOderCoAdminVariables = $rollenInfoVariables !== null && ($rollenInfoVariables['ist_admin'] || $rollenInfoVariables['ist_co_admin']);
+$rechteFlagsVariables = $rollenInfoVariables['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
+$darfTurnierSettingsAendern = $rollenInfoVariables !== null && $rechteFlagsVariables['turnier_settings'];
 
 $action = isset($_POST['action']) ? $_POST['action'] : null;
 
@@ -27,7 +32,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     echo "<script>console.log('Action: $action')</script>";
 
     if ($action == 'Tunierphase ändern') {
-      if($istAdminVariables){ //Nur Admin
+      if($darfTurnierSettingsAendern){ //turnier_settings-Flag (z.B. Admin, Co-Admin)
         //Variablen speichern
         $phaseID = $_POST['Phase'];
         echo "<script>console.log('Neue Phase: $phaseID')</script>";
@@ -44,7 +49,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       }
 
     }else if ($action == 'Turnier_Abschliessen') {
-      if($istAdminOderCoAdminVariables){
+      if($darfTurnierSettingsAendern){
         // Phase 9 = "Turnier vorbei" (siehe Turnier_Setting_Phasen)
         $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = 9 WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 6", $sql, array($TurnierID));
@@ -54,7 +59,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       }
 
     }else if ($action == 'Turnier_Settings_AnzahlGruppen_Aendern') {
-      if($istAdminOderCoAdminVariables){
+      if($darfTurnierSettingsAendern){
         $anzahlGruppen = (int)$_POST['anzahl_gruppen'];
         $sql = "UPDATE `Turnier_Main` SET `anzahl_gruppen` = ? WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 3", $sql, array($anzahlGruppen, $TurnierID));
@@ -64,7 +69,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       }
 
     }else if ($action == 'Turnier_Settings_StartKoFinallevel_Aendern') {
-      if($istAdminOderCoAdminVariables){
+      if($darfTurnierSettingsAendern){
         $startKoFinallevel = (int)$_POST['start_ko_finallevel'];
         $sql = "UPDATE `Turnier_Main` SET `start_ko_finallevel` = ? WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 7", $sql, array($startKoFinallevel, $TurnierID));
@@ -74,7 +79,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       }
 
     }else if ($action == 'Turnier_Settings_EinzugKoManuell_Aendern') {
-      if($istAdminOderCoAdminVariables){
+      if($darfTurnierSettingsAendern){
         $einzugKoManuellAnlegen = isset($_POST['einzug_ko_manuell_anlegen']) ? 1 : 0;
         $sql = "UPDATE `Turnier_Main` SET `einzug_ko_manuell_anlegen` = ? WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 8", $sql, array($einzugKoManuellAnlegen, $TurnierID));
@@ -84,7 +89,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       }
 
     }else if ($action == 'Einzug_KO_Fertig_Umschalten') {
-      if($istAdminOderCoAdminVariables){
+      if($darfTurnierSettingsAendern){
         $sql = "UPDATE `Turnier_Main` SET `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = CASE WHEN `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = 1 THEN 0 ELSE 1 END WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 5", $sql, array($TurnierID));
       }else{ //Nicht genug Rechte
@@ -93,7 +98,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       }
 
     }else if ($action == 'Turnier_Neu_Anlegen') {
-      if($istAdminOderCoAdminVariables){
+      if($darfTurnierSettingsAendern){
         // Aktuelle Turnier-Zeile komplett laden und als Basis für die Kopie nutzen - so ist die
         // Kopie unabhängig davon, ob wir hier jede einzelne Spalte kennen.
         $stmtAlt = $conn->prepare("SELECT * FROM Turnier_Main WHERE id = ?");
