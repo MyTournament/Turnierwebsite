@@ -2608,22 +2608,39 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $anzahlOffeneZs = (int)$stmtZsOffene->get_result()->fetch_assoc()['anzahl'];
     ?>
     <h1>Zufällige Spiele eintragen</h1>
-    <p><?php echo htmlspecialchars($zsLabel); ?>: aktuell <b><?php echo $anzahlOffeneZs; ?></b> offene Begegnung(en). Wähle, wie viel Prozent davon auf einen Schlag zufällig mit einem Ergebnis eingetragen und finalisiert werden sollen (es wird jeweils ein klarer, zufälliger Gewinner ausgewürfelt).</p>
-    <div class='ts-setting'>
-        <span class='ts-setting-label'>Prozent</span>
-        <form action='website_datachange/edit_games.php' method='POST' class='ts-row'>
-            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
-            <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
-            <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
-            <input type='hidden' name='action' value='Zufaellige_Spiele_Eintragen'/>
-            <input type='hidden' name='zufall_scope' value='<?php echo htmlspecialchars($zsScope, ENT_QUOTES); ?>'/>
-            <?php if ($zsScope === 'ko') { ?>
-            <input type='hidden' name='zufall_ko_finallevel' value='<?php echo $zsKoFinallevel; ?>'/>
-            <?php } ?>
-            <input type='number' name='prozent' min='1' max='100' value='100' class='Eingabe ts-input'> %
+    <p><?php echo htmlspecialchars($zsLabel); ?>: aktuell <b><?php echo $anzahlOffeneZs; ?></b> offene Begegnung(en). Wähle, wie viel Prozent davon auf einen Schlag zufällig mit einem Ergebnis eingetragen und finalisiert werden sollen (Ergebnisse liegen wie im echten Spiel je Seite zwischen 0 und 3, es wird jeweils ein klarer Gewinner der gesamten Begegnung sichergestellt).</p>
+    <form action='website_datachange/edit_games.php' method='POST'>
+        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='action' value='Zufaellige_Spiele_Eintragen'/>
+        <input type='hidden' name='zufall_scope' value='<?php echo htmlspecialchars($zsScope, ENT_QUOTES); ?>'/>
+        <?php if ($zsScope === 'ko') { ?>
+        <input type='hidden' name='zufall_ko_finallevel' value='<?php echo $zsKoFinallevel; ?>'/>
+        <?php } ?>
+        <div class='ts-setting'>
+            <span class='ts-setting-label'>Prozent</span>
+            <div class='ts-row'>
+                <input type='number' name='prozent' min='1' max='100' value='100' class='Eingabe ts-input'> %
+            </div>
+        </div>
+        <div class='ts-setting'>
+            <span class='ts-setting-label'>Mehrere Spiele pro Begegnung anlegen</span>
+            <span class='ts-hint'>Wenn aktiviert, wird pro ausgewählter Begegnung eine zufällige Anzahl Spiele (zwischen 1 und dem unten gewählten Maximum) statt immer nur genau einem angelegt.</span>
+            <div class='ts-row'>
+                <input type='checkbox' id='zs_mehrere_spiele' name='mehrere_spiele' value='1' onchange="document.getElementById('zs_max_spiele_row').style.display = this.checked ? '' : 'none';">
+                <label for='zs_mehrere_spiele'>aktiviert</label>
+            </div>
+            <div class='ts-row' id='zs_max_spiele_row' style='display:none;'>
+                <label for='zs_max_spiele'>Maximal</label>
+                <input type='number' id='zs_max_spiele' name='max_spiele_pro_begegnung' min='2' max='9' value='3' class='Eingabe ts-input'>
+                <span>Spiele pro Begegnung</span>
+            </div>
+        </div>
+        <div class='ts-row'>
             <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
-        </form>
-    </div>
+        </div>
+    </form>
     <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
