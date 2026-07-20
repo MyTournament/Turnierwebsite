@@ -524,6 +524,7 @@ if (php_sapi_name() !== 'cli') {
 
         // Prüfen, ob Gruppenphase komplett ist (alle Gruppenspiele final)
         $alleGruppenFinal = 1; // TRUE
+        $gibtGruppenBegegnungen = false; // s.u.: verhindert, dass "keine Begegnungen gefunden" faelschlich als "alle final" zaehlt
         $sqlGrp = 'SELECT g.id FROM Turnier_Gruppe g WHERE g.id IN (SELECT fk_gruppe FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ') ORDER BY g.id';
         $resGrp = $conn->query($sqlGrp);
         while ($resGrp && ($rg = $resGrp->fetch_assoc())) {
@@ -534,10 +535,20 @@ if (php_sapi_name() !== 'cli') {
                     . 'AND a.fk_gruppe = ' . $gid . ' AND c.fk_gruppe = ' . $gid;
             $resChk = $conn->query($sqlChk);
             while ($resChk && ($rb = $resChk->fetch_assoc())) {
+                $gibtGruppenBegegnungen = true;
                 $st = $rb['status'];
                 if ($st != '5' && $st != '4' && $st != '7') { $alleGruppenFinal = 0; }
             }
         }
+        // BUGFIX: Solange es noch gar keine Gruppenphase-Begegnungen gibt (z.B. direkt nach dem
+        // Anmelden/Generieren von Teams, bevor Gruppen erzeugt/gelost wurden), fand die Schleife
+        // oben kein einziges Gegenbeispiel - $alleGruppenFinal blieb dadurch bei seinem Startwert 1
+        // ("vakuos wahr"). Das Losing Bracket hielt die Gruppenphase dann faelschlich fuer beendet,
+        // setzte "platziert_level = 0" fuer ALLE Teams (weiter unten) und setAllEndplatzierungen()
+        // vergab dadurch sofort eine komplette Rangliste, obwohl noch kein einziges Spiel
+        // stattgefunden hat. Ohne tatsaechlich vorhandene Gruppenphase-Begegnungen ist die
+        // Gruppenphase aber offensichtlich noch nicht beendet.
+        if (!$gibtGruppenBegegnungen) { $alleGruppenFinal = 0; }
 
         // Startbedingungen wie beim KO-Einzug: automatisch erst nach vollständiger Gruppenphase; bei manuell erst, wenn fertig angelegt
         if ($einzug_ko_manuell_anlegen == 0) {
