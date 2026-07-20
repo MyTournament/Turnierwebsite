@@ -1648,13 +1648,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
 <!-- LOGIN - für WORDPRESS -->
 <article id="login">
-    <h2>Anzahl Websitebesuche</h2>
-    <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
-
-    <p></br></p> 
-    
+    <!-- ================================================================================================
+         LOGIN-EINSTIEGSSEITE (Ziel des "Backstage"-Links im Footer) - KOMPAKTER, WENIGER ABLENKUNG
+         ================================================================================================
+         Kompakter gemacht: viele der frueheren "<p></br></p>"-Abstandshalter zwischen den Bloecken
+         entfernt. "Anzahl Websitebesuche" ist an den Anfang gerueckt (unwichtig fuer den eigentlichen
+         Login-Zweck, muss nicht im Weg stehen). Pausenraum-Link, das CMS-Inhalte-Paket direkt danach
+         (Section 18), Rangliste- und Bookmark-Link sind auf Wunsch auskommentiert - "Registrieren"
+         bleibt bewusst aktiv. -->
     <h2>Testmodus</h2>
-    <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmous läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
+    <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmodus läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
     <form method='post' action='#'>
         <select name='test_turnier_id'>
             <option value='0'><i><?php echo $TurnierName ?></i></option>";
@@ -1667,11 +1670,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             ?>
         </select>
         <!-- <input type='hidden' name='test_turnier_id' value='1'/> -->
-        <p></p>  
-        <button  name='content' class='button primary'>Testmodus starten</button> 
+        <button name='content' class='button primary'>Testmodus starten</button>
     </form>
-
-    <p></br></p> 
 
     <div id="LogIn">
     <h2>Login (CMS &amp; Backstage)</h2>
@@ -1685,28 +1685,24 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <input type="text" name="bn" class="Eingabe" placeholder="username" style="color: white" required>
     <input type="password" class="Eingabe" name="pw" placeholder="password" style="color: white" required>
     <!--<input type="submit" value="Absenden" style="color: black"/> -->
-    <p></br></p>
     <button value="Anmelden" type="submit">Anmelden</button>
     </form>
-
-    <p></br></p>
 
     <h2>Registrieren</h2>
     <p>Noch keinen Account? Hier kannst du einen erstellen. Sag danach einfach Richard Bescheid, damit er dich freischalten kann.</p>
     <a href='#register_account' class='button primary'>Registrieren</a>
 
-    <p></br></p>
-    
-    <a href="#pausenraum">?? Pausenraum</a>
+    <!-- Auf Wunsch auskommentiert: Pausenraum-Link, CMS-Inhalte-Paket (Section 18), Rangliste- und Bookmark-Link.
+         Der PHP-Aufruf ist bewusst NICHT nur in einen HTML-Kommentar gepackt (PHP-Tags werden auch
+         innerhalb von HTML-Kommentaren weiterhin ausgefuehrt), sondern per PHP-Kommentar deaktiviert. -->
+    <!-- <a href="#pausenraum">?? Pausenraum</a> -->
+    <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?>
+    <!-- <a href='#rangliste' class='button primary'>Rangliste</a> -->
+    <!-- <a id="bookmark-this" href="#" title="Bookmark This Page">Bookmark This Page</a> -->
 
-    <p></br></p>
+    <h2>Anzahl Websitebesuche</h2>
+    <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
 
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
-    <a href='#rangliste' class='button primary'>Rangliste</a>
-    <a id="bookmark-this" href="#" title="Bookmark This Page">Bookmark This Page</a>
-
-    
-    
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
