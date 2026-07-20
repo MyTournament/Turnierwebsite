@@ -2762,6 +2762,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <h5><br/></h5>
             <input type='checkbox' id='neu_einzug_ko_manuell_anlegen' name='einzug_ko_manuell_anlegen' value='1' <?php echo (($altesTurnier['einzug_ko_manuell_anlegen'] ?? 0) == 1) ? "checked" : ""; ?>>
             <label for='neu_einzug_ko_manuell_anlegen'>Einzug in die K.-o.-Phase manuell anlegen</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.2rem 0 0;'>Hinweis: Der Schalter direkt darunter ("Gruppenphase beendet / K.-o.-Einzug fertig angelegt") wird beim Anlegen dieses neuen Turniers immer automatisch zurückgesetzt, egal was hier angehakt ist - ein neues Turnier hat schließlich noch keine abgeschlossene Gruppenphase.</p>
             <h5><br/></h5>
             <input type='checkbox' id='neu_einzug_ko_fertig' name='einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei' value='1'>
             <label for='neu_einzug_ko_fertig'>Gruppenphase beendet / K.-o.-Einzug fertig angelegt (für ein neues Turnier i.d.R. nicht ankreuzen)</label>
@@ -2965,7 +2966,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     tsTextFeld('Enddatum', 'Letzter Turniertag.', 'enddatum', $rowTurnierSettings['enddatum'], 'date', $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Maximale Teamanzahl', 'Ab dieser Teamanzahl werden keine weiteren Anmeldungen mehr angenommen (Warteliste greift).', 'max_anzahl_teams', (int)$rowTurnierSettings['max_anzahl_teams'], 'number', $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Teilnahmebeitrag', 'Beitrag pro Team.', 'teilnahmebeitrag', $rowTurnierSettings['teilnahmebeitrag'], 'text', $TurnierID, $bnAttr, $pwAttr);
-    tsTextFeld('Anzeige-Reihenfolge auf der Website', 'order_on_website - bestimmt die Sortierung mehrerer Turniere.', 'order_on_website', (int)$rowTurnierSettings['order_on_website'], 'number', $TurnierID, $bnAttr, $pwAttr);
+    // Anzeige-Reihenfolge (order_on_website) hier bewusst nicht mehr bearbeitbar - irrelevant für den
+    // laufenden Betrieb. Die Spalte/der Wert bleibt in der Datenbank unangetastet, nur die
+    // Bearbeitungsmöglichkeit an dieser Stelle wurde entfernt.
     ?>
     <div class='ts-setting'>
         <span class='ts-setting-label'>Turnierphase</span>
