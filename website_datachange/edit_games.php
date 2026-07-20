@@ -622,6 +622,9 @@ if ($action == 'Ändern') {
           $sqlFinalizeZs = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 4 THEN 7 ELSE 5 END WHERE id = ?";
           myDb_execute($conn, $TurnierID, $bn, "edit_games.php Zufaellige_Spiele_Eintragen finalize", $sqlFinalizeZs, array($zsBegegnungId));
         }
+
+        if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+        $_SESSION['flash_success'] = count($auszufuellendeIds) . ' Begegnung(en) erfolgreich zufällig eingetragen und finalisiert.';
       }
     }
   }

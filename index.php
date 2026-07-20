@@ -446,9 +446,37 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         ";
     }
 
+    // ================================================================================================
+    // ERFOLGSMELDUNGEN NACH BACKSTAGE-AKTIONEN (Session-Flash-Message, ueberlebt den Redirect)
+    // ================================================================================================
+    // Wird von edit_variables.php/edit_teams.php/edit_games.php per $_SESSION['flash_success'] gesetzt,
+    // bevor dorthin weitergeleitet wird. Steht bewusst AUSSERHALB jedes <article>, damit sie auf
+    // jedem Tab/Anker sichtbar ist (die Hash-Navigation blendet nur <article>-Elemente ein/aus).
+    if (isset($_SESSION['flash_success']) && $_SESSION['flash_success']) {
+        echo "<div style='max-width:640px;margin:1rem auto 0;padding:0.7rem 1rem;border-radius:8px;background:rgba(46,204,113,0.15);border:1px solid #2ecc71;color:#eafff2;text-align:center;font-size:0.9rem;'>&check; " . htmlspecialchars($_SESSION['flash_success']) . "</div>";
+        unset($_SESSION['flash_success']);
+    }
 ?>
 
-<header id="header"> 
+<!-- ================================================================================================
+     LADE-OVERLAY FÜR LANGSAME TESTMODUS-AKTIONEN (Teams generieren / Zufällige Spiele eintragen)
+     ================================================================================================
+     Beide Aktionen legen bei großen Mengen sehr viele Datenbank-Zeilen an und können dadurch spürbar
+     dauern. Damit man nicht denkt, der Klick sei "nicht angekommen" (und z.B. mehrfach klickt), zeigt
+     zeigeLadeHinweisUndSenden() sofort beim Absenden ein Overlay, bevor das Formular abgeschickt wird. -->
+<div id='ladehinweis-overlay' style='display:none; position:fixed; inset:0; background:rgba(20,10,35,0.85); z-index:100000; align-items:center; justify-content:center; flex-direction:column; color:#fff; text-align:center; padding:2rem;'>
+    <div style='font-size:1.4rem; margin-bottom:0.6rem;'>⏳ Einen Moment bitte ...</div>
+    <div style='font-size:0.9rem; opacity:0.85;'>Das kann je nach Anzahl kurz dauern.</div>
+</div>
+<script>
+    function zeigeLadeHinweisUndSenden(form) {
+        var overlay = document.getElementById('ladehinweis-overlay');
+        if (overlay) { overlay.style.display = 'flex'; }
+        form.submit();
+    }
+</script>
+
+<header id="header">
     <?php if (isset($is_localhost) && $is_localhost && isset($should_run_update) && !$should_run_update) { ?>
         <div id="local-db-update-banner" style="position:fixed; top:10px; right:10px; z-index:9999; background: rgba(0,0,0,0.7); color:#fff; padding:8px 12px; border-radius:8px; font-size:12px; line-height:1.3; box-shadow:0 2px 8px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px;">
             <span>Lokaler Modus: Automatisches DB-Update deaktiviert.</span>
@@ -2566,7 +2594,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
             <input type='hidden' name='action' value='Teams_Generieren'/>
             <input type='number' name='anzahl_testteams' min='1' max='100' value='10' class='Eingabe ts-input'>
-            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+            <label class='admin-toggle'><input type='checkbox' onchange='zeigeLadeHinweisUndSenden(this.form)'> <span>bestätigen</span></label>
         </form>
     </div>
     <?php } ?>
@@ -2641,7 +2669,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             </div>
         </div>
         <div class='ts-row'>
-            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+            <label class='admin-toggle'><input type='checkbox' onchange='zeigeLadeHinweisUndSenden(this.form)'> <span>bestätigen</span></label>
         </div>
     </form>
     <?php } ?>
@@ -2800,10 +2828,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <div class='field half'>
                 <input type='checkbox' id='demo-human-neues-turnier' name='demo-human-neues-turnier' unchecked>
                 <label for='demo-human-neues-turnier'>Mir ist bewusst, dass das aktuelle Turnier dadurch zu "History" wird und dieses hier zum neuen, aktuellen Turnier.</label>
-                <h5><br/></h5>
             </div>
         </div>
-        <ul class='actions'>
+        <ul class='actions' style='margin-top:1.2rem;'>
             <li><input type='submit' value='Kopie anlegen' class='primary' /></li>
             <li><input type='reset' value='Abbrechen' /></li>
         </ul>

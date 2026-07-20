@@ -10,6 +10,12 @@ include_once 'edit_interface.php';
 if (!headers_sent()) {
     ob_start();
 }
+// Für die Erfolgsmeldungen (Session-Flash-Message, wird in index.php angezeigt)
+if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+function evPhaseName($conn, $phaseId) {
+    $row = $conn->query('SELECT name FROM Turnier_Setting_Phasen WHERE id = ' . (int)$phaseId)->fetch_assoc();
+    return $row['name'] ?? ('Phase ' . (int)$phaseId);
+}
 
 $TurnierID = $_POST['TurnierID'];
 
@@ -46,6 +52,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
 
         $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php",$sql, array($phaseID, $TurnierID));
+        $_SESSION['flash_success'] = 'Turnierphase erfolgreich geändert zu "' . evPhaseName($conn, $phaseID) . '".';
       }else{ //Nicht genug Rechte
         $message = "Leider hast du nicht die nötigen Rechte, um diese Variable zu bearbeiten. Wende dich an Richard, um mehr Rechte zu erhalten.";
         echo "<script type='text/javascript'>alert('$message');</script>";
@@ -66,6 +73,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
         $zielPhase = $turnierAbgeschlossen ? 9 : 13;
         $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Abschliessen_Umschalten", $sql, array($zielPhase, $TurnierID));
+        $_SESSION['flash_success'] = $turnierAbgeschlossen ? 'Turnier erfolgreich abgeschlossen.' : 'Turnier erfolgreich wieder geöffnet.';
       }else{
         $message = "Leider hast du nicht die nötigen Rechte, um das Turnier abzuschließen. Wende dich an Richard, um mehr Rechte zu erhalten.";
         echo "<script type='text/javascript'>alert('$message');</script>";
@@ -162,6 +170,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
 
           $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
           myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppen_Generieren 3", $sql, array($ggDanachPhase, $TurnierID));
+          $_SESSION['flash_success'] = 'Gruppen erfolgreich generiert. Turnierphase ist jetzt "' . evPhaseName($conn, $ggDanachPhase) . '".';
         }
       }else{
         $message = "Leider hast du nicht die nötigen Rechte, um Gruppen zu generieren. Wende dich an Richard, um mehr Rechte zu erhalten.";
@@ -191,6 +200,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
 
           $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
           myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 2", $sql, array($glDanachPhase, $TurnierID));
+          $_SESSION['flash_success'] = 'Gruppeneinteilung erfolgreich gelost. Turnierphase ist jetzt "' . evPhaseName($conn, $glDanachPhase) . '".';
         }
       }else{
         $message = "Leider hast du nicht die nötigen Rechte, um die Gruppeneinteilung zu losen. Wende dich an Richard, um mehr Rechte zu erhalten.";
@@ -263,6 +273,9 @@ if ($successfulLogin == 0){ //fehlerhafter Login
             // ein Testturnier darf das aktuelle Turnier nicht verändern.
             $sqlHistory = "UPDATE Turnier_Main SET type = 3 WHERE id = ?";
             myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Turnier_Neu_Anlegen history", $sqlHistory, array($TurnierID));
+            $_SESSION['flash_success'] = 'Neues Turnier erfolgreich angelegt. Das bisherige Turnier ist jetzt "History".';
+          } else {
+            $_SESSION['flash_success'] = 'Neues Testturnier erfolgreich angelegt.';
           }
         }
       }else{
@@ -294,7 +307,8 @@ $rueckAnkerMap = [
     'Turnier_Settings_Feld_Aendern' => 'backstage_turnier_settings',
     'Tunierphase ändern' => 'backstage_turnier_phase',
     'Gruppen_Fuer_Gruppenphase_Generieren' => 'backstage_gruppen_generieren',
-    'Gruppeneinteilung_Losen' => 'backstage_gruppeneinteilung_losen',
+    // Nach dem Losen direkt zu den Gruppen weiterleiten, damit man das Ergebnis sofort sieht
+    'Gruppeneinteilung_Losen' => 'gruppen',
 ];
 $rueckAnker = $rueckAnkerMap[$action] ?? 'backstage_daten_bearbeiten';
 $test_turnier_id = $_GET['test_turnier_id'];

@@ -485,7 +485,10 @@ if (!headers_sent()) {
 						$nummer = $maxT + $i;
 						$kuerzel = "T$nummer";
 						$teamname = "Testteam $nummer";
-						$sqlInsertTeam = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren, bearbeitungsrechte) VALUES (?, ?, ?, ?, '', 'Automatisch generiertes Testteam', 1)";
+						// fk_gruppe wird bewusst explizit auf NULL gesetzt (nicht einfach weggelassen) -
+						// damit generierte Teams garantiert ungruppiert starten, unabhaengig davon, ob
+						// die Spalte in der DB zufaellig einen anderen Default-Wert haette.
+						$sqlInsertTeam = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren, bearbeitungsrechte, fk_gruppe) VALUES (?, ?, ?, ?, '', 'Automatisch generiertes Testteam', 1, NULL)";
 						$teamId = myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Generieren", $sqlInsertTeam, array($TurnierID, $teamname, $kuerzel, $kuerzel));
 
 						for ($s = 1; $s <= 3; $s++) {
@@ -495,15 +498,19 @@ if (!headers_sent()) {
 							myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Generieren Spieler", $sqlInsertSpieler, array($teamId, $spielername, $telefonnummer));
 						}
 					}
+
+					if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+					$_SESSION['flash_success'] = "$anzahlTestteams Testteam(s) erfolgreich generiert.";
 				}
 			}
 
-			// Nach dem Generieren direkt zur Teamliste weiterleiten, damit die neu angelegten Teams sofort sichtbar sind
+			// Nach dem Generieren zur oeffentlichen Teamliste weiterleiten, damit man die neu
+			// angelegten Teams direkt zwischen den echten/anderen Teams sieht.
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#backstage_teams_bearbeiten");
+				header("Location: /#teams");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+				header("Location: /?test_turnier_id=$test_turnier_id#teams");
 			}
 
 		}
