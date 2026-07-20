@@ -1900,18 +1900,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
 </article>
 
-<!-- ########  PLATZHALTER  ######### -->
-<!-- ABMELDEN -->
-<article id="backstage_abmelden">
-    <?php if (!$rechteFlags['teams']) { ?>
-    <p>Keine ausreichende Berechtigung.</p>
-    <?php } else {
-        printTeamAbmelden($conn, $TurnierID, $bn, $pw);
-    } ?>
-    <p></br></p>
-    <p></br></p>
-</article>
-
 <!-- ########################## -->
 <!-- ########  Telefonnummern  ######### -->
 <!-- ########################## -->
@@ -1981,12 +1969,122 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <h2>Teams bearbeiten</h2>
         <?php if (!$rechteFlags['teams']) { ?>
         <p>Keine ausreichende Berechtigung.</p>
-        <?php } else { ?>
-        <div class='admin-menu-wrap'>
-            <a href='#backstage_abmelden' class='admin-menu-button'>Team abmelden</a>
-            <a href='#backstage_changeteam' class='admin-menu-button'>Sonstiges (Gruppe, Bearbeitungsrechte)</a>
-        </div>
-        <?php } ?>
+        <?php } else {
+            // ================================================================================================
+            // TEAMS BEARBEITEN - KOMPLETTER NEUBAU: EINE EINZIGE LISTE STATT "Team abmelden"/"Sonstiges"
+            // ================================================================================================
+            // Ersetzt die beiden alten Unterseiten (Team abmelden / Sonstiges) durch eine kompakte Liste
+            // aller Teams des aktuellen Turniers. Pro Team direkt editierbar: Teamname, Spielernamen (je
+            // Freitext + eigenes "bestätigen"-Häkchen), Gruppe, Bearbeitungsrechte (ein Checkbox-Toggle) und
+            // Abmelden (mit JS-confirm() als zweitem Bestätigungsschritt, damit nichts aus Versehen passiert).
+            // Die Backend-Aktionen change_group/rechte_weg/rechte_geben gab es schon (jetzt zusätzlich mit
+            // Rechte-Prüfung abgesichert, siehe edit_teams.php), Team_Name_Aendern/Spieler_Name_Aendern sind neu.
+            $tbBnAttr = htmlspecialchars($bn, ENT_QUOTES);
+            $tbPwAttr = htmlspecialchars($pw, ENT_QUOTES);
+
+            $tbGruppen = [];
+            $sqlTbGruppen = 'SELECT * FROM `Turnier_Gruppe` WHERE fk_turnier = ' . (int)$TurnierID . ' ORDER BY id';
+            $resultTbGruppen = $conn->query($sqlTbGruppen);
+            while ($rowTbGruppe = $resultTbGruppen->fetch_assoc()) { $tbGruppen[] = $rowTbGruppe; }
+        ?>
+        <style>
+            .tb-team { border: 1px solid rgba(139, 92, 246, 0.28); border-radius: 8px; padding: 0.6rem 0.9rem; margin-bottom: 0.8rem; text-align: left; }
+            .tb-team-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.4rem; }
+            .tb-team-head .tb-pw { font-size: 0.72rem; opacity: 0.6; }
+            .tb-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 0.3rem 0; }
+            .tb-row label.tb-label { min-width: 90px; font-size: 0.85rem; opacity: 0.85; }
+            .tb-row input[type='text'] { min-width: 160px; }
+            .tb-abmelden-btn { background: #7a2020; border-color: #a33; }
+        </style>
+        <?php
+            $sqlTbTeams = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ' ORDER BY id';
+            $resultTbTeams = $conn->query($sqlTbTeams);
+            while ($rowTbTeam = $resultTbTeams->fetch_assoc()) {
+                $tId = (int)$rowTbTeam['id'];
+                $tName = $rowTbTeam['name'];
+                $tKuerzel = $rowTbTeam['kuerzel'];
+                $tGruppeId = (int)$rowTbTeam['fk_gruppe'];
+                $tBearbeitungsrechte = (int)$rowTbTeam['bearbeitungsrechte'];
+                echo "<div class='tb-team'>";
+                echo "<div class='tb-team-head'><b>" . htmlspecialchars($tKuerzel) . "</b> <span class='tb-pw'>PW: " . htmlspecialchars($rowTbTeam['password']) . "</span></div>";
+
+                // --- Teamname ändern ---
+                echo "
+                <form action='website_datachange/edit_teams.php' method='POST' class='tb-row'>
+                    <input type='hidden' name='TurnierID' value='" . (int)$TurnierID . "'>
+                    <input type='hidden' name='bn' value='$tbBnAttr'>
+                    <input type='hidden' name='pw' value='$tbPwAttr'>
+                    <input type='hidden' name='action' value='Team_Name_Aendern'>
+                    <input type='hidden' name='team' value='$tId'>
+                    <label class='tb-label'>Teamname:</label>
+                    <input type='text' name='neuer_teamname' value='" . htmlspecialchars($tName, ENT_QUOTES) . "'>
+                    <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+                </form>";
+
+                // --- Spielernamen ändern ---
+                $sqlTbSpieler = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team = ' . $tId . ' ORDER BY id';
+                $resultTbSpieler = $conn->query($sqlTbSpieler);
+                while ($rowTbSpieler = $resultTbSpieler->fetch_assoc()) {
+                    $sId = (int)$rowTbSpieler['id'];
+                    $sName = $rowTbSpieler['name'];
+                    echo "
+                    <form action='website_datachange/edit_teams.php' method='POST' class='tb-row'>
+                        <input type='hidden' name='TurnierID' value='" . (int)$TurnierID . "'>
+                        <input type='hidden' name='bn' value='$tbBnAttr'>
+                        <input type='hidden' name='pw' value='$tbPwAttr'>
+                        <input type='hidden' name='action' value='Spieler_Name_Aendern'>
+                        <input type='hidden' name='spieler' value='$sId'>
+                        <label class='tb-label'>Spieler*in:</label>
+                        <input type='text' name='neuer_spielername' value='" . htmlspecialchars($sName, ENT_QUOTES) . "'>
+                        <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+                    </form>";
+                }
+
+                // --- Gruppe ändern ---
+                echo "
+                <form action='website_datachange/edit_teams.php' method='POST' class='tb-row'>
+                    <input type='hidden' name='TurnierID' value='" . (int)$TurnierID . "'>
+                    <input type='hidden' name='bn' value='$tbBnAttr'>
+                    <input type='hidden' name='pw' value='$tbPwAttr'>
+                    <input type='hidden' name='action' value='change_group'>
+                    <input type='hidden' name='team' value='$tId'>
+                    <label class='tb-label'>Gruppe:</label>
+                    <select name='gruppe' onchange='this.form.submit()'>";
+                foreach ($tbGruppen as $tbGruppe) {
+                    $gSel = ((int)$tbGruppe['id'] === $tGruppeId) ? "selected" : "";
+                    echo "<option value='" . (int)$tbGruppe['id'] . "' $gSel>" . htmlspecialchars($tbGruppe['name']) . "</option>";
+                }
+                echo "
+                    </select>
+                </form>";
+
+                // --- Bearbeitungsrechte (ein Checkbox-Toggle statt zwei separater Buttons) ---
+                $rechteCheckedAttr = ($tBearbeitungsrechte === 1) ? "checked" : "";
+                echo "
+                <form action='website_datachange/edit_teams.php' method='POST' class='tb-row'>
+                    <input type='hidden' name='TurnierID' value='" . (int)$TurnierID . "'>
+                    <input type='hidden' name='bn' value='$tbBnAttr'>
+                    <input type='hidden' name='pw' value='$tbPwAttr'>
+                    <input type='hidden' name='team' value='$tId'>
+                    <input type='hidden' name='action' id='tb_rechte_action_$tId' value='rechte_geben'>
+                    <input type='checkbox' id='tb_rechte_cb_$tId' $rechteCheckedAttr onchange=\"document.getElementById('tb_rechte_action_$tId').value = this.checked ? 'rechte_geben' : 'rechte_weg'; this.form.submit();\">
+                    <label for='tb_rechte_cb_$tId'>Bearbeitungsrechte</label>
+                </form>";
+
+                // --- Abmelden (zweiter Bestätigungsschritt per JS-confirm) ---
+                echo "
+                <form action='website_datachange/edit_teams.php' method='POST' class='tb-row' onsubmit=\"return confirm('Team " . htmlspecialchars($tKuerzel, ENT_QUOTES) . " wirklich abmelden? Das kann nicht rückgängig gemacht werden.');\">
+                    <input type='hidden' name='TurnierID' value='" . (int)$TurnierID . "'>
+                    <input type='hidden' name='bn' value='$tbBnAttr'>
+                    <input type='hidden' name='pw' value='$tbPwAttr'>
+                    <input type='hidden' name='action' value='Abmelden'>
+                    <input type='hidden' name='Team_zum_abmelden' value='$tId'>
+                    <button type='submit' class='button tb-abmelden-btn'>Team abmelden</button>
+                </form>";
+
+                echo "</div>";
+            }
+        } ?>
         <h5><br/></h5>
         <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
         <h5><br /></h5>
@@ -2651,80 +2749,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
 </article>
 
-<!-- ########################## -->
-<!-- ########  CHANGETEAM  ######### -->
-<!-- ########################## -->
-<article id="backstage_changeteam">
-    <div id='LogIn2'>
-    <h2>Teams bearbeiten</h2>
-    <?php if (!$rechteFlags['teams']) { ?>
-    <p>Keine ausreichende Berechtigung.</p>
-    <?php } else { ?>
-    <p>Hier kannst du jedes Attribut der Teams ändern, also zum Beispiel Gruppe oder auch Bearbeitungsrechte für die Website.</p>
-    <?php printGroupsAsTable($TurnierID, $conn, $LoggedInWithBackstageOrHigher, 0, 0); ?>
-    <form action='website_datachange/edit_teams.php' method='POST' onSubmit='return checkAGBchangeTeam()'>
-        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'>
-        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'>
-        <div class='field'>
-            <label for='demo-category'>Team wählen</label>
-            <select name='team' id='teams_waehlen' required>
-                <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Team wählen</i></option>
-                <?php
-                $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY id';
-                $resultTeam = $conn->query($sqlTeam);
-                $zaehler = 1;
-                while ($rowTeam = $resultTeam->fetch_assoc()) {
-                    $teamName = $rowTeam['name'];
-                    $teamKuerzel = $rowTeam['kuerzel'];
-                    $teamId = $rowTeam['id'];
-                    echo "<option value=$teamId>$zaehler. $teamKuerzel | $teamName</option>";
-                    $zaehler++;
-                }
-                ?>
-            </select>
-            <h5><br/></h5>
-            <select name='gruppe' id='gruppe_waehlen'>
-                <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Gruppe wählen</i></option>
-                <?php
-                $sqlGruppe = 'SELECT * FROM `Turnier_Gruppe` WHERE fk_turnier = ' . $TurnierID . ' ORDER BY id';
-                $resultGruppe = $conn->query($sqlGruppe);
-                $zaehler = 1;
-                while ($rowGruppe = $resultGruppe->fetch_assoc()) {
-                    $gruppeName = $rowGruppe['name'];
-                    $gruppeId = $rowGruppe['id'];
-                    echo "<option value=$gruppeId>$zaehler. $gruppeName</option>";
-                    $zaehler++;
-                }
-                ?>
-            </select>
-            <p>Nur auswählen wenn Gruppe geändert werden soll.</p>
-        </div>
-        <h5><br/></h5>
-        <script type='text/javascript'>
-            function checkAGBchangeTeam() {
-                if (document.getElementById('demo-human-changeteam').checked) {
-                    return true;
-                }
-                alert('Du musst unten noch das Häkchen setzen!');
-                return false;
-            }
-        </script>
-        <div>
-            <div class='field half'>
-                <input type='checkbox' id='demo-human-changeteam' name='demo-human-changeteam' unchecked>
-                <label for='demo-human-changeteam'>Ergebnisse nicht gelogen auf Ehre.</label>
-                <h5><br/></h5>
-            </div>
-        </div>
-        <p><button id='btn_login2' name='action' value='change_group' type='submit'>Gruppe ändern</button></p>
-        <p><button id='btn_login2' name='action' value='rechte_weg' type='submit'>Bearbeitungsrechte wegnehmen</button></p>
-        <p><button id='btn_login2' name='action' value='rechte_geben' type='submit'>Bearbeitungsrechte zurückgeben</button></p>
-    </form>
-    <p></br></p>
-    <p></br></p>
-    <?php } ?>
-    </div>
-</article>
 <?php } ?>
 
 <!-- ###################################################################################################################################################################################################################################### -->
