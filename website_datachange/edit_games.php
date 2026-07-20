@@ -496,9 +496,13 @@ if ($action == 'Ändern') {
 // Sicherheitsnetz unabhängig von der UI-Sichtbarkeit: bevor irgendetwas eingetragen wird, wird hier
 // noch einmal serverseitig geprüft, dass $TurnierID tatsächlich zu einem Testturnier gehört - kann
 // also nie versehentlich Ergebnisse im echten, laufenden Turnier eintragen. Pro ausgewählter,
-// offener Begegnung (status nicht in 3/5/6/7) wird ein Turnier_Spiel mit zwei unterschiedlichen
-// Zufallswerten eingefügt (damit es immer einen klaren Gewinner gibt) und die Begegnung wie bei
-// "Finalisieren" auf status 5/7 gesetzt - Siegerteam-Berechnung und Bracket-Nachrücken übernimmt
+// offener Begegnung (status nicht in 3/5/6/7) werden 1 bis N (siehe "mehrere_spiele"-Option)
+// Turnier_Spiel-Zeilen mit je zufälligen Werten zwischen 0 und 3 pro Seite eingefügt (wie im echten
+// Spiel - einzelne Spiele DÜRFEN dabei unentschieden ausgehen, z.B. 3:3), anschließend wird geprüft,
+// ob die GESAMTE Begegnung (aggregiert über alle ihre Spiele) einen klaren Gewinner hat; falls nicht,
+// wird das letzte Spiel gezielt so nachjustiert, dass ein Gewinner feststeht (sonst bliebe
+// fk_siegerteam dauerhaft leer und die K.-o.-Runde könnte nicht weiterrücken). Die Begegnung wird wie
+// bei "Finalisieren" auf status 5/7 gesetzt - Siegerteam-Berechnung und Bracket-Nachrücken übernimmt
 // danach wie immer db_update.php beim nächsten Seitenaufruf.
 }else if($action == 'Zufaellige_Spiele_Eintragen'){
   if ($accountDarfSpieleBearbeiten == 1) {
@@ -511,6 +515,8 @@ if ($action == 'Ändern') {
     if ($rowTypCheckZs !== null && (int)$rowTypCheckZs['type'] === 2) {
       $zufallScope = isset($_POST['zufall_scope']) ? $_POST['zufall_scope'] : '';
       $prozent = max(0, min(100, (int)$_POST['prozent']));
+      $mehrereSpieleErlaubt = isset($_POST['mehrere_spiele']);
+      $maxSpielProBegegnung = $mehrereSpieleErlaubt ? max(2, min(9, (int)$_POST['max_spiele_pro_begegnung'])) : 1;
       $stmtOffeneBegegnungen = null;
 
       if ($zufallScope === 'gruppenphase') {
@@ -535,11 +541,52 @@ if ($action == 'Ändern') {
         $auszufuellendeIds = array_slice($offeneBegegnungIds, 0, $anzahlZuFuellen);
 
         foreach ($auszufuellendeIds as $zsBegegnungId) {
-          $flaschen1 = random_int(0, 15);
-          do { $flaschen2 = random_int(0, 15); } while ($flaschen2 === $flaschen1);
+          // Eventuell schon vorhandene Spiele dieser Begegnung mitzählen, damit der Gewinner-Check
+          // unten den tatsächlichen Gesamtstand berücksichtigt (nicht nur die neu angelegten Spiele).
+          $sqlBestehendeSpiele = "SELECT biereheimteam, biereauswaertsteam FROM Turnier_Spiel WHERE fk_begegnung = ?";
+          $stmtBestehendeSpiele = $conn->prepare($sqlBestehendeSpiele);
+          $stmtBestehendeSpiele->bind_param("i", $zsBegegnungId);
+          $stmtBestehendeSpiele->execute();
+          $resultBestehendeSpiele = $stmtBestehendeSpiele->get_result();
+          $punkteHeim = 0; $punkteAusw = 0; $flaschenHeimGesamt = 0; $flaschenAuswGesamt = 0;
+          while ($rowBestehend = $resultBestehendeSpiele->fetch_assoc()) {
+            $bh = (int)$rowBestehend['biereheimteam'];
+            $ba = (int)$rowBestehend['biereauswaertsteam'];
+            if ($bh > $ba) { $punkteHeim++; } else if ($ba > $bh) { $punkteAusw++; }
+            $flaschenHeimGesamt += $bh;
+            $flaschenAuswGesamt += $ba;
+          }
 
-          $sqlInsertSpielZs = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
-          myDb_execute($conn, $TurnierID, $bn, "edit_games.php Zufaellige_Spiele_Eintragen", $sqlInsertSpielZs, array($zsBegegnungId, $flaschen1, $flaschen2, $bn));
+          $anzahlSpieleFuerBegegnung = $mehrereSpieleErlaubt ? random_int(1, $maxSpielProBegegnung) : 1;
+
+          for ($i = 1; $i <= $anzahlSpieleFuerBegegnung; $i++) {
+            // Jede Seite maximal 3 (wie im echten Spiel) - einzelne Spiele DÜRFEN unentschieden sein.
+            $flaschen1 = random_int(0, 3);
+            $flaschen2 = random_int(0, 3);
+
+            if ($i === $anzahlSpieleFuerBegegnung) {
+              $wuerdePunkteHeim = $punkteHeim + ($flaschen1 > $flaschen2 ? 1 : 0);
+              $wuerdePunkteAusw = $punkteAusw + ($flaschen2 > $flaschen1 ? 1 : 0);
+              $wuerdeFlaschenHeim = $flaschenHeimGesamt + $flaschen1;
+              $wuerdeFlaschenAusw = $flaschenAuswGesamt + $flaschen2;
+              if ($wuerdePunkteHeim === $wuerdePunkteAusw && $wuerdeFlaschenHeim === $wuerdeFlaschenAusw) {
+                // Gesamt-Unentschieden würde fk_siegerteam dauerhaft leer lassen - beim letzten Spiel
+                // gezielt einen klaren Gewinner auswürfeln (3 gegen 0-2), bleibt innerhalb 0-3.
+                if (random_int(0, 1) === 0) {
+                  $flaschen1 = 3; $flaschen2 = random_int(0, 2);
+                } else {
+                  $flaschen2 = 3; $flaschen1 = random_int(0, 2);
+                }
+              }
+            }
+
+            if ($flaschen1 > $flaschen2) { $punkteHeim++; } else if ($flaschen2 > $flaschen1) { $punkteAusw++; }
+            $flaschenHeimGesamt += $flaschen1;
+            $flaschenAuswGesamt += $flaschen2;
+
+            $sqlInsertSpielZs = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
+            myDb_execute($conn, $TurnierID, $bn, "edit_games.php Zufaellige_Spiele_Eintragen", $sqlInsertSpielZs, array($zsBegegnungId, $flaschen1, $flaschen2, $bn));
+          }
 
           $sqlFinalizeZs = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 4 THEN 7 ELSE 5 END WHERE id = ?";
           myDb_execute($conn, $TurnierID, $bn, "edit_games.php Zufaellige_Spiele_Eintragen finalize", $sqlFinalizeZs, array($zsBegegnungId));
