@@ -828,7 +828,7 @@
             // Führt zur Auswahlseite backstage_zufaellige_spiele, wo man den Prozentsatz der noch offenen
             // Gruppenphasen-Begegnungen wählt, die auf einen Schlag zufällig befüllt+finalisiert werden.
             if ($test_turnier_id != 0) {
-                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=gruppenphase#backstage_zufaellige_spiele' class='tbl-action-btn'>Zufällige Spiele eintragen</a></p>";
+                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=gruppenphase#backstage_zufaellige_spiele' class='tbl-action-btn tbl-action-btn--testmodus'>Zufällige Spiele eintragen</a></p>";
             }
 
             // ================================================================================================
@@ -853,7 +853,7 @@
                         <input type='hidden' name='bn' value='$bnAttrSp'>
                         <input type='hidden' name='pw' value='$pwAttrSp'>
                         <input type='hidden' name='action' value='$alleGruppenAction'>
-                        <button type='submit' class='tbl-action-btn tbl-action-btn--primary'>$alleGruppenLabel</button>
+                        <button type='submit' class='tbl-action-btn tbl-action-btn--admin'>$alleGruppenLabel</button>
                     </form>";
                 }
             }
@@ -872,6 +872,7 @@
                 // MÖGLICHKEIT, EINE EINZELNE GRUPPE ZU FINALISIEREN (eigener Button statt anklickbarer
                 // Überschrift - die alte Variante nutzte einen falschen Action-Namen und hatte gar keine
                 // bn/pw-Felder, konnte serverseitig also nie funktionieren).
+                echo "<div class='matrix-group-heading'>";
                 echo "<h2 style='display:inline-block; margin-right:0.6rem;'>Gruppe $gruppenname &#9733;</h2>";
                 if ($darfAlleSpieleBearbeiten) {
                     echo "<form action='website_datachange/edit_games.php' method='POST' style='display:inline-block; margin:0;'>
@@ -880,9 +881,10 @@
                         <input type='hidden' name='pw' value='$pwAttrSp'>
                         <input type='hidden' name='action' value='Gruppe_Finalisieren'>
                         <input type='hidden' name='groupId' value='" . $rowGruppe['id'] . "'>
-                        <button type='submit' class='tbl-action-btn'>Gruppe finalisieren</button>
+                        <button type='submit' class='tbl-action-btn tbl-action-btn--admin'>Gruppe finalisieren</button>
                     </form>";
                 }
+                echo "</div>";
                 echo "
                 <div class='matrix-table-wrap'>
                 <table class='withBorderCollapse'>
@@ -988,7 +990,7 @@
             $resTeamsLB = $conn->query($sqlTeamsLB);
             while ($resTeamsLB && ($rt = $resTeamsLB->fetch_assoc())) { $teams[] = (int)$rt['id']; }
 
-            echo "<h2>Gruppe Losing Bracket &#9733;</h2>";
+            echo "<div class='matrix-group-heading'><h2>Gruppe Losing Bracket &#9733;</h2></div>";
             // Wenn noch keine Teams im LB sind, Hinweis anzeigen und abbrechen
             if (count($teams) === 0) {
                 echo "<div class='note'>Noch keine Spiele im Losing‑Bracket vorhanden. Die Begegnungen werden automatisch erzeugt, sobald die ersten Teams ausgeschieden sind.</div>";
@@ -1165,7 +1167,7 @@
             // TESTMODUS: "Zufällige Spiele eintragen" für GENAU DIESE Finalstufe (nur im Testturnier, dunkelblau)
             // ============================================================================================
             if ($test_turnier_id != 0) {
-                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=ko&zufall_ko_finallevel=$ko_finallevel#backstage_zufaellige_spiele' class='tbl-action-btn'>Zufällige Spiele eintragen</a></p>";
+                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=ko&zufall_ko_finallevel=$ko_finallevel#backstage_zufaellige_spiele' class='tbl-action-btn tbl-action-btn--testmodus'>Zufällige Spiele eintragen</a></p>";
             }
             echo "
             <table class='withBorderCollapse'>
