@@ -459,14 +459,18 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 ?>
 
 <!-- ================================================================================================
-     LADE-OVERLAY FÜR LANGSAME TESTMODUS-AKTIONEN (Teams generieren / Zufällige Spiele eintragen)
+     LADE-OVERLAY FÜR LANGSAME AKTIONEN MIT VIELEN DATENBANK-ÄNDERUNGEN
      ================================================================================================
-     Beide Aktionen legen bei großen Mengen sehr viele Datenbank-Zeilen an und können dadurch spürbar
-     dauern. Damit man nicht denkt, der Klick sei "nicht angekommen" (und z.B. mehrfach klickt), zeigt
-     zeigeLadeHinweisUndSenden() sofort beim Absenden ein Overlay, bevor das Formular abgeschickt wird. -->
+     Betrifft alle Aktionen, die viele Datenbank-Zeilen anlegen oder eine db_update()-Neuberechnung
+     direkt auslösen (Teams generieren, Zufällige Spiele eintragen, Gruppen für Gruppenphase
+     generieren, Gruppeneinteilung losen) und dadurch spürbar dauern können. Damit man nicht denkt,
+     der Klick sei "nicht angekommen" (und z.B. die Seite neu lädt oder mehrfach klickt), zeigt
+     zeigeLadeHinweisUndSenden() sofort beim Absenden ein Overlay mit der ausdrücklichen Bitte, die
+     Seite NICHT neu zu laden, bevor das Formular abgeschickt wird. -->
 <div id='ladehinweis-overlay' style='display:none; position:fixed; inset:0; background:rgba(20,10,35,0.85); z-index:100000; align-items:center; justify-content:center; flex-direction:column; color:#fff; text-align:center; padding:2rem;'>
     <div style='font-size:1.4rem; margin-bottom:0.6rem;'>⏳ Einen Moment bitte ...</div>
     <div style='font-size:0.9rem; opacity:0.85;'>Das kann je nach Anzahl kurz dauern.</div>
+    <div style='font-size:0.9rem; opacity:0.85; margin-top:0.4rem;'><b>Bitte die Seite jetzt nicht neu laden</b> - einfach abwarten, bis es fertig ist.</div>
 </div>
 <script>
     function zeigeLadeHinweisUndSenden(form) {
@@ -2354,7 +2358,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                         echo "<option value='" . (int)$p['id'] . "' $sel>" . htmlspecialchars($p['name']) . "</option>";
                     } ?>
                 </select>
-                <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+                <label class='admin-toggle'><input type='checkbox' onchange='zeigeLadeHinweisUndSenden(this.form)'> <span>bestätigen</span></label>
             </form>
         </div>
         <?php } ?>
@@ -2397,7 +2401,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                         echo "<option value='" . (int)$p['id'] . "' $sel>" . htmlspecialchars($p['name']) . "</option>";
                     } ?>
                 </select>
-                <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+                <label class='admin-toggle'><input type='checkbox' onchange='zeigeLadeHinweisUndSenden(this.form)'> <span>bestätigen</span></label>
             </form>
         </div>
         <?php } ?>
@@ -2830,7 +2834,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <label for='demo-human-neues-turnier'>Mir ist bewusst, dass das aktuelle Turnier dadurch zu "History" wird und dieses hier zum neuen, aktuellen Turnier.</label>
             </div>
         </div>
-        <ul class='actions' style='margin-top:1.2rem;'>
+        <div style='height:2rem;'></div>
+        <ul class='actions'>
             <li><input type='submit' value='Kopie anlegen' class='primary' /></li>
             <li><input type='reset' value='Abbrechen' /></li>
         </ul>
