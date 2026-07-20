@@ -3069,23 +3069,29 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <style>
         .nm-rollen-tabelle { width: 100%; margin-bottom: 1.2rem; font-size: 0.82rem; }
         .nm-userlist { margin-bottom: 1rem; }
-        /* Jeder Nutzer bekommt jetzt eine eigene kleine Karte statt einer einzigen, alles-in-einer-
-           Zeile wrappenden Reihe - Name/Passwort/Login-Button oben, Rollen-Badges + Hinzufügen in
-           einer eigenen Zeile darunter. Dadurch quetschen sich Badges nicht mehr mit dem Rest zusammen. */
-        .nm-user-card { border: 1px solid rgba(139, 92, 246, 0.22); border-radius: 8px; padding: 0.5rem 0.7rem; margin-bottom: 0.6rem; text-align: left; font-size: 0.82rem; }
-        .nm-user-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
-        .nm-user-head b { font-size: 0.9rem; }
-        .nm-pw { opacity: 0.75; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 0.3rem; }
-        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.7rem; padding: 0; text-decoration: underline; }
+        /* ============================================================================================
+           NUTZER-KARTE - DREI KLAR GETRENNTE ZEILEN NACH FUNKTION STATT ALLES IN EINER WRAPPENDEN ZEILE
+           ============================================================================================
+           1) Identität/Login: Name + "Login als User". 2) Rollen: Badges + "Rolle hinzufügen" - alles,
+           was mit Rollen zu tun hat, gehört visuell zusammen. 3) Nur für "echte" Admins, per gestrichelter
+           Linie abgesetzt: Passwort anzeigen/ändern - bewusst als eigener, sensiblerer Bereich erkennbar. */
+        .nm-user-card { border: 1px solid rgba(139, 92, 246, 0.22); border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.7rem; text-align: left; font-size: 0.82rem; }
+        .nm-user-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+        .nm-user-row:last-child { margin-bottom: 0; }
+        .nm-user-name { font-size: 0.95rem; font-weight: 700; flex: 1 1 auto; }
+        .nm-user-admin-row { border-top: 1px dashed rgba(139, 92, 246, 0.3); padding-top: 0.5rem; }
+        .nm-pw { opacity: 0.85; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
         .nm-user-roles { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
         .nm-badge { display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 10px; padding: 0.15rem 0.55rem; font-size: 0.72rem; white-space: nowrap; }
         .nm-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.8rem; padding: 0; line-height: 1; }
-        .nm-login-als, .nm-addrole-form { display: inline-flex; gap: 0.25rem; align-items: center; margin: 0; }
-        .nm-login-als button { padding: 0.12rem 0.4rem; font-size: 0.68rem; }
-        .nm-addrole-form select {
+        .nm-login-als, .nm-addrole-form, .nm-pwchange-form { display: inline-flex; gap: 0.3rem; align-items: center; margin: 0; }
+        .nm-login-als button { padding: 0.15rem 0.5rem; font-size: 0.7rem; }
+        .nm-addrole-form select, .nm-pwchange-form input[type='text'] {
             padding: 0.15rem 0.35rem; font-size: 0.72rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: #fff;
         }
-        .nm-addrole-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.75rem; }
+        .nm-pwchange-form input[type='text'] { width: 8rem; }
+        .nm-addrole-form button, .nm-pwchange-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
     </style>
 
     <h2>Rollen</h2>
@@ -3105,19 +3111,22 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $nmPwId = 'nm_pw_' . $nutzer['id'];
     ?>
         <div class='nm-user-card'>
-            <div class='nm-user-head'>
-                <b><?php echo htmlspecialchars($nutzer['bn']); ?></b>
-                <span class='nm-pw'>PW:
-                    <span id='<?php echo $nmPwId; ?>' style='display:none;'><?php echo htmlspecialchars($nutzer['pw']); ?></span>
-                    <button type='button' class='nm-pw-toggle' onclick="var s=document.getElementById('<?php echo $nmPwId; ?>'); var sichtbar = s.style.display !== 'none'; s.style.display = sichtbar ? 'none' : 'inline'; this.textContent = sichtbar ? 'anzeigen' : 'verbergen';">anzeigen</button>
-                </span>
+            <?php
+            // Passwörter anzeigen/ändern: bewusst nur für "echte" Admins (rollenInfo['ist_admin']),
+            // nicht für Co-Admins - auch wenn Co-Admins sonst Zugriff auf Nutzermanagement haben.
+            $binIchEchterAdmin = ($rollenInfo !== null && $rollenInfo['ist_admin']);
+            ?>
+            <!-- Zeile 1: Identität/Login -->
+            <div class='nm-user-row'>
+                <span class='nm-user-name'><?php echo htmlspecialchars($nutzer['bn']); ?></span>
                 <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als'>
                     <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
                     <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
-                    <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.12rem 0.4rem;font-size:0.68rem;'>Login als User</button>
+                    <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.15rem 0.5rem;font-size:0.7rem;'>Login als User</button>
                 </form>
             </div>
-            <div class='nm-user-roles'>
+            <!-- Zeile 2: Rollen -->
+            <div class='nm-user-row nm-user-roles'>
             <?php foreach ($nutzer['rolle_ids'] as $rid) {
                 $rname = $rollenNamenById[$rid] ?? ('Rolle ' . $rid);
                 echo "<span class='nm-badge'>" . htmlspecialchars($rname);
@@ -3156,6 +3165,23 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             </form>
             <?php } ?>
             </div>
+            <?php if ($binIchEchterAdmin) { ?>
+            <!-- Zeile 3: Passwort - nur für "echte" Admins, per gestrichelter Linie abgesetzt -->
+            <div class='nm-user-row nm-user-admin-row'>
+                <span class='nm-pw'>PW:
+                    <span id='<?php echo $nmPwId; ?>' style='display:none;'><?php echo htmlspecialchars($nutzer['pw']); ?></span>
+                    <button type='button' class='nm-pw-toggle' onclick="var s=document.getElementById('<?php echo $nmPwId; ?>'); var sichtbar = s.style.display !== 'none'; s.style.display = sichtbar ? 'none' : 'inline'; this.textContent = sichtbar ? 'anzeigen' : 'verbergen';">anzeigen</button>
+                </span>
+                <form action='website_datachange/edit_account.php' method='POST' class='nm-pwchange-form' onsubmit="return confirm('Passwort von <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich ändern?');">
+                    <input type='hidden' name='action' value='Passwort_Aendern'>
+                    <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
+                    <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
+                    <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
+                    <input type='text' name='neues_passwort' placeholder='Neues Passwort' required>
+                    <button type='submit'>ändern</button>
+                </form>
+            </div>
+            <?php } ?>
         </div>
     <?php } ?>
     </div>
@@ -3186,7 +3212,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $nnPwAttr = htmlspecialchars($pw, ENT_QUOTES);
     ?>
     <h1>Neuen Nutzer anlegen</h1>
-    <form action='website_datachange/edit_account.php' method='POST'>
+    <style>
+        .nn-rolle-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(139, 92, 246, 0.18); border: 1px solid #8b5cf6; border-radius: 10px; padding: 0.15rem 0.55rem; font-size: 0.75rem; }
+        .nn-rolle-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.85rem; padding: 0; line-height: 1; }
+        #nn_ausgewaehlte_rollen { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; min-height: 1.6rem; }
+    </style>
+    <form action='website_datachange/edit_account.php' method='POST' onsubmit="if (document.querySelectorAll('input[name=\'neue_rollen[]\']').length === 0) { alert('Bitte mindestens eine Rolle hinzufügen.'); return false; } return true;">
         <input type='hidden' name='action' value='admin_erstellt_nutzer'/>
         <input type='hidden' name='admin_bn' value='<?php echo $nnBnAttr; ?>'>
         <input type='hidden' name='admin_pw' value='<?php echo $nnPwAttr; ?>'>
@@ -3197,16 +3228,55 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <label for='demo-category'>Passwort</label>
             <input type='text' name='neuer_pw' class='Eingabe' style='color: white' required>
             <h5><br/></h5>
-            <label for='demo-category'>Rolle</label>
-            <select name='neue_rolle' required>
-                <?php foreach ($nnRollen as $r) {
-                    $rId = (int)$r['id'];
-                    if (nmDarfRolleVergeben($r, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
-                        echo "<option value='$rId'>" . htmlspecialchars($r['name']) . "</option>";
-                    }
-                } ?>
-            </select>
+            <label for='demo-category'>Rollen <i>(ein Nutzer kann mehrere haben - Rolle wählen, dann "Hinzufügen")</i></label>
+            <div style='display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;'>
+                <select id='nn_rolle_auswahl'>
+                    <?php foreach ($nnRollen as $r) {
+                        $rId = (int)$r['id'];
+                        if (nmDarfRolleVergeben($r, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
+                            echo "<option value='$rId'>" . htmlspecialchars($r['name']) . "</option>";
+                        }
+                    } ?>
+                </select>
+                <button type='button' class='button' onclick='nnRolleHinzufuegen()'>Hinzufügen</button>
+            </div>
+            <div id='nn_ausgewaehlte_rollen'></div>
         </div>
+        <script>
+            function nnRolleHinzufuegen() {
+                var select = document.getElementById('nn_rolle_auswahl');
+                var rolleId = select.value;
+                var rolleName = select.options[select.selectedIndex].text;
+                if (!rolleId || document.getElementById('nn_rolle_hidden_' + rolleId)) { return; }
+
+                var container = document.getElementById('nn_ausgewaehlte_rollen');
+
+                var hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'neue_rollen[]';
+                hidden.value = rolleId;
+                hidden.id = 'nn_rolle_hidden_' + rolleId;
+                container.appendChild(hidden);
+
+                var badge = document.createElement('span');
+                badge.className = 'nn-rolle-badge';
+                badge.id = 'nn_rolle_badge_' + rolleId;
+                badge.appendChild(document.createTextNode(rolleName + ' '));
+                var entfernenBtn = document.createElement('button');
+                entfernenBtn.type = 'button';
+                entfernenBtn.title = 'Rolle wieder entfernen';
+                entfernenBtn.textContent = '×';
+                entfernenBtn.onclick = function () { nnRolleEntfernen(rolleId); };
+                badge.appendChild(entfernenBtn);
+                container.appendChild(badge);
+            }
+            function nnRolleEntfernen(rolleId) {
+                var badge = document.getElementById('nn_rolle_badge_' + rolleId);
+                var hidden = document.getElementById('nn_rolle_hidden_' + rolleId);
+                if (badge) { badge.remove(); }
+                if (hidden) { hidden.remove(); }
+            }
+        </script>
         <ul class='actions'>
             <li><input type='submit' value='Anlegen' class='primary'/></li>
         </ul>
