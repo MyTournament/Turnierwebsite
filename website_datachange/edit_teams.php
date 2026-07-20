@@ -314,10 +314,10 @@ if (!headers_sent()) {
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#teams");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#teams");
-			}	
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+			}
 
 		// ====================================================================
 		// RECHTE-AUDIT-FIX: change_group/rechte_weg/rechte_geben hatten BISHER
@@ -369,6 +369,47 @@ if (!headers_sent()) {
 			}
 
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_teams_bearbeiten");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+			}
+
+		// ====================================================================
+		// NEU: TEAMNAME UND SPIELERNAMEN INLINE BEARBEITEN (Teil des Teams-
+		// bearbeiten-Neubaus) - Moderator*in (teams-Flag) darf laut Vorgabe auch
+		// Teamnamen und einzelne Spielernamen im Freitext ändern.
+		// ====================================================================
+		}else if($action == 'Team_Name_Aendern'){
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$neuerTeamname = trim($_POST['neuer_teamname']);
+				if ($neuerTeamname !== '') {
+					$sql = "UPDATE Turnier_Team SET name = ? WHERE id = ?";
+					myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 10",$sql, array($neuerTeamname, $teamId));
+				}
+			}
+
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_teams_bearbeiten");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+			}
+
+		}else if($action == 'Spieler_Name_Aendern'){
+			if ($successfulLogin == 1) {
+				$spielerId = $_POST['spieler'];
+				$neuerSpielername = trim($_POST['neuer_spielername']);
+				if ($neuerSpielername !== '') {
+					// fk_team gehört zum aktuellen Turnier gehört mit prüfen, damit nicht per
+					// manipulierter spieler-id ein Spieler eines fremden Turniers geändert werden kann.
+					$sql = "UPDATE Turnier_Spieler_in SET name = ? WHERE id = ? AND fk_team IN (SELECT id FROM Turnier_Team WHERE fk_turnier = ?)";
+					myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 11",$sql, array($neuerSpielername, $spielerId, $TurnierID));
+				}
+			}
+
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
 				header("Location: /#backstage_teams_bearbeiten");

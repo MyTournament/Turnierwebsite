@@ -410,55 +410,6 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <?php
 }
 
-function printTeamAbmelden($conn, $TurnierID, $bnEingeloggt = '', $pwEingeloggt = ''){
-    ?>
-    <title>Adressbuch</title>
-    <div id="LogIn">
-    <h2>Melde dein Team ab</h2>
-    <p></p>
-    <form action="website_datachange/edit_teams.php" method="POST" onSubmit="return checkAGBabmelden()">
-    <select name='Team_zum_abmelden' id='teams_waehlen' >
-        <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'><i>Team wählen</i></option>";
-        <?php
-        $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY id';
-        $resultTeam = $conn->query($sqlTeam);
-        while ($rowTeam = $resultTeam->fetch_assoc()) {
-            $teamId = $rowTeam['id'];
-            $teamName = $rowTeam['name'];
-            $teamKuerzel = $rowTeam['kuerzel'];
-            echo "<option value=$teamId>$teamKuerzel | $teamName</option>";	//TODO: value = id? dann ist es eindeutig und es wäre theoretisch nicht so schlimm wenn es zwei gleiche Kürzel gibt						
-        } ?>
-    </select>
-    <p></br></p>
-    <input type="hidden" name="bn" value="<?php echo htmlspecialchars($bnEingeloggt, ENT_QUOTES); ?>">
-    <input type="hidden" name="pw" value="<?php echo htmlspecialchars($pwEingeloggt, ENT_QUOTES); ?>">
-    <input type="hidden" name="TurnierID" value="<?php echo $TurnierID; ?>">
-    <h5><br/></h5>
-    <title>[ untitled ]</title>                                
-    <script type="text/javascript">
-        function checkAGBabmelden() {
-        if (document.getElementById('team_abmelden').checked) {
-            return true;
-        }
-        alert('Du musst unten noch das Häkchen setzen, du Hermann!');
-        return false;
-    }
-    </script> 
-    <div>
-        <div class="field half">
-            <input type="checkbox" id="team_abmelden" name="team_abmelden" unchecked>
-            <label for="team_abmelden">Ich bin mir sicher, dass ich mein Team abmelden möchte und das Team nicht am Turnier teilnehmen soll.</label>
-        </div>
-    </div>
-    <p></br></p>
-    <input type='hidden' name='action' value='Abmelden'/>
-    <p><button id="btn_login_Abmelden" value="Absenden" type="submit">Abmelden</button></p>
-    
-    </form>
-    <?php
-}
-
-
 function printSpielerInfoLogin($TurnierID, $conn, $spielerId){
     ?>
     <title>Adressbuch</title>
