@@ -3088,7 +3088,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
            "×" liegt als kleiner Kreis oben rechts AUSSERHALB der Badge (position:absolute), nimmt also
            keinen Platz im Badge-Inneren weg und macht die Badge dadurch nicht größer/breiter. */
         .nm-badge { position: relative; display: inline-flex; align-items: center; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 10px; padding: 0.15rem 0.55rem; font-size: 0.72rem; white-space: nowrap; }
-        .nm-badge-remove { position: absolute; top: -0.45rem; right: -0.45rem; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: #7a2020; border: 1px solid #c0392b; color: #fff; font-size: 0.62rem; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .nm-badge-remove { position: absolute; top: -0.45rem; right: -0.45rem; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: #7a2020; border: 1px solid #c0392b; color: #fff; font-size: 0.62rem; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; box-shadow: none; }
         .nm-login-als, .nm-addrole-form, .nm-pwchange-form { display: inline-flex; gap: 0.3rem; align-items: center; margin: 0; }
         .nm-login-als button { padding: 0.15rem 0.5rem; font-size: 0.7rem; }
         .nm-addrole-form select, .nm-pwchange-form input[type='text'] {
@@ -3101,6 +3101,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         .nm-pw-label { font-size: 0.72rem; font-weight: 700; opacity: 0.85; }
         .nm-pw { opacity: 0.9; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
         .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
+        /* WICHTIG: bloße <button>-Elemente erben sonst die große Standard-Button-Optik der Website
+           (2.75rem hoch, GROSSBUCHSTABEN, Letter-Spacing, weißer Schatten-Rahmen) - dadurch sah die
+           Schrift größer/unpassender aus als die kleinen Buttons selbst. Hier gezielt NUR für die
+           kompakten Nutzermanagement-Buttons zurückgesetzt (Selektoren sind alle nm-*-spezifisch,
+           betrifft also keine anderen Buttons auf der Website). */
+        .nm-login-als button, .nm-addrole-form button, .nm-pwchange-form button, .nm-pw-toggle {
+            height: auto; line-height: 1.2; letter-spacing: normal; text-transform: none; box-shadow: none;
+        }
     </style>
 
     <h2>Rollen</h2>
