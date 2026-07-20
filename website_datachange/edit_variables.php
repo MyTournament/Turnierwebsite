@@ -169,36 +169,28 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       }
 
     // ============================================================================================
-    // GRUPPENEINTEILUNG LOSEN: KAPSELT TURNIERPHASE 5 ALS SAUBEREN EINZEL-BUTTON (NUR TESTTURNIERE)
+    // GRUPPENEINTEILUNG LOSEN: KAPSELT TURNIERPHASE 5 ALS SAUBEREN EINZEL-BUTTON
     // ============================================================================================
     // Gleiches Prinzip wie Gruppen_Fuer_Gruppenphase_Generieren, aber für Phase 5 ("Gruppeneinteilung"
-    // - würfelt Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen). Sicherheitsnetz
-    // unabhängig von der UI: nur wirksam, wenn $TurnierID tatsächlich zu einem Testturnier (type=2)
-    // gehört - beim echten Turnier passiert das Auslosen bewusst nicht per Knopfdruck.
+    // - würfelt Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen). Jetzt auch für echte,
+    // laufende Turniere nutzbar - der frühere Testturnier-only-Check (type=2) wurde entfernt.
     }else if ($action == 'Gruppeneinteilung_Losen') {
       if($darfTurnierSettingsAendern){
-        $glStmtTyp = $conn->prepare("SELECT type FROM Turnier_Main WHERE id = ?");
-        $glStmtTyp->bind_param("i", $TurnierID);
-        $glStmtTyp->execute();
-        $glRowTyp = $glStmtTyp->get_result()->fetch_assoc();
+        $glDanachPhase = (int)$_POST['danach_turnierphase'];
 
-        if ($glRowTyp !== null && (int)$glRowTyp['type'] === 2) {
-          $glDanachPhase = (int)$_POST['danach_turnierphase'];
+        if ($glDanachPhase > 0) {
+          $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = 5 WHERE `id` = ?;";
+          myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 1", $sql, array($TurnierID));
 
-          if ($glDanachPhase > 0) {
-            $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = 5 WHERE `id` = ?;";
-            myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 1", $sql, array($TurnierID));
-
-            try {
-              include_once '../database/db_update.php';
-              db_update($conn, $TurnierID);
-            } catch (Throwable $e) {
-              // siehe Gruppen_Fuer_Gruppenphase_Generieren - Phase wird unten trotzdem zurückgesetzt
-            }
-
-            $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
-            myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 2", $sql, array($glDanachPhase, $TurnierID));
+          try {
+            include_once '../database/db_update.php';
+            db_update($conn, $TurnierID);
+          } catch (Throwable $e) {
+            // siehe Gruppen_Fuer_Gruppenphase_Generieren - Phase wird unten trotzdem zurückgesetzt
           }
+
+          $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
+          myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 2", $sql, array($glDanachPhase, $TurnierID));
         }
       }else{
         $message = "Leider hast du nicht die nötigen Rechte, um die Gruppeneinteilung zu losen. Wende dich an Richard, um mehr Rechte zu erhalten.";
