@@ -3083,11 +3083,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         .nm-user-row:last-child { margin-bottom: 0; }
         .nm-user-name { font-size: 0.95rem; font-weight: 700; flex: 1 1 auto; }
         .nm-user-admin-row { border-top: 1px dashed rgba(139, 92, 246, 0.3); padding-top: 0.5rem; }
-        .nm-pw { opacity: 0.85; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
-        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
-        .nm-user-roles { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
-        .nm-badge { display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 10px; padding: 0.15rem 0.55rem; font-size: 0.72rem; white-space: nowrap; }
-        .nm-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.8rem; padding: 0; line-height: 1; }
+        .nm-user-roles { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        /* Badge bleibt immer im kompakten Stil (auch wenn eine Entfernen-Möglichkeit existiert) - das
+           "×" liegt als kleiner Kreis oben rechts AUSSERHALB der Badge (position:absolute), nimmt also
+           keinen Platz im Badge-Inneren weg und macht die Badge dadurch nicht größer/breiter. */
+        .nm-badge { position: relative; display: inline-flex; align-items: center; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 10px; padding: 0.15rem 0.55rem; font-size: 0.72rem; white-space: nowrap; }
+        .nm-badge-remove { position: absolute; top: -0.45rem; right: -0.45rem; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: #7a2020; border: 1px solid #c0392b; color: #fff; font-size: 0.62rem; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
         .nm-login-als, .nm-addrole-form, .nm-pwchange-form { display: inline-flex; gap: 0.3rem; align-items: center; margin: 0; }
         .nm-login-als button { padding: 0.15rem 0.5rem; font-size: 0.7rem; }
         .nm-addrole-form select, .nm-pwchange-form input[type='text'] {
@@ -3095,6 +3096,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         }
         .nm-pwchange-form input[type='text'] { width: 8rem; }
         .nm-addrole-form button, .nm-pwchange-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
+        /* Passwort anzeigen + ändern optisch als EIN zusammengehöriger Block statt zwei loser Elemente */
+        .nm-pw-group { display: inline-flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 6px; padding: 0.3rem 0.6rem; }
+        .nm-pw-label { font-size: 0.72rem; font-weight: 700; opacity: 0.85; }
+        .nm-pw { opacity: 0.9; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
     </style>
 
     <h2>Rollen</h2>
@@ -3153,14 +3159,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php foreach ($nutzer['rolle_ids'] as $rid) {
                 $rname = $rollenNamenById[$rid] ?? ('Rolle ' . $rid);
                 echo "<span class='nm-badge'>" . htmlspecialchars($rname);
-                if (nmDarfRolleVergeben($rollenFlagsById[$rid] ?? [], $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) && count($nutzer['rolle_ids']) > 1) {
+                // Kein count() > 1-Schutz mehr: ein Nutzer darf auch komplett rollenlos sein, die
+                // letzte Rolle muss also genauso entfernbar sein wie jede andere.
+                if (nmDarfRolleVergeben($rollenFlagsById[$rid] ?? [], $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
                     echo "<form action='website_datachange/edit_account.php' method='POST' style='display:inline;margin:0;' onsubmit=\"return confirm('Rolle wirklich entfernen?');\">
                         <input type='hidden' name='action' value='Rolle_Entfernen'>
                         <input type='hidden' name='admin_bn' value='$bnAttrNm'>
                         <input type='hidden' name='admin_pw' value='$pwAttrNm'>
                         <input type='hidden' name='ziel_benutzer_id' value='{$nutzer['id']}'>
                         <input type='hidden' name='entferne_rolle' value='$rid'>
-                        <button type='submit' title='Rolle entfernen'>&times;</button>
+                        <button type='submit' class='nm-badge-remove' title='Rolle entfernen'>&times;</button>
                     </form>";
                 }
                 echo "</span>";
@@ -3179,7 +3187,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
                 <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                 <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
-                <select name='neue_rolle'>
+                <select name='neue_rolle' required>
+                    <option value='' disabled selected>Rolle hinzufügen ...</option>
                     <?php foreach ($verfuegbareRollen as $r) {
                         echo "<option value='" . (int)$r['id'] . "'>" . htmlspecialchars($r['name']) . "</option>";
                     } ?>
@@ -3189,20 +3198,25 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php } ?>
             </div>
             <?php if ($binIchEchterAdmin) { ?>
-            <!-- Zeile 3: Passwort - nur für "echte" Admins, per gestrichelter Linie abgesetzt -->
+            <!-- Zeile 3: Passwort - nur für "echte" Admins, per gestrichelter Linie abgesetzt.
+                 Anzeigen + Ändern stecken bewusst in EINEM optischen Block (nm-pw-group), damit klar
+                 wird, dass beides zusammengehört. -->
             <div class='nm-user-row nm-user-admin-row'>
-                <span class='nm-pw'>PW:
-                    <span id='<?php echo $nmPwId; ?>' style='display:none;'><?php echo htmlspecialchars($nutzer['pw']); ?></span>
-                    <button type='button' class='nm-pw-toggle' onclick="var s=document.getElementById('<?php echo $nmPwId; ?>'); var sichtbar = s.style.display !== 'none'; s.style.display = sichtbar ? 'none' : 'inline'; this.textContent = sichtbar ? 'anzeigen' : 'verbergen';">anzeigen</button>
-                </span>
-                <form action='website_datachange/edit_account.php' method='POST' class='nm-pwchange-form' onsubmit="return confirm('Passwort von <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich ändern?');">
-                    <input type='hidden' name='action' value='Passwort_Aendern'>
-                    <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
-                    <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
-                    <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
-                    <input type='text' name='neues_passwort' placeholder='Neues Passwort' required>
-                    <button type='submit'>ändern</button>
-                </form>
+                <div class='nm-pw-group'>
+                    <span class='nm-pw-label'>Passwort:</span>
+                    <span class='nm-pw'>
+                        <span id='<?php echo $nmPwId; ?>' style='display:none;'><?php echo htmlspecialchars($nutzer['pw']); ?></span>
+                        <button type='button' class='nm-pw-toggle' onclick="var s=document.getElementById('<?php echo $nmPwId; ?>'); var sichtbar = s.style.display !== 'none'; s.style.display = sichtbar ? 'none' : 'inline'; this.textContent = sichtbar ? 'anzeigen' : 'verbergen';">anzeigen</button>
+                    </span>
+                    <form action='website_datachange/edit_account.php' method='POST' class='nm-pwchange-form' onsubmit="return confirm('Passwort von <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich ändern?');">
+                        <input type='hidden' name='action' value='Passwort_Aendern'>
+                        <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
+                        <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
+                        <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
+                        <input type='text' name='neues_passwort' placeholder='Neues Passwort' required>
+                        <button type='submit'>ändern</button>
+                    </form>
+                </div>
             </div>
             <?php } ?>
         </div>
@@ -3254,6 +3268,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <label for='demo-category'>Rollen <i>(ein Nutzer kann mehrere haben - Rolle wählen, dann "Hinzufügen")</i></label>
             <div style='display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;'>
                 <select id='nn_rolle_auswahl'>
+                    <option value='' disabled selected>Rolle hinzufügen ...</option>
                     <?php foreach ($nnRollen as $r) {
                         $rId = (int)$r['id'];
                         if (nmDarfRolleVergeben($r, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
