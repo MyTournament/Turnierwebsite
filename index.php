@@ -333,16 +333,29 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $rollenInfo = ($bn !== null && $pw !== null) ? getUserRollenInfo($conn, $bn, $pw) : null;
     $rechteFlags = $rollenInfo['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
 
-    // Admin (Rolle 1) oder Co-Admin (Rolle 2): dürfen strukturelle Turnier-Settings ändern
+    // ========================================================================================
+    // RECHTE-AUDIT (KRITISCHER FIX): AB HIER NUR NOCH GRANULARE FLAGS STATT ADMIN/CO-ADMIN-SHORTCUT
+    // ========================================================================================
+    // Vorher hing z.B. der Zugriff auf CMS/Backstage/Teams pauschal auch an "ist Admin/Co-Admin",
+    // unabhängig vom tatsächlichen Rechte-Flag der Person. Dadurch konnte z.B. ein Admin ohne
+    // Autor*in-Rolle trotzdem CMS-Inhalte bearbeiten. Jetzt gilt strikt: jedes Recht hängt nur noch
+    // am jeweiligen "rechte_*"-Flag aus System_Benutzer_in_Rolle. Admin/Co-Admin funktionieren
+    // trotzdem weiterhin wie gewohnt, weil ihre Rollen in der DB ohnehin (fast) alle Flags auf 1
+    // stehen haben - das ist aber jetzt eine Eigenschaft der Rolle, kein Programm-Shortcut mehr.
+    // $istAdminOderCoAdmin bleibt als Variable bestehen, weil es für die wenigen Funktionen, die
+    // explizit (und bewusst) Admin/Co-Admin-only bleiben sollen (Begegnung anlegen/sperren), noch
+    // gebraucht wird - siehe die jeweiligen Kommentare weiter unten.
     $istAdminOderCoAdmin = $rollenInfo !== null && ($rollenInfo['ist_admin'] || $rollenInfo['ist_co_admin']);
-    $LoggedInWithCMSorHigher = $rollenInfo !== null && ($rechteFlags['cms'] || $istAdminOderCoAdmin);
-    // Backstage-Bereich: sichtbar für jede Rolle mit mindestens einer der Teil-Berechtigungen -
-    // welche einzelnen Backstage-Unterseiten dann konkret zu sehen sind, wird weiter unten je Rolle geprüft
-    $LoggedInWithBackstageOrHigher = $rollenInfo !== null && (
-        $rechteFlags['backstage'] || $rechteFlags['teams'] || $rechteFlags['alle_spiele']
-        || $rechteFlags['cms'] || $rechteFlags['turnier_settings'] || $istAdminOderCoAdmin
-    );
-    if ($LoggedInWithBackstageOrHigher) {
+    $LoggedInWithCMSorHigher = $rollenInfo !== null && $rechteFlags['cms'];
+    // Backstage-Bereich (Lila Balken, Settings, Infos/Verlauf, alle backstage_*-Artikel):
+    // ausschließlich über das "backstage"-Flag. Wer dieses Flag nicht hat (z.B. Schiedsrichter*in,
+    // die nur "alle_spiele" hat), kann sich zwar für's Spiele-Bearbeiten authentifizieren, sieht
+    // aber nie den Backstage-Bereich - genau wie explizit gewünscht.
+    $LoggedInWithBackstageOrHigher = $rollenInfo !== null && $rechteFlags['backstage'];
+    // Session-Persistenz: bewusst an CMS ODER Backstage gekoppelt (nicht nur Backstage alleine),
+    // sonst würde ein reiner Autor*in-Login (nur cms-Flag, kein backstage-Flag) nach jedem
+    // Content-Speichern die Session verlieren und müsste sich ständig neu einloggen.
+    if ($LoggedInWithCMSorHigher || $LoggedInWithBackstageOrHigher) {
         // Login in der Session merken, damit er nach einem Redirect (z.B. edit_variables.php, edit_teams.php) erhalten bleibt
         $_SESSION['admin_bn'] = $bn;
         $_SESSION['admin_pw'] = $pw;
@@ -363,7 +376,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             #admin-bar-status i { color: #fff; }
             #admin-bar-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
             #admin-bar-buttons form { margin: 0; display: inline; }
-            #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); }
+            #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); color: #ffffff !important; }
             #wrapper { padding-top: 64px; }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
@@ -395,7 +408,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             }
             echo "</form>";
         }
-        $hatInfosVerlaufZugang = $rechteFlags['backstage'] || $istAdminOderCoAdmin;
+        // Infos/Verlauf ist Teil des Backstage-Bereichs -> ausschließlich backstage-Flag, kein Admin/Co-Admin-Shortcut
+        $hatInfosVerlaufZugang = $rechteFlags['backstage'];
         if ($LoggedInWithBackstageOrHigher) {
             echo "<a href='#backstage_daten_bearbeiten' class='button'>Settings</a>";
         }
@@ -1113,7 +1127,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </div>
     <br/><br/>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <?php printKO_PhaseTabellen($TurnierID, $conn, $LoggedInWithBackstageOrHigher, $gameEditMode, $expertenmodus, $test_turnier_id, $istAdminOderCoAdmin, $bn, $pw); ?>
+    <?php printKO_PhaseTabellen($TurnierID, $conn, $LoggedInWithBackstageOrHigher, $gameEditMode, $expertenmodus, $test_turnier_id, $rechteFlags['turnier_settings'], $bn, $pw); ?>
     <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>-->
     <p></br></p>
     <p></br></p>
@@ -1687,24 +1701,36 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-menu-list a.admin-menu-button { display: flex; align-items: center; gap: 0.7rem; text-align: left; min-width: 0; }
             .admin-menu-list .amn-num { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--admin-accent-deep); border: 1px solid var(--admin-accent); flex-shrink: 0; font-size: 0.75rem; }
         </style>
-        <?php $amnZaehler = 1; ?>
+        <?php
+        // ====================================================================================
+        // RECHTE-AUDIT: SETTINGS-MENÜ NUR NOCH ÜBER DIE JEWEILIGEN EINZELNEN FLAGS SICHTBAR
+        // ====================================================================================
+        // "Neues Turnier anlegen", "Turnier Settings" und "Turnierphase" gehören laut Nutzer
+        // alle zusammen zum turnier_settings-Recht. "Teams bearbeiten" braucht das teams-Flag.
+        // "Begegnungen bearbeiten" bleibt bewusst Admin/Co-Admin-only (explizite frühere Vorgabe,
+        // es gibt dafür kein eigenes Flag). "Nutzermanagement" ist sichtbar, sobald irgendein
+        // Rollen-Vergabe-Recht vorhanden ist (neue_admins/neue_co_admins/restliche_rollen_vergeben) -
+        // innerhalb der Seite wird dann ohnehin nur das gezeigt, wofür man selbst berechtigt ist.
+        $amnZaehler = 1;
+        $hatIrgendeinRollenVergabeRecht = $rechteFlags['neue_admins'] || $rechteFlags['neue_co_admins'] || $rechteFlags['restliche_rollen_vergeben'];
+        ?>
         <div class='admin-menu-list'>
-            <?php if ($istAdminOderCoAdmin) { ?>
+            <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_neues_turnier' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Neues Turnier anlegen</a>
             <?php } ?>
-            <?php if ($istAdminOderCoAdmin) { ?>
+            <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_turnier_settings' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Turnier Settings</a>
             <?php } ?>
-            <?php if ($rollenInfo !== null && $rollenInfo['ist_admin']) { ?>
+            <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_turnier_phase' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Turnierphase</a>
             <?php } ?>
-            <?php if ($rechteFlags['teams'] || $istAdminOderCoAdmin) { ?>
+            <?php if ($rechteFlags['teams']) { ?>
             <a href='#backstage_teams_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams bearbeiten</a>
             <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
             <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
             <?php } ?>
-            <?php if ($istAdminOderCoAdmin) { ?>
+            <?php if ($hatIrgendeinRollenVergabeRecht) { ?>
             <a href='#backstage_nutzermanagement' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Nutzermanagement</a>
             <?php } ?>
         </div>
@@ -1877,7 +1903,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########  PLATZHALTER  ######### -->
 <!-- ABMELDEN -->
 <article id="backstage_abmelden">
-    <?php if (!($rechteFlags['teams'] || $istAdminOderCoAdmin)) { ?>
+    <?php if (!$rechteFlags['teams']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else {
         printTeamAbmelden($conn, $TurnierID, $bn, $pw);
@@ -1953,7 +1979,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_teams_bearbeiten">
     <div style='text-align: center'>
         <h2>Teams bearbeiten</h2>
-        <?php if (!($rechteFlags['teams'] || $istAdminOderCoAdmin)) { ?>
+        <?php if (!$rechteFlags['teams']) { ?>
         <p>Keine ausreichende Berechtigung.</p>
         <?php } else { ?>
         <div class='admin-menu-wrap'>
@@ -2048,7 +2074,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_turnier_phase">
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
-    <?php if (!($rollenInfo !== null && $rollenInfo['ist_admin'])) { ?>
+    <?php // Turnierphase gehört inhaltlich zu Turnier Settings, daher gleiches Flag wie dort ?>
+    <?php if (!$rechteFlags['turnier_settings']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else { ?>
     <h1>Turnier-Phase</h1>
@@ -2130,7 +2157,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_neues_turnier">
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
-    <?php if (!$istAdminOderCoAdmin) { ?>
+    <?php if (!$rechteFlags['turnier_settings']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else {
         $sqlAltesTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = ' . (int)$TurnierID;
@@ -2222,22 +2249,29 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 ?>
             </select>
             <h5><br/></h5>
-            <label class='admin-toggle'><input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo (($altesTurnier['einzug_ko_manuell_anlegen'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Einzug in die K.-o.-Phase manuell anlegen</span></label>
+            <input type='checkbox' id='neu_einzug_ko_manuell_anlegen' name='einzug_ko_manuell_anlegen' value='1' <?php echo (($altesTurnier['einzug_ko_manuell_anlegen'] ?? 0) == 1) ? "checked" : ""; ?>>
+            <label for='neu_einzug_ko_manuell_anlegen'>Einzug in die K.-o.-Phase manuell anlegen</label>
             <h5><br/></h5>
-            <label class='admin-toggle'><input type='checkbox' name='einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei' value='1'> <span>Gruppenphase beendet / K.-o.-Einzug fertig angelegt (für ein neues Turnier i.d.R. nicht ankreuzen)</span></label>
+            <input type='checkbox' id='neu_einzug_ko_fertig' name='einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei' value='1'>
+            <label for='neu_einzug_ko_fertig'>Gruppenphase beendet / K.-o.-Einzug fertig angelegt (für ein neues Turnier i.d.R. nicht ankreuzen)</label>
             <h5><br/></h5>
-            <label class='admin-toggle'><input type='checkbox' name='nurOberesDreieckInGruppenphase' value='1' <?php echo (($altesTurnier['nurOberesDreieckInGruppenphase'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Nur oberes Dreieck in Gruppenphase</span></label>
+            <input type='checkbox' id='neu_nur_oberes_dreieck' name='nurOberesDreieckInGruppenphase' value='1' <?php echo (($altesTurnier['nurOberesDreieckInGruppenphase'] ?? 0) == 1) ? "checked" : ""; ?>>
+            <label for='neu_nur_oberes_dreieck'>Nur oberes Dreieck in Gruppenphase</label>
             <h5><br/></h5>
-            <label class='admin-toggle'><input type='checkbox' name='loescheErsteZeileUndSpalte' value='1' <?php echo (($altesTurnier['loescheErsteZeileUndSpalte'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Lösche erste Zeile und Spalte (Gruppentabelle)</span></label>
+            <input type='checkbox' id='neu_loesche_erste_zeile' name='loescheErsteZeileUndSpalte' value='1' <?php echo (($altesTurnier['loescheErsteZeileUndSpalte'] ?? 0) == 1) ? "checked" : ""; ?>>
+            <label for='neu_loesche_erste_zeile'>Lösche erste Zeile und Spalte (Gruppentabelle)</label>
             <h5><br/></h5>
-            <label class='admin-toggle'><input type='checkbox' name='losingbracket_open_for_ko_losers' value='1' <?php echo (($altesTurnier['losingbracket_open_for_ko_losers'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Losing Bracket offen für K.-o.-Verlierer</span></label>
+            <input type='checkbox' id='neu_losingbracket_open' name='losingbracket_open_for_ko_losers' value='1' <?php echo (($altesTurnier['losingbracket_open_for_ko_losers'] ?? 0) == 1) ? "checked" : ""; ?>>
+            <label for='neu_losingbracket_open'>Losing Bracket offen für K.-o.-Verlierer</label>
             <h5><br/></h5>
-            <label class='admin-toggle'><input type='checkbox' name='use_excel' value='1' <?php echo (($altesTurnier['use_excel'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Excel-Verknüpfung nutzen</span></label>
+            <input type='checkbox' id='neu_use_excel' name='use_excel' value='1' <?php echo (($altesTurnier['use_excel'] ?? 0) == 1) ? "checked" : ""; ?>>
+            <label for='neu_use_excel'>Excel-Verknüpfung nutzen</label>
             <h5><br/></h5>
             <label for='demo-category'>Excel-Link</label>
             <input type='text' name='excel_link' value='<?php echo htmlspecialchars($altesTurnier['excel_link'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
-            <label class='admin-toggle'><input type='checkbox' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>> <span>Schnee-Effekt</span></label>
+            <input type='checkbox' id='neu_schnee' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>>
+            <label for='neu_schnee'>Schnee-Effekt</label>
         </div>
         <script type='text/javascript'>
             function neuesTurnierIstRealesTurnier() {
@@ -2284,7 +2318,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_turnier_settings">
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
-    <?php if (!$istAdminOderCoAdmin) { ?>
+    <?php if (!$rechteFlags['turnier_settings']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else { ?>
     <h1>Turnier Settings</h1>
@@ -2353,10 +2387,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
             <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
             <input type='hidden' name='action' value='Turnier_Settings_EinzugKoManuell_Aendern'/>
-            <label class='admin-toggle'>
-                <input type='checkbox' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
-                <span>aktiviert</span>
-            </label>
+            <input type='checkbox' id='ts_einzug_ko_manuell_anlegen' name='einzug_ko_manuell_anlegen' value='1' <?php echo ($curEinzugKoManuellAnlegen == 1) ? "checked" : ""; ?>>
+            <label for='ts_einzug_ko_manuell_anlegen'>aktiviert</label>
             <label class='admin-toggle'>
                 <input type='checkbox' onchange='this.form.submit()'>
                 <span>bestätigen</span>
@@ -2377,25 +2409,38 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
     <h1>Nutzermanagement</h1>
-    <?php if (!$istAdminOderCoAdmin) { ?>
+    <?php
+    // Sichtbar, sobald irgendein Rollen-Vergabe-Recht vorhanden ist - kein Admin/Co-Admin-Shortcut.
+    $hatIrgendeinRollenVergabeRecht = $rechteFlags['neue_admins'] || $rechteFlags['neue_co_admins'] || $rechteFlags['restliche_rollen_vergeben'];
+    if (!$hatIrgendeinRollenVergabeRecht) { ?>
         <p>Keine ausreichende Berechtigung.</p>
     <?php } else {
         $darfNeueAdmins = $rechteFlags['neue_admins'];
         $darfNeueCoAdmins = $rechteFlags['neue_co_admins'];
         $darfRestlicheRollenVergeben = $rechteFlags['restliche_rollen_vergeben'];
-        function nmDarfRolleVergeben($rId, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) {
-            if ($rId == 1) { return $darfNeueAdmins; }
-            if ($rId == 2) { return $darfNeueCoAdmins; }
+        // ====================================================================================
+        // RECHTE-AUDIT: OB EINE ROLLE VERGEBEN WERDEN DARF, HÄNGT AN DEN FLAGS DER ZIEL-ROLLE
+        // SELBST (rechte_neue_admins/rechte_neue_co_admins), NICHT AN IHRER ID ODER IHREM NAMEN.
+        // ====================================================================================
+        // Vorher wurde hart nach Rollen-ID geprüft (id==1 -> Admin, id==2 -> Co-Admin). Jetzt wird
+        // stattdessen die Zielrolle selbst nachgeschlagen: hat SIE das Flag rechte_neue_admins,
+        // braucht der Vergebende ebenfalls rechte_neue_admins usw. Das ist unabhängig von IDs/Namen
+        // und funktioniert auch, falls später weitere admin-artige Rollen hinzukommen.
+        function nmDarfRolleVergeben($zielRolleFlags, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) {
+            if (($zielRolleFlags['rechte_neue_admins'] ?? false)) { return $darfNeueAdmins; }
+            if (($zielRolleFlags['rechte_neue_co_admins'] ?? false)) { return $darfNeueCoAdmins; }
             return $darfRestlicheRollenVergeben;
         }
 
-        // Alle Rollen (für Übersicht + Badge-Namen)
+        // Alle Rollen (für Übersicht + Badge-Namen + eigene Flags je Rolle für nmDarfRolleVergeben)
         $rollenNamenById = [];
+        $rollenFlagsById = [];
         $rollenListeFuerUebersicht = [];
         $sqlRollen = 'SELECT * FROM System_Benutzer_in_Rolle ORDER BY hierarchie_ebene';
         $resultRollen = $conn->query($sqlRollen);
         while ($rowRolle = $resultRollen->fetch_assoc()) {
             $rollenNamenById[(int)$rowRolle['id']] = $rowRolle['name'];
+            $rollenFlagsById[(int)$rowRolle['id']] = $rowRolle;
             $rollenListeFuerUebersicht[] = $rowRolle;
         }
 
@@ -2464,7 +2509,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php foreach ($nutzer['rolle_ids'] as $rid) {
                 $rname = $rollenNamenById[$rid] ?? ('Rolle ' . $rid);
                 echo "<span class='nm-badge'>" . htmlspecialchars($rname);
-                if (nmDarfRolleVergeben($rid, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) && count($nutzer['rolle_ids']) > 1) {
+                if (nmDarfRolleVergeben($rollenFlagsById[$rid] ?? [], $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben) && count($nutzer['rolle_ids']) > 1) {
                     echo "<form action='website_datachange/edit_account.php' method='POST' style='display:inline;margin:0;' onsubmit=\"return confirm('Rolle wirklich entfernen?');\">
                         <input type='hidden' name='action' value='Rolle_Entfernen'>
                         <input type='hidden' name='admin_bn' value='$bnAttrNm'>
@@ -2486,7 +2531,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             foreach ($rollenListeFuerUebersicht as $r) {
                 $rid = (int)$r['id'];
                 if (in_array($rid, $nutzer['rolle_ids'], true)) { continue; }
-                if (!nmDarfRolleVergeben($rid, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) { continue; }
+                if (!nmDarfRolleVergeben($rollenFlagsById[$rid] ?? [], $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) { continue; }
                 $verfuegbareRollen[] = $r;
             }
             if (count($verfuegbareRollen) > 0) {
@@ -2519,7 +2564,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php
             foreach ($rollenListeFuerUebersicht as $r) {
                 $rId = (int)$r['id'];
-                if (nmDarfRolleVergeben($rId, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
+                if (nmDarfRolleVergeben($r, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
                     echo "<option value='$rId'>" . htmlspecialchars($r['name']) . "</option>";
                 }
             }
@@ -2612,7 +2657,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_changeteam">
     <div id='LogIn2'>
     <h2>Teams bearbeiten</h2>
-    <?php if (!($rechteFlags['teams'] || $istAdminOderCoAdmin)) { ?>
+    <?php if (!$rechteFlags['teams']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else { ?>
     <p>Hier kannst du jedes Attribut der Teams ändern, also zum Beispiel Gruppe oder auch Bearbeitungsrechte für die Website.</p>

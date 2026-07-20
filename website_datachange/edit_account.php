@@ -10,13 +10,24 @@ $bn = $_POST['bn'];
 $pw = $_POST['pw'];
 echo "<script>console.log('edit_account Checkpoint 2')</script>";
 
-// Prüft, ob der anlegende/verwaltende Admin bzw. Co-Admin laut seiner(n) eigenen Rolle(n)
-// die angegebene Ziel-Rolle vergeben (oder wieder entziehen) darf.
-function darfRolleVergeben($rollenInfoAdmin, $zielRolle) {
+// ============================================================================================
+// RECHTE-AUDIT: OB EINE ROLLE VERGEBEN/ENTZOGEN WERDEN DARF, HÄNGT AN DEN FLAGS DER ZIEL-ROLLE
+// SELBST (rechte_neue_admins/rechte_neue_co_admins), NICHT AN IHRER ID.
+// ============================================================================================
+// Vorher wurde hart nach Rollen-ID geprüft (zielRolle==1 -> Admin, ==2 -> Co-Admin). Jetzt wird
+// stattdessen die Ziel-Rolle selbst aus System_Benutzer_in_Rolle nachgeschlagen: hat SIE das Flag
+// rechte_neue_admins, braucht der Vergebende ebenfalls rechte_neue_admins usw. - unabhängig von
+// IDs oder Namen, funktioniert also auch für später hinzukommende admin-artige Rollen.
+function darfRolleVergeben($conn, $rollenInfoAdmin, $zielRolle) {
     if ($rollenInfoAdmin === null) { return false; }
     $flags = $rollenInfoAdmin['flags'];
-    if ($zielRolle == 1) { return $flags['neue_admins']; }
-    if ($zielRolle == 2) { return $flags['neue_co_admins']; }
+    $stmtZielRolle = $conn->prepare("SELECT rechte_neue_admins, rechte_neue_co_admins FROM System_Benutzer_in_Rolle WHERE id = ?");
+    $stmtZielRolle->bind_param("i", $zielRolle);
+    $stmtZielRolle->execute();
+    $zielRolleRow = $stmtZielRolle->get_result()->fetch_assoc();
+    if ($zielRolleRow === null) { return false; }
+    if ($zielRolleRow['rechte_neue_admins']) { return $flags['neue_admins']; }
+    if ($zielRolleRow['rechte_neue_co_admins']) { return $flags['neue_co_admins']; }
     return $flags['restliche_rollen_vergeben'];
 }
 
@@ -35,7 +46,7 @@ if($action == 'register'){
 
     $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
 
-    if (darfRolleVergeben($rollenInfoAdmin, $neueRolle) && $neuerBn !== '' && $neuerPw !== '') {
+    if (darfRolleVergeben($conn, $rollenInfoAdmin, $neueRolle) && $neuerBn !== '' && $neuerPw !== '') {
         // Die Rolle wird ausschließlich im Mehrfach-Rollen-System eingetragen, fk_rechte wird
         // nicht mehr benutzt (Spalte soll in einer der nächsten Versionen entfernt werden).
         $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort) VALUES (?, ?)";
@@ -52,7 +63,7 @@ if($action == 'register'){
 
     $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
 
-    if (darfRolleVergeben($rollenInfoAdmin, $neueRolle) && $zielBenutzerId > 0) {
+    if (darfRolleVergeben($conn, $rollenInfoAdmin, $neueRolle) && $zielBenutzerId > 0) {
         try {
             $sqlPruefen = "SELECT 1 FROM System_Benutzer_in_Relation_Rolle WHERE fk_benutzer_in = ? AND fk_rolle = ?";
             $stmtPruefen = $conn->prepare($sqlPruefen);
@@ -76,7 +87,7 @@ if($action == 'register'){
 
     $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
 
-    if (darfRolleVergeben($rollenInfoAdmin, $entferneRolle) && $zielBenutzerId > 0) {
+    if (darfRolleVergeben($conn, $rollenInfoAdmin, $entferneRolle) && $zielBenutzerId > 0) {
         try {
             $sqlRel = "DELETE FROM System_Benutzer_in_Relation_Rolle WHERE fk_benutzer_in = ? AND fk_rolle = ?";
             myDb_execute($conn, 0, $adminBn, "edit_account.php 5", $sqlRel, array($zielBenutzerId, $entferneRolle));

@@ -30,13 +30,23 @@ include_once 'login_interface.php';
 $bn = $_POST['bn'];
 $pw = $_POST['pw'];
 
-//Benutzer - Rollen-System: Schiedsrichter*in (alle_spiele-Flag) oder Admin/Co-Admin dürfen (fremde) Spiele bearbeiten
+// ============================================================================
+// RECHTE-AUDIT: NUR NOCH ÜBER EINZELNE FLAGS, KEIN ADMIN/CO-ADMIN-SHORTCUT MEHR
+// ============================================================================
+// Beliebige (auch fremde) Spiele bearbeiten darf ausschließlich, wer das Flag
+// "rechte_alle_spiele" hat (Schiedsrichter*in). Admin/Co-Admin haben dieses Flag
+// in der Rollentabelle ohnehin direkt gesetzt - ein zusätzlicher Admin/Co-Admin-
+// Shortcut hier würde das Recht faktisch von der Rolle statt vom Flag abhängig
+// machen, was der Nutzer ausdrücklich nicht mehr will.
+// $istAdminOderCoAdminEditGames bleibt separat bestehen, weil "Begegnung anlegen"
+// und "Begegnung sperren" laut expliziter Vorgabe weiterhin Admin/Co-Admin-only
+// bleiben sollen (siehe weiter unten bei Begegnung_Hinzufuegen/Begegnung_Sperren).
 $accountDarfSpieleBearbeiten = 0; //false
 $istAdminOderCoAdminEditGames = false; //nur Admin/Co-Admin dürfen Begegnungen anlegen/sperren
 $rollenInfoGames = getUserRollenInfo($conn, $bn, $pw);
 if ($rollenInfoGames !== null) {
   $istAdminOderCoAdminEditGames = ($rollenInfoGames['ist_admin'] || $rollenInfoGames['ist_co_admin']);
-  if ($rollenInfoGames['flags']['alle_spiele'] || $istAdminOderCoAdminEditGames) {
+  if ($rollenInfoGames['flags']['alle_spiele']) {
     $accountDarfSpieleBearbeiten = 1;
   }
 }
