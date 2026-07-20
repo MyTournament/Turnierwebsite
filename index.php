@@ -2022,12 +2022,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             while ($rowTbGruppe = $resultTbGruppen->fetch_assoc()) { $tbGruppen[] = $rowTbGruppe; }
         ?>
         <style>
-            .tb-compact-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; padding: 0.4rem 0.2rem; border-bottom: 1px solid rgba(139, 92, 246, 0.15); text-align: left; font-size: 0.82rem; }
-            .tb-compact-info { flex: 1 1 240px; min-width: 200px; }
+            .tb-compact-row { padding: 0.5rem 0.2rem; border-bottom: 1px solid rgba(139, 92, 246, 0.15); text-align: left; font-size: 0.82rem; }
+            .tb-compact-main { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+            .tb-compact-info { flex: 1 1 240px; min-width: 160px; }
+            .tb-compact-info b { font-weight: 700; }
             .tb-compact-info .tb-spieler { opacity: 0.75; }
-            .tb-compact-actions { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-            .tb-compact-actions select { padding: 0.15rem 0.3rem; font-size: 0.75rem; }
-            .tb-compact-actions .button { padding: 0.2rem 0.55rem; font-size: 0.72rem; min-width: auto; }
+            .tb-compact-controls { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.45rem; }
+            .tb-compact-controls select { padding: 0.2rem 0.4rem; font-size: 0.78rem; min-width: 7rem; }
+            .tb-compact-controls .button { padding: 0.2rem 0.55rem; font-size: 0.72rem; min-width: auto; }
             .tb-abmelden-btn { background: #7a2020; border-color: #a33; }
         </style>
         <?php
@@ -2047,12 +2049,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 while ($rowTbSpielerListe = $resultTbSpielerListe->fetch_assoc()) { $tbSpielerNamen[] = $rowTbSpielerListe['name']; }
 
                 echo "<div class='tb-compact-row'>";
-                echo "<div class='tb-compact-info'><b>" . htmlspecialchars($tKuerzel) . "</b> " . htmlspecialchars($tName) . "<br><span class='tb-spieler'>" . htmlspecialchars(implode(', ', $tbSpielerNamen)) . "</span></div>";
 
-                echo "<div class='tb-compact-actions'>";
-
-                // --- Bearbeiten (führt zur Detailseite für dieses eine Team) ---
+                // --- Zeile 1: Teamname/Spieler (fett) + Bearbeiten-Button in derselben Zeile ---
+                echo "<div class='tb-compact-main'>";
+                echo "<div class='tb-compact-info'><b>" . htmlspecialchars($tKuerzel) . " " . htmlspecialchars($tName) . "</b> &mdash; <span class='tb-spieler'>" . htmlspecialchars(implode(', ', $tbSpielerNamen)) . "</span></div>";
                 echo "<a href='" . htmlspecialchars($tbEditUrl, ENT_QUOTES) . "#backstage_team_bearbeiten_detail' class='button'>Bearbeiten</a>";
+                echo "</div>";
+
+                // --- Zeile 2: Gruppe/Bearbeitungsrechte/Abmelden ---
+                echo "<div class='tb-compact-controls'>";
 
                 // --- Gruppe ändern (jetzt mit eigenem bestätigen-Häkchen statt sofortigem Submit) ---
                 echo "
@@ -2096,7 +2101,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <button type='submit' class='button tb-abmelden-btn'>Abmelden</button>
                 </form>";
 
-                echo "</div></div>"; // .tb-compact-actions, .tb-compact-row
+                echo "</div></div>"; // .tb-compact-controls, .tb-compact-row
             }
         } ?>
         <h5><br/></h5>
