@@ -821,7 +821,16 @@
         try {
             //Button, mit dem man den Bearbeitungsmodus starten kann
             printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#gruppenphase", $test_turnier_id);
-            
+
+            // ================================================================================================
+            // TESTMODUS: "Zufällige Spiele eintragen" (nur sichtbar/wirksam im Testturnier, dunkelblau)
+            // ================================================================================================
+            // Führt zur Auswahlseite backstage_zufaellige_spiele, wo man den Prozentsatz der noch offenen
+            // Gruppenphasen-Begegnungen wählt, die auf einen Schlag zufällig befüllt+finalisiert werden.
+            if ($test_turnier_id != 0) {
+                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=gruppenphase#backstage_zufaellige_spiele' class='button' style='background:#123a5c;color:#fff;'>Zufällige Spiele eintragen</a></p>";
+            }
+
             $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE fk_turnier = ' . $TurnierID . " ORDER BY id";
             $resultGruppe = $conn->query($sqlGruppe);
             while ($rowGruppe = $resultGruppe->fetch_assoc()) {
@@ -1113,6 +1122,12 @@
             while ($rowFinallevel = $resultFinallevel->fetch_assoc()) {
                 $name = $rowFinallevel["name"];
                 echo "<h3>$name</h3>";
+            }
+            // ============================================================================================
+            // TESTMODUS: "Zufällige Spiele eintragen" für GENAU DIESE Finalstufe (nur im Testturnier, dunkelblau)
+            // ============================================================================================
+            if ($test_turnier_id != 0) {
+                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=ko&zufall_ko_finallevel=$ko_finallevel#backstage_zufaellige_spiele' class='button' style='background:#123a5c;color:#fff;'>Zufällige Spiele eintragen</a></p>";
             }
             echo "
             <table class='withBorderCollapse'>
