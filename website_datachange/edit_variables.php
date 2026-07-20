@@ -4,6 +4,13 @@ include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
 //########################
 
+// Output-Buffer aktivieren: die Aktionen Gruppen_Fuer_Gruppenphase_Generieren/Gruppeneinteilung_Losen
+// rufen db_update() direkt auf, was Debug-Ausgaben (echo) erzeugt - ohne Puffer würde das die
+// spätere header("Location: ...")-Weiterleitung am Ende dieser Datei blockieren.
+if (!headers_sent()) {
+    ob_start();
+}
+
 $TurnierID = $_POST['TurnierID'];
 
 //LOGIN
@@ -117,6 +124,81 @@ if ($successfulLogin == 0){ //fehlerhafter Login
         echo "<script type='text/javascript'>alert('$message');</script>";
       }
 
+    // ============================================================================================
+    // GRUPPEN FÜR GRUPPENPHASE GENERIEREN: KAPSELT TURNIERPHASE 4 ALS SAUBEREN EINZEL-BUTTON
+    // ============================================================================================
+    // Vorher musste man manuell zur Turnierphasen-Auswahl wechseln, auf Phase 4 ("Gruppengröße neu
+    // bestimmen & Erstellen/Löschen") stellen, die Seite neu laden (damit db_update() einmal mit
+    // dieser Phase läuft und die Turnier_Gruppe-Zeilen anlegt/löscht) und die Phase danach wieder
+    // manuell zurückändern. Diese Aktion macht alle drei Schritte in einem Request: anzahl_gruppen
+    // setzen -> Phase auf 4 -> db_update() DIREKT aufrufen (entspricht dem Reload, aber ohne dass ein
+    // Zwischenzustand für den Nutzer sichtbar wird, da alles serverseitig in einem Rutsch passiert) ->
+    // Phase auf die gewählte Folge-Phase setzen.
+    }else if ($action == 'Gruppen_Fuer_Gruppenphase_Generieren') {
+      if($darfTurnierSettingsAendern){
+        $ggNeueAnzahlGruppen = (int)$_POST['anzahl_gruppen'];
+        $ggDanachPhase = (int)$_POST['danach_turnierphase'];
+
+        if ($ggNeueAnzahlGruppen > 0 && $ggDanachPhase > 0) {
+          $sql = "UPDATE `Turnier_Main` SET `anzahl_gruppen` = ? WHERE `id` = ?;";
+          myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppen_Generieren 1", $sql, array($ggNeueAnzahlGruppen, $TurnierID));
+
+          $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = 4 WHERE `id` = ?;";
+          myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppen_Generieren 2", $sql, array($TurnierID));
+
+          try {
+            include_once '../database/db_update.php';
+            db_update($conn, $TurnierID);
+          } catch (Throwable $e) {
+            // Fehler beim db_update-Durchlauf nicht fatal werden lassen - die Turnierphase wird
+            // trotzdem unten wieder zurückgesetzt, damit das Turnier nicht in Phase 4 hängen bleibt.
+          }
+
+          $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
+          myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppen_Generieren 3", $sql, array($ggDanachPhase, $TurnierID));
+        }
+      }else{
+        $message = "Leider hast du nicht die nötigen Rechte, um Gruppen zu generieren. Wende dich an Richard, um mehr Rechte zu erhalten.";
+        echo "<script type='text/javascript'>alert('$message');</script>";
+      }
+
+    // ============================================================================================
+    // GRUPPENEINTEILUNG LOSEN: KAPSELT TURNIERPHASE 5 ALS SAUBEREN EINZEL-BUTTON (NUR TESTTURNIERE)
+    // ============================================================================================
+    // Gleiches Prinzip wie Gruppen_Fuer_Gruppenphase_Generieren, aber für Phase 5 ("Gruppeneinteilung"
+    // - würfelt Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen). Sicherheitsnetz
+    // unabhängig von der UI: nur wirksam, wenn $TurnierID tatsächlich zu einem Testturnier (type=2)
+    // gehört - beim echten Turnier passiert das Auslosen bewusst nicht per Knopfdruck.
+    }else if ($action == 'Gruppeneinteilung_Losen') {
+      if($darfTurnierSettingsAendern){
+        $glStmtTyp = $conn->prepare("SELECT type FROM Turnier_Main WHERE id = ?");
+        $glStmtTyp->bind_param("i", $TurnierID);
+        $glStmtTyp->execute();
+        $glRowTyp = $glStmtTyp->get_result()->fetch_assoc();
+
+        if ($glRowTyp !== null && (int)$glRowTyp['type'] === 2) {
+          $glDanachPhase = (int)$_POST['danach_turnierphase'];
+
+          if ($glDanachPhase > 0) {
+            $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = 5 WHERE `id` = ?;";
+            myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 1", $sql, array($TurnierID));
+
+            try {
+              include_once '../database/db_update.php';
+              db_update($conn, $TurnierID);
+            } catch (Throwable $e) {
+              // siehe Gruppen_Fuer_Gruppenphase_Generieren - Phase wird unten trotzdem zurückgesetzt
+            }
+
+            $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
+            myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 2", $sql, array($glDanachPhase, $TurnierID));
+          }
+        }
+      }else{
+        $message = "Leider hast du nicht die nötigen Rechte, um die Gruppeneinteilung zu losen. Wende dich an Richard, um mehr Rechte zu erhalten.";
+        echo "<script type='text/javascript'>alert('$message');</script>";
+      }
+
     }else if ($action == 'Einzug_KO_Fertig_Umschalten') {
       if($darfTurnierSettingsAendern){
         $sql = "UPDATE `Turnier_Main` SET `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = CASE WHEN `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = 1 THEN 0 ELSE 1 END WHERE `id` = ?;";
@@ -213,6 +295,8 @@ $rueckAnkerMap = [
     'Turnier_Settings_EinzugKoManuell_Aendern' => 'backstage_turnier_settings',
     'Turnier_Settings_Feld_Aendern' => 'backstage_turnier_settings',
     'Tunierphase ändern' => 'backstage_turnier_phase',
+    'Gruppen_Fuer_Gruppenphase_Generieren' => 'backstage_gruppen_generieren',
+    'Gruppeneinteilung_Losen' => 'backstage_gruppeneinteilung_losen',
 ];
 $rueckAnker = $rueckAnkerMap[$action] ?? 'backstage_daten_bearbeiten';
 $test_turnier_id = $_GET['test_turnier_id'];

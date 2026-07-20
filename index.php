@@ -1765,6 +1765,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php if ($rechteFlags['teams']) { ?>
             <a href='#backstage_teams_gruppen_einsortieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams in Gruppen einsortieren</a>
             <?php } ?>
+            <?php if ($rechteFlags['turnier_settings']) { ?>
+            <a href='#backstage_gruppen_generieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Gruppen für Gruppenphase generieren</a>
+            <?php } ?>
+            <?php if ($test_turnier_id != 0 && $rechteFlags['turnier_settings']) { ?>
+            <a href='#backstage_gruppeneinteilung_losen' class='admin-menu-button admin-menu-button-testmodus'><span class='amn-num amn-num-testmodus'><?php echo $amnZaehler++; ?></span> Gruppeneinteilung losen</a>
+            <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
             <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
             <?php } ?>
@@ -2233,6 +2239,103 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 </ul>
             </form>
             <?php } ?>
+        <?php } ?>
+        <h5><br/></h5>
+        <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+        <h5><br /></h5>
+    </div>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  GRUPPEN FÜR GRUPPENPHASE GENERIEREN (kapselt Turnierphase 4 als sauberen Einzel-Button)   ### -->
+<!-- ################################################################################################ -->
+<!-- Turnierphase 4 ("Gruppengröße neu bestimmen & Erstellen/Löschen") existierte vorher nur als
+     Umweg über die allgemeine Turnierphasen-Auswahl - man musste manuell dorthin wechseln, die Seite
+     neu laden (damit db_update() einmal mit Phase 4 läuft) und danach die Phase wieder zurückändern.
+     Dieser Button kapselt genau diesen Ablauf in einem einzigen Request (siehe edit_variables.php,
+     Aktion Gruppen_Fuer_Gruppenphase_Generieren): anzahl_gruppen setzen -> Phase auf 4 -> db_update()
+     DIREKT serverseitig aufrufen (entspricht dem Reload, ohne dass ein Zwischenzustand für den Nutzer
+     sichtbar wird) -> Phase auf die gewählte Folge-Phase (Standard: 13, "Turnier läuft/Anmeldung
+     noch möglich") setzen. -->
+<article id="backstage_gruppen_generieren">
+    <div style='text-align: center'>
+        <h2>Gruppen für Gruppenphase generieren</h2>
+        <?php if (!$rechteFlags['turnier_settings']) { ?>
+        <p>Keine ausreichende Berechtigung.</p>
+        <?php } else {
+            $ggRow = $conn->query('SELECT anzahl_gruppen FROM Turnier_Main WHERE id = ' . (int)$TurnierID)->fetch_assoc();
+            $ggAktuelleAnzahl = (int)$ggRow['anzahl_gruppen'];
+
+            $ggPhasen = [];
+            $resultGgPhasen = $conn->query('SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order');
+            while ($rowGgPhase = $resultGgPhasen->fetch_assoc()) { $ggPhasen[] = $rowGgPhase; }
+            $ggFolgePhaseName = '?';
+            foreach ($ggPhasen as $p) { if ((int)$p['id'] === 13) { $ggFolgePhaseName = $p['name']; } }
+        ?>
+        <p>Legt die Gruppen für dieses Turnier neu an (bzw. passt sie an), indem kurzzeitig die Turnierphase "Gruppengröße neu bestimmen &amp; Erstellen/Löschen" durchlaufen wird. Anschließend wechselt das Turnier automatisch weiter zur unten gewählten Turnierphase (Standard: "<?php echo htmlspecialchars($ggFolgePhaseName); ?>").</p>
+        <div class='ts-setting'>
+            <span class='ts-setting-label'>Anzahl Gruppen</span>
+            <span class='ts-hint'>Aktuell in Turnier Settings hinterlegt: <?php echo $ggAktuelleAnzahl; ?></span>
+            <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+                <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+                <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+                <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+                <input type='hidden' name='action' value='Gruppen_Fuer_Gruppenphase_Generieren'/>
+                <input type='number' name='anzahl_gruppen' min='1' value='<?php echo $ggAktuelleAnzahl; ?>' class='Eingabe ts-input'>
+                <label for='gg_danach_phase' style='margin-left:0.8rem;'>Danach Turnierphase:</label>
+                <select name='danach_turnierphase' id='gg_danach_phase' class='ts-input'>
+                    <?php foreach ($ggPhasen as $p) {
+                        $sel = ((int)$p['id'] === 13) ? "selected" : "";
+                        echo "<option value='" . (int)$p['id'] . "' $sel>" . htmlspecialchars($p['name']) . "</option>";
+                    } ?>
+                </select>
+                <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+            </form>
+        </div>
+        <?php } ?>
+        <h5><br/></h5>
+        <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+        <h5><br /></h5>
+    </div>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  GRUPPENEINTEILUNG LOSEN (nur im Testmodus - kapselt Turnierphase 5 als sauberen Button)   ### -->
+<!-- ################################################################################################ -->
+<!-- Analog zu "Gruppen für Gruppenphase generieren", aber für Turnierphase 5 ("Gruppeneinteilung" -
+     würfelt Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen). Nur im Testmodus sichtbar,
+     weil das reale Auslosen bei einem echten Turnier i.d.R. bewusst/manuell bzw. zeremoniell passiert
+     und nicht einfach per Knopfdruck. Backend (edit_variables.php, Aktion Gruppeneinteilung_Losen)
+     prüft zusätzlich unabhängig, dass wirklich ein Testturnier (type=2) bearbeitet wird. -->
+<article id="backstage_gruppeneinteilung_losen">
+    <div style='text-align: center'>
+        <h2>Gruppeneinteilung losen</h2>
+        <?php if ($test_turnier_id == 0 || !$rechteFlags['turnier_settings']) { ?>
+        <p>Diese Funktion ist nur im Testmodus verfügbar.</p>
+        <?php } else {
+            $glPhasen = [];
+            $resultGlPhasen = $conn->query('SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order');
+            while ($rowGlPhase = $resultGlPhasen->fetch_assoc()) { $glPhasen[] = $rowGlPhase; }
+            $glFolgePhaseName = '?';
+            foreach ($glPhasen as $p) { if ((int)$p['id'] === 13) { $glFolgePhaseName = $p['name']; } }
+        ?>
+        <p>Würfelt alle Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen, indem kurzzeitig die Turnierphase "Gruppeneinteilung" durchlaufen wird. Anschließend wechselt das Turnier automatisch weiter zur unten gewählten Turnierphase (Standard: "<?php echo htmlspecialchars($glFolgePhaseName); ?>").</p>
+        <div class='ts-setting'>
+            <span class='ts-setting-label'>Danach Turnierphase</span>
+            <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+                <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+                <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+                <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+                <input type='hidden' name='action' value='Gruppeneinteilung_Losen'/>
+                <select name='danach_turnierphase' class='ts-input'>
+                    <?php foreach ($glPhasen as $p) {
+                        $sel = ((int)$p['id'] === 13) ? "selected" : "";
+                        echo "<option value='" . (int)$p['id'] . "' $sel>" . htmlspecialchars($p['name']) . "</option>";
+                    } ?>
+                </select>
+                <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+            </form>
+        </div>
         <?php } ?>
         <h5><br/></h5>
         <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
