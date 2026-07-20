@@ -2494,6 +2494,94 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </form>
     </div>
 
+    <?php
+    // ============================================================================================
+    // TURNIER SETTINGS ERWEITERUNG: ALLE RESTLICHEN FELDER AUS "Neues Turnier anlegen"
+    // ============================================================================================
+    // Nutzt die generische Backend-Aktion "Turnier_Settings_Feld_Aendern" (edit_variables.php),
+    // damit hier nicht für jedes Feld eine eigene Aktion/Funktion nötig ist. Reihenfolge bewusst
+    // identisch zu "Neues Turnier anlegen", damit man sich als Nutzer nicht neu orientieren muss.
+    function tsTextFeld($label, $hint, $feld, $curValue, $inputType, $TurnierID, $bnAttr, $pwAttr) {
+        $valueAttr = htmlspecialchars((string)$curValue, ENT_QUOTES);
+        echo "
+        <div class='ts-setting'>
+            <span class='ts-setting-label'>" . htmlspecialchars($label) . "</span>
+            <span class='ts-hint'>" . htmlspecialchars($hint) . "</span>
+            <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnAttr'/>
+                <input type='hidden' name='pw' value='$pwAttr'/>
+                <input type='hidden' name='action' value='Turnier_Settings_Feld_Aendern'/>
+                <input type='hidden' name='feld' value='$feld'/>
+                <input type='$inputType' name='wert' value='$valueAttr' class='Eingabe ts-input'>
+                <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+            </form>
+        </div>";
+    }
+    function tsCheckboxFeld($label, $hint, $feld, $curValue, $TurnierID, $bnAttr, $pwAttr) {
+        $checkedAttr = ((int)$curValue === 1) ? "checked" : "";
+        $idAttr = "ts_feld_" . $feld;
+        echo "
+        <div class='ts-setting'>
+            <span class='ts-setting-label'>" . htmlspecialchars($label) . "</span>
+            <span class='ts-hint'>" . htmlspecialchars($hint) . "</span>
+            <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnAttr'/>
+                <input type='hidden' name='pw' value='$pwAttr'/>
+                <input type='hidden' name='action' value='Turnier_Settings_Feld_Aendern'/>
+                <input type='hidden' name='feld' value='$feld'/>
+                <input type='checkbox' id='$idAttr' name='wert' value='1' $checkedAttr>
+                <label for='$idAttr'>aktiviert</label>
+                <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+            </form>
+        </div>";
+    }
+
+    tsTextFeld('Name (intern)', 'Interner Name des Turniers.', 'name', $rowTurnierSettings['name'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Anzeige-Titel', 'Titel, wie er auf der Website angezeigt wird.', 'anzeige_titel', $rowTurnierSettings['anzeige_titel'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Anzeige-Untertitel', 'Untertitel auf der Website.', 'anzeige_subtitel', $rowTurnierSettings['anzeige_subtitel'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Anzeige-Datum', 'Freier Text, z.B. "26.-28. September".', 'anzeige_datum', $rowTurnierSettings['anzeige_datum'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Jahr', 'Turnier-Jahr.', 'jahr', $rowTurnierSettings['jahr'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Startdatum', 'Erster Turniertag.', 'startdatum', $rowTurnierSettings['startdatum'], 'date', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Startzeit', 'Uhrzeit des Turnierstarts.', 'startzeit', $rowTurnierSettings['startzeit'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Countdown-Start', 'Format wie bisher, z.B. "Sep 06, 2025 14:00:00".', 'countdown_start', $rowTurnierSettings['countdown_start'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Enddatum', 'Letzter Turniertag.', 'enddatum', $rowTurnierSettings['enddatum'], 'date', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Maximale Teamanzahl', 'Ab dieser Teamanzahl werden keine weiteren Anmeldungen mehr angenommen (Warteliste greift).', 'max_anzahl_teams', (int)$rowTurnierSettings['max_anzahl_teams'], 'number', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Teilnahmebeitrag', 'Beitrag pro Team.', 'teilnahmebeitrag', $rowTurnierSettings['teilnahmebeitrag'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Anzeige-Reihenfolge auf der Website', 'order_on_website - bestimmt die Sortierung mehrerer Turniere.', 'order_on_website', (int)$rowTurnierSettings['order_on_website'], 'number', $TurnierID, $bnAttr, $pwAttr);
+    ?>
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Turnierphase</span>
+        <span class='ts-hint'>Alternativer Ort, um die Turnierphase zu setzen (siehe auch der eigene "Turnierphase"-Punkt im Settings-Menü mit ausführlichen Erklärungen).</span>
+        <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+            <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+            <input type='hidden' name='action' value='Turnier_Settings_Feld_Aendern'/>
+            <input type='hidden' name='feld' value='fk_turnier_phase'/>
+            <select name='wert' class='ts-input'>
+                <?php
+                $sqlTsPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+                $resultTsPhase = $conn->query($sqlTsPhase);
+                while ($rowTsPhase = $resultTsPhase->fetch_assoc()) {
+                    $selTsPhase = ($rowTsPhase['id'] == $rowTurnierSettings['fk_turnier_phase']) ? "selected" : "";
+                    echo "<option value='" . $rowTsPhase['id'] . "' $selTsPhase>" . htmlspecialchars($rowTsPhase['name']) . "</option>";
+                }
+                ?>
+            </select>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+        </form>
+    </div>
+    <?php
+    tsCheckboxFeld('Nur oberes Dreieck in Gruppenphase', 'Zeigt in der Gruppentabelle nur das obere Dreieck der Begegnungen an.', 'nurOberesDreieckInGruppenphase', $rowTurnierSettings['nurOberesDreieckInGruppenphase'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Lösche erste Zeile und Spalte', 'Blendet die erste Zeile/Spalte der Gruppentabelle aus.', 'loescheErsteZeileUndSpalte', $rowTurnierSettings['loescheErsteZeileUndSpalte'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Losing Bracket offen für K.-o.-Verlierer', 'Verlierer der K.-o.-Phase spielen im Losing Bracket weiter.', 'losingbracket_open_for_ko_losers', $rowTurnierSettings['losingbracket_open_for_ko_losers'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Excel-Verknüpfung nutzen', 'Aktiviert die Anzeige/Nutzung des Excel-Links unten.', 'use_excel', $rowTurnierSettings['use_excel'], $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Excel-Link', 'Nur relevant, wenn "Excel-Verknüpfung nutzen" aktiviert ist.', 'excel_link', $rowTurnierSettings['excel_link'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Schnee-Effekt', 'Aktiviert den winterlichen Schnee-Effekt auf der Website.', 'schnee', $rowTurnierSettings['schnee'], $TurnierID, $bnAttr, $pwAttr);
+    ?>
+
     <h5><br /></h5>
     <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
