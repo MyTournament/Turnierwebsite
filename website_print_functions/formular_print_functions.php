@@ -117,9 +117,9 @@
         <?php echo '<h1>' . htmlspecialchars($heimteam, ENT_QUOTES, 'UTF-8') . ' vs. ' . htmlspecialchars($auswaertsteam, ENT_QUOTES, 'UTF-8') . '</h1>'; ?>
         <ul class="actions score-row fixed">
             <li class="team-label"><?php echo $heimteam; ?></li>
-            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo $biereheimteam ?>' placeholder="Flaschen 1*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
+            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo $biereheimteam ?>' placeholder="Flaschen 1*" style="color: white" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
             <li class="score-separator"><span style='font-size: clamp(1.4rem, 4vw, 2.25rem)'>:</span></li>
-            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo $biereauswaertsteam ?>' placeholder="Flaschen 2*" style="color: black" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
+            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo $biereauswaertsteam ?>' placeholder="Flaschen 2*" style="color: white" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
             <li class="team-label"><?php echo $auswaertsteam; ?></li>
         </ul>
         <div class="score-note"><b>(Ausgetrunkene Flaschen)</b></div>
