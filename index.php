@@ -362,7 +362,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // ID-Selektor-Spezifität von #admin-bar gewinnt hier bewusst gegen die Klassen-Regel.
         echo "
         <style>
-            :root { --admin-accent: #8b5cf6; --admin-accent-deep: #6d28d9; --admin-accent-light: #ddd6fe; }
+            :root {
+                --admin-accent: #8b5cf6; --admin-accent-deep: #6d28d9; --admin-accent-light: #ddd6fe;
+                /* Zwei zusätzliche, dunklere Lila-Stufen zur optischen Unterscheidung, WER eine Funktion
+                   sehen darf: Standard-Lila (oben) = alle mit dem jeweils passenden Einzel-Recht,
+                   --coadmin = nur Admin+Co-Admin (z.B. Begegnungen bearbeiten, Verlauf/Traffic),
+                   --adminonly = nur echte Admins (z.B. Passwort anzeigen/ändern). */
+                --admin-accent-coadmin: #4c1d95; --admin-accent-coadmin-light: #5b21b6;
+                --admin-accent-adminonly: #2e1065; --admin-accent-adminonly-light: #3d1a7a;
+                /* Hellste Stufe: Funktionen, die schon mit dem einzelnen Teams-Recht gehen (Moderator*in) */
+                --admin-accent-teams: #a78bfa; --admin-accent-teams-light: #ddd6fe;
+            }
             #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(30, 12, 48, 0.94); border-bottom: 2px solid var(--admin-accent); box-shadow: 0 2px 12px rgba(139, 92, 246, 0.35); box-sizing: border-box; }
             #admin-bar-status { color: var(--admin-accent-light); font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
             #admin-bar-status i { color: #fff; }
@@ -373,6 +383,23 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
             .admin-menu-button:hover { background: linear-gradient(135deg, var(--admin-accent), #a78bfa); }
+            /* Dunklere Stufe: Funktionen, die nur Admin+Co-Admin sehen (z.B. Begegnungen bearbeiten, Verlauf) */
+            .admin-menu-button--coadmin { background: linear-gradient(135deg, var(--admin-accent-coadmin), var(--admin-accent-coadmin-light)); }
+            .admin-menu-button--coadmin:hover { background: linear-gradient(135deg, var(--admin-accent-coadmin-light), var(--admin-accent-deep)); }
+            /* Dunkelste Stufe: Funktionen, die nur echte Admins sehen (z.B. Passwort anzeigen/ändern) */
+            .admin-menu-button--adminonly { background: linear-gradient(135deg, var(--admin-accent-adminonly), var(--admin-accent-adminonly-light)); }
+            .admin-menu-button--adminonly:hover { background: linear-gradient(135deg, var(--admin-accent-adminonly-light), var(--admin-accent-coadmin)); }
+            /* Hellste Stufe: Funktionen, die schon mit dem einzelnen Teams-Recht gehen (Moderator*in) */
+            .admin-menu-button--teams { background: linear-gradient(135deg, var(--admin-accent-teams), var(--admin-accent-teams-light)); color: #2a1a4d !important; }
+            .admin-menu-button--teams:hover { background: linear-gradient(135deg, var(--admin-accent-teams-light), #ede9fe); }
+            /* Farb-Legende auf der Settings-Übersicht (nur für Admin/Co-Admin sichtbar) */
+            .admin-legende { max-width: 640px; margin: 1.5rem auto 0; padding: 0.8rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); font-size: 0.78rem; text-align: left; }
+            .admin-legende h4 { margin: 0 0 0.5rem; font-size: 0.85rem; text-align: center; }
+            .admin-legende-zeile { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0; }
+            .admin-legende-swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 4px; flex-shrink: 0; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); }
+            .admin-legende-swatch--teams { background: linear-gradient(135deg, var(--admin-accent-teams), var(--admin-accent-teams-light)); }
+            .admin-legende-swatch--coadmin { background: linear-gradient(135deg, var(--admin-accent-coadmin), var(--admin-accent-coadmin-light)); }
+            .admin-legende-swatch--adminonly { background: linear-gradient(135deg, var(--admin-accent-adminonly), var(--admin-accent-adminonly-light)); }
             /* Technisch weiterhin eine Checkbox (onchange sendet das Formular ab), sieht jetzt aber
                bewusst wie ein echter, kompakter Button aus - nicht wie ein Häkchen zum Ankreuzen.
                Die Checkbox selbst wird komplett unsichtbar gemacht (aber bleibt klickbar/fokussierbar);
@@ -1785,24 +1812,33 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <a href='#backstage_teams_generieren' class='admin-menu-button admin-menu-button-testmodus'><span class='amn-num amn-num-testmodus'><?php echo $amnZaehler++; ?></span> Teams generieren</a>
             <?php } ?>
             <?php if ($rechteFlags['teams']) { ?>
-            <a href='#backstage_teams_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams bearbeiten</a>
+            <a href='#backstage_teams_bearbeiten' class='admin-menu-button admin-menu-button--teams'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams bearbeiten</a>
             <?php } ?>
             <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_gruppen_generieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Gruppen für Gruppenphase generieren</a>
             <?php } ?>
             <?php if ($rechteFlags['teams']) { ?>
-            <a href='#backstage_teams_gruppen_einsortieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams in Gruppen einsortieren</a>
+            <a href='#backstage_teams_gruppen_einsortieren' class='admin-menu-button admin-menu-button--teams'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams in Gruppen einsortieren</a>
             <?php } ?>
             <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_gruppeneinteilung_losen' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Gruppeneinteilung losen</a>
             <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
-            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
+            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button admin-menu-button--coadmin'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
             <?php } ?>
             <?php if ($hatIrgendeinRollenVergabeRecht) { ?>
             <a href='#backstage_nutzermanagement' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Nutzermanagement</a>
             <?php } ?>
         </div>
+        <?php if ($istAdminOderCoAdmin) { ?>
+        <div class='admin-legende'>
+            <h4>Farb-Legende</h4>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Helles Lila: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Standard-Lila: das jeweils passende Einzel-Recht reicht</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Dunkles Lila: nur Admin und Co-Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Sehr dunkles Lila: nur "echte" Admins</div>
+        </div>
+        <?php } ?>
         <h5><br/></h5>
         <a href='#' class='button'>Zurück</a>
         <h5><br /></h5>
@@ -1812,10 +1848,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_verlauf">
     <div style='text-align: center'>
         <h2>Verlauf</h2>
+        <?php // RECHTE-AUDIT: Traffic/DB-Verlauf enthalten sensible Daten (wer hat was geaendert,
+        // welche Seiten wurden aufgerufen) - das ist bewusst Admin/Co-Admin vorbehalten, nicht schon
+        // ab dem allgemeinen "backstage"-Flag (das nur die Sichtbarkeit des Infos-Buttons steuert). ?>
+        <?php if (!$istAdminOderCoAdmin) { ?>
+        <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen den Verlauf einsehen.</p>
+        <?php } else { ?>
         <div class='admin-menu-wrap'>
-            <a href='#backstage_traffic' class='admin-menu-button'>Traffic</a>
-            <a href='#backstage_letzte_aenderung' class='admin-menu-button'>DB-Verlauf</a>
+            <a href='#backstage_traffic' class='admin-menu-button admin-menu-button--coadmin'>Traffic</a>
+            <a href='#backstage_letzte_aenderung' class='admin-menu-button admin-menu-button--coadmin'>DB-Verlauf</a>
         </div>
+        <?php } ?>
         <h5><br/></h5>
         <a href='#backstage_info' class='button'>Zurück</a>
         <h5><br /></h5>
@@ -3107,12 +3150,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             padding: 0.15rem 0.35rem; font-size: 0.72rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: #fff;
         }
         .nm-pwchange-form input[type='text'] { width: 8rem; }
-        .nm-addrole-form button, .nm-pwchange-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
+        .nm-addrole-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
+        /* Passwort anzeigen/ändern ist strikt "echten" Admins vorbehalten (siehe $binIchEchterAdmin
+           weiter unten) - bekommt deshalb die dunkelste Lila-Stufe, statt das normale Admin-Lila von
+           z.B. "Rolle hinzufügen" (das auch Co-Admins bzw. andere Rollen-Vergebende sehen können). */
+        .nm-pwchange-form button { background: var(--admin-accent-adminonly-light); border-color: var(--admin-accent-adminonly); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
         /* Passwort anzeigen + ändern optisch als EIN zusammengehöriger Block statt zwei loser Elemente */
-        .nm-pw-group { display: inline-flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 6px; padding: 0.3rem 0.6rem; }
+        .nm-pw-group { display: inline-flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: rgba(46, 16, 101, 0.35); border: 1px solid var(--admin-accent-adminonly-light); border-radius: 6px; padding: 0.3rem 0.6rem; }
         .nm-pw-label { font-size: 0.72rem; font-weight: 700; opacity: 0.85; }
         .nm-pw { opacity: 0.9; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
-        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
+        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-adminonly-light); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
         /* WICHTIG: bloße <button>-Elemente erben sonst die große Standard-Button-Optik der Website
            (2.75rem hoch, GROSSBUCHSTABEN, Letter-Spacing, weißer Schatten-Rahmen) - dadurch sah die
            Schrift größer/unpassender aus als die kleinen Buttons selbst. Hier gezielt NUR für die
@@ -3352,6 +3399,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <a href='#' class='button'>Zurück</a>
     <h5><br /></h5>
     <h2>Letzte DB-Änderungen</h2>
+    <?php // RECHTE-AUDIT: Diese Seite war bisher UNGESCHÜTZT erreichbar (der Datenbank-Änderungsverlauf
+    // wurde unabhängig vom Login-Status angezeigt, sobald jemand direkt #backstage_letzte_aenderung
+    // aufgerufen hat) - jetzt strikt Admin/Co-Admin vorbehalten. ?>
+    <?php if (!$istAdminOderCoAdmin) { ?>
+    <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen den DB-Verlauf einsehen.</p>
+    <?php } else { ?>
     <p>Hier werden alle Datenbankänderungen dokumentiert, egal ob es um Löschung, Änderung oder Einfügen geht. Wenn ein Team ständig versucht, Dinge zu bearbeiten, die es nicht bearbeiten soll, siehst du das hier und kannst dem Team die Rechte wegnehmen. Die Änderungen sind in SQL formuliert. Falls du nicht weißt, wie SQL funktioniert, klicke einfach <a href='https://studyflix.de/informatik/structured-query-language-606'>hier</a></p>
     <?php if (!isset($_POST['load_db_verlauf'])) {
         $ladeAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
@@ -3360,7 +3413,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
             <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES) . "'>
             <input type='hidden' name='load_db_verlauf' value='1'>
-            <button type='submit' class='admin-menu-button'>DB-Verlauf jetzt laden</button>
+            <button type='submit' class='admin-menu-button admin-menu-button--coadmin'>DB-Verlauf jetzt laden</button>
         </form>
         <p><i>Wird nicht automatisch geladen, da die Abfrage bei großen Turnieren spürbar dauern kann.</i></p>
         ";
@@ -3376,6 +3429,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "<p><b>" . htmlspecialchars($data_db_verlauf_who) . ":</b> " . htmlspecialchars($data_db_verlauf_content) . " ($data_db_verlauf_timestamp)</p>";
         }
     } ?>
+    <?php } ?>
     <a href='#' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -3387,6 +3441,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <a href='#' class='button'>Zurück</a>
     <h5><br /></h5>
     <h2>Website-Traffic</h2>
+    <?php // RECHTE-AUDIT: Wie backstage_letzte_aenderung war auch diese Seite bisher ungeschuetzt
+    // direkt per Hash-Link erreichbar - jetzt strikt Admin/Co-Admin vorbehalten. ?>
+    <?php if (!$istAdminOderCoAdmin) { ?>
+    <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen den Traffic einsehen.</p>
+    <?php } else { ?>
     <p>Hier werden Website-Funktionalitäten getrackt.</p>
     <?php if (!isset($_POST['load_traffic'])) {
         $ladeAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
@@ -3395,7 +3454,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
             <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES) . "'>
             <input type='hidden' name='load_traffic' value='1'>
-            <button type='submit' class='admin-menu-button'>Traffic jetzt laden</button>
+            <button type='submit' class='admin-menu-button admin-menu-button--coadmin'>Traffic jetzt laden</button>
         </form>
         <p><i>Wird nicht automatisch geladen, da die Abfrage bei großen Turnieren spürbar dauern kann.</i></p>
         ";
@@ -3415,6 +3474,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "<p><b>" . htmlspecialchars($traffic_kategorie) . "</b> " . htmlspecialchars($traffic_who) . " " . htmlspecialchars($traffic_text) . " ($traffic_timestamp)</p>";
         }
     } ?>
+    <?php } ?>
     <a href='#' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
