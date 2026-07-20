@@ -402,7 +402,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
             .admin-menu-button:hover { background: linear-gradient(135deg, var(--admin-accent), #a78bfa); }
-            .admin-toggle { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 8px; background: rgba(139, 92, 246, 0.12); border: 1px solid var(--admin-accent); color: var(--admin-accent-light); cursor: pointer; }
+            /* Bewusst kein Chip-/Button-Look mehr (kein Hintergrund/Rahmen/Padding) - nur noch eine
+               kompakte Checkbox mit kleiner Beschriftung, wirkt dadurch eher wie ein einfaches
+               Haekchen-Setzen statt wie ein zusaetzlicher, gleichwertiger Button neben dem Feld. */
+            .admin-toggle { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; font-size: 0.72rem; color: var(--admin-accent-light); opacity: 0.9; }
             /* Das Theme versteckt input[type=checkbox] global (opacity:0, float:left, negativer margin, z-index:-1)
                und erwartet stattdessen ein direkt folgendes <label> mit eigener :before-Box. Da wir die Checkbox
                hier bewusst innerhalb des Labels verschachteln (kompaktere Chips), müssen wir das Verstecken für
@@ -1762,11 +1765,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php if ($rechteFlags['teams']) { ?>
             <a href='#backstage_teams_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams bearbeiten</a>
             <?php } ?>
-            <?php if ($rechteFlags['teams']) { ?>
-            <a href='#backstage_teams_gruppen_einsortieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams in Gruppen einsortieren</a>
-            <?php } ?>
             <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_gruppen_generieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Gruppen für Gruppenphase generieren</a>
+            <?php } ?>
+            <?php if ($rechteFlags['teams']) { ?>
+            <a href='#backstage_teams_gruppen_einsortieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams in Gruppen einsortieren</a>
             <?php } ?>
             <?php if ($test_turnier_id != 0 && $rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_gruppeneinteilung_losen' class='admin-menu-button admin-menu-button-testmodus'><span class='amn-num amn-num-testmodus'><?php echo $amnZaehler++; ?></span> Gruppeneinteilung losen</a>
@@ -2780,9 +2783,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     ?>
 
     <style>
-        .ts-setting { border: 1px solid rgba(139, 92, 246, 0.28); border-radius: 8px; padding: 0.6rem 0.9rem; margin-bottom: 0.7rem; text-align: left; }
-        .ts-setting-label { display: block; font-weight: bold; margin-bottom: 0.15rem; }
-        .ts-hint { display: block; font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.5rem; }
+        /* Angeglichen an das flache Feld-Layout von "Neues Turnier anlegen" (Label über dem Feld,
+           kein umrandeter Kasten mehr pro Einstellung) - der Unterschied ist nur, dass hier jedes
+           Feld sein eigenes kleines "bestätigen"-Häkchen behält, weil jedes Feld einzeln absendet. */
+        .ts-setting { margin-bottom: 1rem; text-align: left; }
+        .ts-setting-label { display: block; margin-bottom: 0.1rem; }
+        .ts-hint { display: block; font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.4rem; }
         .ts-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0; }
         .ts-input { min-width: 140px; }
     </style>
@@ -3012,18 +3018,23 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <style>
         .nm-rollen-tabelle { width: 100%; margin-bottom: 1.2rem; font-size: 0.82rem; }
         .nm-userlist { margin-bottom: 1rem; }
-        .nm-user { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; padding: 0.25rem 0.1rem; border-bottom: 1px solid rgba(139, 92, 246, 0.15); font-size: 0.8rem; line-height: 1.1; }
-        .nm-user b { min-width: 110px; }
-        .nm-pw { opacity: 0.6; font-size: 0.7rem; }
-        .nm-badge { display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 10px; padding: 0.05rem 0.45rem; font-size: 0.68rem; white-space: nowrap; }
-        .nm-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; }
+        /* Jeder Nutzer bekommt jetzt eine eigene kleine Karte statt einer einzigen, alles-in-einer-
+           Zeile wrappenden Reihe - Name/Passwort/Login-Button oben, Rollen-Badges + Hinzufügen in
+           einer eigenen Zeile darunter. Dadurch quetschen sich Badges nicht mehr mit dem Rest zusammen. */
+        .nm-user-card { border: 1px solid rgba(139, 92, 246, 0.22); border-radius: 8px; padding: 0.5rem 0.7rem; margin-bottom: 0.6rem; text-align: left; font-size: 0.82rem; }
+        .nm-user-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+        .nm-user-head b { font-size: 0.9rem; }
+        .nm-pw { opacity: 0.75; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.7rem; padding: 0; text-decoration: underline; }
+        .nm-user-roles { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+        .nm-badge { display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(139, 92, 246, 0.18); border: 1px solid var(--admin-accent); border-radius: 10px; padding: 0.15rem 0.55rem; font-size: 0.72rem; white-space: nowrap; }
+        .nm-badge button { border: none; background: none; color: var(--admin-accent-light); cursor: pointer; font-size: 0.8rem; padding: 0; line-height: 1; }
         .nm-login-als, .nm-addrole-form { display: inline-flex; gap: 0.25rem; align-items: center; margin: 0; }
         .nm-login-als button { padding: 0.12rem 0.4rem; font-size: 0.68rem; }
-        .nm-addrole-form select, .nm-addrole-form button, .nm-newuser-form input, .nm-newuser-form select, .nm-newuser-form button {
-            padding: 0.12rem 0.35rem; font-size: 0.7rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: #fff;
+        .nm-addrole-form select {
+            padding: 0.15rem 0.35rem; font-size: 0.72rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: #fff;
         }
-        .nm-addrole-form button, .nm-newuser-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); cursor: pointer; }
-        .nm-newuser-form { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; margin: 0.6rem 0 1.5rem; }
+        .nm-addrole-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.75rem; }
     </style>
 
     <h2>Rollen</h2>
@@ -3039,10 +3050,23 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h2>Nutzer</h2>
     <p><i>Sortiert nach Berechtigungsstärke (Admin zuerst). Jeder Nutzer kann mehrere Rollen gleichzeitig haben.</i></p>
     <div class='nm-userlist'>
-    <?php foreach ($alleNutzerMitRollen as $nutzer) { ?>
-        <div class='nm-user'>
-            <b><?php echo htmlspecialchars($nutzer['bn']); ?></b>
-            <span class='nm-pw'>pw: <?php echo htmlspecialchars($nutzer['pw']); ?></span>
+    <?php foreach ($alleNutzerMitRollen as $nutzer) {
+        $nmPwId = 'nm_pw_' . $nutzer['id'];
+    ?>
+        <div class='nm-user-card'>
+            <div class='nm-user-head'>
+                <b><?php echo htmlspecialchars($nutzer['bn']); ?></b>
+                <span class='nm-pw'>PW:
+                    <span id='<?php echo $nmPwId; ?>' style='display:none;'><?php echo htmlspecialchars($nutzer['pw']); ?></span>
+                    <button type='button' class='nm-pw-toggle' onclick="var s=document.getElementById('<?php echo $nmPwId; ?>'); var sichtbar = s.style.display !== 'none'; s.style.display = sichtbar ? 'none' : 'inline'; this.textContent = sichtbar ? 'anzeigen' : 'verbergen';">anzeigen</button>
+                </span>
+                <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als'>
+                    <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
+                    <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
+                    <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.12rem 0.4rem;font-size:0.68rem;'>Login als User</button>
+                </form>
+            </div>
+            <div class='nm-user-roles'>
             <?php foreach ($nutzer['rolle_ids'] as $rid) {
                 $rname = $rollenNamenById[$rid] ?? ('Rolle ' . $rid);
                 echo "<span class='nm-badge'>" . htmlspecialchars($rname);
@@ -3057,13 +3081,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     </form>";
                 }
                 echo "</span>";
-            } ?>
-            <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als'>
-                <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
-                <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
-                <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.12rem 0.4rem;font-size:0.68rem;'>Login als User</button>
-            </form>
-            <?php
+            }
             $verfuegbareRollen = [];
             foreach ($rollenListeFuerUebersicht as $r) {
                 $rid = (int)$r['id'];
@@ -3086,31 +3104,65 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <button type='submit'>+</button>
             </form>
             <?php } ?>
+            </div>
         </div>
     <?php } ?>
     </div>
 
-    <h2>Neuen Nutzer anlegen</h2>
-    <form action='website_datachange/edit_account.php' method='POST' class='nm-newuser-form'>
+    <h5><br/></h5>
+    <a href='#backstage_neuen_nutzer_anlegen' class='admin-menu-button'>Neuen Nutzer anlegen</a>
+    <?php } ?>
+    <h5><br /></h5>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  NEUEN NUTZER ANLEGEN (eigene Seite statt Inline-Formular am Ende von Nutzermanagement)   ### -->
+<!-- ################################################################################################ -->
+<article id="backstage_neuen_nutzer_anlegen">
+    <a href='#backstage_nutzermanagement' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <?php
+    $hatIrgendeinRollenVergabeRechtNeu = $rechteFlags['neue_admins'] || $rechteFlags['neue_co_admins'] || $rechteFlags['restliche_rollen_vergeben'];
+    if (!$hatIrgendeinRollenVergabeRechtNeu) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else {
+        $nnRollen = [];
+        $resultNnRollen = $conn->query('SELECT * FROM System_Benutzer_in_Rolle ORDER BY hierarchie_ebene');
+        while ($rowNnRolle = $resultNnRollen->fetch_assoc()) { $nnRollen[] = $rowNnRolle; }
+        $nnBnAttr = htmlspecialchars($bn, ENT_QUOTES);
+        $nnPwAttr = htmlspecialchars($pw, ENT_QUOTES);
+    ?>
+    <h1>Neuen Nutzer anlegen</h1>
+    <form action='website_datachange/edit_account.php' method='POST'>
         <input type='hidden' name='action' value='admin_erstellt_nutzer'/>
-        <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
-        <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
-        <input type='text' name='neuer_bn' placeholder='Benutzername' required>
-        <input type='text' name='neuer_pw' placeholder='Passwort' required>
-        <select name='neue_rolle' required>
-            <?php
-            foreach ($rollenListeFuerUebersicht as $r) {
-                $rId = (int)$r['id'];
-                if (nmDarfRolleVergeben($r, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
-                    echo "<option value='$rId'>" . htmlspecialchars($r['name']) . "</option>";
-                }
-            }
-            ?>
-        </select>
-        <button type='submit'>Anlegen</button>
+        <input type='hidden' name='admin_bn' value='<?php echo $nnBnAttr; ?>'>
+        <input type='hidden' name='admin_pw' value='<?php echo $nnPwAttr; ?>'>
+        <div class='field'>
+            <label for='demo-category'>Benutzername</label>
+            <input type='text' name='neuer_bn' class='Eingabe' style='color: white' required>
+            <h5><br/></h5>
+            <label for='demo-category'>Passwort</label>
+            <input type='text' name='neuer_pw' class='Eingabe' style='color: white' required>
+            <h5><br/></h5>
+            <label for='demo-category'>Rolle</label>
+            <select name='neue_rolle' required>
+                <?php foreach ($nnRollen as $r) {
+                    $rId = (int)$r['id'];
+                    if (nmDarfRolleVergeben($r, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
+                        echo "<option value='$rId'>" . htmlspecialchars($r['name']) . "</option>";
+                    }
+                } ?>
+            </select>
+        </div>
+        <ul class='actions'>
+            <li><input type='submit' value='Anlegen' class='primary'/></li>
+        </ul>
     </form>
     <?php } ?>
-    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <a href='#backstage_nutzermanagement' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
 
