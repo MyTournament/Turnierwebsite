@@ -402,16 +402,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
             .admin-menu-button:hover { background: linear-gradient(135deg, var(--admin-accent), #a78bfa); }
-            /* Bewusst kein Chip-/Button-Look mehr (kein Hintergrund/Rahmen/Padding ums ganze Label) -
-               aber die Checkbox selbst bekommt einen deutlich sichtbaren, farbigen Rahmen, damit klar
-               erkennbar bleibt, dass hier noch etwas angeklickt werden muss (nur eben kompakt statt
-               als grosser, gleichwertiger Button neben dem Feld). */
-            .admin-toggle { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.75rem; color: var(--admin-accent-light); }
-            /* Das Theme versteckt input[type=checkbox] global (opacity:0, float:left, negativer margin, z-index:-1)
-               und erwartet stattdessen ein direkt folgendes <label> mit eigener :before-Box. Da wir die Checkbox
-               hier bewusst innerhalb des Labels verschachteln (kompaktere Chips), müssen wir das Verstecken für
-               .admin-toggle wieder aufheben, sonst ist die Checkbox unsichtbar. */
-            .admin-toggle input[type='checkbox'] { opacity: 1; float: none; margin: 0; z-index: auto; position: static; display: inline-block; accent-color: var(--admin-accent); width: 1.25rem; height: 1.25rem; border: 2px solid var(--admin-accent); border-radius: 4px; box-shadow: 0 0 6px rgba(139, 92, 246, 0.5); cursor: pointer; }
+            /* Technisch weiterhin eine Checkbox (onchange sendet das Formular ab), sieht jetzt aber
+               bewusst wie ein echter, kompakter Button aus - nicht wie ein Häkchen zum Ankreuzen.
+               Die Checkbox selbst wird komplett unsichtbar gemacht (aber bleibt klickbar/fokussierbar);
+               das <label> drumherum trägt die eigentliche Button-Optik. Ein Klick irgendwo auf das
+               Label toggelt laut HTML-Spec automatisch die verschachtelte Checkbox mit. */
+            .admin-toggle { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.35rem 0.85rem; border-radius: 6px; background: var(--admin-accent-deep); border: 1px solid var(--admin-accent); color: #ffffff; font-size: 0.75rem; cursor: pointer; white-space: nowrap; transition: background-color 0.15s ease-in-out; }
+            .admin-toggle::before { content: '✓'; }
+            .admin-toggle:hover { background: var(--admin-accent); }
+            .admin-toggle input[type='checkbox'] { position: absolute; opacity: 0; width: 0; height: 0; margin: 0; pointer-events: none; }
             #main article[id^='backstage_'] { border-top: 3px solid var(--admin-accent); box-shadow: 0 0 24px rgba(139, 92, 246, 0.25); }
         </style>
         <div id='admin-bar'>
