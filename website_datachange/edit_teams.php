@@ -417,6 +417,65 @@ if (!headers_sent()) {
 				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
+		// ====================================================================================
+		// TEAMS GENERIEREN: NUR FÜR TESTTURNIERE (type=2) - LEGT N TESTTEAMS INKL. SPIELER AN
+		// ====================================================================================
+		// Sicherheitsnetz unabhängig von der UI-Sichtbarkeit: bevor irgendetwas eingefügt wird, wird
+		// hier noch einmal serverseitig geprüft, dass $TurnierID tatsächlich zu einem Testturnier
+		// gehört. Damit kann diese Funktion (auch bei manipulierten Requests) niemals versehentlich
+		// Teams im echten, laufenden Turnier anlegen. Kürzel und Passwort sind bewusst identisch
+		// (z.B. "T5"/"T5"), damit einzelne Team-Logins beim Testen leicht nachvollzogen werden können.
+		}else if($action == 'Teams_Generieren'){
+			if ($successfulLogin == 1) {
+				$sqlTypCheck = "SELECT type FROM Turnier_Main WHERE id = ?";
+				$stmtTypCheck = $conn->prepare($sqlTypCheck);
+				$stmtTypCheck->bind_param("i", $TurnierID);
+				$stmtTypCheck->execute();
+				$rowTypCheck = $stmtTypCheck->get_result()->fetch_assoc();
+
+				if ($rowTypCheck !== null && (int)$rowTypCheck['type'] === 2) {
+					$anzahlTestteams = max(1, min(100, (int)$_POST['anzahl_testteams']));
+
+					$vornamenPool = ['Anna','Ben','Clara','David','Emma','Felix','Greta','Hannes','Ida','Jan','Klara','Leon','Mia','Noah','Olivia','Paul','Quirin','Rosa','Simon','Tim'];
+					$nachnamenPool = ['Bauer','Fischer','Huber','Klein','Lang','Meyer','Neumann','Otto','Peters','Richter','Schmidt','Schulz','Vogel','Wagner','Weber','Winter','Wolf','Zimmermann'];
+
+					// Höchstes bereits vorhandenes "T<n>"-Kürzel in diesem Turnier ermitteln, damit die
+					// Funktion mehrfach ausführbar ist, ohne Kürzel-Kollisionen zu erzeugen.
+					$sqlMaxT = "SELECT kuerzel FROM Turnier_Team WHERE fk_turnier = ? AND kuerzel REGEXP '^T[0-9]+$'";
+					$stmtMaxT = $conn->prepare($sqlMaxT);
+					$stmtMaxT->bind_param("i", $TurnierID);
+					$stmtMaxT->execute();
+					$resMaxT = $stmtMaxT->get_result();
+					$maxT = 0;
+					while ($rowMaxT = $resMaxT->fetch_assoc()) {
+						$n = (int)substr($rowMaxT['kuerzel'], 1);
+						if ($n > $maxT) { $maxT = $n; }
+					}
+
+					for ($i = 1; $i <= $anzahlTestteams; $i++) {
+						$nummer = $maxT + $i;
+						$kuerzel = "T$nummer";
+						$teamname = "Testteam $nummer";
+						$sqlInsertTeam = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren, bearbeitungsrechte) VALUES (?, ?, ?, ?, '', 'Automatisch generiertes Testteam', 1)";
+						$teamId = myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Generieren", $sqlInsertTeam, array($TurnierID, $teamname, $kuerzel, $kuerzel));
+
+						for ($s = 1; $s <= 3; $s++) {
+							$spielername = $vornamenPool[array_rand($vornamenPool)] . ' ' . $nachnamenPool[array_rand($nachnamenPool)];
+							$telefonnummer = '0151' . str_pad((string)random_int(0, 9999999), 7, '0', STR_PAD_LEFT);
+							$sqlInsertSpieler = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
+							myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Generieren Spieler", $sqlInsertSpieler, array($teamId, $spielername, $telefonnummer));
+						}
+					}
+				}
+			}
+
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_teams_generieren");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_generieren");
+			}
+
 		}
 
 
