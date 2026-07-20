@@ -3095,11 +3095,31 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </style>
 
     <h2>Rollen</h2>
+    <p><i>Admin und Co-Admin sind <b>Sammel-Rollen</b>: wer eine davon hat, braucht keine weitere Rolle zusätzlich - sie umfassen automatisch alle Rechte der übrigen Rollen. Die restlichen Rollen (Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in) sind dagegen einzelne, unabhängige Rechte-Bausteine, die man je nach Bedarf miteinander kombiniert (z.B. braucht jemand, der Teams UND Spielergebnisse bearbeiten soll, sowohl Moderator*in als auch Schiedsrichter*in).</i></p>
+    <?php
+    // ================================================================================================
+    // ROLLEN-ÜBERSICHT: BEWUSST SELBST FORMULIERT STATT 1:1 AUS DER DATENBANK ÜBERNOMMEN
+    // ================================================================================================
+    // Die "beschreibung"-Spalte in System_Benutzer_in_Rolle ist knapp/technisch gehalten. Hier steht
+    // stattdessen eine ausführliche, an den tatsächlichen Rechte-Flags orientierte Erklärung, was man
+    // mit der jeweiligen Rolle auf der Website konkret tun darf. Fällt eine Rollen-ID hier nicht in die
+    // Liste (z.B. eine später neu angelegte Rolle), wird als Rückfallebene die DB-Beschreibung genutzt.
+    $rollenErklaerung = [
+        1  => 'Hat wirklich <b>alle</b> Rechte der Website: kann neue Admins und Co-Admins anlegen, alle restlichen Rollen vergeben, Turnier Settings/Turnierphase ändern, Website-Inhalte im CMS bearbeiten, Teams bearbeiten, den Backstage-Bereich sehen und beliebige Spielergebnisse eintragen. Wer Admin ist, braucht keine weitere Rolle zusätzlich.',
+        2  => 'Hat alles, was Admin auch hat - mit einer Ausnahme: kann selbst keine neuen Admins anlegen (Co-Admins und alle anderen Rollen aber schon). Genau wie bei Admin reicht diese eine Rolle allein völlig aus.',
+        5  => 'Darf ausschließlich die Website-Inhalte im CMS bearbeiten ("Website Inhalte bearbeiten"-Button). Sonst nichts - wer zusätzlich Teams bearbeiten oder Spielergebnisse eintragen soll, braucht dafür eine weitere Rolle dazu.',
+        10 => 'Darf Teams bearbeiten (Teamname/Spielernamen ändern, Gruppe zuordnen, Bearbeitungsrechte vergeben/entziehen, Team abmelden) und hat dafür automatisch auch Zugang zum Backstage-Bereich (violetter Balken, um überhaupt zu den Teams-Funktionen zu gelangen). Für CMS-Inhalte oder Spielergebnisse braucht es zusätzliche Rollen.',
+        15 => 'Darf sich in den Backstage-Bereich einloggen und dort die Infos/den Verlauf einsehen (violetter Balken), kann darüber hinaus aber nichts aktiv verändern. Gedacht als reine "Sichtbarkeits"-Rolle, z.B. für Helfer*innen, die Telefonnummern oder den DB-Verlauf einsehen sollen dürfen.',
+        20 => 'Darf beliebige Spielergebnisse eintragen, ändern sowie Begegnungen finalisieren/unfinalisieren - auch bei Begegnungen, die nicht zum eigenen Team gehören. Hat aber <b>keinen</b> Zugang zum Backstage-Bereich (keinen violetten Balken); wer zusätzlich Backstage sehen soll, braucht die Rolle "Backstage-Zugang" separat dazu.',
+        30 => 'Standardrolle für selbst registrierte Accounts - hat noch überhaupt keine Rechte. Muss von einem Admin/Co-Admin erst eine der obigen Rollen bekommen.',
+    ];
+    ?>
     <table class='withBorderCollapse nm-rollen-tabelle'>
-        <thead><tr><th>Rolle</th><th>Beschreibung</th></tr></thead>
+        <thead><tr><th>Rolle</th><th>Was darf man damit tun?</th></tr></thead>
         <tbody>
         <?php foreach ($rollenListeFuerUebersicht as $r) {
-            echo "<tr><td>" . htmlspecialchars($r['name']) . "</td><td>" . htmlspecialchars($r['beschreibung']) . "</td></tr>";
+            $rBeschreibung = $rollenErklaerung[(int)$r['id']] ?? htmlspecialchars($r['beschreibung']);
+            echo "<tr><td>" . htmlspecialchars($r['name']) . "</td><td>" . $rBeschreibung . "</td></tr>";
         } ?>
         </tbody>
     </table>
