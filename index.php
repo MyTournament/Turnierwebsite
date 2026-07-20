@@ -1784,8 +1784,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php if ($rechteFlags['teams']) { ?>
             <a href='#backstage_teams_gruppen_einsortieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams in Gruppen einsortieren</a>
             <?php } ?>
-            <?php if ($test_turnier_id != 0 && $rechteFlags['turnier_settings']) { ?>
-            <a href='#backstage_gruppeneinteilung_losen' class='admin-menu-button admin-menu-button-testmodus'><span class='amn-num amn-num-testmodus'><?php echo $amnZaehler++; ?></span> Gruppeneinteilung losen</a>
+            <?php if ($rechteFlags['turnier_settings']) { ?>
+            <a href='#backstage_gruppeneinteilung_losen' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Gruppeneinteilung losen</a>
             <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
             <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
@@ -2337,18 +2337,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 <!-- ################################################################################################ -->
-<!-- ###  GRUPPENEINTEILUNG LOSEN (nur im Testmodus - kapselt Turnierphase 5 als sauberen Button)   ### -->
+<!-- ###  GRUPPENEINTEILUNG LOSEN (kapselt Turnierphase 5 als sauberen Button)                     ### -->
 <!-- ################################################################################################ -->
 <!-- Analog zu "Gruppen für Gruppenphase generieren", aber für Turnierphase 5 ("Gruppeneinteilung" -
-     würfelt Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen). Nur im Testmodus sichtbar,
-     weil das reale Auslosen bei einem echten Turnier i.d.R. bewusst/manuell bzw. zeremoniell passiert
-     und nicht einfach per Knopfdruck. Backend (edit_variables.php, Aktion Gruppeneinteilung_Losen)
-     prüft zusätzlich unabhängig, dass wirklich ein Testturnier (type=2) bearbeitet wird. -->
+     würfelt Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen). Jetzt auch für echte, laufende
+     Turniere nutzbar (nicht mehr auf den Testmodus beschränkt) - gated nur noch über das
+     turnier_settings-Flag, wie "Gruppen für Gruppenphase generieren" auch. -->
 <article id="backstage_gruppeneinteilung_losen">
     <div style='text-align: center'>
         <h2>Gruppeneinteilung losen</h2>
-        <?php if ($test_turnier_id == 0 || !$rechteFlags['turnier_settings']) { ?>
-        <p>Diese Funktion ist nur im Testmodus verfügbar.</p>
+        <?php if (!$rechteFlags['turnier_settings']) { ?>
+        <p>Keine ausreichende Berechtigung.</p>
         <?php } else {
             $glPhasen = [];
             $resultGlPhasen = $conn->query('SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order');
@@ -2479,8 +2478,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             1  => 'Es passiert nichts automatisch. Teams können sich noch nicht anmelden.',
             3  => 'Teams können sich anmelden. Sobald die maximale Teamanzahl erreicht ist, wechselt das Turnier automatisch zur Warteliste.',
             12 => 'Neu angemeldete Teams landen auf der Warteliste. Es passiert sonst nichts automatisch.',
-            4  => 'Die Anzahl der Gruppen wird automatisch an die Teamanzahl angepasst - fehlende Gruppen werden angelegt, überzählige gelöscht.',
-            5  => 'Teams ohne Gruppe werden automatisch gleichmäßig auf die vorhandenen Gruppen verteilt.',
+            4  => 'Die Anzahl der Gruppen wird automatisch an die Teamanzahl angepasst - fehlende Gruppen werden angelegt, überzählige gelöscht. Nicht mehr über dieses Dropdown wählbar, dafür gibt es den eigenen Button "Gruppen für Gruppenphase generieren" in den Settings.',
+            5  => 'Teams ohne Gruppe werden automatisch gleichmäßig auf die vorhandenen Gruppen verteilt. Nicht mehr über dieses Dropdown wählbar, dafür gibt es den eigenen Button "Gruppeneinteilung losen" in den Settings.',
             7  => 'Das Turnier läuft: Ergebnisse werden verarbeitet, Sieger*innen rücken automatisch in die nächste K.-o.-Runde nach.',
             13 => 'Wie "Turnier läuft", zusätzlich werden neu angemeldete Teams automatisch einer Gruppe zugeteilt (Nachmeldungen).',
             9  => 'Automatische Berechnungen sind deaktiviert - das Turnier ist abgeschlossen.',
@@ -2510,7 +2509,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='action' value='Tunierphase ändern'/>
             <select name='Phase' class='ts-input'>
                 <?php
-                $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+                // Phase 4 ("Gruppengröße neu bestimmen & Erstellen/Löschen") und 5 ("Gruppeneinteilung")
+                // sind hier bewusst NICHT wählbar - dafür gibt es jetzt eigene Buttons in den Settings
+                // ("Gruppen für Gruppenphase generieren"/"Gruppeneinteilung losen"). Datenbanktechnisch
+                // bleiben beide Phasen weiterhin gültige Werte, nur eben nicht über dieses Dropdown.
+                $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` WHERE id NOT IN (4, 5) ORDER BY logical_order';
                 $resultTurnierPhase = $conn->query($sqlTurnierPhase);
                 while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
                     $selTp = ($rowTurnierPhase['id'] == $turnier_phase_ID_aktuell) ? "selected" : "";
