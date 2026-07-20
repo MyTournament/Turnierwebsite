@@ -1123,7 +1123,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h1 class="section-header">Gruppenphase</h1>
     <div class='note' style="font-size: 0.8rem;">Hinweis: "3:1" bedeutet nicht, dass vier Spiele gemacht wurden, sondern der Spielstand bezieht sich auf ein Spiel, bei dem das Gewinnerteam 3 Flaschen getrunken hat und das Verliererteam aber trotzdem eine Flasche geleert hat. Würde das Verliererteam keine Flasche leeren, wäre der Spielstand "3:0".</div>
     <div class="ko-phase-cta ko-phase-cta--single">
-        <a href="#punktetabelle" class="button primary ko-phase-btn ko-phase-btn--points">
+        <a href="#punktetabelle" class="ko-phase-btn ko-phase-btn--points">
             <span class="ko-btn-label">Punktetabelle</span>
             <span class="ko-btn-sub">Gruppenphase</span>
         </a>
@@ -1147,11 +1147,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="kophase">
     <h2>KnockOut-Phase</h2>
     <div class="ko-phase-cta">
-        <a href="#turnierbaum" class="button primary ko-phase-btn ko-phase-btn--tree">
+        <a href="#turnierbaum" class="ko-phase-btn ko-phase-btn--tree">
             <span class="ko-btn-label">Turnierbaum</span>
             <span class="ko-btn-sub">Alle KO-Matches</span>
         </a>
-        <a href="#rangliste" class="button primary ko-phase-btn ko-phase-btn--rank">
+        <a href="#rangliste" class="ko-phase-btn ko-phase-btn--rank">
             <span class="ko-btn-label">Rangliste</span>
             <span class="ko-btn-sub">Live-Positionen</span>
         </a>
@@ -1176,7 +1176,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     ?>
     <!--<a href="#spielplan" class="button">Zurück zur Übersicht</a>-->
     <div class="ko-phase-cta">
-        <a href="#rangliste" class="button primary ko-phase-btn ko-phase-btn--rank">
+        <a href="#rangliste" class="ko-phase-btn ko-phase-btn--rank">
             <span class="ko-btn-label">Rangliste</span>
             <span class="ko-btn-sub">Losing-Bracket</span>
         </a>
