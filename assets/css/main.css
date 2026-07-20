@@ -456,6 +456,13 @@ input, select, textarea {
 		text-transform: uppercase;
 	}
 
+	/* ==========================================================================
+	   FIX: WEISSE SCHRIFT AUF WEISSEM HINTERGRUND BEI DATE-/NUMBER-/TIME-FELDERN
+	   ==========================================================================
+	   date/time/datetime-local/month/week/number fehlten hier bisher komplett und
+	   fielen dadurch auf das native (weisse) Browser-Rendering zurueck - unlesbar,
+	   sobald irgendwo zusaetzlich style="color:white" gesetzt war. Jetzt ueberall
+	   (hier + :invalid + :focus + die height:2.75rem-Regel weiter unten) ergaenzt. */
 	input[type="text"],
 	input[type="password"],
 	input[type="email"],

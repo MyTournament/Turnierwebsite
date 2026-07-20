@@ -1,4 +1,11 @@
 <?php
+// ================================================================================================
+// HINWEIS: verwaistes/nicht verlinktes Test-Script, kein Teil des Live-Flows (nirgends referenziert).
+// Trotzdem auf das neue Rollen-System (getUserRollenInfo) umgestellt, damit login_interface.php
+// weiterhin ohne die entfernte fk_rechte-Logik funktioniert. CMS-Bearbeitung nur noch über das
+// cms-Flag, kein Admin/Co-Admin-Shortcut mehr (siehe website_datachange/edit_content.php für die
+// gleiche Begründung im echten, live genutzten Pendant).
+// ================================================================================================
 include_once '../database/db_connection.php';
 include_once '../variables.php';
 include_once '../website_datachange/login_interface.php';
@@ -9,7 +16,7 @@ foreach (glob("../website_print_functions/*.php") as $filename){
 $bn = $_POST["bn"];
 $pw = $_POST["pw"];
 $rollenInfoTestCms = getUserRollenInfo($conn, $bn, $pw);
-$LoggedIn = $rollenInfoTestCms !== null && ($rollenInfoTestCms['flags']['cms'] || $rollenInfoTestCms['ist_admin'] || $rollenInfoTestCms['ist_co_admin']);
+$LoggedIn = $rollenInfoTestCms !== null && $rollenInfoTestCms['flags']['cms'];
 if ($LoggedIn) {
     echo "<h3 style='color: green'><i>Login erfolgreich - Alle Bereiche der Website die sich bearbeiten lassen, werden dir jetzt als Button dargestellt, den du anklicken kannst um den Beitrag zu bearbeiten. Außerdem existieren Buttons, die dich neue Beiträge hinzufügen lassen.</i></h3>";
     echo "<ul class='actions'>

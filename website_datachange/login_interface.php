@@ -15,11 +15,18 @@ function getTeamsListeFuerTurnier($conn, $TurnierID){
     return $result;
 }
 
-// Mehrfach-Rollen-System: ein Benutzer bekommt seine Rechte ausschließlich über die Rollen,
-// die ihm in System_Benutzer_in_Relation_Rolle zugeordnet sind (System_Benutzer_in_Rolle
-// definiert pro Rolle die einzelnen Rechte-Flags). Ein Benutzer kann mehrere Rollen gleichzeitig
-// haben, effektive Rechte = ODER-Verknüpfung aller zugewiesenen Rollen-Flags.
-// fk_rechte auf System_Benutzer_in wird hierfür nicht mehr verwendet.
+// ================================================================================================
+// ZENTRALE FUNKTION DES NEUEN MEHRFACH-ROLLEN-SYSTEMS (ersetzt das alte fk_rechte-Schwellenwert-System)
+// ================================================================================================
+// Ein Benutzer bekommt seine Rechte ausschließlich über die Rollen, die ihm in
+// System_Benutzer_in_Relation_Rolle zugeordnet sind (System_Benutzer_in_Rolle definiert pro Rolle
+// die einzelnen Rechte-Flags: neue_admins, neue_co_admins, restliche_rollen_vergeben,
+// turnier_settings, cms, teams, backstage, alle_spiele). Ein Benutzer kann mehrere Rollen
+// gleichzeitig haben, effektive Rechte = ODER-Verknüpfung aller zugewiesenen Rollen-Flags.
+// fk_rechte auf System_Benutzer_in wird hierfür nicht mehr verwendet und soll in einer der
+// nächsten Versionen aus der Datenbank entfernt werden. Gibt bei falschem Login oder wenn die
+// Rollen-Tabellen (noch) nicht erreichbar sind bewusst "keine Rechte" zurück (sicherer Default),
+// nie einen Fallback auf die alte fk_rechte-Logik.
 function getUserRollenInfo($conn, $bn, $pw) {
     $stmt = $conn->prepare("SELECT id FROM System_Benutzer_in WHERE Benutzername = ? AND Passwort = ?");
     $stmt->bind_param("ss", $bn, $pw);

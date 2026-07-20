@@ -126,6 +126,15 @@ if ($successfulLogin == 0){ //fehlerhafter Login
         echo "<script type='text/javascript'>alert('$message');</script>";
       }
 
+    // ============================================================================================
+    // NEUES TURNIER ANLEGEN: SCHEMA-UNABHÄNGIGES KOPIEREN ÜBER SELECT * STATT HARDCODED SPALTENLISTE
+    // ============================================================================================
+    // Statt jede Turnier_Main-Spalte einzeln aufzuzählen, wird die komplette alte Zeile per SELECT *
+    // geladen, die vom Formular übergebenen Felder werden darin überschrieben, und daraus wird
+    // dynamisch (array_keys/array_values) ein passendes INSERT gebaut. Dadurch bleibt die Kopie auch
+    // dann korrekt, wenn Turnier_Main später um weitere Spalten erweitert wird. type=2 (Testturnier)
+    // lässt das aktuelle Turnier unangetastet, type=1 (reales Turnier) setzt das alte Turnier auf
+    // type=3 (History).
     }else if ($action == 'Turnier_Neu_Anlegen') {
       if($darfTurnierSettingsAendern){
         // Aktuelle Turnier-Zeile komplett laden und als Basis für die Kopie nutzen - so ist die

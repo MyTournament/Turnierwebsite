@@ -406,6 +406,11 @@ if ($action == 'Ändern') {
     $message = "Leider hast du nicht die nötigen Bearbeitungsrechte, um die gesamte Gruppe zu finalisieren. Wende dich am besten an einen Admininstrator";
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
+// ================================================================================================
+// BEGEGNUNG HINZUFÜGEN (GREEN CARD): manuell angelegte Begegnung, vor dem Auto-Scheduler geschützt
+// ================================================================================================
+// Nur Admin/Co-Admin (explizite Vorgabe, kein eigenes Rollen-Flag dafür). Status wird fest auf 4
+// (Green Card) gesetzt, damit die automatische Spielplan-Berechnung diese Begegnung nie überschreibt.
 }else if($action == 'Begegnung_Hinzufuegen'){
   if($istAdminOderCoAdminEditGames){ //Nur Admin/Co-Admin dürfen Green-Card-Begegnungen anlegen
     $team1 = (int)$_POST['team1'];
@@ -449,6 +454,12 @@ if ($action == 'Ändern') {
     }
 
   }
+// ================================================================================================
+// BEGEGNUNG SPERREN: vorher nicht-funktionaler Stub, jetzt echt wirksam
+// ================================================================================================
+// Nur Admin/Co-Admin. Setzt status=6 ("gesperrt") - db_update.php lässt diese Begegnung dadurch in
+// Ruhe (kein Überschreiben durch den Auto-Scheduler), Öffentlichkeit sieht sie nicht mehr,
+// Backstage-Nutzer sehen sie weiterhin (ausgegraut, siehe printKO_PhaseTabellen).
 }else if($action == 'Begegnung_Sperren'){
   if($istAdminOderCoAdminEditGames){ //Nur Admin/Co-Admin dürfen Begegnungen sperren
     $begegnungIdSperren = (int)$_POST['begegnungIdSperren'];

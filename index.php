@@ -1,4 +1,12 @@
 <?php
+// ================================================================================================
+// SESSION-BASIERTE LOGIN-PERSISTENZ FÜR CMS/BACKSTAGE (Admin/Co-Admin/Autor*in/etc. bleiben eingeloggt)
+// ================================================================================================
+// Vorher war der Login rein POST-Feld-basiert (bn/pw nur im jeweiligen Formular) und ging nach
+// JEDEM Absenden verloren - man musste sich nach jeder Aktion neu einloggen. Jetzt werden bn/pw
+// nach erfolgreichem Login zusätzlich in der Session gemerkt (siehe weiter unten beim eigentlichen
+// Login-Block) und von dort als Fallback gelesen, wenn kein POST-Feld gesetzt ist. "?logout=1"
+// löscht die Session gezielt wieder.
 // Start PHP session early so captcha tokens persist via cookie
 if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
 
@@ -324,7 +332,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $gameEditMode = $_POST['gameEditMode'];
     $expertenmodus = $_POST['expertenmodus'];
 
-    //ANMELDUNG für CMS & Backstage (gemeinsames Login-Feld)
+    // ============================================================================================
+    // GEMEINSAMES LOGIN-FELD FÜR CMS & BACKSTAGE (früher zwei getrennte Logins/Seiten)
+    // ============================================================================================
+    // Backstage.php wurde komplett in index.php gemergt; ein einziges bn/pw-Feld entscheidet über
+    // Zugriff auf CMS-Bearbeitung UND Backstage, je nachdem welche Rollen-Flags der Account hat.
     // Fallback auf die Session, damit der Login nach einem Redirect (z.B. nach dem Speichern in Edit Data) erhalten bleibt
     $bn = $_POST["bn"] !== null ? $_POST["bn"] : (isset($_SESSION['admin_bn']) ? $_SESSION['admin_bn'] : null);
     $pw = $_POST["pw"] !== null ? $_POST["pw"] : (isset($_SESSION['admin_pw']) ? $_SESSION['admin_pw'] : null);
@@ -368,6 +380,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     }
     if ($LoggedInWithCMSorHigher || $LoggedInWithBackstageOrHigher) {
         $adminBarActionUrl = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
+        // ========================================================================================
+        // FIXIERTE VIOLETTE ADMIN-LEISTE (neu eingeführt: "logged-in"-Erkennungsfarbe fürs ganze Backstage)
+        // ========================================================================================
+        // --admin-accent* wird auch von .admin-menu-button, .admin-toggle und dem Attribut-Selektor
+        // #main article[id^='backstage_'] weiter unten genutzt, damit ALLE Backstage-Bereiche
+        // konsistent violett markiert sind. Die color:#ffffff !important bei "#admin-bar .button" ist
+        // ein gezielter Fix: die theme-eigene .button.primary-Regel setzt schwarze Schrift
+        // (für weisse Buttons gedacht), was im violetten Admin-Bar-Kontext unlesbar war - die
+        // ID-Selektor-Spezifität von #admin-bar gewinnt hier bewusst gegen die Klassen-Regel.
         echo "
         <style>
             :root { --admin-accent: #8b5cf6; --admin-accent-deep: #6d28d9; --admin-accent-light: #ddd6fe; }
@@ -2249,9 +2270,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
 </article>
 
-<!-- ########################## -->
-<!-- ########  NEUES TURNIER ANLEGEN  ######### -->
-<!-- ########################## -->
+<!-- ################################################################################################ -->
+<!-- ###  NEUES TURNIER ANLEGEN (kopiert das laufende Turnier per generischem SELECT *-Row-Copy)  ### -->
+<!-- ################################################################################################ -->
+<!-- Realer Typ: altes Turnier wird zu "History" (type=3), Kopie wird das neue aktuelle Turnier.
+     Testturnier-Typ: aktuelles Turnier bleibt komplett unangetastet, Kopie landet zusätzlich als
+     Testturnier (type=2) und man wird direkt dorthin weitergeleitet. Die eigentliche Kopier-Logik
+     (spaltenunabhängiges SELECT * + INSERT) steckt in edit_variables.php, Aktion Turnier_Neu_Anlegen. -->
 <article id="backstage_neues_turnier">
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
@@ -2588,9 +2613,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
 </article>
 
-<!-- ########################## -->
-<!-- ########  NUTZERMANAGEMENT  ######### -->
-<!-- ########################## -->
+<!-- ################################################################################################ -->
+<!-- ###  NUTZERMANAGEMENT (komplette UI für das neue Mehrfach-Rollen-System, ersetzt fk_rechte)  ### -->
+<!-- ################################################################################################ -->
+<!-- Kurzüberblick der Rollen + kompakte Liste aller Nutzer (sortiert nach Berechtigungsstärke) mit
+     ihren aktuell zugewiesenen Rollen als Badges, "Rolle hinzufügen"-Dropdown (nur mit erlaubten
+     Zielrollen) und "Rolle entfernen" pro Badge. Ganz unten ein kompaktes "Neuen Nutzer anlegen".
+     Alles ausschließlich über System_Benutzer_in_Relation_Rolle, fk_rechte wird nirgends mehr gelesen. -->
 <article id="backstage_nutzermanagement">
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
