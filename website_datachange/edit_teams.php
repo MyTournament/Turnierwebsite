@@ -469,11 +469,12 @@ if (!headers_sent()) {
 				}
 			}
 
+			// Nach dem Generieren direkt zur Teamliste weiterleiten, damit die neu angelegten Teams sofort sichtbar sind
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#backstage_teams_generieren");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_generieren");
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
 		}
