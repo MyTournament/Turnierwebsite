@@ -1141,8 +1141,15 @@
             $start_ko_finallevel = $row_sql["start_ko_finallevel"];
             //echo '<script>console.log('.$start_ko_finallevel.')</script>';
         }
-        $ko_finallevel = $start_ko_finallevel; //Zähler
-        while ($ko_finallevel > 0) {
+        // Anzeige-Reihenfolge: normal von der Start-Finalstufe abwärts, aber "Spiel um Platz 3"
+        // (Finallevel 1) und "Finale" (Finallevel 2) werden bewusst ans Ende getauscht, damit das
+        // Finale ganz unten steht (mit dem "Turnier abschließen"-Button direkt darunter) und das
+        // Spiel um Platz 3 direkt darüber.
+        $koLevelReihenfolge = [];
+        for ($lvl = $start_ko_finallevel; $lvl >= 3; $lvl--) { $koLevelReihenfolge[] = $lvl; }
+        $koLevelReihenfolge[] = 1; // Spiel um Platz 3
+        $koLevelReihenfolge[] = 2; // Finale (ganz unten)
+        foreach ($koLevelReihenfolge as $ko_finallevel) {
             //Überschrift aus Datenbank suchen
             $sqlFinallevel = 'SELECT * FROM `Turnier_KO_Finallevel` WHERE id = ' . $ko_finallevel . ' ORDER BY ID';
             $resultFinallevel = $conn->query($sqlFinallevel);
@@ -1329,7 +1336,6 @@
                 }
             }
 
-            $ko_finallevel--; //Zähler dekrementieren (nächste Finalstufe)
         }
     }
 
