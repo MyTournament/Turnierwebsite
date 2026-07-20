@@ -1721,7 +1721,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-menu-list { display: flex; flex-direction: column; gap: 0.5rem; max-width: 420px; margin: 1rem auto; }
             .admin-menu-list a.admin-menu-button { display: flex; align-items: center; gap: 0.7rem; text-align: left; min-width: 0; }
             .admin-menu-list .amn-num { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--admin-accent-deep); border: 1px solid var(--admin-accent); flex-shrink: 0; font-size: 0.75rem; }
+            /* Testmodus-Variante der Menü-Buttons: gleiche dunkelblaue Farbe wie die Testmodus-Leiste,
+               damit auf einen Blick klar ist, dass diese Funktion nur im Testmodus existiert/wirkt. */
+            .admin-menu-list a.admin-menu-button-testmodus { background: linear-gradient(135deg, #123a5c, #1e5c8f); }
+            .admin-menu-list .amn-num-testmodus { background: #123a5c; border-color: #1e5c8f; }
+            .settings-testmodus-hinweis { max-width: 420px; margin: 0.8rem auto; padding: 0.6rem 0.9rem; border-radius: 8px; background: #123a5c; border: 1px solid #1e5c8f; color: #ffffff; font-size: 0.85rem; text-align: left; }
         </style>
+        <?php if ($test_turnier_id != 0) { ?>
+        <div class='settings-testmodus-hinweis'>Du befindest dich im <b>Testmodus</b>. Alle Änderungen, die du hier vornimmst, betreffen ausschließlich dieses Testturnier - nicht das echte, laufende Turnier.</div>
+        <?php } ?>
         <?php
         // ====================================================================================
         // RECHTE-AUDIT: SETTINGS-MENÜ NUR NOCH ÜBER DIE JEWEILIGEN EINZELNEN FLAGS SICHTBAR
@@ -1732,6 +1740,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // es gibt dafür kein eigenes Flag). "Nutzermanagement" ist sichtbar, sobald irgendein
         // Rollen-Vergabe-Recht vorhanden ist (neue_admins/neue_co_admins/restliche_rollen_vergeben) -
         // innerhalb der Seite wird dann ohnehin nur das gezeigt, wofür man selbst berechtigt ist.
+        // "Teams generieren" ist NUR im Testmodus sichtbar (dunkelblau statt violett) - siehe
+        // backstage_teams_generieren weiter unten, das Backend prüft zusätzlich unabhängig, dass
+        // wirklich ein Testturnier (type=2) bearbeitet wird.
         $amnZaehler = 1;
         $hatIrgendeinRollenVergabeRecht = $rechteFlags['neue_admins'] || $rechteFlags['neue_co_admins'] || $rechteFlags['restliche_rollen_vergeben'];
         ?>
@@ -1744,6 +1755,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php } ?>
             <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_turnier_phase' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Turnierphase</a>
+            <?php } ?>
+            <?php if ($test_turnier_id != 0 && $rechteFlags['teams']) { ?>
+            <a href='#backstage_teams_generieren' class='admin-menu-button admin-menu-button-testmodus'><span class='amn-num amn-num-testmodus'><?php echo $amnZaehler++; ?></span> Teams generieren</a>
             <?php } ?>
             <?php if ($rechteFlags['teams']) { ?>
             <a href='#backstage_teams_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams bearbeiten</a>
@@ -2311,6 +2325,37 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         ?>
     </div>
     <h5><br /></h5>
+    <?php } ?>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  TEAMS GENERIEREN (nur im Testmodus - legt automatisch N Testteams inkl. Spieler*innen an) ### -->
+<!-- ################################################################################################ -->
+<!-- Erzeugt Teams mit Kürzel = Passwort (z.B. "T5"/"T5"), damit einzelne Team-Logins beim Testen
+     leicht nachvollzogen werden können. Backend (edit_teams.php, Aktion Teams_Generieren) prüft
+     zusätzlich unabhängig, dass wirklich ein Testturnier (type=2) bearbeitet wird - diese Funktion
+     darf niemals Teams im echten, laufenden Turnier anlegen. -->
+<article id="backstage_teams_generieren">
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <?php if ($test_turnier_id == 0 || !$rechteFlags['teams']) { ?>
+    <p>Diese Funktion ist nur im Testmodus verfügbar.</p>
+    <?php } else { ?>
+    <h1>Teams generieren</h1>
+    <p>Legt automatisch die gewünschte Anzahl an Testteams für dieses Testturnier an, inklusive je 3 zufällig benannter Spieler*innen. Teamkürzel und Teampasswort sind dabei immer identisch (z.B. Kürzel "T5" &rarr; Passwort "T5"), damit sich einzelne Team-Zugänge beim Testen leicht merken lassen.</p>
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Anzahl Testteams</span>
+        <form action='website_datachange/edit_teams.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+            <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+            <input type='hidden' name='action' value='Teams_Generieren'/>
+            <input type='number' name='anzahl_testteams' min='1' max='100' value='10' class='Eingabe ts-input'>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+        </form>
+    </div>
     <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
     <h5><br /></h5>
