@@ -1649,48 +1649,63 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- LOGIN - für WORDPRESS -->
 <article id="login">
     <!-- ================================================================================================
-         LOGIN-EINSTIEGSSEITE (Ziel des "Backstage"-Links im Footer) - KOMPAKTER, WENIGER ABLENKUNG
+         LOGIN-EINSTIEGSSEITE (Ziel des "Backstage"-Links im Footer) - KOMPAKT, ABER MIT LUFT ZWISCHEN
+         DEN VIER BEREICHEN (Testmodus / Login / Registrieren / Anzahl Websitebesuche)
          ================================================================================================
-         Kompakter gemacht: viele der frueheren "<p></br></p>"-Abstandshalter zwischen den Bloecken
-         entfernt. "Anzahl Websitebesuche" ist an den Anfang gerueckt (unwichtig fuer den eigentlichen
-         Login-Zweck, muss nicht im Weg stehen). Pausenraum-Link, das CMS-Inhalte-Paket direkt danach
-         (Section 18), Rangliste- und Bookmark-Link sind auf Wunsch auskommentiert - "Registrieren"
-         bleibt bewusst aktiv. -->
-    <h2>Testmodus</h2>
-    <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmodus läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
-    <form method='post' action='#'>
-        <select name='test_turnier_id'>
-            <option value='0'><i><?php echo $TurnierName ?></i></option>";
-            <?php
-            foreach ($testTurniere as &$value){
-                $index = $value[0];
-                $tName = $value[2];
-                echo "<option value=$index>$tName</option>";
-            }
-            ?>
-        </select>
-        <!-- <input type='hidden' name='test_turnier_id' value='1'/> -->
-        <button name='content' class='button primary'>Testmodus starten</button>
-    </form>
+         Nicht mehr die alten "<p></br></p>"-Doppel-Abstandshalter, aber auch nicht komplett ohne Luft -
+         jeder Bereich ist ein .login-section-Block mit moderatem margin-bottom, und Dropdown/Button
+         innerhalb eines Formulars haben ueber .login-form-row einen kleinen eigenen Abstand.
+         "Anzahl Websitebesuche" ist an den Schluss gerueckt (unwichtig fuer den eigentlichen Login-
+         Zweck). Pausenraum-Link, das CMS-Inhalte-Paket direkt danach (Section 18), Rangliste- und
+         Bookmark-Link sind auf Wunsch auskommentiert - "Registrieren" bleibt bewusst aktiv. -->
+    <style>
+        .login-section { margin-bottom: 1.6rem; }
+        .login-form-row { margin-bottom: 0.6rem; }
+    </style>
+    <div class='login-section'>
+        <h2>Testmodus</h2>
+        <p>Der Testmodus ist dafür da, alle Funktionen der Website auszuprobieren. Der Testmodus läuft mit einem Test-Turnier mit ausgedachten Teams.</p>
+        <form method='post' action='#'>
+            <div class='login-form-row'>
+                <select name='test_turnier_id'>
+                    <option value='0'><i><?php echo $TurnierName ?></i></option>";
+                    <?php
+                    foreach ($testTurniere as &$value){
+                        $index = $value[0];
+                        $tName = $value[2];
+                        echo "<option value=$index>$tName</option>";
+                    }
+                    ?>
+                </select>
+                <!-- <input type='hidden' name='test_turnier_id' value='1'/> -->
+            </div>
+            <button name='content' class='button primary'>Testmodus starten</button>
+        </form>
+    </div>
 
-    <div id="LogIn">
-    <h2>Login (CMS &amp; Backstage)</h2>
-    <?php
-    if($test_turnier_id==0){ //Fall: normales Turnier
-        echo "<form action='/' method='POST'>";
-    }else{ //Testturniere
-        echo "<form action='/?test_turnier_id=$test_turnier_id' method='POST'>";
-    }
-    ?>
-    <input type="text" name="bn" class="Eingabe" placeholder="username" style="color: white" required>
-    <input type="password" class="Eingabe" name="pw" placeholder="password" style="color: white" required>
-    <!--<input type="submit" value="Absenden" style="color: black"/> -->
-    <button value="Anmelden" type="submit">Anmelden</button>
-    </form>
+    <div class='login-section' id="LogIn">
+        <h2>Login (CMS &amp; Backstage)</h2>
+        <?php
+        if($test_turnier_id==0){ //Fall: normales Turnier
+            echo "<form action='/' method='POST'>";
+        }else{ //Testturniere
+            echo "<form action='/?test_turnier_id=$test_turnier_id' method='POST'>";
+        }
+        ?>
+        <div class='login-form-row'>
+            <input type="text" name="bn" class="Eingabe" placeholder="username" style="color: white" required>
+            <input type="password" class="Eingabe" name="pw" placeholder="password" style="color: white" required>
+        </div>
+        <!--<input type="submit" value="Absenden" style="color: black"/> -->
+        <button value="Anmelden" type="submit">Anmelden</button>
+        </form>
+    </div>
 
-    <h2>Registrieren</h2>
-    <p>Noch keinen Account? Hier kannst du einen erstellen. Sag danach einfach Richard Bescheid, damit er dich freischalten kann.</p>
-    <a href='#register_account' class='button primary'>Registrieren</a>
+    <div class='login-section'>
+        <h2>Registrieren</h2>
+        <p>Noch keinen Account? Hier kannst du einen erstellen. Sag danach einfach Richard Bescheid, damit er dich freischalten kann.</p>
+        <a href='#register_account' class='button primary'>Registrieren</a>
+    </div>
 
     <!-- Auf Wunsch auskommentiert: Pausenraum-Link, CMS-Inhalte-Paket (Section 18), Rangliste- und Bookmark-Link.
          Der PHP-Aufruf ist bewusst NICHT nur in einen HTML-Kommentar gepackt (PHP-Tags werden auch
@@ -1700,8 +1715,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <!-- <a href='#rangliste' class='button primary'>Rangliste</a> -->
     <!-- <a id="bookmark-this" href="#" title="Bookmark This Page">Bookmark This Page</a> -->
 
-    <h2>Anzahl Websitebesuche</h2>
-    <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
+    <div class='login-section'>
+        <h2>Anzahl Websitebesuche</h2>
+        <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
+    </div>
 
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
