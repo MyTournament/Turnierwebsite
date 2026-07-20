@@ -490,8 +490,75 @@ if ($action == 'Ändern') {
     }
 
   }
+// ================================================================================================
+// ZUFÄLLIGE SPIELE EINTRAGEN: NUR FÜR TESTTURNIERE (type=2) - füllt X% der offenen Begegnungen
+// ================================================================================================
+// Sicherheitsnetz unabhängig von der UI-Sichtbarkeit: bevor irgendetwas eingetragen wird, wird hier
+// noch einmal serverseitig geprüft, dass $TurnierID tatsächlich zu einem Testturnier gehört - kann
+// also nie versehentlich Ergebnisse im echten, laufenden Turnier eintragen. Pro ausgewählter,
+// offener Begegnung (status nicht in 3/5/6/7) wird ein Turnier_Spiel mit zwei unterschiedlichen
+// Zufallswerten eingefügt (damit es immer einen klaren Gewinner gibt) und die Begegnung wie bei
+// "Finalisieren" auf status 5/7 gesetzt - Siegerteam-Berechnung und Bracket-Nachrücken übernimmt
+// danach wie immer db_update.php beim nächsten Seitenaufruf.
+}else if($action == 'Zufaellige_Spiele_Eintragen'){
+  if ($accountDarfSpieleBearbeiten == 1) {
+    $sqlTypCheckZs = "SELECT type FROM Turnier_Main WHERE id = ?";
+    $stmtTypCheckZs = $conn->prepare($sqlTypCheckZs);
+    $stmtTypCheckZs->bind_param("i", $TurnierID);
+    $stmtTypCheckZs->execute();
+    $rowTypCheckZs = $stmtTypCheckZs->get_result()->fetch_assoc();
+
+    if ($rowTypCheckZs !== null && (int)$rowTypCheckZs['type'] === 2) {
+      $zufallScope = isset($_POST['zufall_scope']) ? $_POST['zufall_scope'] : '';
+      $prozent = max(0, min(100, (int)$_POST['prozent']));
+      $stmtOffeneBegegnungen = null;
+
+      if ($zufallScope === 'gruppenphase') {
+        $sqlOffeneBegegnungen = "SELECT id FROM Turnier_Begegnung WHERE ko_finallevel = 0 AND status NOT IN (3,5,6,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?)";
+        $stmtOffeneBegegnungen = $conn->prepare($sqlOffeneBegegnungen);
+        $stmtOffeneBegegnungen->bind_param("ii", $TurnierID, $TurnierID);
+      } else if ($zufallScope === 'ko') {
+        $zufallKoFinallevel = (int)$_POST['zufall_ko_finallevel'];
+        $sqlOffeneBegegnungen = "SELECT id FROM Turnier_Begegnung WHERE ko_finallevel = ? AND status NOT IN (3,5,6,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?)";
+        $stmtOffeneBegegnungen = $conn->prepare($sqlOffeneBegegnungen);
+        $stmtOffeneBegegnungen->bind_param("iii", $zufallKoFinallevel, $TurnierID, $TurnierID);
+      }
+
+      if ($stmtOffeneBegegnungen !== null) {
+        $stmtOffeneBegegnungen->execute();
+        $resultOffeneBegegnungen = $stmtOffeneBegegnungen->get_result();
+        $offeneBegegnungIds = [];
+        while ($rowOffen = $resultOffeneBegegnungen->fetch_assoc()) { $offeneBegegnungIds[] = (int)$rowOffen['id']; }
+
+        shuffle($offeneBegegnungIds);
+        $anzahlZuFuellen = (int)round(count($offeneBegegnungIds) * $prozent / 100);
+        $auszufuellendeIds = array_slice($offeneBegegnungIds, 0, $anzahlZuFuellen);
+
+        foreach ($auszufuellendeIds as $zsBegegnungId) {
+          $flaschen1 = random_int(0, 15);
+          do { $flaschen2 = random_int(0, 15); } while ($flaschen2 === $flaschen1);
+
+          $sqlInsertSpielZs = "INSERT INTO Turnier_Spiel (fk_begegnung, biereheimteam, biereauswaertsteam, who_inserted_or_updated_last) VALUES (?, ?, ?, ?)";
+          myDb_execute($conn, $TurnierID, $bn, "edit_games.php Zufaellige_Spiele_Eintragen", $sqlInsertSpielZs, array($zsBegegnungId, $flaschen1, $flaschen2, $bn));
+
+          $sqlFinalizeZs = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 4 THEN 7 ELSE 5 END WHERE id = ?";
+          myDb_execute($conn, $TurnierID, $bn, "edit_games.php Zufaellige_Spiele_Eintragen finalize", $sqlFinalizeZs, array($zsBegegnungId));
+        }
+      }
+    }
+  }
+
+  //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID, direkt zurück zur Gruppenphase/KO-Phase
+  $test_turnier_id = $_GET['test_turnier_id'];
+  $zsRueckAnker = (isset($_POST['zufall_scope']) && $_POST['zufall_scope'] === 'ko') ? 'kophase' : 'gruppenphase';
+  if($test_turnier_id==NULL){
+      header("Location: /#$zsRueckAnker");
+  }else{
+      header("Location: /?test_turnier_id=$test_turnier_id#$zsRueckAnker");
+  }
+
 }else{
-  
+
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
@@ -502,4 +569,4 @@ if ($action == 'Ändern') {
 
 }
 
-?> 
+?>

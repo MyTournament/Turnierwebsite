@@ -2362,6 +2362,64 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 <!-- ################################################################################################ -->
+<!-- ###  ZUFÄLLIGE SPIELE EINTRAGEN (nur im Testmodus - von Buttons in Gruppenphase/KO-Phase aus) ### -->
+<!-- ################################################################################################ -->
+<!-- Wird über "?...&zufall_scope=gruppenphase" bzw. "&zufall_scope=ko&zufall_ko_finallevel=<id>"
+     aufgerufen (Buttons dazu in printSpielplanGruppenphase/printKO_PhaseTabellen). Backend
+     (edit_games.php, Aktion Zufaellige_Spiele_Eintragen) prüft zusätzlich unabhängig, dass wirklich
+     ein Testturnier (type=2) bearbeitet wird - darf niemals Ergebnisse im echten Turnier eintragen. -->
+<article id="backstage_zufaellige_spiele">
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <?php
+    $zsScope = isset($_GET['zufall_scope']) ? $_GET['zufall_scope'] : '';
+    $zsKoFinallevel = isset($_GET['zufall_ko_finallevel']) ? (int)$_GET['zufall_ko_finallevel'] : 0;
+    if ($test_turnier_id == 0 || !$rechteFlags['alle_spiele'] || !in_array($zsScope, ['gruppenphase', 'ko'], true)) {
+    ?>
+    <p>Diese Funktion ist nur im Testmodus verfügbar.</p>
+    <?php } else {
+        if ($zsScope === 'gruppenphase') {
+            $zsLabel = 'Gruppenphase';
+            $sqlZsOffene = "SELECT COUNT(*) AS anzahl FROM Turnier_Begegnung WHERE ko_finallevel = 0 AND status NOT IN (3,5,6,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?)";
+            $stmtZsOffene = $conn->prepare($sqlZsOffene);
+            $stmtZsOffene->bind_param("ii", $TurnierID, $TurnierID);
+        } else {
+            $sqlZsName = 'SELECT name FROM Turnier_KO_Finallevel WHERE id = ?';
+            $stmtZsName = $conn->prepare($sqlZsName);
+            $stmtZsName->bind_param("i", $zsKoFinallevel);
+            $stmtZsName->execute();
+            $rowZsName = $stmtZsName->get_result()->fetch_assoc();
+            $zsLabel = $rowZsName['name'] ?? "Finalstufe $zsKoFinallevel";
+            $sqlZsOffene = "SELECT COUNT(*) AS anzahl FROM Turnier_Begegnung WHERE ko_finallevel = ? AND status NOT IN (3,5,6,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht=0 AND fk_turnier=?)";
+            $stmtZsOffene = $conn->prepare($sqlZsOffene);
+            $stmtZsOffene->bind_param("iii", $zsKoFinallevel, $TurnierID, $TurnierID);
+        }
+        $stmtZsOffene->execute();
+        $anzahlOffeneZs = (int)$stmtZsOffene->get_result()->fetch_assoc()['anzahl'];
+    ?>
+    <h1>Zufällige Spiele eintragen</h1>
+    <p><?php echo htmlspecialchars($zsLabel); ?>: aktuell <b><?php echo $anzahlOffeneZs; ?></b> offene Begegnung(en). Wähle, wie viel Prozent davon auf einen Schlag zufällig mit einem Ergebnis eingetragen und finalisiert werden sollen (es wird jeweils ein klarer, zufälliger Gewinner ausgewürfelt).</p>
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Prozent</span>
+        <form action='website_datachange/edit_games.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+            <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+            <input type='hidden' name='action' value='Zufaellige_Spiele_Eintragen'/>
+            <input type='hidden' name='zufall_scope' value='<?php echo htmlspecialchars($zsScope, ENT_QUOTES); ?>'/>
+            <?php if ($zsScope === 'ko') { ?>
+            <input type='hidden' name='zufall_ko_finallevel' value='<?php echo $zsKoFinallevel; ?>'/>
+            <?php } ?>
+            <input type='number' name='prozent' min='1' max='100' value='100' class='Eingabe ts-input'> %
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+        </form>
+    </div>
+    <?php } ?>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ################################################################################################ -->
 <!-- ###  NEUES TURNIER ANLEGEN (kopiert das laufende Turnier per generischem SELECT *-Row-Copy)  ### -->
 <!-- ################################################################################################ -->
 <!-- Realer Typ: altes Turnier wird zu "History" (type=3), Kopie wird das neue aktuelle Turnier.
