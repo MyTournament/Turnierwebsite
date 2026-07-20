@@ -17,6 +17,23 @@
     $TurnierID = $_POST['TurnierID'];
     $spielerId = $_POST['spielerId']; //wird nur übergeben wenn vcard von Spielerinfo aufgerufen wird
 
+    // ============================================================================================
+    // RECHTE-AUDIT: Der Sammel-Export (alle Telefonnummern eines Turniers, kein spielerId gesetzt)
+    // hatte bisher KEINE Rechteprüfung - jeder, der das Formular in backstage_tel kannte/nachbaute,
+    // konnte sich alle Telefonnummern als vCard herunterladen. Zweite Prüfung hier (zusätzlich zur
+    // Button-Sichtbarkeit in index.php), falls jemand den Link/das Formular direkt anspricht.
+    if ($spielerId == NULL) {
+        include_once '../website_datachange/login_interface.php';
+        $vcBn = isset($_POST['bn']) ? $_POST['bn'] : null;
+        $vcPw = isset($_POST['pw']) ? $_POST['pw'] : null;
+        $vcRollenInfo = ($vcBn !== null && $vcPw !== null) ? getUserRollenInfo($conn, $vcBn, $vcPw) : null;
+        if ($vcRollenInfo === null || !$vcRollenInfo['flags']['teams']) {
+            http_response_code(403);
+            header("Content-Type: text/plain");
+            echo "Keine ausreichende Berechtigung.";
+            exit;
+        }
+    }
 
   //$sql="SELECT * FROM USER WHERE id=".$_GET['id'];
   //$result=mysql_fetch_row(mysql_query($sql));

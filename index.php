@@ -329,6 +329,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     // explizit (und bewusst) Admin/Co-Admin-only bleiben sollen (Begegnung anlegen/sperren), noch
     // gebraucht wird - siehe die jeweiligen Kommentare weiter unten.
     $istAdminOderCoAdmin = $rollenInfo !== null && ($rollenInfo['ist_admin'] || $rollenInfo['ist_co_admin']);
+    // Strikt "echter" Admin (nicht Co-Admin) - für die wenigen Funktionen, die explizit nur dem
+    // Hauptadmin vorbehalten bleiben sollen (Verlauf/Traffic/DB-Verlauf, Passwort anzeigen/ändern).
+    $istEchterAdmin = $rollenInfo !== null && $rollenInfo['ist_admin'];
     $LoggedInWithCMSorHigher = $rollenInfo !== null && $rechteFlags['cms'];
     // Backstage-Bereich (Lila Balken, Settings, Infos/Verlauf, alle backstage_*-Artikel):
     // ausschließlich über das "backstage"-Flag. Wer dieses Flag nicht hat (z.B. Schiedsrichter*in,
@@ -1799,8 +1802,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $hatIrgendeinRollenVergabeRecht = $rechteFlags['neue_admins'] || $rechteFlags['neue_co_admins'] || $rechteFlags['restliche_rollen_vergeben'];
         ?>
         <div class='admin-menu-list'>
-            <?php if ($rechteFlags['turnier_settings']) { ?>
-            <a href='#backstage_neues_turnier' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Neues Turnier anlegen</a>
+            <?php if ($istAdminOderCoAdmin) { ?>
+            <a href='#backstage_neues_turnier' class='admin-menu-button admin-menu-button--coadmin'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Neues Turnier anlegen</a>
             <?php } ?>
             <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_turnier_settings' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Turnier Settings</a>
@@ -1823,11 +1826,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_gruppeneinteilung_losen' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Gruppeneinteilung losen</a>
             <?php } ?>
-            <?php if ($istAdminOderCoAdmin) { ?>
-            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button admin-menu-button--coadmin'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
+            <?php if ($rechteFlags['turnier_settings']) { ?>
+            <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
             <?php } ?>
-            <?php if ($hatIrgendeinRollenVergabeRecht) { ?>
-            <a href='#backstage_nutzermanagement' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Nutzermanagement</a>
+            <?php if ($istAdminOderCoAdmin) { ?>
+            <a href='#backstage_nutzermanagement' class='admin-menu-button admin-menu-button--coadmin'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Nutzermanagement</a>
             <?php } ?>
         </div>
         <?php if ($istAdminOderCoAdmin) { ?>
@@ -1849,14 +1852,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <div style='text-align: center'>
         <h2>Verlauf</h2>
         <?php // RECHTE-AUDIT: Traffic/DB-Verlauf enthalten sensible Daten (wer hat was geaendert,
-        // welche Seiten wurden aufgerufen) - das ist bewusst Admin/Co-Admin vorbehalten, nicht schon
-        // ab dem allgemeinen "backstage"-Flag (das nur die Sichtbarkeit des Infos-Buttons steuert). ?>
-        <?php if (!$istAdminOderCoAdmin) { ?>
-        <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen den Verlauf einsehen.</p>
+        // welche Seiten wurden aufgerufen) - das ist bewusst NUR echten Admins vorbehalten (nicht
+        // schon Co-Admin), nicht ab dem allgemeinen "backstage"-Flag. ?>
+        <?php if (!$istEchterAdmin) { ?>
+        <p>Keine ausreichende Berechtigung. Nur Admins dürfen den Verlauf einsehen.</p>
         <?php } else { ?>
         <div class='admin-menu-wrap'>
-            <a href='#backstage_traffic' class='admin-menu-button admin-menu-button--coadmin'>Traffic</a>
-            <a href='#backstage_letzte_aenderung' class='admin-menu-button admin-menu-button--coadmin'>DB-Verlauf</a>
+            <a href='#backstage_traffic' class='admin-menu-button admin-menu-button--adminonly'>Traffic</a>
+            <a href='#backstage_letzte_aenderung' class='admin-menu-button admin-menu-button--adminonly'>DB-Verlauf</a>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -1868,8 +1871,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########  Begegnungen bearbeiten  ######### -->
 <article id="backstage_begegnungen_bearbeiten">
     <h1>Begegnungen bearbeiten</h1>
-    <?php if (!$istAdminOderCoAdmin) { ?>
-    <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen Begegnungen anlegen oder sperren.</p>
+    <?php // RECHTE-AUDIT: nicht mehr Admin/Co-Admin-only, sondern wie die übrigen Turnier-Settings
+    // (Turnierphase, Gruppen generieren, ...) am turnier_settings-Flag - damit können z.B. auch
+    // Leute mit der Rolle "Backstage-Zugang" Begegnungen anlegen/sperren. ?>
+    <?php if (!$rechteFlags['turnier_settings']) { ?>
+    <p>Keine ausreichende Berechtigung. Begegnungen anlegen oder sperren erfordert die Turnier-Settings-Berechtigung.</p>
     <?php } else { ?>
     <!-- ============================================================================================
          BEGEGNUNGEN BEARBEITEN - NEU DESIGNT: ZWEI KLAR GETRENNTE, KOMPAKTE BEREICHE
@@ -2040,11 +2046,18 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <a href='#backstage_info' class='button'>Zurück</a>
     <h5><br /></h5>
     <h1>Telefonnummern</h1>
+    <?php // RECHTE-AUDIT: personenbezogene Daten (Telefonnummern) - war bisher ungeschuetzt per
+    // direktem Hash-Link erreichbar. Jetzt am teams-Flag (wie Moderator*in). ?>
+    <?php if (!$rechteFlags['teams']) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else { ?>
     <h3>Hier eine Übersicht aller Telefonnumern, um alle in eine Whatsapp-Gruppe hinzuzufügen.</h3>
     <h5><br /></h5>
     <form action='website_functionalities/vcard.php' method='POST'>
         <button id='btn_login_Absenden' class='button primary' value='Absenden' type='submit'>Kontakte aufs Handy importieren</button>
         <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
     </form>
     <h5><br /></h5>
     <p>Bitte sensibel mit den Daten umgehen! Haben bisher noch nicht mal eine Datenschutzerklärung und keine Lust auf Stress^^</p>
@@ -2065,6 +2078,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "<p><b>$spielername</b> ( Telefonnummer: <b>$telefonnummer</b> | Team: <b>$teamname</b> | Spieler registriert seit: $timestamp )</p>";
     }
     ?>
+    <?php } ?>
     <a href='#backstage_info' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -2076,8 +2090,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <a href='#backstage_info' class='button'>Zurück</a>
     </br></br>
     <h2>Unsere Datenbank als ER-Diagramm</h2>
+    <?php // RECHTE-AUDIT: keine personenbezogenen Daten, aber trotzdem interne Struktur - war
+    // bisher ungeschuetzt per direktem Hash-Link erreichbar. Jetzt am backstage-Flag. ?>
+    <?php if (!$rechteFlags['backstage']) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else { ?>
     <p>Hinweis: Einige Attribut-Namen haben sich mittlerweile geändert, es sind neue dazugekommen und einige wurden entfernt. Aber die Grundstruktur stimmt noch.</p>
     <span class='image main'><img src='images/er_diagram.jpg' alt='' /></span>
+    <?php } ?>
     <a href='#backstage_info' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -2438,12 +2458,31 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <div style='text-align: center'>
         <h2>Infos</h2>
         <div class='admin-menu-wrap'>
-            <a href='#backstage_tel' class='admin-menu-button'>Telefonnummern</a>
-            <a href='#backstage_teampasswort' class='admin-menu-button'>Team-Passwörter</a>
-            <a href='#backstage_warteliste' class='admin-menu-button'>Warteliste</a>
+            <?php if ($rechteFlags['teams']) { ?>
+            <a href='#backstage_tel' class='admin-menu-button admin-menu-button--teams'>Telefonnummern</a>
+            <?php } ?>
+            <?php if ($rechteFlags['teams']) { ?>
+            <a href='#backstage_teampasswort' class='admin-menu-button admin-menu-button--teams'>Team-Passwörter</a>
+            <?php } ?>
+            <?php if ($rechteFlags['teams']) { ?>
+            <a href='#backstage_warteliste' class='admin-menu-button admin-menu-button--teams'>Warteliste</a>
+            <?php } ?>
+            <?php if ($rechteFlags['backstage']) { ?>
             <a href='#backstage_er_diagram' class='admin-menu-button'>ER-Diagramm</a>
-            <a href='#backstage_verlauf' class='admin-menu-button'>Verlauf</a>
+            <?php } ?>
+            <?php if ($istEchterAdmin) { ?>
+            <a href='#backstage_verlauf' class='admin-menu-button admin-menu-button--adminonly'>Verlauf</a>
+            <?php } ?>
         </div>
+        <?php if ($istAdminOderCoAdmin) { ?>
+        <div class='admin-legende'>
+            <h4>Farb-Legende</h4>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Helles Lila: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Standard-Lila: das jeweils passende Einzel-Recht reicht</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Dunkles Lila: nur Admin und Co-Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Sehr dunkles Lila: nur "echte" Admins</div>
+        </div>
+        <?php } ?>
         <h5><br/></h5>
         <a href='#' class='button'>Zurück</a>
         <h5><br /></h5>
@@ -2455,6 +2494,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########################## -->
 <article id="backstage_warteliste">
     <h2>Warteliste</h2>
+    <?php // RECHTE-AUDIT: personenbezogene Daten (Teilnehmer*innen-Namen) - war bisher ungeschuetzt
+    // per direktem Hash-Link erreichbar. Jetzt am teams-Flag (wie Moderator*in). ?>
+    <?php if (!$rechteFlags['teams']) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else { ?>
     <?php
     $sqlWarteliste = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_warteliste IN (SELECT id FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .')';
     $resultWarteliste = $conn->query($sqlWarteliste);
@@ -2477,6 +2521,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "<li>$ausgabeString</li>";
     }
     ?>
+    <?php } ?>
     <a href='#backstage_info' class='button'>Zurück</a>
     <h5><br /></h5>
 </article>
@@ -2486,6 +2531,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <!-- ########################## -->
 <article id="backstage_teampasswort">
     <h2>Team-Passwörter</h2>
+    <?php // RECHTE-AUDIT: Team-Passwörter sind besonders sensibel - war bisher ungeschuetzt per
+    // direktem Hash-Link erreichbar. Jetzt am teams-Flag (wie Moderator*in). ?>
+    <?php if (!$rechteFlags['teams']) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else { ?>
     <?php
     $sqlPasswort = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .'';
     $resultPasswort = $conn->query($sqlPasswort);
@@ -2501,6 +2551,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         echo "<li>$ausgabeString | Passwort: $passwort</li>";
     }
     ?>
+    <?php } ?>
     <h5><br /></h5>
     <a href='#backstage_info' class='button'>Zurück</a>
     <h5><br /></h5>
@@ -3401,9 +3452,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h2>Letzte DB-Änderungen</h2>
     <?php // RECHTE-AUDIT: Diese Seite war bisher UNGESCHÜTZT erreichbar (der Datenbank-Änderungsverlauf
     // wurde unabhängig vom Login-Status angezeigt, sobald jemand direkt #backstage_letzte_aenderung
-    // aufgerufen hat) - jetzt strikt Admin/Co-Admin vorbehalten. ?>
-    <?php if (!$istAdminOderCoAdmin) { ?>
-    <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen den DB-Verlauf einsehen.</p>
+    // aufgerufen hat) - jetzt strikt nur echten Admins vorbehalten. ?>
+    <?php if (!$istEchterAdmin) { ?>
+    <p>Keine ausreichende Berechtigung. Nur Admins dürfen den DB-Verlauf einsehen.</p>
     <?php } else { ?>
     <p>Hier werden alle Datenbankänderungen dokumentiert, egal ob es um Löschung, Änderung oder Einfügen geht. Wenn ein Team ständig versucht, Dinge zu bearbeiten, die es nicht bearbeiten soll, siehst du das hier und kannst dem Team die Rechte wegnehmen. Die Änderungen sind in SQL formuliert. Falls du nicht weißt, wie SQL funktioniert, klicke einfach <a href='https://studyflix.de/informatik/structured-query-language-606'>hier</a></p>
     <?php if (!isset($_POST['load_db_verlauf'])) {
@@ -3413,7 +3464,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
             <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES) . "'>
             <input type='hidden' name='load_db_verlauf' value='1'>
-            <button type='submit' class='admin-menu-button admin-menu-button--coadmin'>DB-Verlauf jetzt laden</button>
+            <button type='submit' class='admin-menu-button admin-menu-button--adminonly'>DB-Verlauf jetzt laden</button>
         </form>
         <p><i>Wird nicht automatisch geladen, da die Abfrage bei großen Turnieren spürbar dauern kann.</i></p>
         ";
@@ -3442,9 +3493,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
     <h2>Website-Traffic</h2>
     <?php // RECHTE-AUDIT: Wie backstage_letzte_aenderung war auch diese Seite bisher ungeschuetzt
-    // direkt per Hash-Link erreichbar - jetzt strikt Admin/Co-Admin vorbehalten. ?>
-    <?php if (!$istAdminOderCoAdmin) { ?>
-    <p>Keine ausreichende Berechtigung. Nur Admin und Co-Admin dürfen den Traffic einsehen.</p>
+    // direkt per Hash-Link erreichbar - jetzt strikt nur echten Admins vorbehalten. ?>
+    <?php if (!$istEchterAdmin) { ?>
+    <p>Keine ausreichende Berechtigung. Nur Admins dürfen den Traffic einsehen.</p>
     <?php } else { ?>
     <p>Hier werden Website-Funktionalitäten getrackt.</p>
     <?php if (!isset($_POST['load_traffic'])) {
@@ -3454,7 +3505,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
             <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES) . "'>
             <input type='hidden' name='load_traffic' value='1'>
-            <button type='submit' class='admin-menu-button admin-menu-button--coadmin'>Traffic jetzt laden</button>
+            <button type='submit' class='admin-menu-button admin-menu-button--adminonly'>Traffic jetzt laden</button>
         </form>
         <p><i>Wird nicht automatisch geladen, da die Abfrage bei großen Turnieren spürbar dauern kann.</i></p>
         ";
