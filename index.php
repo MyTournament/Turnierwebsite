@@ -397,7 +397,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             #admin-bar-status i { color: #fff; }
             #admin-bar-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
             #admin-bar-buttons form { margin: 0; display: inline; }
-            #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); color: #ffffff !important; }
+            #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); color: #ffffff !important; font-weight: 300 !important; }
             #wrapper { padding-top: 64px; }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
@@ -2240,74 +2240,76 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php // Turnierphase gehört inhaltlich zu Turnier Settings, daher gleiches Flag wie dort ?>
     <?php if (!$rechteFlags['turnier_settings']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
-    <?php } else { ?>
-    <h1>Turnier-Phase</h1>
-    <form action='website_datachange/edit_variables.php' method='POST' onSubmit='return checkAGB2()'>
-        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
-        <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
-        <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
-        <div class='field'>
-            <h3>Bitte den Abschnitt komplett lesen, bevor du die Turnierphase änderst!</h3>
-            <p>Im Backend wird bei jedem Aufruf der Website ein php-Script ausgeführt, was die gesamte Datenbank durchgeht und überprüft, ob etwas geupdated werden muss. Das sind Dinge wie ein Team, was noch keine Gruppe bekommen hat, einer Gruppe zuordnen oder das Geiwnnerteam einer Finalstufe in die nächste Finalstufe weiterleiten.</p>
-            <p>Durch dieses Script entstehen aber einige Gefahren. Es könnte zum Beispiel passieren, dass sich während dem Halbfinale noch ein Team registiert und sich dadurch der gesamte Turnierbaum verschiebt. Wenn eine bestimmte Zahl von Teams überschritten wird, entscheidet die Datenbank auch, zum Beispiel die Anzahl der Gruppen zu ändern, dabei werden alle Teams neu in Gruppen zusammengewürfelt. Aus diesem Grund gibt es auf dieser Seite hier einen 'Schalter', der nur bestimmte Funktionen des php-Scripts zulässt.</p>
-            <p>Hier erhälst du einen kurzen Überblick, was die einzelnen Positionen des 'Schalters' bedeuten.</p>
-            <h3></h3>
-            <?php
-            $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
-            $resultTurnierPhase = $conn->query($sqlTurnierPhase);
-            while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
-                $turnier_phase_name = $rowTurnierPhase['name'];
-                $turnier_phase_description = $rowTurnierPhase['description'];
-                echo "<label for='demo-category'><h3>'$turnier_phase_name'</h3></label>";
-                echo "<p>$turnier_phase_description</p>";
-            }
-            //Aktuelle Turnierphase herausfinden - erstmal ID
-            $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
-            $resultTurnier = $conn->query($sqlTurnier);
-            while ($rowTurnier = $resultTurnier->fetch_assoc()) {
-                $turnier_phase_ID = $rowTurnier['fk_turnier_phase'];
-            }
-            //Jetzt Name dazu finden
-            $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` WHERE id = '. $turnier_phase_ID .' ORDER BY logical_order';
-            $resultTurnierPhase = $conn->query($sqlTurnierPhase);
-            while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
-                $turnier_phase_name = $rowTurnierPhase['name'];
-            }
-            echo "<label for='demo-category'>Aktuelle Turnierphase: <h2 style='color: green'><i>$turnier_phase_name</i></h2></label>
-            <label for='demo-category'>Neue Turnierphase auswählen:</label>
-            <select name='Phase' id='phase'>
-                <option value='auffangbeckenfueralledienichtcheckendassmanhierwasauswählenmuss'>-</option>";
-            $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
-            $resultTurnierPhase = $conn->query($sqlTurnierPhase);
-            while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
-                $turnier_phase = $rowTurnierPhase['name'];
-                $turnier_phase_ID = $rowTurnierPhase['id'];
-                echo "<option value=$turnier_phase_ID>$turnier_phase</option>";
-            }
-            echo "</select>";
-            ?>
-        </div>
-        <script type='text/javascript'>
-            function checkAGB2() {
-                if (document.getElementById('demo-human-registergame').checked) {
-                    return true;
+    <?php } else {
+        // ============================================================================================
+        // TURNIERPHASE - NEU DESIGNT: KURZE WARNUNG OBEN, SCHALTER IN DER MITTE, ERKLÄRUNG DARUNTER
+        // ============================================================================================
+        // Vorher stand ein sehr langer Fließtext VOR dem eigentlichen Dropdown - jetzt kommt zuerst nur
+        // eine kurze, auffällige Warnung, direkt danach der eigentliche Schalter (im gleichen Kartenstil
+        // wie bei "Turnier Settings", inkl. eigenem "bestätigen"-Häkchen statt separatem Submit-Button),
+        // und erst darunter eine kompakte, pro Phase verständliche Erklärung. Die Erklärungstexte sind
+        // hier bewusst hart codiert (nicht mehr 1:1 aus Turnier_Setting_Phasen.description übernommen),
+        // weil sie anhand des tatsächlichen Verhaltens in database/db_update.php geschrieben wurden -
+        // fällt eine Phase-ID hier nicht in die Liste, wird als Rückfallebene die DB-Beschreibung genutzt.
+        $tpPhasenErklaerung = [
+            1  => 'Es passiert nichts automatisch. Teams können sich noch nicht anmelden.',
+            3  => 'Teams können sich anmelden. Sobald die maximale Teamanzahl erreicht ist, wechselt das Turnier automatisch zur Warteliste.',
+            12 => 'Neu angemeldete Teams landen auf der Warteliste. Es passiert sonst nichts automatisch.',
+            4  => 'Die Anzahl der Gruppen wird automatisch an die Teamanzahl angepasst - fehlende Gruppen werden angelegt, überzählige gelöscht.',
+            5  => 'Teams ohne Gruppe werden automatisch gleichmäßig auf die vorhandenen Gruppen verteilt.',
+            7  => 'Das Turnier läuft: Ergebnisse werden verarbeitet, Sieger*innen rücken automatisch in die nächste K.-o.-Runde nach.',
+            13 => 'Wie "Turnier läuft", zusätzlich werden neu angemeldete Teams automatisch einer Gruppe zugeteilt (Nachmeldungen).',
+            9  => 'Automatische Berechnungen sind deaktiviert - das Turnier ist abgeschlossen.',
+            11 => 'Debug-Modus: führt ALLE Schritte der anderen Phasen gleichzeitig aus. Nur zum Testen, nicht im laufenden Betrieb verwenden!',
+        ];
+
+        $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
+        $resultTurnier = $conn->query($sqlTurnier);
+        $rowTurnier = $resultTurnier->fetch_assoc();
+        $turnier_phase_ID_aktuell = $rowTurnier['fk_turnier_phase'];
+
+        $sqlTurnierPhaseAktuell = 'SELECT * FROM `Turnier_Setting_Phasen` WHERE id = '. (int)$turnier_phase_ID_aktuell;
+        $resultTurnierPhaseAktuell = $conn->query($sqlTurnierPhaseAktuell);
+        $rowTurnierPhaseAktuell = $resultTurnierPhaseAktuell->fetch_assoc();
+        $turnier_phase_name_aktuell = $rowTurnierPhaseAktuell['name'] ?? '?';
+    ?>
+    <h1>Turnierphase</h1>
+    <p style='color:#e74c3c'><b>⚠ Achtung:</b> Die Turnierphase steuert automatische Berechnungen im Hintergrund (z.B. Gruppeneinteilung, Nachrücken im Turnierbaum). Falsch gesetzt kann sie Daten durcheinanderbringen. Eine kurze Erklärung der einzelnen Phasen steht weiter unten - im Zweifel lieber vorher jemanden fragen.</p>
+
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Turnierphase</span>
+        <span class='ts-hint'>Aktuell: <b><?php echo htmlspecialchars($turnier_phase_name_aktuell); ?></b></span>
+        <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+            <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+            <input type='hidden' name='action' value='Tunierphase ändern'/>
+            <select name='Phase' class='ts-input'>
+                <?php
+                $sqlTurnierPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+                $resultTurnierPhase = $conn->query($sqlTurnierPhase);
+                while ($rowTurnierPhase = $resultTurnierPhase->fetch_assoc()) {
+                    $selTp = ($rowTurnierPhase['id'] == $turnier_phase_ID_aktuell) ? "selected" : "";
+                    echo "<option value='" . $rowTurnierPhase['id'] . "' $selTp>" . htmlspecialchars($rowTurnierPhase['name']) . "</option>";
                 }
-                alert('Du musst unten noch das Häkchen setzen!');
-                return false;
-            }
-        </script>
-        <div>
-            <div class='field half'>
-                <input type='checkbox' id='demo-human-registergame' name='demo-human-registergame' unchecked>
-                <label for='demo-human-registergame'>Ich habe die Regeln der Datenbank gelesen und verstanden.</label>
-                <h5><br/></h5>
-            </div>
-        </div>
-        <ul class='actions'>
-            <li><input name='action' type='submit' value='Tunierphase ändern' class='primary' /></li>
-            <li><input name='action' type='reset' value='Abbrechen' /></li>
-        </ul>
-    </form>
+                ?>
+            </select>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+        </form>
+    </div>
+
+    <h3>Was bedeuten die einzelnen Phasen?</h3>
+    <div style='text-align:left; max-width:640px; margin:0 auto;'>
+        <?php
+        $sqlTurnierPhaseListe = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+        $resultTurnierPhaseListe = $conn->query($sqlTurnierPhaseListe);
+        while ($rowTurnierPhaseListe = $resultTurnierPhaseListe->fetch_assoc()) {
+            $tpId = (int)$rowTurnierPhaseListe['id'];
+            $tpErklaerung = $tpPhasenErklaerung[$tpId] ?? $rowTurnierPhaseListe['description'];
+            echo "<p style='margin:0.4rem 0;'><b>" . htmlspecialchars($rowTurnierPhaseListe['name']) . ":</b> " . htmlspecialchars($tpErklaerung) . "</p>";
+        }
+        ?>
+    </div>
     <h5><br /></h5>
     <?php } ?>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
