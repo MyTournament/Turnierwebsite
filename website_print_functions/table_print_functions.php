@@ -828,7 +828,7 @@
             // Führt zur Auswahlseite backstage_zufaellige_spiele, wo man den Prozentsatz der noch offenen
             // Gruppenphasen-Begegnungen wählt, die auf einen Schlag zufällig befüllt+finalisiert werden.
             if ($test_turnier_id != 0) {
-                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=gruppenphase#backstage_zufaellige_spiele' class='button' style='background:#123a5c;color:#fff;'>Zufällige Spiele eintragen</a></p>";
+                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=gruppenphase#backstage_zufaellige_spiele' class='tbl-action-btn'>Zufällige Spiele eintragen</a></p>";
             }
 
             // ================================================================================================
@@ -853,7 +853,7 @@
                         <input type='hidden' name='bn' value='$bnAttrSp'>
                         <input type='hidden' name='pw' value='$pwAttrSp'>
                         <input type='hidden' name='action' value='$alleGruppenAction'>
-                        <button type='submit' class='button primary'>$alleGruppenLabel</button>
+                        <button type='submit' class='tbl-action-btn tbl-action-btn--primary'>$alleGruppenLabel</button>
                     </form>";
                 }
             }
@@ -880,10 +880,11 @@
                         <input type='hidden' name='pw' value='$pwAttrSp'>
                         <input type='hidden' name='action' value='Gruppe_Finalisieren'>
                         <input type='hidden' name='groupId' value='" . $rowGruppe['id'] . "'>
-                        <button type='submit' class='button' style='padding:0.2rem 0.6rem; font-size:0.75rem;'>Gruppe finalisieren</button>
+                        <button type='submit' class='tbl-action-btn'>Gruppe finalisieren</button>
                     </form>";
                 }
                 echo "
+                <div class='matrix-table-wrap'>
                 <table class='withBorderCollapse'>
                     <thead>
                         <tr>
@@ -958,9 +959,10 @@
                             }
                     echo "</tr>
                     </tbody>
-                </table>";
+                </table>
+                </div>";
             }
-        }catch (Throwable  $e) { 
+        }catch (Throwable  $e) {
             print "<i style='color: red'>Detail: " . $e->getMessage() . "</i>";
             print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen, der höchstwahrscheinlich die Funktionalität der Website einschränkt. Am besten mal Richard oder Jonas Bescheid sagen. Fehlermeldung: ***Fehler bei printSpielplan()*** ###</i>";
         }
@@ -992,6 +994,7 @@
                 echo "<div class='note'>Noch keine Spiele im Losing‑Bracket vorhanden. Die Begegnungen werden automatisch erzeugt, sobald die ersten Teams ausgeschieden sind.</div>";
                 return;
             }
+            echo "<div class='matrix-table-wrap'>";
             echo "<table class='withBorderCollapse'><thead><tr><th />";
             $headerStart = ($schalterDreieck == 1 && $loescheErsteZeileUndSpalte == 1) ? 1 : 0;
             for ($i = $headerStart; $i < count($teams); $i++) {
@@ -1040,6 +1043,7 @@
                 echo "</tr>";
             }
             echo "</tbody></table>";
+            echo "</div>";
         } catch (Throwable $e) {
             $msg = $e->getMessage();
             print "<i style='color: red'>### Die Website hat einen kritischen Fehler abgefangen. Fehlermeldung: ***Fehler bei printSpielplan(): $msg*** ###</i>";
@@ -1161,7 +1165,7 @@
             // TESTMODUS: "Zufällige Spiele eintragen" für GENAU DIESE Finalstufe (nur im Testturnier, dunkelblau)
             // ============================================================================================
             if ($test_turnier_id != 0) {
-                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=ko&zufall_ko_finallevel=$ko_finallevel#backstage_zufaellige_spiele' class='button' style='background:#123a5c;color:#fff;'>Zufällige Spiele eintragen</a></p>";
+                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=ko&zufall_ko_finallevel=$ko_finallevel#backstage_zufaellige_spiele' class='tbl-action-btn'>Zufällige Spiele eintragen</a></p>";
             }
             echo "
             <table class='withBorderCollapse'>
