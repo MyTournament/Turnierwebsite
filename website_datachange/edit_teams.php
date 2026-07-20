@@ -418,6 +418,35 @@ if (!headers_sent()) {
 			}
 
 		// ====================================================================================
+		// TEAMS IN GRUPPEN EINSORTIEREN: GESAMMELTE BATCH-ÄNDERUNG (ein Klick statt pro Team einzeln)
+		// ====================================================================================
+		// $_POST['gruppe'] ist ein Array team_id => gruppe_id (leerer String = "keine Gruppe" -> NULL).
+		// "AND fk_turnier = ?" pro Update ist ein Sicherheitsnetz, damit über manipulierte team_ids
+		// nicht Teams eines fremden Turniers verändert werden können.
+		}else if($action == 'Teams_Gruppen_Batch_Aendern'){
+			if ($successfulLogin == 1) {
+				$gruppenZuweisungen = (isset($_POST['gruppe']) && is_array($_POST['gruppe'])) ? $_POST['gruppe'] : [];
+				foreach ($gruppenZuweisungen as $tgTeamIdRaw => $tgGruppeIdRaw) {
+					$tgTeamId = (int)$tgTeamIdRaw;
+					if ($tgGruppeIdRaw === '') {
+						$sqlTgBatch = "UPDATE Turnier_Team SET fk_gruppe = NULL WHERE id = ? AND fk_turnier = ?";
+						myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Gruppen_Batch_Aendern", $sqlTgBatch, array($tgTeamId, $TurnierID));
+					} else {
+						$tgGruppeId = (int)$tgGruppeIdRaw;
+						$sqlTgBatch = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ? AND fk_turnier = ?";
+						myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Gruppen_Batch_Aendern", $sqlTgBatch, array($tgGruppeId, $tgTeamId, $TurnierID));
+					}
+				}
+			}
+
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_teams_gruppen_einsortieren");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_gruppen_einsortieren");
+			}
+
+		// ====================================================================================
 		// TEAMS GENERIEREN: NUR FÜR TESTTURNIERE (type=2) - LEGT N TESTTEAMS INKL. SPIELER AN
 		// ====================================================================================
 		// Sicherheitsnetz unabhängig von der UI-Sichtbarkeit: bevor irgendetwas eingefügt wird, wird
