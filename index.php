@@ -3176,7 +3176,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
         $bnAttrNm = htmlspecialchars($bn, ENT_QUOTES);
         $pwAttrNm = htmlspecialchars($pw, ENT_QUOTES);
-        $loginAlsAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
     ?>
     <style>
         .nm-rollen-tabelle { width: 100%; margin-bottom: 1.2rem; font-size: 0.82rem; }
@@ -3290,9 +3289,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 </form>
                 <?php } ?>
                 <?php if ($loginAlsErlaubt) { ?>
-                <form action='<?php echo $loginAlsAction; ?>' method='POST' class='nm-login-als'>
-                    <input type='hidden' name='bn' value='<?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?>'>
-                    <input type='hidden' name='pw' value='<?php echo htmlspecialchars($nutzer['pw'], ENT_QUOTES); ?>'>
+                <!-- "Login als User" läuft jetzt komplett serverseitig über edit_account.php
+                     (Login_Als_User) - hier stehen nur noch die EIGENEN Zugangsdaten der
+                     anfragenden Person (die kennt sie ja schon), nie mehr das Ziel-Passwort im
+                     HTML-Quelltext. -->
+                <form action='website_datachange/edit_account.php<?php echo $test_turnier_id!=0 ? "?test_turnier_id=$test_turnier_id" : ""; ?>' method='POST' class='nm-login-als'>
+                    <input type='hidden' name='action' value='Login_Als_User'>
+                    <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
+                    <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
+                    <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
                     <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.15rem 0.5rem;font-size:0.7rem;'>Login als User</button>
                 </form>
                 <?php } ?>
