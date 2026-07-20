@@ -817,7 +817,7 @@
         }
     }
 
-    function printSpielplanGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
+    function printSpielplanGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id, $darfAlleSpieleBearbeiten = false, $bnEingeloggt = '', $pwEingeloggt = ''){
         try {
             //Button, mit dem man den Bearbeitungsmodus starten kann
             printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#gruppenphase", $test_turnier_id);
@@ -831,6 +831,33 @@
                 echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=gruppenphase#backstage_zufaellige_spiele' class='button' style='background:#123a5c;color:#fff;'>Zufällige Spiele eintragen</a></p>";
             }
 
+            // ================================================================================================
+            // "ALLE GRUPPEN FINALISIEREN/UNFINALISIEREN" - ersetzt den früheren, kaputten Klick-auf-den-
+            // Gruppennamen-Mechanismus (falscher Action-Name "final_group" statt "Gruppe_Finalisieren" UND
+            // fehlende bn/pw-Felder - die Funktion konnte serverseitig nie erfolgreich sein). Rechte-Check:
+            // gleiche Berechtigung wie normales Spiele-Finalisieren (rechte_alle_spiele-Flag).
+            // ================================================================================================
+            if ($darfAlleSpieleBearbeiten) {
+                $bnAttrSp = htmlspecialchars($bnEingeloggt, ENT_QUOTES);
+                $pwAttrSp = htmlspecialchars($pwEingeloggt, ENT_QUOTES);
+                $sqlGesamtCheck = 'SELECT COUNT(*) AS anzahl FROM Turnier_Begegnung WHERE ko_finallevel = 0 AND status <> 3 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ')';
+                $anzahlGesamt = (int)$conn->query($sqlGesamtCheck)->fetch_assoc()['anzahl'];
+                if ($anzahlGesamt > 0) {
+                    $sqlOffenCheck = 'SELECT COUNT(*) AS anzahl FROM Turnier_Begegnung WHERE ko_finallevel = 0 AND status NOT IN (3,5,6,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ')';
+                    $anzahlOffen = (int)$conn->query($sqlOffenCheck)->fetch_assoc()['anzahl'];
+                    $alleFinalisiert = ($anzahlOffen === 0);
+                    $alleGruppenAction = $alleFinalisiert ? 'Alle_Gruppen_Unfinalisieren' : 'Alle_Gruppen_Finalisieren';
+                    $alleGruppenLabel = $alleFinalisiert ? 'Alle Gruppen unfinalisieren' : 'Alle Gruppen finalisieren';
+                    echo "<form action='website_datachange/edit_games.php' method='POST' style='margin-bottom:0.8rem;'>
+                        <input type='hidden' name='TurnierID' value='$TurnierID'>
+                        <input type='hidden' name='bn' value='$bnAttrSp'>
+                        <input type='hidden' name='pw' value='$pwAttrSp'>
+                        <input type='hidden' name='action' value='$alleGruppenAction'>
+                        <button type='submit' class='button primary'>$alleGruppenLabel</button>
+                    </form>";
+                }
+            }
+
             $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE fk_turnier = ' . $TurnierID . " ORDER BY id";
             $resultGruppe = $conn->query($sqlGruppe);
             while ($rowGruppe = $resultGruppe->fetch_assoc()) {
@@ -842,19 +869,19 @@
                     $schalterDreieck = $rowSchalter['nurOberesDreieckInGruppenphase'];
                     $loescheErsteZeileUndSpalte = $rowSchalter['loescheErsteZeileUndSpalte'];
                 }
-                //MÖGLICHKEIT GANZE GRUPPE ZU FINALISIEREN
-                if($gameEditMode == 1){
-                    //GANZE GRUPPE FINALISIEREN
-                    ?>
-                    <form method='post' action='#changegame'>
-                        <button style='background-color:blue;height: 0rem;line-heigth: 0rem' class='height: 1px;' name='action' value='' class='button primary'><h2>Gruppe <?php echo $gruppenname ?> &#9733;</h2></button>
-                        <input type='hidden' name='action' value='final_group'/>
-                        <input type='hidden' name='groupId' value='<?php echo $rowGruppe["id"] ?>'/>
-                        <input type='hidden' name='TurnierID' value='<?php echo $TurnierID ?>'/>
-                    </form>
-                    <?php
-                }else{
-                    echo "<h2>Gruppe $gruppenname &#9733;</h2>";
+                // MÖGLICHKEIT, EINE EINZELNE GRUPPE ZU FINALISIEREN (eigener Button statt anklickbarer
+                // Überschrift - die alte Variante nutzte einen falschen Action-Namen und hatte gar keine
+                // bn/pw-Felder, konnte serverseitig also nie funktionieren).
+                echo "<h2 style='display:inline-block; margin-right:0.6rem;'>Gruppe $gruppenname &#9733;</h2>";
+                if ($darfAlleSpieleBearbeiten) {
+                    echo "<form action='website_datachange/edit_games.php' method='POST' style='display:inline-block; margin:0;'>
+                        <input type='hidden' name='TurnierID' value='$TurnierID'>
+                        <input type='hidden' name='bn' value='$bnAttrSp'>
+                        <input type='hidden' name='pw' value='$pwAttrSp'>
+                        <input type='hidden' name='action' value='Gruppe_Finalisieren'>
+                        <input type='hidden' name='groupId' value='" . $rowGruppe['id'] . "'>
+                        <button type='submit' class='button' style='padding:0.2rem 0.6rem; font-size:0.75rem;'>Gruppe finalisieren</button>
+                    </form>";
                 }
                 echo "
                 <table class='withBorderCollapse'>

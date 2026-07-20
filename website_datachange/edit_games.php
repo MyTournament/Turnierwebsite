@@ -353,17 +353,17 @@ if ($action == 'Ändern') {
     $groupId = $_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 4 THEN 7 ELSE 5 END WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php 8",$sql, array($groupId, $groupId));
-    
+
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
-        header("Location: /#edit_games_success");
+        header("Location: /#gruppenphase");
     }else{
-        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        header("Location: /?test_turnier_id=$test_turnier_id#gruppenphase");
     }
 
   }else{ //Team-Login
-    
+
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
@@ -383,13 +383,13 @@ if ($action == 'Ändern') {
     $groupId = $_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 7 THEN 4 ELSE 1 END WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php 9",$sql, array($groupId, $groupId));
-    
+
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
-        header("Location: /#edit_games_success");
+        header("Location: /#gruppenphase");
     }else{
-        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+        header("Location: /?test_turnier_id=$test_turnier_id#gruppenphase");
     }
 
   }else{ //Team-Login
@@ -406,6 +406,37 @@ if ($action == 'Ändern') {
     $message = "Leider hast du nicht die nötigen Bearbeitungsrechte, um die gesamte Gruppe zu finalisieren. Wende dich am besten an einen Admininstrator";
     //echo "<script type='text/javascript'>alert('$message');</script>";
   }
+// ================================================================================================
+// ALLE GRUPPEN FINALISIEREN/UNFINALISIEREN: wie Gruppe_Finalisieren/Gruppe_Uninalisieren, aber ohne
+// groupId-Filter - wirkt auf alle Gruppenphasen-Begegnungen des Turniers gleichzeitig. Ersetzt den
+// früheren, kaputten "auf Gruppenname klicken"-Mechanismus (siehe printSpielplanGruppenphase).
+// ================================================================================================
+}else if($action == 'Alle_Gruppen_Finalisieren'){
+  if($accountDarfSpieleBearbeiten == 1){
+    $sql = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 4 THEN 7 ELSE 5 END WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ?)";
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php Alle_Gruppen_Finalisieren", $sql, array($TurnierID, $TurnierID));
+  }
+
+  $test_turnier_id = $_GET['test_turnier_id'];
+  if($test_turnier_id==NULL){
+      header("Location: /#gruppenphase");
+  }else{
+      header("Location: /?test_turnier_id=$test_turnier_id#gruppenphase");
+  }
+
+}else if($action == 'Alle_Gruppen_Unfinalisieren'){
+  if($accountDarfSpieleBearbeiten == 1){
+    $sql = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 7 THEN 4 ELSE 1 END, fk_siegerteam = NULL WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ?)";
+    myDb_execute($conn, $TurnierID, $bn, "edit_games.php Alle_Gruppen_Unfinalisieren", $sql, array($TurnierID, $TurnierID));
+  }
+
+  $test_turnier_id = $_GET['test_turnier_id'];
+  if($test_turnier_id==NULL){
+      header("Location: /#gruppenphase");
+  }else{
+      header("Location: /?test_turnier_id=$test_turnier_id#gruppenphase");
+  }
+
 // ================================================================================================
 // BEGEGNUNG HINZUFÜGEN (GREEN CARD): manuell angelegte Begegnung, vor dem Auto-Scheduler geschützt
 // ================================================================================================
