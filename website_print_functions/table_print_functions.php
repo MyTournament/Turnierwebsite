@@ -1284,8 +1284,12 @@
                     // in Ruhe umschalten (auch zurück), ohne dass ein Klick sofort etwas auslöst.
                     $checkedAttr = ($einzugFertig == 1) ? "checked" : "";
                     $statusText = ($einzugFertig == 1) ? "aktuell: aktiviert" : "aktuell: deaktiviert";
+                    // In ein kleines violettes Admin-Kästchen gepackt (gleiche Akzentfarbe wie überall
+                    // sonst im Backstage-Bereich), damit auf einen Blick klar ist, dass das hier eine
+                    // Funktion mit Rechte-Voraussetzung ist (sichtbar nur mit turnier_settings-Flag).
                     echo "
                     <div style='text-align:center;margin:1rem 0;'>
+                    <div style='display:inline-block; background: rgba(139, 92, 246, 0.15); border: 1px solid #8b5cf6; border-radius: 8px; padding: 0.6rem 1rem;'>
                     <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;display:inline-flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:center;'>
                         <input type='hidden' name='TurnierID' value='$TurnierID'/>
                         <input type='hidden' name='action' value='Einzug_KO_Fertig_Umschalten'/>
@@ -1299,6 +1303,7 @@
                             <span>bestätigen</span>
                         </label>
                     </form>
+                    </div>
                     </div>
                     ";
                 }
