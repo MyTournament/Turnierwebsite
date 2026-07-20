@@ -390,7 +390,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-menu-button--adminonly { background: linear-gradient(135deg, var(--admin-accent-adminonly), var(--admin-accent-adminonly-light)); }
             .admin-menu-button--adminonly:hover { background: linear-gradient(135deg, var(--admin-accent-adminonly-light), var(--admin-accent-coadmin)); }
             /* Hellste Stufe: Funktionen, die schon mit dem einzelnen Teams-Recht gehen (Moderator*in) */
-            .admin-menu-button--teams { background: linear-gradient(135deg, var(--admin-accent-teams), var(--admin-accent-teams-light)); color: #2a1a4d !important; }
+            .admin-menu-button--teams { background: linear-gradient(135deg, var(--admin-accent-teams), var(--admin-accent-teams-light)); color: #f5f2ff !important; }
             .admin-menu-button--teams:hover { background: linear-gradient(135deg, var(--admin-accent-teams-light), #ede9fe); }
             /* Farb-Legende auf der Settings-Übersicht (nur für Admin/Co-Admin sichtbar) */
             .admin-legende { max-width: 640px; margin: 1.5rem auto 0; padding: 0.8rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); font-size: 0.78rem; text-align: left; }
