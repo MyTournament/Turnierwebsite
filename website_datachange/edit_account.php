@@ -42,17 +42,28 @@ if($action == 'register'){
     $adminPw = $_POST['admin_pw'];
     $neuerBn = trim($_POST['neuer_bn']);
     $neuerPw = $_POST['neuer_pw'];
-    $neueRolle = (int)$_POST['neue_rolle'];
+    // Ein Nutzer kann mehrere Rollen gleichzeitig haben - das Formular sammelt sie clientseitig als
+    // Array ("neue_rollen[]"), jede einzeln wird unabhängig gegen darfRolleVergeben geprüft, damit
+    // niemand sich über eine erlaubte Rolle indirekt eine NICHT erlaubte Rolle "erschleichen" kann.
+    $neueRollenRoh = isset($_POST['neue_rollen']) && is_array($_POST['neue_rollen']) ? $_POST['neue_rollen'] : [];
+    $neueRollen = array_values(array_unique(array_map('intval', $neueRollenRoh)));
 
     $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
 
-    if (darfRolleVergeben($conn, $rollenInfoAdmin, $neueRolle) && $neuerBn !== '' && $neuerPw !== '') {
-        // Die Rolle wird ausschließlich im Mehrfach-Rollen-System eingetragen, fk_rechte wird
+    $erlaubteRollen = [];
+    foreach ($neueRollen as $rid) {
+        if (darfRolleVergeben($conn, $rollenInfoAdmin, $rid)) { $erlaubteRollen[] = $rid; }
+    }
+
+    if (count($erlaubteRollen) > 0 && $neuerBn !== '' && $neuerPw !== '') {
+        // Die Rollen werden ausschließlich im Mehrfach-Rollen-System eingetragen, fk_rechte wird
         // nicht mehr benutzt (Spalte soll in einer der nächsten Versionen entfernt werden).
         $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort) VALUES (?, ?)";
         $neuerBenutzerId = myDb_execute($conn, 0, $adminBn, "edit_account.php 2", $sql, array($neuerBn, $neuerPw));
-        $sqlRel = "INSERT INTO System_Benutzer_in_Relation_Rolle (fk_benutzer_in, fk_rolle) VALUES (?, ?)";
-        myDb_execute($conn, 0, $adminBn, "edit_account.php 3", $sqlRel, array($neuerBenutzerId, $neueRolle));
+        foreach ($erlaubteRollen as $rid) {
+            $sqlRel = "INSERT INTO System_Benutzer_in_Relation_Rolle (fk_benutzer_in, fk_rolle) VALUES (?, ?)";
+            myDb_execute($conn, 0, $adminBn, "edit_account.php 3", $sqlRel, array($neuerBenutzerId, $rid));
+        }
     }
 
 }else if($action == 'Rolle_Hinzufuegen'){
@@ -95,11 +106,28 @@ if($action == 'register'){
             // Relation-Tabelle (noch) nicht vorhanden
         }
     }
+
+// ================================================================================================
+// PASSWORT EINES ANDEREN NUTZERS ÄNDERN - bewusst nur für "echte" Admins (ist_admin), nicht für
+// Co-Admins, obwohl Co-Admins sonst im Nutzermanagement Rollen vergeben/entziehen dürfen.
+// ================================================================================================
+}else if($action == 'Passwort_Aendern'){
+    $adminBn = $_POST['admin_bn'];
+    $adminPw = $_POST['admin_pw'];
+    $zielBenutzerId = (int)$_POST['ziel_benutzer_id'];
+    $neuesPasswort = trim($_POST['neues_passwort']);
+
+    $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
+
+    if ($rollenInfoAdmin !== null && $rollenInfoAdmin['ist_admin'] && $zielBenutzerId > 0 && $neuesPasswort !== '') {
+        $sqlPwAendern = "UPDATE System_Benutzer_in SET Passwort = ? WHERE id = ?";
+        myDb_execute($conn, 0, $adminBn, "edit_account.php Passwort_Aendern", $sqlPwAendern, array($neuesPasswort, $zielBenutzerId));
+    }
 }
 
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 $test_turnier_id = $_GET['test_turnier_id'];
-$nutzermanagementActions = ['admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen'];
+$nutzermanagementActions = ['admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen', 'Passwort_Aendern'];
 if (in_array($action, $nutzermanagementActions, true)) {
     if($test_turnier_id==NULL){
         header("Location: /#backstage_nutzermanagement");
