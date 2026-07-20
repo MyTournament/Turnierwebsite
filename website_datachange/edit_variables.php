@@ -256,6 +256,15 @@ if ($successfulLogin == 0){ //fehlerhafter Login
               $alteZeile[$feld] = isset($_POST[$feld]) ? 1 : 0;
             }
           }
+          // BUGFIX: Ein neu angelegtes Turnier (auch als Kopie eines alten) hat per Definition noch
+          // keine abgeschlossene Gruppenphase. Dieser Schalter darf NIE vom kopierten Ausgangsturnier
+          // (bzw. von einem versehentlich gesetzten Formularwert) übernommen werden - sonst hält sich
+          // db_update() sofort für "Gruppenphase komplett vorbei" und vergibt allen Teams ungefragt
+          // eine komplette Rangliste, obwohl noch kein einziges Spiel stattgefunden hat. Bewusst NACH
+          // der obigen Checkbox-Schleife, damit dieser Wert immer gewinnt, unabhängig vom POST-Inhalt.
+          if (array_key_exists('einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei', $alteZeile)) {
+            $alteZeile['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'] = 0;
+          }
           // Typ: 1 = reales Turnier (löst das aktuelle ab), 2 = Testturnier (aktuelles bleibt unangetastet)
           $neuerTurnierTyp = isset($_POST['neuer_turnier_type']) ? (int)$_POST['neuer_turnier_type'] : 1;
           if ($neuerTurnierTyp !== 1 && $neuerTurnierTyp !== 2) { $neuerTurnierTyp = 1; }
