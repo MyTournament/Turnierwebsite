@@ -148,6 +148,52 @@ if($action == 'register'){
             myDb_execute($conn, 0, $adminBn, "edit_account.php Benutzername_Aendern", $sqlBnAendern, array($neuerBenutzername, $zielBenutzerId));
         }
     }
+
+// ================================================================================================
+// "LOGIN ALS USER": ersetzt den früheren Mechanismus, bei dem das Klartext-Passwort der Zielperson
+// als verstecktes Formularfeld direkt im HTML-Quelltext der Nutzerübersicht lag (für JEDE Person mit
+// Nutzermanagement-Zugriff einsehbar, auch ohne "Passwort anzeigen"-Recht - z.B. ein Co-Admin hätte
+// so trotzdem an alle Passwörter kommen können). Jetzt läuft der komplette Vorgang serverseitig: die
+// eigenen Zugangsdaten der anfragenden Person werden geprüft, das Ziel-Passwort wird nur intern aus
+// der DB gelesen und landet direkt in der Session - nie im HTML/Browser.
+// ================================================================================================
+}else if($action == 'Login_Als_User'){
+    $adminBn = $_POST['admin_bn'];
+    $adminPw = $_POST['admin_pw'];
+    $zielBenutzerId = (int)$_POST['ziel_benutzer_id'];
+
+    $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
+    $istAdminOderCoAdminAcc = ($rollenInfoAdmin !== null) && ($rollenInfoAdmin['ist_admin'] || $rollenInfoAdmin['ist_co_admin']);
+
+    if ($istAdminOderCoAdminAcc && $zielBenutzerId > 0) {
+        $stmtZiel = $conn->prepare("SELECT Benutzername, Passwort FROM System_Benutzer_in WHERE id = ?");
+        $stmtZiel->bind_param("i", $zielBenutzerId);
+        $stmtZiel->execute();
+        $zielRow = $stmtZiel->get_result()->fetch_assoc();
+
+        if ($zielRow !== null) {
+            // Zweite, serverseitige Prüfung (nicht nur UI-Sichtbarkeit in index.php): ein Co-Admin
+            // darf sich nicht als Admin einloggen (könnte darüber sonst z.B. Passwörter anderer
+            // Nutzer einsehen/ändern - Rechte, die Co-Admin gezielt NICHT hat).
+            $rollenInfoZiel = getUserRollenInfo($conn, $zielRow['Benutzername'], $zielRow['Passwort']);
+            $zielIstAdmin = ($rollenInfoZiel !== null) && $rollenInfoZiel['ist_admin'];
+            if (!$zielIstAdmin || $rollenInfoAdmin['ist_admin']) {
+                if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+                $_SESSION['admin_bn'] = $zielRow['Benutzername'];
+                $_SESSION['admin_pw'] = $zielRow['Passwort'];
+            }
+        }
+    }
+
+    // Eigener Redirect (nicht über die Nutzermanagement-Sammelliste unten): landet wie beim alten
+    // Mechanismus direkt auf der Startseite, jetzt eingeloggt als die Zielperson (per Session).
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id");
+    }
+    exit;
 }
 
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
