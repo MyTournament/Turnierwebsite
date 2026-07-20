@@ -88,6 +88,35 @@ if ($successfulLogin == 0){ //fehlerhafter Login
         echo "<script type='text/javascript'>alert('$message');</script>";
       }
 
+    // ============================================================================================
+    // TURNIER SETTINGS ERWEITERUNG: GENERISCHE AKTION STATT ~20 EINZELNER AKTIONEN
+    // ============================================================================================
+    // Damit nicht für jedes der ~20 weiteren Turnier_Main-Felder eine eigene Aktion dupliziert
+    // werden muss, wird das zu ändernde Feld über einen fest verdrahteten Whitelist-Namen (nicht
+    // direkt aus der DB) ausgewählt - $feld landet NUR dann in der SQL-Query, wenn es exakt in einer
+    // der beiden Whitelists steht, ein SQL-Injection-Risiko über den Spaltennamen besteht also nicht.
+    }else if ($action == 'Turnier_Settings_Feld_Aendern') {
+      if($darfTurnierSettingsAendern){
+        $erlaubteTextFelder = ['name', 'anzeige_titel', 'anzeige_subtitel', 'anzeige_datum', 'jahr',
+            'startdatum', 'startzeit', 'countdown_start', 'enddatum', 'max_anzahl_teams',
+            'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'excel_link'];
+        $erlaubteCheckboxFelder = ['nurOberesDreieckInGruppenphase', 'loescheErsteZeileUndSpalte',
+            'losingbracket_open_for_ko_losers', 'use_excel', 'schnee'];
+        $feld = isset($_POST['feld']) ? $_POST['feld'] : '';
+        if (in_array($feld, $erlaubteTextFelder, true)) {
+          $wert = isset($_POST['wert']) ? $_POST['wert'] : '';
+          $sql = "UPDATE `Turnier_Main` SET `$feld` = ? WHERE `id` = ?;";
+          $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Feld_Aendern text", $sql, array($wert, $TurnierID));
+        } else if (in_array($feld, $erlaubteCheckboxFelder, true)) {
+          $wert = isset($_POST['wert']) ? 1 : 0;
+          $sql = "UPDATE `Turnier_Main` SET `$feld` = ? WHERE `id` = ?;";
+          $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Feld_Aendern checkbox", $sql, array($wert, $TurnierID));
+        }
+      }else{
+        $message = "Leider hast du nicht die nötigen Rechte, um die Turnier Settings zu bearbeiten. Wende dich an Richard, um mehr Rechte zu erhalten.";
+        echo "<script type='text/javascript'>alert('$message');</script>";
+      }
+
     }else if ($action == 'Einzug_KO_Fertig_Umschalten') {
       if($darfTurnierSettingsAendern){
         $sql = "UPDATE `Turnier_Main` SET `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = CASE WHEN `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = 1 THEN 0 ELSE 1 END WHERE `id` = ?;";
@@ -170,6 +199,11 @@ if ($action == 'Turnier_Neu_Anlegen' && isset($neuerTurnierTyp) && $neuerTurnier
 $rueckAnkerMap = [
     'Einzug_KO_Fertig_Umschalten' => 'kophase',
     'Turnier_Abschliessen' => 'kophase',
+    'Turnier_Settings_AnzahlGruppen_Aendern' => 'backstage_turnier_settings',
+    'Turnier_Settings_StartKoFinallevel_Aendern' => 'backstage_turnier_settings',
+    'Turnier_Settings_EinzugKoManuell_Aendern' => 'backstage_turnier_settings',
+    'Turnier_Settings_Feld_Aendern' => 'backstage_turnier_settings',
+    'Tunierphase ändern' => 'backstage_turnier_phase',
 ];
 $rueckAnker = $rueckAnkerMap[$action] ?? 'backstage_daten_bearbeiten';
 $test_turnier_id = $_GET['test_turnier_id'];
