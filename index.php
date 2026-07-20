@@ -1762,6 +1762,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php if ($rechteFlags['teams']) { ?>
             <a href='#backstage_teams_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams bearbeiten</a>
             <?php } ?>
+            <?php if ($rechteFlags['teams']) { ?>
+            <a href='#backstage_teams_gruppen_einsortieren' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Teams in Gruppen einsortieren</a>
+            <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
             <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
             <?php } ?>
@@ -2171,6 +2174,68 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php } ?>
         <h5><br/></h5>
         <a href='#backstage_teams_bearbeiten' class='button'>Zurück zur Teamliste</a>
+        <h5><br /></h5>
+    </div>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  TEAMS IN GRUPPEN EINSORTIEREN (isolierte, vereinfachte Funktion nur fürs Gruppen-Zuordnen) ### -->
+<!-- ################################################################################################ -->
+<!-- Bewusst kein Drag&Drop: HTML5-Drag&Drop funktioniert auf Touch-Geräten (Handy-Browser) nicht
+     zuverlässig ohne zusätzliche JS-Bibliothek. Stattdessen eine simple Liste mit einem Dropdown pro
+     Team, alle Änderungen werden über EIN gemeinsames Formular erst ganz am Ende auf einmal
+     abgeschickt (kein Auto-Submit pro Zeile wie bei der kompakten Teamliste). -->
+<article id="backstage_teams_gruppen_einsortieren">
+    <div style='text-align: center'>
+        <h2>Teams in Gruppen einsortieren</h2>
+        <?php if (!$rechteFlags['teams']) { ?>
+        <p>Keine ausreichende Berechtigung.</p>
+        <?php } else {
+            $tgGruppen = [];
+            $sqlTgGruppen = 'SELECT * FROM `Turnier_Gruppe` WHERE fk_turnier = ' . (int)$TurnierID . ' ORDER BY id';
+            $resultTgGruppen = $conn->query($sqlTgGruppen);
+            while ($rowTgGruppe = $resultTgGruppen->fetch_assoc()) { $tgGruppen[] = $rowTgGruppe; }
+
+            if (count($tgGruppen) === 0) { ?>
+            <p>Es gibt noch keine Gruppen für dieses Turnier. Bitte zuerst die Turnierphase anpassen - die Gruppen werden automatisch angelegt, sobald das Turnier in der passenden Phase ist.</p>
+            <?php } else { ?>
+            <p>Ordne jedem Team über das Dropdown eine Gruppe zu und bestätige ganz unten einmal gesammelt für alle Teams.</p>
+            <style>
+                .tg-team-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; padding: 0.4rem 0.2rem; border-bottom: 1px solid rgba(139, 92, 246, 0.15); text-align: left; font-size: 0.85rem; max-width: 480px; margin: 0 auto; }
+                .tg-team-row select { min-width: 9rem; padding: 0.25rem 0.4rem; }
+            </style>
+            <form action='website_datachange/edit_teams.php' method='POST'>
+                <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+                <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
+                <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
+                <input type='hidden' name='action' value='Teams_Gruppen_Batch_Aendern'/>
+                <?php
+                $sqlTgTeams = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ' ORDER BY id';
+                $resultTgTeams = $conn->query($sqlTgTeams);
+                while ($rowTgTeam = $resultTgTeams->fetch_assoc()) {
+                    $tgId = (int)$rowTgTeam['id'];
+                    $tgGruppeId = (int)$rowTgTeam['fk_gruppe'];
+                    echo "<div class='tg-team-row'>";
+                    echo "<span><b>" . htmlspecialchars($rowTgTeam['kuerzel']) . "</b> " . htmlspecialchars($rowTgTeam['name']) . "</span>";
+                    echo "<select name='gruppe[$tgId]'>";
+                    echo "<option value=''>- keine Gruppe -</option>";
+                    foreach ($tgGruppen as $tgGruppe) {
+                        $sel = ((int)$tgGruppe['id'] === $tgGruppeId) ? "selected" : "";
+                        echo "<option value='" . (int)$tgGruppe['id'] . "' $sel>" . htmlspecialchars($tgGruppe['name']) . "</option>";
+                    }
+                    echo "</select>";
+                    echo "</div>";
+                }
+                ?>
+                <h5><br/></h5>
+                <ul class='actions'>
+                    <li><input type='submit' value='Bestätigen' class='primary'/></li>
+                </ul>
+            </form>
+            <?php } ?>
+        <?php } ?>
+        <h5><br/></h5>
+        <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
         <h5><br /></h5>
     </div>
 </article>
