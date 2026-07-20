@@ -254,34 +254,43 @@ if (php_sapi_name() !== 'cli') {
             }
         }
         
-        if (!empty($team_ids) && count($team_ids) >= 2){            
-            //Gewinner- und Verliererteam ermitteln
-            $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 1 AND (fk_heimteam = ' . $team_ids[0] . ' OR fk_heimteam = ' . $team_ids[1] . ')';
+        if (!empty($team_ids) && count($team_ids) >= 2){
+            // BUGFIX: vorher wurde hier nur fk_heimteam geprüft (nicht auch fk_auswaertsteam) und es
+            // gab keinen Status-Filter - dadurch konnte bei mehreren ko_finallevel=1-Begegnungen (z.B.
+            // eine veraltete/neu berechnete neben der tatsächlich finalisierten) die falsche oder gar
+            // keine Zeile gefunden werden, wodurch $winner_team_id/$loser_team_id unbestimmt blieben
+            // und die Endplatzierung 3/4 stillschweigend nie gesetzt wurde (Symptom: "Platz 4 bleibt
+            // unbestimmt", obwohl das Spiel um Platz 3 finalisiert ist). Jetzt: beide Team-Spalten
+            // prüfen, nur finalisierte Begegnungen (status 4/5/7) zulassen, und die Endplatzierung nur
+            // setzen, wenn Gewinner/Verlierer auch wirklich eindeutig bestimmt werden konnten.
+            $winner_team_id = null;
+            $loser_team_id = null;
+            $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 1 AND status IN (4,5,7) AND ((fk_heimteam = ' . $team_ids[0] . ' AND fk_auswaertsteam = ' . $team_ids[1] . ') OR (fk_heimteam = ' . $team_ids[1] . ' AND fk_auswaertsteam = ' . $team_ids[0] . ')) ORDER BY id DESC LIMIT 1';
             $result = $conn->query($sql);
             if (!empty($row = $result->fetch_assoc())) {
                 $winner_team_id = $row['fk_siegerteam'];
-                if ($winner_team_id === $team_ids[0]){
-                    $loser_team_id = $team_ids[1];
-                } else {
-                    $loser_team_id = $team_ids[0];
+                if ($winner_team_id != null) {
+                    $loser_team_id = ($winner_team_id == $team_ids[0]) ? $team_ids[1] : $team_ids[0];
                 }
             }
 
-            // Verliererteam: Platzierung setzen 
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 4, `platziert_level` = 1 WHERE geloescht = 0 AND Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
-            if ( $stmt === false ){
-                throw new Exception('siegesquote konnte nicht gesetzt werden.');
+            if (!empty($winner_team_id) && !empty($loser_team_id)) {
+                // Verliererteam: Platzierung setzen
+                $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 4, `platziert_level` = 1 WHERE geloescht = 0 AND Turnier_Team.id = '$loser_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+                if ( $stmt === false ){
+                    throw new Exception('siegesquote konnte nicht gesetzt werden.');
+                }
+                $stmt->execute();
+
+                // Gewinnerteam: Platzierung setzen
+                $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 3, `platziert_level` = 1 WHERE geloescht = 0 AND Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
+                if ( $stmt === false ){
+                    throw new Exception('siegesquote konnte nicht gesetzt werden.');
+                }
+                $stmt->execute();
             }
-            $stmt->execute();
-            
-            // Gewinnerteam: Platzierung setzen 
-            $stmt = $conn->prepare("UPDATE `Turnier_Team` SET `endplatzierung` = 3, `platziert_level` = 1 WHERE geloescht = 0 AND Turnier_Team.id = '$winner_team_id';"); //AND `Turnier`.`id` = '$TurnierID'
-            if ( $stmt === false ){
-                throw new Exception('siegesquote konnte nicht gesetzt werden.');
-            }
-            $stmt->execute();
         }
-        
+
         //Finale
         //--------------------
 
@@ -307,7 +316,10 @@ if (php_sapi_name() !== 'cli') {
         // Nur fortfahren, wenn tatsächlich zwei Teams im Finale stehen
         if (!empty($team_ids) && count($team_ids) >= 2){
             //Gewinner- und Verliererteam ermitteln
-            $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND (fk_heimteam = ' . $team_ids[0] . ' OR fk_heimteam = ' . $team_ids[1] . ')';
+            // Gleicher Fix wie beim Spiel um Platz 3: beide Team-Spalten prüfen (nicht nur fk_heimteam),
+            // nur finalisierte Begegnungen zulassen, neueste zuerst - vermeidet, dass eine veraltete/
+            // andere ko_finallevel=2-Begegnung fälschlich getroffen wird.
+            $sql = 'SELECT * FROM Turnier_Begegnung WHERE ko_finallevel = 2 AND status IN (4,5,7) AND ((fk_heimteam = ' . $team_ids[0] . ' AND fk_auswaertsteam = ' . $team_ids[1] . ') OR (fk_heimteam = ' . $team_ids[1] . ' AND fk_auswaertsteam = ' . $team_ids[0] . ')) ORDER BY id DESC LIMIT 1';
             $result = $conn->query($sql);
             if (!empty($row = $result->fetch_assoc())) {
                 $winner_team_id = $row['fk_siegerteam'];
@@ -351,7 +363,10 @@ if (php_sapi_name() !== 'cli') {
                         $stmtSetSieger->execute();
                     }
                 } else {
-                    if ($winner_team_id === $team_ids[0]){
+                    // Loser Vergleich: bewusst "==" statt "===" - $winner_team_id kommt aus mysqli
+                    // typischerweise als String, $team_ids[x] kann (Fallback-Pfad weiter oben) ein Int
+                    // sein; ein strikter Vergleich würde dann fälschlich immer "false" liefern.
+                    if ($winner_team_id == $team_ids[0]){
                         $loser_team_id = $team_ids[1];
                     } else {
                         $loser_team_id = $team_ids[0];
