@@ -391,6 +391,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); color: #ffffff !important; font-weight: 300 !important; }
             /* CMS-Button: eigene Farbstufe (siehe Farb-Legende in Settings/Infos) */
             #admin-bar .button--cms { border: 2px solid var(--admin-border-cms); }
+            /* Settings-/Infos-Button: beide hängen nur am backstage-Flag, dieselbe Zielgruppe wie die
+               grüne Stufe (Moderator*in, Backstage-Zugang, Co-Admin, Admin) */
+            #admin-bar .button--teams { border: 2px solid var(--admin-border-teams); }
             #wrapper { padding-top: 64px; }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 2px solid var(--admin-border-standard); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
@@ -446,10 +449,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // Infos/Verlauf ist Teil des Backstage-Bereichs -> ausschließlich backstage-Flag, kein Admin/Co-Admin-Shortcut
         $hatInfosVerlaufZugang = $rechteFlags['backstage'];
         if ($LoggedInWithBackstageOrHigher) {
-            echo "<a href='#backstage_daten_bearbeiten' class='button'>Settings</a>";
+            echo "<a href='#backstage_daten_bearbeiten' class='button button--teams'>Settings</a>";
         }
         if ($hatInfosVerlaufZugang) {
-            echo "<a href='#backstage_info' class='button'>Infos</a>";
+            echo "<a href='#backstage_info' class='button button--teams'>Infos</a>";
         }
         echo "
             </div>
@@ -1850,9 +1853,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
             <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--cms'></span>
+                <div>
+                    <b>Pinker Rahmen</b> (nur beim CMS-Button oben in der Admin-Leiste, nicht im Settings-/Infos-Menü)<br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Autor*in, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
                 <span class='admin-legende-swatch admin-legende-swatch--teams'></span>
                 <div>
-                    <b>Grüner Rahmen</b><br>
+                    <b>Grüner Rahmen</b> (auch beim Settings- und Infos-Button oben in der Admin-Leiste)<br>
                     <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Moderator*in, Backstage-Zugang, Co-Admin, Admin<br>
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Schiedsrichter*in, Benutzer*in
                 </div>
@@ -1879,14 +1890,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <b>Roter Rahmen</b><br>
                     <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Admin<br>
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
-                </div>
-            </div>
-            <div class='admin-legende-zeile'>
-                <span class='admin-legende-swatch admin-legende-swatch--cms'></span>
-                <div>
-                    <b>Pinker Rahmen</b> (nur beim CMS-Button oben in der Admin-Leiste, nicht im Settings-/Infos-Menü)<br>
-                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Autor*in, Co-Admin, Admin<br>
-                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
                 </div>
             </div>
         </div>
@@ -2594,9 +2597,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
             <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--cms'></span>
+                <div>
+                    <b>Pinker Rahmen</b> (nur beim CMS-Button oben in der Admin-Leiste, nicht im Settings-/Infos-Menü)<br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Autor*in, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
                 <span class='admin-legende-swatch admin-legende-swatch--teams'></span>
                 <div>
-                    <b>Grüner Rahmen</b><br>
+                    <b>Grüner Rahmen</b> (auch beim Settings- und Infos-Button oben in der Admin-Leiste)<br>
                     <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Moderator*in, Backstage-Zugang, Co-Admin, Admin<br>
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Schiedsrichter*in, Benutzer*in
                 </div>
@@ -2623,14 +2634,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <b>Roter Rahmen</b><br>
                     <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Admin<br>
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
-                </div>
-            </div>
-            <div class='admin-legende-zeile'>
-                <span class='admin-legende-swatch admin-legende-swatch--cms'></span>
-                <div>
-                    <b>Pinker Rahmen</b> (nur beim CMS-Button oben in der Admin-Leiste, nicht im Settings-/Infos-Menü)<br>
-                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Autor*in, Co-Admin, Admin<br>
-                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
                 </div>
             </div>
         </div>
