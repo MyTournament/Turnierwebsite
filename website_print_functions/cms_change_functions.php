@@ -65,8 +65,8 @@ function changeContent($conn, $TurnierID, $contentID, $content, $content_style_t
         <!-- Man ist beim Bearbeiten schon eingeloggt (CMS-Bearbeitungsmodus) - die Anmeldedaten
              erneut abzufragen war unnoetige Reibung, deshalb jetzt einfach die bereits bekannten
              Werte als verstecktes Feld mitschicken statt sie noch einmal eintippen zu lassen. -->
-        <input type='hidden' name='bn' value='$bn'/>
-        <input type='hidden' name='pw' value='$pw'/>
+        <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES, 'UTF-8') . "'/>
+        <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES, 'UTF-8') . "'/>
     <h5><br/></h5>
     <script type='text/javascript'>
         function checkAGB5() {
@@ -112,8 +112,8 @@ function addContent($contentID, $TurnierID, $bn = '', $pw = ''){
             <input type='hidden' name='TurnierID' value='$TurnierID'/>
             <!-- Man ist beim Hinzufuegen schon eingeloggt (CMS-Bearbeitungsmodus) - Anmeldedaten
                  nicht erneut abfragen, sondern die bereits bekannten Werte versteckt mitschicken. -->
-            <input type='hidden' name='bn' value='$bn'/>
-            <input type='hidden' name='pw' value='$pw'/>
+            <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES, 'UTF-8') . "'/>
+            <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES, 'UTF-8') . "'/>
 
     <h5><br/></h5>
     <script type='text/javascript'>

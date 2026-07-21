@@ -198,7 +198,7 @@
         // RECHTE-AUDIT: SPIELER*INNEN-INFOS NUR NOCH ÜBER DAS "backstage"-FLAG, KEIN ADMIN/CO-
         // ADMIN-SHORTCUT MEHR (Admin/Co-Admin haben das backstage-Flag in der Rollentabelle ohnehin)
         // ====================================================================================
-            $TurnierID = isset($_POST['TurnierID']) ? $_POST['TurnierID'] : $TurnierID;
+            $TurnierID = isset($_POST['TurnierID']) ? (int)$_POST['TurnierID'] : $TurnierID;
 
             include_once __DIR__ . '/../website_datachange/login_interface.php';
             $bn = $_POST['bn'];

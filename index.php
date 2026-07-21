@@ -367,6 +367,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     // gesamte Leiste an CMS- oder Backstage-Flag gekoppelt, wodurch rechtelose Accounts nach dem Login
     // gar kein Feedback bekamen, dass der Login überhaupt geklappt hat.
     if ($rollenInfo !== null) {
+        // SICHERHEIT: escapte Fassung von bn/pw fuer die Ausgabe in HTML (Admin-Leiste unten) - der
+        // Benutzername kommt seit der Selbstregistrierung direkt vom Nutzer selbst und landete hier
+        // bisher unescaped im Seitenquelltext ("Eingeloggt als ..." + verstecktes Formularfeld). Ein
+        // Account mit z.B. einem Anfuehrungszeichen/Script-Tag im Namen haette damit gespeichertes XSS
+        // im eigenen Browser ausgeloest - und, brisanter, auch im Browser eines Admins/Co-Admins, der
+        // per "Login als User" diesen Account impersoniert (siehe Login_Als_User in edit_account.php).
+        $bnBarSafe = htmlspecialchars((string)$bn, ENT_QUOTES, 'UTF-8');
+        $pwBarSafe = htmlspecialchars((string)$pw, ENT_QUOTES, 'UTF-8');
         $adminBarActionUrl = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
         // ========================================================================================
         // FIXIERTE VIOLETTE ADMIN-LEISTE (neu eingeführt: "logged-in"-Erkennungsfarbe fürs ganze Backstage)
@@ -452,15 +460,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </style>
         <div id='admin-bar'>
             <div id='admin-bar-status'>
-                <span>Eingeloggt als <i>$bn</i></span>
+                <span>Eingeloggt als <i>$bnBarSafe</i></span>
                 <a href='/?logout=1' class='button' style='background-color:#555'>Logout</a>
             </div>
             <div id='admin-bar-buttons'>
         ";
         if ($LoggedInWithCMSorHigher) {
             echo "<form action='$adminBarActionUrl' method='POST'>
-                <input type='hidden' name='bn' value='$bn'>
-                <input type='hidden' name='pw' value='$pw'>";
+                <input type='hidden' name='bn' value='$bnBarSafe'>
+                <input type='hidden' name='pw' value='$pwBarSafe'>";
             if ($edit_content_mode == True) {
                 // Bewusst .button OHNE .primary (wie Settings/Infos) - .primary bringt eigene
                 // Schriftschnitt-Regeln aus dem Grundtheme mit, die hier für einen einheitlichen
@@ -1075,7 +1083,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="spielerinfo_login">
     <!--<a href="#teams" class="button">Zurück zu den Teams</a></br></br>-->
     <?php 
-    $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
+    // SICHERHEIT: (int)-Cast schliesst SQL-Injection - printSpielerInfo() baut daraus weiter unten
+    // einen rohen, nicht vorbereiteten SQL-String.
+    $spielerId = isset($_GET['spielerId']) ? (int)$_GET['spielerId'] : null;
     printSpielerInfoLogin($TurnierID, $conn, $spielerId); 
     ?>
     <!--</br></br><a href="#teams" class="button">Zurück zu den Teams</a>-->
@@ -1086,7 +1096,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="spielerinfo">
     <!--<a href="#teams" class="button">Zurück zu den Teams</a></br></br>-->
     <?php 
-    $spielerId = isset($_GET['spielerId']) ? $_GET['spielerId'] : null;
+    // SICHERHEIT: (int)-Cast schliesst SQL-Injection - printSpielerInfo() baut daraus weiter unten
+    // einen rohen, nicht vorbereiteten SQL-String.
+    $spielerId = isset($_GET['spielerId']) ? (int)$_GET['spielerId'] : null;
     printSpielerInfo($TurnierID, $conn, $spielerId); 
     ?>
     <!--</br></br><a href="#teams" class="button">Zurück zu den Teams</a>-->
@@ -1097,8 +1109,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="teaminfo">
     <!--<a href="#" class="button">Zurück zur Startseite</a></br></br>-->
     <?php 
-    $teamId = isset($_GET['teamId']) ? $_GET['teamId'] : null;
-    printTeamInfo($TurnierID, $conn, $teamId); 
+    // SICHERHEIT: (int)-Cast schliesst SQL-Injection - printTeamInfo() baut daraus rohe SQL-Strings,
+    // und diese Seite ist oeffentlich ohne jeden Login erreichbar.
+    $teamId = isset($_GET['teamId']) ? (int)$_GET['teamId'] : null;
+    printTeamInfo($TurnierID, $conn, $teamId);
     ?>
     <!--</br></br><a href="#" class="button">Zurück zur Startseite</a>-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
