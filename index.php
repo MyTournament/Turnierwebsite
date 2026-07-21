@@ -672,6 +672,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5S3.5 15.4 3.5 9.2C3.5 6.3 5.8 4 8.6 4c1.5 0 2.9.7 3.4 2 .5-1.3 1.9-2 3.4-2 2.8 0 5.1 2.3 5.1 5.2 0 6.2-8.5 11.3-8.5 11.3z"/></svg>
                 <span>Spenden</span>
             </a></li>
+            <li><a href="#pausenraum">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h12v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8z"/><path d="M16 9h2a2.5 2.5 0 0 1 0 5h-2"/><line x1="8" y1="4" x2="8" y2="6"/><line x1="12" y1="3" x2="12" y2="6"/></svg>
+                <span>Pausenraum</span>
+            </a></li>
         </ul>
     </nav>
     <div class="content">
