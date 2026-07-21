@@ -3634,11 +3634,52 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
     <h2>Nutzer</h2>
     <p><i>Sortiert nach Berechtigungsstärke (Admin zuerst). Jeder Nutzer kann mehrere Rollen gleichzeitig haben.</i></p>
+    <!-- SUCHE + ROLLENFILTER: rein clientseitig (die Liste ist bereits komplett serverseitig gerendert) -
+         blendet passende .nm-user-card-Elemente per JS ein/aus, statt die Seite neu zu laden. -->
+    <div class='nm-filter-row' style='display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;margin-bottom:0.8rem;'>
+        <input type='text' id='nm_suche' placeholder='Nutzer suchen...' class='Eingabe' style='color:white;max-width:220px;margin:0;' oninput='nmFilterListe()'>
+        <select id='nm_rollenfilter' onchange='nmFilterListe()' style='padding:0.3rem 0.5rem;border-radius:4px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.06);color:#fff;'>
+            <option value=''>Alle Rollen</option>
+            <option value='keine'>Keine Rolle</option>
+            <?php foreach ($rollenListeFuerUebersicht as $r) {
+                echo "<option value='" . (int)$r['id'] . "'>" . htmlspecialchars($r['name']) . "</option>";
+            } ?>
+        </select>
+        <span id='nm_treffer_hinweis' style='font-size:0.78rem;opacity:0.75;'></span>
+    </div>
+    <script>
+        function nmFilterListe() {
+            var suchtext = document.getElementById('nm_suche').value.trim().toLowerCase();
+            var rollenfilter = document.getElementById('nm_rollenfilter').value;
+            var karten = document.querySelectorAll('.nm-user-card');
+            var sichtbar = 0;
+            karten.forEach(function(karte) {
+                var bn = karte.getAttribute('data-bn') || '';
+                var rollen = (karte.getAttribute('data-rollen') || '').split(',').filter(Boolean);
+                var passtSuche = suchtext === '' || bn.indexOf(suchtext) !== -1;
+                var passtRolle = true;
+                if (rollenfilter === 'keine') {
+                    passtRolle = rollen.length === 0;
+                } else if (rollenfilter !== '') {
+                    passtRolle = rollen.indexOf(rollenfilter) !== -1;
+                }
+                var passt = passtSuche && passtRolle;
+                karte.style.display = passt ? '' : 'none';
+                if (passt) { sichtbar++; }
+            });
+            var hinweis = document.getElementById('nm_treffer_hinweis');
+            if (hinweis) {
+                hinweis.textContent = (suchtext !== '' || rollenfilter !== '') ? (sichtbar + ' Treffer') : '';
+            }
+        }
+    </script>
     <div class='nm-userlist'>
     <?php foreach ($alleNutzerMitRollen as $nutzer) {
         $nmPwId = 'nm_pw_' . $nutzer['id'];
+        $nmDataBn = htmlspecialchars(strtolower($nutzer['bn']), ENT_QUOTES);
+        $nmDataRollen = htmlspecialchars(implode(',', $nutzer['rolle_ids']), ENT_QUOTES);
     ?>
-        <div class='nm-user-card'>
+        <div class='nm-user-card' data-bn='<?php echo $nmDataBn; ?>' data-rollen='<?php echo $nmDataRollen; ?>'>
             <?php
             // Passwörter anzeigen/ändern: bewusst nur für "echte" Admins (rollenInfo['ist_admin']),
             // nicht für Co-Admins - auch wenn Co-Admins sonst Zugriff auf Nutzermanagement haben.
