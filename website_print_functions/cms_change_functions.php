@@ -67,6 +67,7 @@ function changeContent($conn, $TurnierID, $contentID, $content, $content_style_t
              Werte als verstecktes Feld mitschicken statt sie noch einmal eintippen zu lassen. -->
         <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES, 'UTF-8') . "'/>
         <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES, 'UTF-8') . "'/>
+        " . csrf_field() . "
     <h5><br/></h5>
     <script type='text/javascript'>
         function checkAGB5() {
@@ -114,6 +115,7 @@ function addContent($contentID, $TurnierID, $bn = '', $pw = ''){
                  nicht erneut abfragen, sondern die bereits bekannten Werte versteckt mitschicken. -->
             <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES, 'UTF-8') . "'/>
             <input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES, 'UTF-8') . "'/>
+            " . csrf_field() . "
 
     <h5><br/></h5>
     <script type='text/javascript'>

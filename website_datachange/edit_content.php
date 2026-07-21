@@ -91,8 +91,14 @@ if ($rollenInfoContent !== null && $rollenInfoContent['flags']['cms']) {
 }
 
 
+// SICHERHEIT: CSRF-Token-Pruefung - changeContent()/addContent() (cms_change_functions.php)
+// schicken den Token seit dieser Aenderung mit.
+include_once '../website_functionalities/csrf.php';
 if ($successfulLogin == 0){ //fehlerhafter Login
   $message = "Login leider nicht erfolgreich! Dein Ergebnis wurde nicht eingetragen. Versuch es gerne noch einmal.";
+  echo "<script type='text/javascript'>alert('$message');</script>";
+}else if (!csrf_verify()) {
+  $message = "Sicherheitsprüfung fehlgeschlagen (ungültiger oder abgelaufener Token). Bitte die Seite neu laden und erneut versuchen.";
   echo "<script type='text/javascript'>alert('$message');</script>";
 }else{
     //Variablen speichern

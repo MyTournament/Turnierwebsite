@@ -2,6 +2,7 @@
 //##########################################################
 include_once '../database/db_connection.php';
 include_once '../website_datachange/edit_interface.php';
+include_once '../website_functionalities/csrf.php';
 //##########################################################
 
 // SICHERHEIT: display_errors war hier fest auf 1 gesetzt - PHP-Fehler/Warnungen (inkl. Dateipfaden,
@@ -450,7 +451,8 @@ if ($action == 'Ändern') {
 // fest auf 4 (Green Card) gesetzt, damit die automatische Spielplan-Berechnung diese Begegnung nie
 // überschreibt.
 }else if($action == 'Begegnung_Hinzufuegen'){
-  if($darfBegegnungenAnlegenSperren){
+  // SICHERHEIT: CSRF-Token-Pruefung - das Formular in index.php schickt den Token seit dieser Aenderung mit.
+  if($darfBegegnungenAnlegenSperren && csrf_verify()){
     $team1 = (int)$_POST['team1'];
     $team2 = (int)$_POST['team2'];
     $koFinallevel = (int)$_POST['ko_finallevel'];
@@ -499,7 +501,8 @@ if ($action == 'Ändern') {
 // Ruhe (kein Überschreiben durch den Auto-Scheduler), Öffentlichkeit sieht sie nicht mehr,
 // Backstage-Nutzer sehen sie weiterhin (ausgegraut, siehe printKO_PhaseTabellen).
 }else if($action == 'Begegnung_Sperren'){
-  if($darfBegegnungenAnlegenSperren){
+  // SICHERHEIT: CSRF-Token-Pruefung - das Formular in index.php schickt den Token seit dieser Aenderung mit.
+  if($darfBegegnungenAnlegenSperren && csrf_verify()){
     $begegnungIdSperren = (int)$_POST['begegnungIdSperren'];
 
     if ($begegnungIdSperren > 0) {
