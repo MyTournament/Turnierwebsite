@@ -40,6 +40,10 @@
     }
 
     function printTeamInfo($TurnierID, $conn, $teamId){ //NICHT IM CMS
+        // SICHERHEIT: (int)-Cast schliesst SQL-Injection (defensiv - diese Seite ist komplett
+        // oeffentlich ohne Login erreichbar, der Aufrufer in index.php castet zwar bereits, aber
+        // doppelt gesichert ist besser).
+        $teamId = $teamId !== null ? (int)$teamId : null;
         //Teamnamen herausfinden
         if($teamId != NULL){
             $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = ' . $teamId . ' ORDER BY id';
@@ -51,7 +55,9 @@
                 $gruppeId = $row['fk_gruppe'];
                 $endplatzierung = $row['endplatzierung'];
             }
-            echo "<h1>$teamName ($teamKuerzel)</h1>";
+            // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Teamname/-kuerzel (beides
+            // vom Team selbst bei der Anmeldung frei waehlbar).
+            echo "<h1>" . htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') . " (" . htmlspecialchars($teamKuerzel, ENT_QUOTES, 'UTF-8') . ")</h1>";
             //TEAMMITGLIEDER RAUSFINDEN
             $sql = 'SELECT * FROM Turnier_Spieler_in WHERE fk_team = ' . $teamId . ' ORDER BY id';
             $result = $conn->query($sql);
@@ -127,14 +133,14 @@
                 $finallevel_name = $rowFinallevel["name"];
                 echo "<td>$finallevel_name</td>"; //Heimteam kommt ganz links hin
                 
-                //Ausgeben
-                echo "<td>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
-                
+                //Ausgeben - SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Teamnamen
+                echo "<td>" . htmlspecialchars($heimteam, ENT_QUOTES, 'UTF-8') . " ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td>"; //Heimteam kommt ganz links hin
+
                 //Spiele zu den Begegnungen finden
                 $status = $row['status']; //HERAUSFINDEN OB BEGEGNUNG FINAL
                 printGames($TurnierID, $conn, $begegnungId, 0, $status);
-                
-                echo "</td><td>$auswaertsteam ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td></tr><tr>"; //Auswärtsteam kommt ganz rechts hin		
+
+                echo "</td><td>" . htmlspecialchars($auswaertsteam, ENT_QUOTES, 'UTF-8') . " ("; $return = printKuerzelWithLink($conn, $teamId2); echo"$return)</td></tr><tr>"; //Auswärtsteam kommt ganz rechts hin
                 $zaehler++;
             }
 
@@ -222,7 +228,9 @@
                 $tel = $row['telefonnummer'];
                 $fk_team = $row['fk_team'];
             }
-            echo "<h1>$spielerName</h1>";
+            // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS - Spielername/Teamname/Telefon-
+            // nummer sind alles bei der Team-Anmeldung frei waehlbare Felder.
+            echo "<h1>" . htmlspecialchars($spielerName, ENT_QUOTES, 'UTF-8') . "</h1>";
             //TEAM RAUSFINDEN
             $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = ' . $fk_team . ' ORDER BY id';
             $result = $conn->query($sql);
@@ -232,11 +240,11 @@
                 $teamId = $row['id'];
             }
             $teamKuerzel = printKuerzelWithLink($conn, $teamId);
-            echo "Team: <b>$teamName ($teamKuerzel)</b>";
+            echo "Team: <b>" . htmlspecialchars($teamName, ENT_QUOTES, 'UTF-8') . " ($teamKuerzel)</b>";
             echo "<br/>";
 
             if($tel != NULL && $tel != "" && $tel != " "){
-                echo "Telefonnummer: <b>$tel</b>";
+                echo "Telefonnummer: <b>" . htmlspecialchars($tel, ENT_QUOTES, 'UTF-8') . "</b>";
             }else{
                 echo "Telefonnummer: <b><i>Keine Nummer hinterlegt</i></b>";
             }
@@ -262,15 +270,18 @@
         $zeahler = 1;
         
         while ($rowTeam = $resultTeam->fetch_assoc()) {
-            $a=$rowTeam["name"];
+            // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS - $a ist der (bei der
+            // Anmeldung frei waehlbare) Teamname und wird auf der oeffentlichen Teams-Uebersicht
+            // fuer jeden Besuch ausgegeben.
+            $a=htmlspecialchars($rowTeam["name"], ENT_QUOTES, 'UTF-8');
             $name_link=$rowTeam["name_link"];
             if($name_link != NULL){
-                $a=$name_link;
+                $a=htmlspecialchars($name_link, ENT_QUOTES, 'UTF-8');
             }
             $teamId = $rowTeam["id"];
-            $b=printKuerzelWithLink($conn, $teamId);	
-            $ausgabeString = "";				
-            $ausgabeString .= "$zeahler. $a <em>($b)</em> &mdash;";					
+            $b=printKuerzelWithLink($conn, $teamId);
+            $ausgabeString = "";
+            $ausgabeString .= "$zeahler. $a <em>($b)</em> &mdash;";
             $sqlSpieler = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team = ' . $rowTeam["id"] . ' ORDER BY ID'; //WHERE Freischaltung = 1    
             $resultSpieler = $conn->query($sqlSpieler);
             while ($rowSpieler = $resultSpieler->fetch_assoc()) {
@@ -485,7 +496,8 @@
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $teamId = $rowTeam['id'];
-                                    $teamString = $rowTeam['name'];
+                                    // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den Teamnamen im Turnierbaum
+                                    $teamString = htmlspecialchars($rowTeam['name'], ENT_QUOTES, 'UTF-8');
                                     $teamString .= " (";
                                     $teamString .= printKuerzelWithLink($conn, $teamId);
                                     $teamString .= ")";
@@ -508,7 +520,8 @@
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $teamId = $rowTeam['id'];
-                                    $teamString1 = $rowTeam['name'];
+                                    // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den Teamnamen im Turnierbaum
+                                    $teamString1 = htmlspecialchars($rowTeam['name'], ENT_QUOTES, 'UTF-8');
                                     $teamString1 .= " (";
                                     $teamString1 .= printKuerzelWithLink($conn, $teamId);
                                     $teamString1 .= ")";
@@ -522,7 +535,8 @@
                                 $resultTeam = $conn->query($sqlTeam);
                                 while ($rowTeam = $resultTeam->fetch_assoc()) {
                                     $teamId = $rowTeam['id'];
-                                    $teamString2 = $rowTeam['name'];
+                                    // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den Teamnamen im Turnierbaum
+                                    $teamString2 = htmlspecialchars($rowTeam['name'], ENT_QUOTES, 'UTF-8');
                                     $teamString2 .= " (";
                                     $teamString2 .= printKuerzelWithLink($conn, $teamId);
                                     $teamString2 .= ")";
@@ -613,7 +627,8 @@
             $resultTeam = $conn->query($sqlTeam);
             $platzierungen[$zeahler] = "platzhalter";
             while (!empty($rowTeam = $resultTeam->fetch_assoc())) {
-                $platzierungen[$zeahler] = $rowTeam['name']; //Gruppengröße
+                // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den Teamnamen auf der oeffentlichen Sieger*innen-Treppe
+                $platzierungen[$zeahler] = htmlspecialchars($rowTeam['name'], ENT_QUOTES, 'UTF-8'); //Gruppengröße
             }
             $zeahler++;
         }
@@ -676,7 +691,10 @@
             $resultTeam = $conn->query($sqlTeam);
             while (!empty($rowTeam = $resultTeam->fetch_assoc())) {
                 //$endplatzierung = $resultTeam['endplatzierung'];
-                $teamName = $rowTeam['name'];
+                // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den (vom Team selbst
+                // frei waehlbaren) Teamnamen - HIER escapen (vor dem Anhaengen des bereits fertigen,
+                // selbst escapten Kuerzel-Links), damit der Link danach nicht nochmal mit-escaped wird.
+                $teamName = htmlspecialchars($rowTeam['name'], ENT_QUOTES, 'UTF-8');
                 $teamId = $rowTeam['id'];
                 $teamKuerzel = printKuerzelWithLink($conn, $teamId);
                 $teamName .= " ($teamKuerzel)";
@@ -768,15 +786,14 @@
         $sqlHeimteam = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $heimteamId .';';
         $resultHeimteam = $conn->query($sqlHeimteam);
         while ( !empty( $rowHeimteam = $resultHeimteam->fetch_assoc() ) ){
-            $heimteam=$rowHeimteam['kuerzel'];
-            
+            // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber das (vom Team frei waehlbare) Kuerzel
+            $heimteam=htmlspecialchars($rowHeimteam['kuerzel'], ENT_QUOTES, 'UTF-8');
         }
         //Auswärtsteam-Namen herausfinden
         $sqlAusw = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = '. $auswaertsteamId .';';
         $resultAusw = $conn->query($sqlAusw);
         while ( !empty( $rowAusw = $resultAusw->fetch_assoc() ) ){
-            $auswaertsteam=$rowAusw['kuerzel'];
-            
+            $auswaertsteam=htmlspecialchars($rowAusw['kuerzel'], ENT_QUOTES, 'UTF-8');
         }
         
         $sqlSpiel = 'SELECT * FROM `Turnier_Spiel` WHERE fk_begegnung = ' . $begegnungId . ' ORDER BY ID';
@@ -1117,7 +1134,8 @@
         $resultTeamZeile = $conn->query($sqlTeam);
         $__lb_rows = 0;
         while ($resultTeamZeile && ($rowTeamZeile = $resultTeamZeile->fetch_assoc())) {
-            $name=$rowTeamZeile["name"]; $teamId=$rowTeamZeile["id"];
+            // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den Teamnamen
+            $name=htmlspecialchars($rowTeamZeile["name"], ENT_QUOTES, 'UTF-8'); $teamId=$rowTeamZeile["id"];
             $gruppenphase_spiele=$rowTeamZeile["gruppenphase_spiele"];
             $gruppenphase_flaschen=$rowTeamZeile["gruppenphase_flaschen"];
             $gruppenphase_punkte=$rowTeamZeile["gruppenphase_punkte"];
@@ -1158,7 +1176,8 @@
                     <?php $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' AND fk_gruppe = ' . $rowGruppe["id"] . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc';
                     $resultTeamZeile = $conn->query($sqlTeam);
                     while ($rowTeamZeile = $resultTeamZeile->fetch_assoc()) {
-                        $name=$rowTeamZeile["name"];
+                        // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den Teamnamen
+                        $name=htmlspecialchars($rowTeamZeile["name"], ENT_QUOTES, 'UTF-8');
                         //$kuerzel=$rowTeamZeile["kuerzel"];
                         $teamId=$rowTeamZeile["id"];
                         $gruppenphase_spiele=$rowTeamZeile["gruppenphase_spiele"];
@@ -1270,18 +1289,19 @@
                             $sqlTeam1 = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $heimteamID . ' ORDER BY ID';
                             $result1 = $conn->query($sqlTeam1); 
                             while ($rowTeam1 = $result1->fetch_assoc()) {
-                                $heimteam = $rowTeam1["name"];
+                                // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber den Teamnamen
+                                $heimteam = htmlspecialchars($rowTeam1["name"], ENT_QUOTES, 'UTF-8');
                                 //$heimteamkuerzel = $rowTeam1["kuerzel"];
                                 $teamId1 = $rowTeam1["id"];
                             }
                             //Team 2
                             $sqlTeam2 = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = ' . $auswaertsteamID . ' ORDER BY ID';
-                            $result2 = $conn->query($sqlTeam2); 
+                            $result2 = $conn->query($sqlTeam2);
                             while ($rowTeam2 = $result2->fetch_assoc()) {
-                                $auswaertsteam = $rowTeam2["name"];
+                                $auswaertsteam = htmlspecialchars($rowTeam2["name"], ENT_QUOTES, 'UTF-8');
                                 //$auswaertsteamkuerzel = $rowTeam2["kuerzel"];
                                 $teamId2 = $rowTeam2["id"];
-                            }	
+                            }
                             //Ausgeben
                             if($siegerteam == $heimteamID){
                                 echo "<td style='$zellenStyle'>$ko_turnierbaumposition. <p style='font-size: 10px'>#$begegnungId$greenCardDot$gesperrtLabel</p></td><td style='$zellenStyle background-color:green;word-wrap: break-word;'>$heimteam ("; $return = printKuerzelWithLink($conn, $teamId1); echo"$return)</td><td style='$zellenStyle'>"; //Heimteam kommt ganz links hin
@@ -1421,6 +1441,10 @@
     }
 
     function printKuerzelWithLink($conn, $teamId){
+        // SICHERHEIT: (int)-Cast schliesst SQL-Injection (defensiv, falls ein Aufrufer irgendwann mal
+        // einen nicht schon gecasteten Wert uebergibt); htmlspecialchars() auf $teamKuerzel schliesst
+        // gespeichertes XSS ueber das (vom Team selbst frei waehlbare) Team-Kuerzel.
+        $teamId = (int)$teamId;
         //KÜRZEL HERAUSFINDEN
         $sql = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND id = ' . $teamId . ' ORDER BY id';
         $result = $conn->query($sql);
@@ -1428,10 +1452,12 @@
         while (!empty($row = $result->fetch_assoc())) {
             $teamKuerzel = $row['kuerzel'];
         }
-        return "<a href='?teamId=$teamId#teaminfo'>$teamKuerzel</a>";
+        return "<a href='?teamId=$teamId#teaminfo'>" . htmlspecialchars($teamKuerzel, ENT_QUOTES, 'UTF-8') . "</a>";
     }
 
     function printSpielerWithLink($conn, $spielerId){
+        // SICHERHEIT: siehe printKuerzelWithLink() oben - gleiches Prinzip.
+        $spielerId = (int)$spielerId;
         //KÜRZEL HERAUSFINDEN
         $sql = 'SELECT * FROM Turnier_Spieler_in WHERE id = ' . $spielerId . ' ORDER BY id';
         $result = $conn->query($sql);
@@ -1439,7 +1465,7 @@
         while (!empty($row = $result->fetch_assoc())) {
             $name = $row['name'];
         }
-        return "<a href='?spielerId=$spielerId#spielerinfo_login'>$name</a>";
+        return "<a href='?spielerId=$spielerId#spielerinfo_login'>" . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . "</a>";
     }
 
     function history_auswahl($history, $TurnierName){
