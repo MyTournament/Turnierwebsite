@@ -1773,6 +1773,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </form>
     </div>
 
+    <?php if (isset($_SESSION['flash_success_register_account']) && $_SESSION['flash_success_register_account']) { ?>
+        <div class='login-section' style="padding:10px;border:1px solid #27ae60;border-radius:6px;background:#ecf9f0;color:#27ae60;">
+            <?php echo htmlspecialchars($_SESSION['flash_success_register_account'], ENT_QUOTES, 'UTF-8'); unset($_SESSION['flash_success_register_account']); ?>
+        </div>
+    <?php } ?>
+    <?php if (isset($_SESSION['flash_error_register_account']) && $_SESSION['flash_error_register_account']) { ?>
+        <div class='login-section' style="padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">
+            <?php echo htmlspecialchars($_SESSION['flash_error_register_account'], ENT_QUOTES, 'UTF-8'); unset($_SESSION['flash_error_register_account']); ?>
+        </div>
+    <?php } ?>
+
     <div class='login-section' id="LogIn">
         <h2>Login (CMS &amp; Backstage)</h2>
         <?php
@@ -1811,6 +1822,110 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </div>
 
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
+    <p></br></p>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  ACCOUNT REGISTRIEREN - eigenstaendige Selbstregistrierung, erreichbar ueber den          ### -->
+<!-- ###  "Registrieren"-Button auf der #login-Seite. Neue Accounts bekommen bewusst NOCH KEINE     ### -->
+<!-- ###  Rolle (nicht mal "Benutzer*in") - ein Admin/Co-Admin muss sie im Nutzermanagement erst    ### -->
+<!-- ###  freischalten. Bot-Schutz ueber dasselbe Blankensteinpark-Bild-Captcha wie bei der          ### -->
+<!-- ###  Team-Anmeldung (CaptchaBlanki), aber mit eigenem formKey "user_register" statt "register", ### -->
+<!-- ###  damit sich die beiden unabhaengigen Captcha-Ablaeufe nicht gegenseitig ueberschreiben.     ### -->
+<!-- ################################################################################################ -->
+<article id="register_account">
+    <a href='#login' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h1>Account registrieren</h1>
+    <p>Nach der Registrierung hat dein Account noch <b>keinerlei Rechte</b> - sag danach einfach Richard Bescheid, damit er dich im Nutzermanagement freischalten kann.</p>
+    <?php
+        if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+        $regCaptchaFeedback = [
+            'shouldShow' => false,
+            'message' => null,
+            'remaining' => 3,
+            'ok' => false,
+            'reloadNotice' => null,
+        ];
+        if (!empty($_SESSION['captcha_attempted_user_register'])) {
+            $regCaptchaFeedback['remaining'] = isset($_SESSION['captcha_remaining_user_register'])
+                ? (int)$_SESSION['captcha_remaining_user_register']
+                : 3;
+            $regCaptchaFeedback['message'] = isset($_SESSION['flash_error_user_register'])
+                ? $_SESSION['flash_error_user_register']
+                : null;
+            $regCaptchaFeedback['ok'] = ($regCaptchaFeedback['message'] && stripos($regCaptchaFeedback['message'], 'best') !== false);
+            $regCaptchaFeedback['shouldShow'] = $regCaptchaFeedback['ok'] || $regCaptchaFeedback['remaining'] <= 2;
+            if ($regCaptchaFeedback['message'] && stripos($regCaptchaFeedback['message'], 'Captcha 3x fehlgeschlagen') !== false) {
+                $regCaptchaFeedback['reloadNotice'] = $regCaptchaFeedback['message'];
+                $regCaptchaFeedback['shouldShow'] = true;
+            }
+            unset($_SESSION['captcha_attempted_user_register'], $_SESSION['captcha_remaining_user_register']);
+        }
+        $regPrevBn = isset($_SESSION['register_account_form_data']['reg_bn']) ? $_SESSION['register_account_form_data']['reg_bn'] : '';
+        unset($_SESSION['register_account_form_data']);
+    ?>
+    <?php if (!empty($regCaptchaFeedback['reloadNotice'])) { ?>
+        <div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid #c0392b;border-radius:6px;background:#ffeaea;color:#c0392b;">
+            <?php echo htmlspecialchars($regCaptchaFeedback['reloadNotice'], ENT_QUOTES, 'UTF-8'); ?>
+        </div>
+    <?php } ?>
+    <?php if ($regCaptchaFeedback['shouldShow']) {
+        $regAttemptLabel = ($regCaptchaFeedback['remaining'] === 1) ? 'Versuch' : 'Versuche';
+        $regBorderColor = $regCaptchaFeedback['ok'] ? '#27ae60' : '#c0392b';
+        $regBgColor = $regCaptchaFeedback['ok'] ? '#ecf9f0' : '#ffeaea';
+        $regTextColor = $regCaptchaFeedback['ok'] ? '#27ae60' : '#c0392b';
+        echo '<div class="cb-status-global" style="margin:10px 0;padding:10px;border:1px solid '. $regBorderColor .';border-radius:6px;background:'. $regBgColor .';color:'. $regTextColor .';">';
+        if ($regCaptchaFeedback['message']) {
+            echo htmlspecialchars($regCaptchaFeedback['message'], ENT_QUOTES, 'UTF-8');
+            if (stripos($regCaptchaFeedback['message'], 'Verbleibende Versuch') === false) {
+                echo '<br \>Verbleibende '. $regAttemptLabel .': '. $regCaptchaFeedback['remaining'];
+            }
+        } else {
+            echo 'Verbleibende '. $regAttemptLabel .': '. $regCaptchaFeedback['remaining'];
+        }
+        echo '</div>';
+    } ?>
+    <?php
+        if($test_turnier_id==0){ //Fall: normales Turnier
+            echo "<form action='website_datachange/edit_account.php' method='POST' onSubmit='return checkRegisterAccount(event)'>";
+        }else{ //Testturniere
+            echo "<form action='website_datachange/edit_account.php?test_turnier_id=$test_turnier_id' method='POST' onSubmit='return checkRegisterAccount(event)'>";
+        }
+    ?>
+        <input type="text" id="reg_bn" name="reg_bn" class="Eingabe" placeholder="Gewünschter Benutzername &#9733;" style="color: white" maxlength="40" required autocomplete="username" value="<?php echo htmlspecialchars($regPrevBn, ENT_QUOTES, 'UTF-8'); ?>"><br/>
+        <input type="password" id="reg_pw" name="reg_pw" class="Eingabe" placeholder="Passwort wählen &#9733;" style="color: white" required autocomplete="new-password"><br/>
+        <input type="password" id="reg_pw2" name="reg_pw2" class="Eingabe" placeholder="Passwort wiederholen &#9733;" style="color: white" required autocomplete="new-password"><br/>
+        <h5><br/></h5>
+        <?php
+            require_once __DIR__ . '/website_functionalities/captcha_blanki.php';
+            echo '<div id="register-account-captcha"></div>';
+            CaptchaBlanki::render('user_register');
+            $regCaptchaPassed = CaptchaBlanki::passed('user_register');
+        ?>
+        <h5><br/></h5>
+        <script type="text/javascript">
+            function checkRegisterAccount(evt) {
+                try {
+                    var submitter = evt && (evt.submitter || document.activeElement);
+                    if (submitter && submitter.name === 'cb_action' && submitter.value === 'check') {
+                        return true;
+                    }
+                } catch (e) {}
+                var pw1 = document.getElementById('reg_pw');
+                var pw2 = document.getElementById('reg_pw2');
+                if (pw1 && pw2 && pw1.value !== pw2.value) {
+                    alert('Die beiden Passwörter stimmen nicht überein.');
+                    return false;
+                }
+                return true;
+            }
+        </script>
+        <input type='hidden' name='action' value='register'/>
+        <?php $regSubmitDisabledAttr = $regCaptchaPassed ? '' : ' disabled'; ?>
+        <p><button value="Registrieren" type="submit"<?php echo $regSubmitDisabledAttr; ?>>Registrieren</button></p>
+    </form>
+    <p></br></p>
     <p></br></p>
 </article>
 

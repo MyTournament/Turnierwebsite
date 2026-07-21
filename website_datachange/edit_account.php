@@ -5,10 +5,31 @@ include_once 'edit_interface.php';
 include_once '../variables.php';
 include_once 'login_interface.php';
 
-$action = $_POST['action'];
-$bn = $_POST['bn'];
-$pw = $_POST['pw'];
+$action = isset($_POST['action']) ? $_POST['action'] : '';
+$bn = isset($_POST['bn']) ? $_POST['bn'] : '';
+$pw = isset($_POST['pw']) ? $_POST['pw'] : '';
 echo "<script>console.log('edit_account Checkpoint 2')</script>";
+
+// ================================================================================================
+// CAPTCHA-CHECK FÜR DIE SELBSTREGISTRIERUNG (#register_account) - eigener formKey "user_register",
+// bewusst NICHT "register" (das ist bereits der formKey der Team-Anmeldung in edit_teams.php), damit
+// sich die beiden unabhängigen Captcha-Abläufe nicht gegenseitig überschreiben. Gleiches Muster wie
+// dort: nur das Captcha prüfen, Benutzername merken und zurück zu #register_account.
+// ================================================================================================
+if (isset($_POST['cb_action']) && $_POST['cb_action'] === 'check') {
+    if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+    require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
+    $regRes = CaptchaBlanki::preverify($_POST);
+    $_SESSION['register_account_form_data'] = ['reg_bn' => isset($_POST['reg_bn']) ? $_POST['reg_bn'] : ''];
+    $regStatusMessage = $regRes['ok']
+        ? 'Captcha bestätigt. Du kannst jetzt absenden.'
+        : (($regRes['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$regRes['remaining']) : 'Captcha 3x fehlgeschlagen. Die Seite wurde neu geladen.');
+    $_SESSION['flash_error_user_register'] = $regStatusMessage;
+    $_SESSION['captcha_remaining_user_register'] = isset($regRes['remaining']) ? (int)$regRes['remaining'] : 3;
+    $_SESSION['captcha_attempted_user_register'] = 1;
+    header("Location: /#register_account");
+    exit;
+}
 
 // ============================================================================================
 // RECHTE-AUDIT: OB EINE ROLLE VERGEBEN/ENTZOGEN WERDEN DARF, HÄNGT AN DEN FLAGS DER ZIEL-ROLLE
@@ -28,11 +49,54 @@ function darfRolleVergeben($conn, $rollenInfoAdmin, $zielRolle) {
     return $flags['restliche_rollen_vergeben'];
 }
 
+// ================================================================================================
+// SELBSTREGISTRIERUNG (#register_account) - neue Accounts bekommen bewusst KEINE Rolle (nicht mal
+// "Benutzer*in"). Ein Admin/Co-Admin muss im Nutzermanagement zuerst eine Rolle zuweisen, bevor der
+// Account irgendetwas darf. Bot-Schutz über CaptchaBlanki mit eigenem formKey "user_register" (siehe
+// cb_action=='check'-Block oben) - ohne bestätigtes Captcha wird nichts angelegt.
+// ================================================================================================
 if($action == 'register'){
+    if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+    $test_turnier_id_reg = isset($_GET['test_turnier_id']) ? $_GET['test_turnier_id'] : 0;
+    $regSuffix = $test_turnier_id_reg != 0 ? "?test_turnier_id=$test_turnier_id_reg" : "";
+    $regBn = trim(isset($_POST['reg_bn']) ? $_POST['reg_bn'] : '');
+    $regPw = isset($_POST['reg_pw']) ? $_POST['reg_pw'] : '';
+    $regPw2 = isset($_POST['reg_pw2']) ? $_POST['reg_pw2'] : '';
+
+    require_once __DIR__ . '/../website_functionalities/captcha_blanki.php';
+
+    if (!CaptchaBlanki::passed('user_register')) {
+        $_SESSION['flash_error_register_account'] = 'Bitte zuerst das Captcha bestätigen.';
+        header("Location: ../#register_account" . $regSuffix);
+        exit;
+    }
+    if ($regBn === '' || $regPw === '') {
+        $_SESSION['flash_error_register_account'] = 'Bitte Benutzername und Passwort ausfüllen.';
+        header("Location: ../#register_account" . $regSuffix);
+        exit;
+    }
+    if ($regPw !== $regPw2) {
+        $_SESSION['flash_error_register_account'] = 'Die beiden Passwörter stimmen nicht überein.';
+        header("Location: ../#register_account" . $regSuffix);
+        exit;
+    }
+    $stmtRegPruefen = $conn->prepare("SELECT id FROM System_Benutzer_in WHERE Benutzername = ?");
+    $stmtRegPruefen->bind_param("s", $regBn);
+    $stmtRegPruefen->execute();
+    $regBereitsVergeben = $stmtRegPruefen->get_result()->fetch_assoc();
+    if ($regBereitsVergeben) {
+        $_SESSION['flash_error_register_account'] = 'Dieser Benutzername ist bereits vergeben.';
+        header("Location: ../#register_account" . $regSuffix);
+        exit;
+    }
+
+    // Bewusst OHNE jede Rollen-Vergabe - siehe Kommentar oberhalb dieses Blocks.
     $sql = "INSERT INTO System_Benutzer_in (Benutzername, Passwort) VALUES (?, ?)";
-    //DEAKTIVIERT WEIL AKTUELL NICHT GENUTZT: $accountId = myDb_execute($conn, $TurnierID, $bn, "edit_account.php", $sql, array($bn, $pw));
-    //accountId könnte jetzt natürlich noch zurück zur index gegeben werden, damit man direkt eingeloggt ist
-    //weiß aber leider nicht wie das geht ohne es im Klartext an die uri zu hängen
+    myDb_execute($conn, 0, $regBn, "edit_account.php register", $sql, array($regBn, $regPw));
+
+    $_SESSION['flash_success_register_account'] = 'Account erstellt! Du kannst dich jetzt einloggen - bitte sag Bescheid, damit ein Admin dich freischaltet.';
+    header("Location: ../#login" . $regSuffix);
+    exit;
 
 }else if($action == 'admin_erstellt_nutzer'){
     $adminBn = $_POST['admin_bn'];
