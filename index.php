@@ -15,6 +15,22 @@ if (isset($_GET['logout'])) {
     unset($_SESSION['admin_bn'], $_SESSION['admin_pw']);
 }
 
+// ================================================================================================
+// CAPTCHA-CHECK FÜR DEN LOGIN-RATE-LIMITER (siehe weiter unten beim eigentlichen Login-Block) -
+// eigener formKey "login", damit sich dieser Ablauf nicht mit Registrierung ("user_register") oder
+// Team-Anmeldung ("register") überschneidet. Das Login-Formular postet direkt an "/" (index.php
+// selbst, kein eigenes Backend-Skript), daher muss der cb_action-Check hier ganz am Anfang stehen.
+// ================================================================================================
+if (isset($_POST['cb_action']) && $_POST['cb_action'] === 'check' && isset($_POST['cb_formkey']) && $_POST['cb_formkey'] === 'login') {
+    require_once __DIR__ . '/website_functionalities/captcha_blanki.php';
+    $loginCbRes = CaptchaBlanki::preverify($_POST);
+    $_SESSION['flash_error_login_captcha'] = $loginCbRes['ok']
+        ? 'Captcha bestätigt. Du kannst jetzt einloggen.'
+        : (($loginCbRes['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$loginCbRes['remaining']) : 'Captcha 3x fehlgeschlagen. Die Seite wurde neu geladen.');
+    header('Location: /#login');
+    exit;
+}
+
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 //include_once 'database/db_backup.php';
@@ -323,7 +339,28 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $pw = $_POST["pw"] !== null ? $_POST["pw"] : (isset($_SESSION['admin_pw']) ? $_SESSION['admin_pw'] : null);
 
     include_once 'website_datachange/login_interface.php';
-    $rollenInfo = ($bn !== null && $pw !== null) ? getUserRollenInfo($conn, $bn, $pw) : null;
+    // ============================================================================================
+    // RATE-LIMITING FÜR DEN LOGIN: bisher konnte bn/pw beliebig oft ohne jede Bremse durchprobiert
+    // werden (bei Klartext-Passwörtern besonders riskant). Ab $loginSchwelleFuerCaptcha
+    // Fehlversuchen in Folge (Session-Zähler) muss erst ein Bild-Captcha bestätigt werden, bevor der
+    // nächste Versuch überhaupt gegen die DB geprüft wird - genau wie bei Registrierung/Team-
+    // Anmeldung. "Frischer Versuch" = bn UND pw kamen direkt aus $_POST (nicht aus der Session-
+    // Fallback-Wiederherstellung) - nur dann zählt es als echter Login-Versuch.
+    // ============================================================================================
+    $istFrischerLoginVersuch = ($_POST["bn"] !== null && $_POST["pw"] !== null);
+    if (!isset($_SESSION['login_fail_count'])) { $_SESSION['login_fail_count'] = 0; }
+    $loginSchwelleFuerCaptcha = 5;
+    $loginBenoetigtCaptcha = $_SESSION['login_fail_count'] >= $loginSchwelleFuerCaptcha;
+
+    if ($istFrischerLoginVersuch && $loginBenoetigtCaptcha) {
+        require_once __DIR__ . '/website_functionalities/captcha_blanki.php';
+        $rollenInfo = CaptchaBlanki::passed('login') ? getUserRollenInfo($conn, $bn, $pw) : null;
+    } else {
+        $rollenInfo = ($bn !== null && $pw !== null) ? getUserRollenInfo($conn, $bn, $pw) : null;
+    }
+    if ($istFrischerLoginVersuch) {
+        $_SESSION['login_fail_count'] = ($rollenInfo !== null) ? 0 : ($_SESSION['login_fail_count'] + 1);
+    }
     $rechteFlags = $rollenInfo['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
 
     // ========================================================================================
@@ -1807,6 +1844,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <div class='login-section' id="LogIn">
         <h2>Login (CMS &amp; Backstage)</h2>
         <?php
+        // RATE-LIMITING: nach mehreren Fehlversuchen (siehe $loginBenoetigtCaptcha weiter oben) muss
+        // hier erst ein Bild-Captcha bestätigt werden, bevor der Absenden-Button nutzbar wird.
+        if (isset($_SESSION['flash_error_login_captcha']) && $_SESSION['flash_error_login_captcha']) {
+            $loginCbOk = (stripos($_SESSION['flash_error_login_captcha'], 'best') !== false);
+            echo '<div style="margin:10px 0;padding:10px;border:1px solid '. ($loginCbOk ? '#27ae60' : '#c0392b') .';border-radius:6px;background:'. ($loginCbOk ? '#ecf9f0' : '#ffeaea') .';color:'. ($loginCbOk ? '#27ae60' : '#c0392b') .';">';
+            echo htmlspecialchars($_SESSION['flash_error_login_captcha'], ENT_QUOTES, 'UTF-8');
+            echo '</div>';
+            unset($_SESSION['flash_error_login_captcha']);
+        }
         if($test_turnier_id==0){ //Fall: normales Turnier
             echo "<form action='/' method='POST'>";
         }else{ //Testturniere
@@ -1817,8 +1863,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type="text" name="bn" class="Eingabe" placeholder="username" style="color: white" required>
             <input type="password" class="Eingabe" name="pw" placeholder="password" style="color: white" required>
         </div>
+        <?php
+        $loginSubmitDisabled = '';
+        if ($loginBenoetigtCaptcha) {
+            require_once __DIR__ . '/website_functionalities/captcha_blanki.php';
+            CaptchaBlanki::render('login');
+            $loginSubmitDisabled = CaptchaBlanki::passed('login') ? '' : ' disabled';
+        }
+        ?>
         <!--<input type="submit" value="Absenden" style="color: black"/> -->
-        <button value="Anmelden" type="submit">Anmelden</button>
+        <button value="Anmelden" type="submit"<?php echo $loginSubmitDisabled; ?>>Anmelden</button>
         </form>
     </div>
 
