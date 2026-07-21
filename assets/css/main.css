@@ -1594,10 +1594,11 @@ repeat;
 	   text - kein Flexbox auf dem CMS-Wrapper noetig (der enthaelt auch Ueberschrift/Text, die nicht
 	   mit umbrechen duerfen). Der Chip-Look folgt demselben Prinzip wie .icon-chip-button/die
 	   Hauptnavigation, nur ohne eigenes SVG-Icon-Element - das Emoji bleibt Teil des CMS-Texts.
-	   ACHTUNG: blendet ALLE <br> innerhalb von #info aus, nicht nur die zwischen den Buttons - falls
-	   im CMS-Beschreibungstext mal ein gezielter Zeilenumbruch noetig ist, bitte einen neuen Absatz
-	   statt <br> verwenden. */
-	#info br {
+	   KORRIGIERT: vorher wurde hier pauschal JEDES <br> innerhalb von #info ausgeblendet, nicht nur
+	   die zwischen den Buttons - das hat auch bewusst gesetzte Zeilenumbrueche im normalen CMS-
+	   Fliesstext unsichtbar gemacht. Jetzt gezielt nur die <br>, die direkt einem Button folgen (genau
+	   das Muster "<a class='button primary'>...</a><br/>", das zwischen/nach den 4 Buttons steht). */
+	#info a.button.primary + br {
 		display: none;
 	}
 
