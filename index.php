@@ -713,6 +713,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 echo"<a href='#anmelden' class='button primary'>Team anmelden (Warteliste)</a>";
                 echo "<br/><br/>";
             } ?>
+            <?php // Special-Regeln-Button für den Adventscup: nur sichtbar, wenn der Schnee-Effekt für
+            // dieses Turnier aktiviert ist (Turnier-Settings, siehe $schnee weiter oben). Eigener,
+            // fest im Code stehender Button direkt unter "Team anmelden" - der bestehende, CMS-
+            // verwaltete Button ("Special-Regeln für Adventscup" unten im Footer) bleibt unangetastet
+            // an seiner Stelle stehen, dieser hier kommt nur zusätzlich dazu.
+            if ($schnee == 1) { ?>
+                <a href='#adventscup-special' class='button primary'>&#10052; Special-Regeln für den Adventscup</a>
+            <?php } ?>
             <?php //cmsPrintSection($websiteId, $siteID, $TurnierID, 5, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
         </div>
     </div>
@@ -1208,7 +1216,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <div class="section-intro" style="text-align:center">
 
             <p class="muted">Das Turnier besteht aus Gruppenphase und KO-Phase.</p>
-
+            ';
+            // Special-Regeln-Button für den Adventscup: nur bei aktiviertem Schnee-Effekt, direkt
+            // über den drei Phase-Karten - siehe gleiche Logik/Kommentar wie beim "Team anmelden"-
+            // Button oben im Header.
+            if ($schnee == 1) {
+                echo "<a href='#adventscup-special' class='button primary'>&#10052; Special-Regeln für den Adventscup</a><br/><br/>";
+            }
+            echo '
             <!-- Alte Bilder ausgeblendet: ersetzen wir durch kompakte Karten mit Icons
             <img src="images/Sonstiges/Gruppenhase.jpg" alt="Gruppenphase Bild"  style="width:30%;"/>
             <img src="images/Sonstiges/KO.jpg" alt="KO-Phase Bild" style="width:30%;"/>
@@ -3622,7 +3637,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     tsCheckboxFeld('Losing Bracket offen für K.-o.-Verlierer', 'Verlierer der K.-o.-Phase spielen im Losing Bracket weiter.', 'losingbracket_open_for_ko_losers', $rowTurnierSettings['losingbracket_open_for_ko_losers'], $TurnierID, $bnAttr, $pwAttr);
     tsCheckboxFeld('Excel-Verknüpfung nutzen', 'Ersetzt den normalen (automatisch berechneten) Spielplan komplett durch eine eingebettete Excel-Tabelle - der normale Spielplan wird dann gar nicht mehr angezeigt. Nur aktivieren, wenn unten auch wirklich ein gültiger Excel-Link eingetragen ist.', 'use_excel', $rowTurnierSettings['use_excel'], $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Excel-Link', 'Nur relevant, wenn "Excel-Verknüpfung nutzen" aktiviert ist.', 'excel_link', $rowTurnierSettings['excel_link'], 'text', $TurnierID, $bnAttr, $pwAttr);
-    tsCheckboxFeld('Schnee-Effekt', 'Aktiviert den winterlichen Schnee-Effekt auf der Website.', 'schnee', $rowTurnierSettings['schnee'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Schnee-Effekt', 'Aktiviert den winterlichen Schnee-Effekt auf der Website. Zeigt zusätzlich an drei Stellen (direkt unter "Team anmelden" auf der Startseite, über den drei Phase-Karten auf der Spielplan-Seite, und weiterhin unten im Footer) einen Button zu den Special-Regeln für den Adventscup an - gedacht für Turniere rund um die Weihnachtszeit.', 'schnee', $rowTurnierSettings['schnee'], $TurnierID, $bnAttr, $pwAttr);
     ?>
 
     <h5><br /></h5>
