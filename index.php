@@ -3558,6 +3558,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 if (!empty($rollenFlagsById[$ridCheck]['rechte_neue_admins'])) { $zielIstAdmin = true; break; }
             }
             $loginAlsErlaubt = $binIchEchterAdmin || !$zielIstAdmin;
+            // NUTZER LÖSCHEN: identitätsbasiert über Rollen-ID 2 geprüft (nicht über ein Flag - das
+            // Flag rechte_neue_co_admins ist bei Admin UND Co-Admin gleichzeitig gesetzt und würde
+            // hier nicht zwischen beiden unterscheiden). Admins dürfen Admins/Co-Admins löschen,
+            // Co-Admins weder Admins noch andere Co-Admins - siehe gleiche Prüfung serverseitig in
+            // edit_account.php (Benutzer_Loeschen). Sich selbst kann niemand löschen.
+            $zielIstCoAdmin = in_array(2, $nutzer['rolle_ids'], true);
+            $binIchIch = ($rollenInfo !== null && $rollenInfo['benutzer_id'] === $nutzer['id']);
+            $loeschenErlaubt = !$binIchIch && ($binIchEchterAdmin || (!$zielIstAdmin && !$zielIstCoAdmin));
             ?>
             <!-- Zeile 1: Identität/Login -->
             <div class='nm-user-row'>
@@ -3584,6 +3592,15 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                     <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
                     <button type='submit' class='admin-menu-button admin-menu-button--coadmin' style='min-width:auto;padding:0.15rem 0.5rem;font-size:0.7rem;'>Login als User</button>
+                </form>
+                <?php } ?>
+                <?php if ($loeschenErlaubt) { ?>
+                <form action='website_datachange/edit_account.php<?php echo $test_turnier_id!=0 ? "?test_turnier_id=$test_turnier_id" : ""; ?>' method='POST' class='nm-login-als' onsubmit="return confirm('Nutzer <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich unwiderruflich löschen?');">
+                    <input type='hidden' name='action' value='Benutzer_Loeschen'>
+                    <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
+                    <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
+                    <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
+                    <button type='submit' class='admin-menu-button admin-menu-button--adminonly' style='min-width:auto;padding:0.15rem 0.5rem;font-size:0.7rem;'>Löschen</button>
                 </form>
                 <?php } ?>
             </div>
