@@ -266,6 +266,25 @@
 		// Events.
 			$body.on('click', function(event) {
 
+				// ==================================================================
+				// FIX: KLICKS IN DER ADMIN-LEISTE LOESTEN EINE RACE CONDITION AUS
+				// ==================================================================
+				// Links innerhalb eines <article> bekommen weiter oben stopPropagation(),
+				// damit ein Klick darauf NICHT auch diesen globalen "irgendwo hinklicken
+				// schliesst das aktuelle Menue"-Handler ausloest. Die Admin-Leiste (#admin-bar,
+				// z.B. Settings/Infos/CMS/Logout) liegt aber ausserhalb von #main und hatte
+				// diesen Schutz nicht - ein Klick z.B. auf "Infos" waehrend "Settings" offen
+				// war, loeste dadurch GLEICHZEITIG sowohl diesen Hide-Aufruf als auch den vom
+				// Hash-Wechsel ausgeloesten Show-Aufruf aus. Beide Aufrufe laufen mit eigenen
+				// verzoegerten setTimeout-Schritten und raeumen sich gegenseitig die Timer weg
+				// (siehe clearPendingTimers() in _show), wodurch das alte Menue nie richtig
+				// versteckt wurde - es blieb sichtbar und schob das neue Menue sichtbar nach
+				// unten (Symptom: man musste erst um die Hoehe des alten Menues runterscrollen).
+				// Klicks innerhalb der Admin-Leiste werden deshalb jetzt genauso behandelt wie
+				// Klicks innerhalb eines Artikels.
+					if ($(event.target).closest('#admin-bar').length > 0)
+						return;
+
 				// Article visible? Hide.
 					if ($body.hasClass('is-article-visible'))
 						$main._hide(true);
