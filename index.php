@@ -378,6 +378,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 --admin-border-standard: #3b82f6;
                 --admin-border-coadmin: #f59e0b;
                 --admin-border-adminonly: #ef4444;
+                /* Fünfte Stufe: braucht nur das cms-Flag (Autor*in), kein Backstage-Zugang nötig -
+                   deshalb eigene Farbe statt einer der obigen vier, die alle backstage-artige
+                   Rechte betreffen. */
+                --admin-border-cms: #ec4899;
             }
             #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(30, 12, 48, 0.94); border-bottom: 2px solid var(--admin-accent); box-shadow: 0 2px 12px rgba(139, 92, 246, 0.35); box-sizing: border-box; }
             #admin-bar-status { color: var(--admin-accent-light); font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
@@ -385,6 +389,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             #admin-bar-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
             #admin-bar-buttons form { margin: 0; display: inline; }
             #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); color: #ffffff !important; font-weight: 300 !important; }
+            /* CMS-Button: eigene Farbstufe (siehe Farb-Legende in Settings/Infos) */
+            #admin-bar .button--cms { border: 2px solid var(--admin-border-cms); }
             #wrapper { padding-top: 64px; }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
             .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 2px solid var(--admin-border-standard); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
@@ -403,6 +409,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-legende-swatch--teams { border-color: var(--admin-border-teams); }
             .admin-legende-swatch--coadmin { border-color: var(--admin-border-coadmin); }
             .admin-legende-swatch--adminonly { border-color: var(--admin-border-adminonly); }
+            .admin-legende-swatch--cms { border-color: var(--admin-border-cms); }
             /* Technisch weiterhin eine Checkbox (onchange sendet das Formular ab), sieht jetzt aber
                bewusst wie ein echter, kompakter Button aus - nicht wie ein Häkchen zum Ankreuzen.
                Die Checkbox selbst wird komplett unsichtbar gemacht (aber bleibt klickbar/fokussierbar);
@@ -429,10 +436,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 // Bewusst .button OHNE .primary (wie Settings/Infos) - .primary bringt eigene
                 // Schriftschnitt-Regeln aus dem Grundtheme mit, die hier für einen einheitlichen
                 // Look in der Admin-Leiste nicht gewünscht sind.
-                echo "<button type='submit' class='button'>CMS verlassen</button>";
+                echo "<button type='submit' class='button button--cms'>CMS verlassen</button>";
             } else {
                 echo "<input type='hidden' name='edit_content_mode' value='True'>
-                <button type='submit' class='button'>CMS</button>";
+                <button type='submit' class='button button--cms'>CMS</button>";
             }
             echo "</form>";
         }
@@ -1874,6 +1881,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
                 </div>
             </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--cms'></span>
+                <div>
+                    <b>Pinker Rahmen</b> (nur beim CMS-Button oben in der Admin-Leiste, nicht im Settings-/Infos-Menü)<br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Autor*in, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -2608,6 +2623,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <b>Roter Rahmen</b><br>
                     <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Admin<br>
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--cms'></span>
+                <div>
+                    <b>Pinker Rahmen</b> (nur beim CMS-Button oben in der Admin-Leiste, nicht im Settings-/Infos-Menü)<br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Autor*in, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
                 </div>
             </div>
         </div>
