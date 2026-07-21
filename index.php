@@ -1828,6 +1828,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <a href='#backstage_gruppeneinteilung_losen' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Gruppeneinteilung losen</a>
             <?php } ?>
             <?php if ($rechteFlags['turnier_settings']) { ?>
+            <a href='#backstage_ko_einzug_modus' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Einzug ins KO-System</a>
+            <?php } ?>
+            <?php if ($rechteFlags['turnier_settings']) { ?>
             <a href='#backstage_begegnungen_bearbeiten' class='admin-menu-button'><span class='amn-num'><?php echo $amnZaehler++; ?></span> Begegnungen bearbeiten</a>
             <?php } ?>
             <?php if ($istAdminOderCoAdmin) { ?>
@@ -2453,6 +2456,73 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 <!-- ########################## -->
+<!-- ########  EINZUG INS KO-SYSTEM  ######### -->
+<!-- ########################## -->
+<article id="backstage_ko_einzug_modus">
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+    <h1>Einzug ins KO-System</h1>
+    <?php if (!$rechteFlags['turnier_settings']) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else {
+        $keSqlSettings = 'SELECT * FROM `Turnier_Main` WHERE id = ' . $TurnierID;
+        $keRowSettings = $conn->query($keSqlSettings)->fetch_assoc();
+        $keAnzahlGruppen = (int)$keRowSettings['anzahl_gruppen'];
+        $keStartKoFinallevel = (int)$keRowSettings['start_ko_finallevel'];
+        $keAktuellerModus = (int)($keRowSettings['fk_ko_einzug_modus'] ?? 1);
+        if ($keAktuellerModus <= 0) { $keAktuellerModus = 1; }
+        $keBnAttr = htmlspecialchars($bn, ENT_QUOTES);
+        $kePwAttr = htmlspecialchars($pw, ENT_QUOTES);
+    ?>
+    <p>Legt fest, nach welchem Schema die Gruppenplatzierungen auf die ersten K.-o.-Begegnungen verteilt werden. Wirkt nur, solange "Einzug K.-o.-Phase manuell anlegen" in den Turnier Settings <b>nicht</b> aktiviert ist - ist der Schalter aktiviert, wird stattdessen alles manuell über "Begegnungen bearbeiten" angelegt und diese Auswahl hier komplett ignoriert.</p>
+    <div style='background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:0.7rem 1rem; margin:0.8rem 0 1.2rem; font-size:0.85rem;'>
+        <b>Aktuell eingestellt:</b> <?php echo $keAnzahlGruppen; ?> Gruppen, Start-K.-o.-Finalstufe „<?php
+            $keFinallevelName = '?';
+            $resKeFl = $conn->query('SELECT name FROM Turnier_KO_Finallevel WHERE id = ' . (int)$keStartKoFinallevel);
+            if ($resKeFl && ($rowKeFl = $resKeFl->fetch_assoc())) { $keFinallevelName = $rowKeFl['name']; }
+            echo htmlspecialchars($keFinallevelName);
+        ?>“. <i>Nur hier zur Info - ändern kannst du das in den <a href='#backstage_turnier_settings'>Turnier Settings</a>.</i>
+    </div>
+    <?php
+        $keModi = [];
+        $resKeModi = $conn->query('SELECT * FROM Turnier_KO_Einzug_Modus ORDER BY sortierung ASC, id ASC');
+        while ($resKeModi && ($rowKeModus = $resKeModi->fetch_assoc())) { $keModi[] = $rowKeModus; }
+        foreach ($keModi as $modus) {
+            $keKompat = koEinzugModusKompatibel($modus, $keAnzahlGruppen, $keStartKoFinallevel);
+            $keIstAktuell = ((int)$modus['id'] === $keAktuellerModus);
+            $keRandFarbe = $keIstAktuell ? 'var(--admin-accent)' : 'rgba(255,255,255,0.15)';
+    ?>
+        <div style='text-align:left; border:2px solid <?php echo $keRandFarbe; ?>; border-radius:8px; padding:0.8rem 1rem; margin-bottom:0.8rem;'>
+            <h3 style='margin:0 0 0.3rem;'>
+                <?php echo htmlspecialchars($modus['name']); ?>
+                <?php if ($keIstAktuell) { ?><span style='font-size:0.7rem; opacity:0.8;'>(aktuell ausgewählt)</span><?php } ?>
+            </h3>
+            <p style='margin:0 0 0.5rem; font-size:0.85rem;'><?php echo htmlspecialchars($modus['beschreibung']); ?></p>
+            <?php if ($keKompat['ok']) { ?>
+            <p style='margin:0 0 0.5rem; font-size:0.8rem; color:#2ecc71;'>&check; Passt zur aktuellen Konfiguration (<?php echo htmlspecialchars($keKompat['grund']); ?>)</p>
+            <?php } else { ?>
+            <p style='margin:0 0 0.5rem; font-size:0.8rem; color:#e74c3c;'>&#9888; Aktuell nicht wählbar: <?php echo htmlspecialchars($keKompat['grund']); ?></p>
+            <?php } ?>
+            <?php if (!$keIstAktuell) { ?>
+            <form action='website_datachange/edit_variables.php' method='POST' style='margin:0;'>
+                <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+                <input type='hidden' name='bn' value='<?php echo $keBnAttr; ?>'/>
+                <input type='hidden' name='pw' value='<?php echo $kePwAttr; ?>'/>
+                <input type='hidden' name='action' value='Turnier_Settings_Feld_Aendern'/>
+                <input type='hidden' name='feld' value='fk_ko_einzug_modus'/>
+                <input type='hidden' name='wert' value='<?php echo (int)$modus['id']; ?>'/>
+                <button type='submit' class='admin-menu-button' style='min-width:auto;'>Diesen Modus auswählen</button>
+            </form>
+            <?php } ?>
+        </div>
+    <?php } ?>
+    <?php } ?>
+    <h5><br/></h5>
+    <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
+    <h5><br /></h5>
+</article>
+
+<!-- ########################## -->
 <!-- ########  INFO  ######### -->
 <!-- ########################## -->
 <article id="backstage_info">
@@ -2987,6 +3057,83 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             </select>
             <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
         </form>
+    </div>
+
+    <?php
+    $curKoEinzugModus = (int)($rowTurnierSettings['fk_ko_einzug_modus'] ?? 1);
+    if ($curKoEinzugModus <= 0) { $curKoEinzugModus = 1; }
+    $koEinzugModiListe = [];
+    $resKoEinzugModiTs = $conn->query('SELECT * FROM Turnier_KO_Einzug_Modus ORDER BY sortierung ASC, id ASC');
+    while ($resKoEinzugModiTs && ($rowKoEinzugModiTs = $resKoEinzugModiTs->fetch_assoc())) { $koEinzugModiListe[] = $rowKoEinzugModiTs; }
+    $curKoEinzugModusRow = null;
+    foreach ($koEinzugModiListe as $r) { if ((int)$r['id'] === $curKoEinzugModus) { $curKoEinzugModusRow = $r; break; } }
+    $curKoEinzugKompatibilitaet = $curKoEinzugModusRow ? koEinzugModusKompatibel($curKoEinzugModusRow, $curAnzahlGruppen, $curStartKoFinallevel) : ['ok' => true, 'grund' => ''];
+    ?>
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Einzug ins KO-System (Paarungsmodus)</span>
+        <span class='ts-hint'>Legt fest, nach welchem Schema die Gruppenplatzierungen auf die ersten K.-o.-Begegnungen verteilt werden. Ausführliche Erklärung mit Beispielen: eigener Menüpunkt "Einzug ins KO-System" im Settings-Menü.</span>
+        <?php if (!$curKoEinzugKompatibilitaet['ok']) { ?>
+        <div style='background:rgba(231,76,60,0.15); border:1px solid #e74c3c; border-radius:6px; padding:0.5rem 0.8rem; font-size:0.8rem; margin-bottom:0.4rem;'>
+            &#9888; Der aktuell gespeicherte Modus "<?php echo htmlspecialchars($curKoEinzugModusRow['name']); ?>" passt gerade NICHT zur aktuellen Konfiguration: <?php echo htmlspecialchars($curKoEinzugKompatibilitaet['grund']); ?> Solange das so bleibt, werden keine automatischen K.-o.-Begegnungen erzeugt.
+        </div>
+        <?php } ?>
+        <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+            <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+            <input type='hidden' name='action' value='Turnier_Settings_Feld_Aendern'/>
+            <input type='hidden' name='feld' value='fk_ko_einzug_modus'/>
+            <select name='wert' class='ts-input' id='ts_ko_einzug_modus_select' onchange='tsKoEinzugModusPreview()'>
+                <?php foreach ($koEinzugModiListe as $r) {
+                    $sel = ((int)$r['id'] === $curKoEinzugModus) ? 'selected' : '';
+                    echo "<option value='" . (int)$r['id'] . "' $sel>" . htmlspecialchars($r['name']) . "</option>";
+                } ?>
+            </select>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> bestätigen</label>
+        </form>
+        <div id='ts_ko_einzug_modus_warnung' style='background:rgba(231,76,60,0.15); border:1px solid #e74c3c; border-radius:6px; padding:0.5rem 0.8rem; font-size:0.8rem; margin-top:0.4rem; display:none;'></div>
+        <script>
+            var tsKoEinzugModiDaten = <?php echo json_encode(array_map(function($r) {
+                return [
+                    'name' => $r['name'],
+                    'min' => (int)$r['min_anzahl_gruppen'],
+                    'max' => $r['max_anzahl_gruppen'] !== null ? (int)$r['max_anzahl_gruppen'] : null,
+                    'gerade' => (int)$r['gruppenanzahl_muss_gerade_sein'] === 1,
+                    'platzierungen' => $r['platzierungen_pro_gruppe'] !== null ? (int)$r['platzierungen_pro_gruppe'] : null,
+                ];
+            }, array_combine(array_map(function($r){ return (int)$r['id']; }, $koEinzugModiListe), $koEinzugModiListe))); ?>;
+            var tsKoEinzugAnzahlGruppen = <?php echo (int)$curAnzahlGruppen; ?>;
+            var tsKoEinzugStartFinallevel = <?php echo (int)$curStartKoFinallevel; ?>;
+            function tsKoEinzugModusPreview() {
+                var select = document.getElementById('ts_ko_einzug_modus_select');
+                var warnung = document.getElementById('ts_ko_einzug_modus_warnung');
+                var modus = tsKoEinzugModiDaten[select.value];
+                if (!modus) { warnung.style.display = 'none'; return; }
+                var anzahlGruppen = tsKoEinzugAnzahlGruppen;
+                var totalStartTeams = Math.pow(2, Math.max(1, tsKoEinzugStartFinallevel - 1));
+                var grund = null;
+                if (anzahlGruppen < modus.min) {
+                    grund = 'Braucht mindestens ' + modus.min + ' Gruppen (aktuell: ' + anzahlGruppen + ').';
+                } else if (modus.max !== null && anzahlGruppen > modus.max) {
+                    grund = 'Erlaubt höchstens ' + modus.max + ' Gruppen (aktuell: ' + anzahlGruppen + ').';
+                } else if (modus.gerade && anzahlGruppen % 2 !== 0) {
+                    grund = 'Braucht eine gerade Anzahl Gruppen (aktuell: ' + anzahlGruppen + ').';
+                } else if (anzahlGruppen <= 0 || totalStartTeams % anzahlGruppen !== 0) {
+                    grund = 'Die ' + totalStartTeams + ' Startplätze der gewählten K.-o.-Startstufe lassen sich nicht gleichmäßig auf ' + anzahlGruppen + ' Gruppen aufteilen.';
+                } else {
+                    var platzierungenProGruppe = totalStartTeams / anzahlGruppen;
+                    if (modus.platzierungen !== null && modus.platzierungen !== platzierungenProGruppe) {
+                        grund = 'Braucht genau ' + modus.platzierungen + ' Qualifikanten pro Gruppe, aktuell qualifizieren aber ' + platzierungenProGruppe + ' pro Gruppe.';
+                    }
+                }
+                if (grund) {
+                    warnung.textContent = '⚠ "' + modus.name + '" ist mit der aktuellen Konfiguration nicht wählbar: ' + grund;
+                    warnung.style.display = 'block';
+                } else {
+                    warnung.style.display = 'none';
+                }
+            }
+        </script>
     </div>
 
     <div class='ts-setting'>

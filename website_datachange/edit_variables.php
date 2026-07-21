@@ -125,7 +125,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       if($darfTurnierSettingsAendern){
         $erlaubteTextFelder = ['name', 'anzeige_titel', 'anzeige_subtitel', 'anzeige_datum', 'jahr',
             'startdatum', 'startzeit', 'countdown_start', 'enddatum', 'max_anzahl_teams',
-            'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'excel_link'];
+            'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'excel_link', 'fk_ko_einzug_modus'];
         $erlaubteCheckboxFelder = ['nurOberesDreieckInGruppenphase', 'loescheErsteZeileUndSpalte',
             'losingbracket_open_for_ko_losers', 'use_excel', 'schnee'];
         $feld = isset($_POST['feld']) ? $_POST['feld'] : '';

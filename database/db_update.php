@@ -763,6 +763,238 @@ if (php_sapi_name() !== 'cli') {
         echo "<script>console.log('losing_bracket: erstellt/aktualisiert (ko_finallevel=20).')</script>";
     }
 
+    // ================================================================================================
+    // KO-EINZUG: KONFIGURIERBARE PAARUNGSMODI (Turnier_Main.fk_ko_einzug_modus, Tabelle
+    // Turnier_KO_Einzug_Modus)
+    // ================================================================================================
+    // Modus 1 ("Nachbargruppen-Ueberkreuzung") ist das urspruengliche, seit Langem produktiv laufende
+    // Verhalten und bleibt DESHALB UNVERAENDERT direkt in db_update() eingebettet (siehe dort, Suche
+    // nach "FALL: AUTOMATISCH DIE STARTPOSITIONEN GENERIEREN") - hier nur die neuen Modi 2-5 plus
+    // gemeinsam genutzte Hilfsfunktionen. Der Schalter einzug_ko_manuell_anlegen bleibt komplett
+    // unangetastet: All das hier laeuft nur innerhalb des ohnehin schon vorhandenen automatischen
+    // Zweigs, der manuelle Zweig ist davon vollkommen unberuehrt.
+    //
+    // WICHTIG FUER SPAETERE ERWEITERUNGEN: ko_turnierbaumposition muss fuer die erste KO-Finalstufe
+    // durchgehend 1..Anzahl_Begegnungen sein. Runde 2 fasst dabei IMMER Position (2k-1) und (2k) zu
+    // einer neuen Begegnung mit Position k zusammen (siehe db_update(), "$ko_turnierbaumposition =
+    // ($ko_turnierbaumposition_alt / 2)"). Zwei Begegnungen treffen sich also in der naechsten Runde
+    // genau dann, wenn ihre Positionen ein solches Paar (2k-1, 2k) bilden - das ist beim Entwurf jedes
+    // neuen Modus zu beachten, sonst werden falsche Begegnungen zusammengefuehrt.
+
+    // Team auf einem bestimmten Gruppenplatz (0-basiert, 0 = 1. Platz), oder 0 falls nicht vorhanden.
+    function koEinzugTeamAufPlatz($conn, $TurnierID, $gruppeId, $platzIndex) {
+        $sql = 'SELECT id FROM `Turnier_Team` WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID
+             . ' AND fk_gruppe = ' . (int)$gruppeId
+             . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc'
+             . ' LIMIT 1 OFFSET ' . (int)$platzIndex;
+        $res = $conn->query($sql);
+        if ($res && ($row = $res->fetch_assoc())) { return (int)$row['id']; }
+        return 0;
+    }
+
+    // Sind alle Gruppenphase-Begegnungen dieser Gruppe finalisiert (final/Green-Card)?
+    function koEinzugGruppeKomplettFinal($conn, $TurnierID, $gruppeId) {
+        $sql = 'SELECT b.status FROM Turnier_Begegnung b, Turnier_Team a, Turnier_Team c'
+             . ' WHERE a.geloescht = 0 AND c.geloescht = 0 AND b.status NOT IN (3,6) AND b.ko_finallevel = 0'
+             . ' AND b.fk_heimteam = a.id AND b.fk_auswaertsteam = c.id'
+             . ' AND a.fk_gruppe = ' . (int)$gruppeId . ' AND c.fk_gruppe = ' . (int)$gruppeId;
+        $res = $conn->query($sql);
+        while ($res && ($row = $res->fetch_assoc())) {
+            if ($row['status'] != '5' && $row['status'] != '4' && $row['status'] != '7') { return false; }
+        }
+        return true;
+    }
+
+    // Alle Teams einer Gruppe AUSSER den ersten $qualifikanten Plaetzen als in der Gruppenphase
+    // ausgeschieden markieren (platziert_level = 0) - analog zur Logik in Modus 1.
+    function koEinzugMarkiereRausgeflogene($conn, $TurnierID, $gruppeId, $qualifikanten) {
+        $sql = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ' . (int)$gruppeId
+             . ' AND fk_turnier = ' . (int)$TurnierID . ' ORDER BY gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele asc';
+        $res = $conn->query($sql);
+        $anzahlTeams = 0;
+        while ($res && $res->fetch_assoc()) { $anzahlTeams++; }
+        $anzahlRausgeflogen = max(0, $anzahlTeams - (int)$qualifikanten);
+        if ($anzahlRausgeflogen > 0) {
+            $sql = 'SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ' . (int)$gruppeId
+                 . ' AND fk_turnier = ' . (int)$TurnierID . ' ORDER BY gruppenphase_punkte asc, gruppenphase_flaschen asc, gruppenphase_spiele desc LIMIT ' . (int)$anzahlRausgeflogen;
+            $res = $conn->query($sql);
+            while ($res && ($row = $res->fetch_assoc())) {
+                setTeamPlatziertLevel($conn, $TurnierID, (int)$row['id'], 0);
+            }
+        }
+    }
+
+    // Legt eine Begegnung der ersten KO-Finalstufe an bzw. aktualisiert eine bestehende - exakt
+    // dasselbe Insert-oder-Update-Verhalten wie im Bestandscode von Modus 1.
+    function koEinzugBegegnungAnlegen($conn, $team1, $team2, $ko_finallevel, $position) {
+        if ($team1 <= 0 || $team2 <= 0) { return; }
+        $sql = 'SELECT * FROM `Turnier_Begegnung` WHERE fk_heimteam = ' . (int)$team1 . ' AND fk_auswaertsteam = ' . (int)$team2 . ' AND ko_finallevel = ' . (int)$ko_finallevel . ' ORDER BY ID';
+        $res = $conn->query($sql);
+        if (empty($row = $res->fetch_assoc())) {
+            $stmt = $conn->prepare("INSERT INTO `Turnier_Begegnung` (`id`, `fk_heimteam`, `fk_auswaertsteam`, `fk_siegerteam`, `ko_finallevel`, `ko_turnierbaumposition`, `status`) VALUES (NULL, " . (int)$team1 . ", " . (int)$team2 . ", NULL, " . (int)$ko_finallevel . ", " . (int)$position . ", 1);");
+            if ($stmt === false) { throw new Exception('Eine Begegnung der ersten Finalstufe konnte nicht erstellt werden.'); }
+            $stmt->execute();
+        } else {
+            $stmt = $conn->prepare('UPDATE Turnier_Begegnung SET status = 1, ko_turnierbaumposition = ' . (int)$position . ' WHERE status <> 4 AND status <> 5 AND status <> 6 AND fk_heimteam = ' . (int)$team1 . ' AND fk_auswaertsteam = ' . (int)$team2 . ' AND ko_finallevel = ' . (int)$ko_finallevel . ' ORDER BY ID');
+            if ($stmt === false) { throw new Exception('Veraltet-Status der ersten Finalstufe konnte nicht geupdated werden.'); }
+            $stmt->execute();
+        }
+    }
+
+    // Einstiegspunkt fuer die Modi 2-5 (Modus 1 bleibt separat, siehe oben).
+    function koEinzugModiAusfuehren($conn, $TurnierID, $koEinzugModus, $ko_finallevel) {
+        $sqlGruppe = 'SELECT id FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc';
+        $res = $conn->query($sqlGruppe);
+        $gruppen = [];
+        while ($res && ($row = $res->fetch_assoc())) { $gruppen[] = (int)$row['id']; }
+        $anzahlGruppen = count($gruppen);
+        if ($anzahlGruppen < 2) { return; }
+
+        // Startplaetze der ersten KO-Finalstufe (z.B. 8 bei Achtelfinale) - muss glatt durch die
+        // Gruppenanzahl teilbar sein, sonst passt der gewaehlte Modus nicht zur aktuellen
+        // Turnier-Konfiguration (wird in den Turnier Settings schon vorher als Warnung angezeigt).
+        $totalStartTeams = (int)pow(2, max(1, $ko_finallevel - 1));
+        if ($anzahlGruppen <= 0 || $totalStartTeams % $anzahlGruppen !== 0) { return; }
+        $platzierungenProGruppe = intdiv($totalStartTeams, $anzahlGruppen);
+        $totalStartMatches = intdiv($totalStartTeams, 2);
+
+        if ($koEinzugModus == 2) {
+            koEinzugModus2($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel);
+        } else if ($koEinzugModus == 3) {
+            koEinzugModus3($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel, $totalStartMatches);
+        } else if ($koEinzugModus == 4) {
+            koEinzugModus4($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel);
+        } else if ($koEinzugModus == 5) {
+            koEinzugModus5($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel);
+        }
+    }
+
+    // MODUS 2: Direkte Gruppensieger-Kreuzung (1v4/2v3) - je 2 Gruppen mit 4 Qualifikanten:
+    // 1.A-4.B, 2.A-3.B, 3.A-2.B, 4.A-1.B. Bewusste Einschraenkung (siehe Erklaerungstext in der UI):
+    // Teams derselben Gruppe koennen hier schon im Halbfinale wieder aufeinandertreffen.
+    function koEinzugModus2($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel) {
+        if ($platzierungenProGruppe != 4) { return; } // passt nicht zur aktuellen Konfiguration
+        $anzahlPaare = intdiv(count($gruppen), 2);
+        for ($p = 0; $p < $anzahlPaare; $p++) {
+            $gA = $gruppen[$p * 2];
+            $gB = $gruppen[$p * 2 + 1];
+            if (!koEinzugGruppeKomplettFinal($conn, $TurnierID, $gA) || !koEinzugGruppeKomplettFinal($conn, $TurnierID, $gB)) { continue; }
+            koEinzugMarkiereRausgeflogene($conn, $TurnierID, $gA, 4);
+            koEinzugMarkiereRausgeflogene($conn, $TurnierID, $gB, 4);
+
+            $a1 = koEinzugTeamAufPlatz($conn, $TurnierID, $gA, 0);
+            $a2 = koEinzugTeamAufPlatz($conn, $TurnierID, $gA, 1);
+            $a3 = koEinzugTeamAufPlatz($conn, $TurnierID, $gA, 2);
+            $a4 = koEinzugTeamAufPlatz($conn, $TurnierID, $gA, 3);
+            $b1 = koEinzugTeamAufPlatz($conn, $TurnierID, $gB, 0);
+            $b2 = koEinzugTeamAufPlatz($conn, $TurnierID, $gB, 1);
+            $b3 = koEinzugTeamAufPlatz($conn, $TurnierID, $gB, 2);
+            $b4 = koEinzugTeamAufPlatz($conn, $TurnierID, $gB, 3);
+
+            // Vier Positionen je Gruppenpaar (eigener Block), damit sich verschiedene Gruppenpaare
+            // nicht gegenseitig ins Bracket pfuschen. Runde 2 fasst automatisch Position 1+2 sowie
+            // 3+4 zu je einer neuen Begegnung zusammen.
+            $block = $p * 4;
+            koEinzugBegegnungAnlegen($conn, $a1, $b4, $ko_finallevel, $block + 1);
+            koEinzugBegegnungAnlegen($conn, $a2, $b3, $ko_finallevel, $block + 2);
+            koEinzugBegegnungAnlegen($conn, $b2, $a3, $ko_finallevel, $block + 3);
+            koEinzugBegegnungAnlegen($conn, $b1, $a4, $ko_finallevel, $block + 4);
+        }
+    }
+
+    // MODUS 3: Gruppensieger-Pfad - alle 1. Plaetze in der oberen, alle 2. Plaetze in der unteren
+    // Bracket-Haelfte (direkt gepaart, ohne Ueberkreuzung). Teams derselben Gruppe treffen sich
+    // dadurch fruehestens im Finale wieder (gleiche Halbierungs-Logik wie Modus 1).
+    function koEinzugModus3($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel, $totalStartMatches) {
+        if ($platzierungenProGruppe != 2) { return; }
+        $anzahlPaare = intdiv(count($gruppen), 2);
+        $slotsPerHalf = max(1, intdiv($totalStartMatches, 2));
+        for ($p = 0; $p < $anzahlPaare; $p++) {
+            $gA = $gruppen[$p * 2];
+            $gB = $gruppen[$p * 2 + 1];
+            if (!koEinzugGruppeKomplettFinal($conn, $TurnierID, $gA) || !koEinzugGruppeKomplettFinal($conn, $TurnierID, $gB)) { continue; }
+            koEinzugMarkiereRausgeflogene($conn, $TurnierID, $gA, 2);
+            koEinzugMarkiereRausgeflogene($conn, $TurnierID, $gB, 2);
+
+            $a1 = koEinzugTeamAufPlatz($conn, $TurnierID, $gA, 0);
+            $a2 = koEinzugTeamAufPlatz($conn, $TurnierID, $gA, 1);
+            $b1 = koEinzugTeamAufPlatz($conn, $TurnierID, $gB, 0);
+            $b2 = koEinzugTeamAufPlatz($conn, $TurnierID, $gB, 1);
+
+            $posOben = $p + 1;
+            $posUnten = $posOben + $slotsPerHalf;
+            koEinzugBegegnungAnlegen($conn, $a1, $b1, $ko_finallevel, $posOben);
+            koEinzugBegegnungAnlegen($conn, $a2, $b2, $ko_finallevel, $posUnten);
+        }
+    }
+
+    // MODUS 4: Setzliste nach Gesamtwertung - alle Qualifikanten gruppenuebergreifend nach
+    // Punkten/Flaschen/Spielen sortiert, klassisch staerkster-gegen-schwaechsten gesetzt. Funktioniert
+    // mit beliebiger Gruppenanzahl. Bewusste Einschraenkung: Teams derselben Gruppe koennen hier
+    // schon in Runde 1 aufeinandertreffen (kein Schutz eingebaut, anders als Modus 1/3).
+    function koEinzugModus4($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel) {
+        // Braucht den kompletten Ueberblick ueber alle Qualifikanten - deshalb erst starten, wenn
+        // WIRKLICH alle Gruppen fertig sind (nicht wie bei Modus 2/3 paarweise moeglich).
+        foreach ($gruppen as $g) {
+            if (!koEinzugGruppeKomplettFinal($conn, $TurnierID, $g)) { return; }
+        }
+        $qualifikanten = [];
+        foreach ($gruppen as $g) {
+            koEinzugMarkiereRausgeflogene($conn, $TurnierID, $g, $platzierungenProGruppe);
+            for ($platz = 0; $platz < $platzierungenProGruppe; $platz++) {
+                $sql = 'SELECT id, gruppenphase_punkte, gruppenphase_flaschen, gruppenphase_spiele FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID . ' AND fk_gruppe = ' . (int)$g . ' ORDER BY gruppenphase_manuelle_platzierung asc, gruppenphase_punkte desc, gruppenphase_flaschen desc, gruppenphase_spiele desc LIMIT 1 OFFSET ' . (int)$platz;
+                $res = $conn->query($sql);
+                if ($res && ($row = $res->fetch_assoc())) { $qualifikanten[] = $row; }
+            }
+        }
+        usort($qualifikanten, function($a, $b) {
+            if ($a['gruppenphase_punkte'] != $b['gruppenphase_punkte']) { return $b['gruppenphase_punkte'] <=> $a['gruppenphase_punkte']; }
+            if ($a['gruppenphase_flaschen'] != $b['gruppenphase_flaschen']) { return $b['gruppenphase_flaschen'] <=> $a['gruppenphase_flaschen']; }
+            return $b['gruppenphase_spiele'] <=> $a['gruppenphase_spiele'];
+        });
+        $n = count($qualifikanten);
+        for ($i = 0; $i < intdiv($n, 2); $i++) {
+            $team1 = (int)$qualifikanten[$i]['id'];
+            $team2 = (int)$qualifikanten[$n - 1 - $i]['id'];
+            koEinzugBegegnungAnlegen($conn, $team1, $team2, $ko_finallevel, $i + 1);
+        }
+    }
+
+    // MODUS 5: Zufaellige Auslosung unter Bracket-Zwang - zufaellige Verteilung auf die Startplaetze,
+    // einzige feste Regel: kein Team trifft in Runde 1 auf ein Team der eigenen Gruppe.
+    function koEinzugModus5($conn, $TurnierID, $gruppen, $platzierungenProGruppe, $ko_finallevel) {
+        foreach ($gruppen as $g) {
+            if (!koEinzugGruppeKomplettFinal($conn, $TurnierID, $g)) { return; }
+        }
+        $qualifikanten = []; // je Eintrag: ['id' => teamId, 'gruppe' => gruppeId]
+        foreach ($gruppen as $g) {
+            koEinzugMarkiereRausgeflogene($conn, $TurnierID, $g, $platzierungenProGruppe);
+            for ($platz = 0; $platz < $platzierungenProGruppe; $platz++) {
+                $teamId = koEinzugTeamAufPlatz($conn, $TurnierID, $g, $platz);
+                if ($teamId > 0) { $qualifikanten[] = ['id' => $teamId, 'gruppe' => $g]; }
+            }
+        }
+        shuffle($qualifikanten);
+        // Konflikte (zwei Teams derselben Gruppe im selben Match) durch Tausch mit einem spaeteren,
+        // nicht-konfliktbehafteten Eintrag aufloesen.
+        $n = count($qualifikanten);
+        for ($i = 0; $i + 1 < $n; $i += 2) {
+            if ($qualifikanten[$i]['gruppe'] == $qualifikanten[$i + 1]['gruppe']) {
+                for ($j = $i + 2; $j < $n; $j++) {
+                    if ($qualifikanten[$j]['gruppe'] != $qualifikanten[$i]['gruppe']) {
+                        $tmp = $qualifikanten[$i + 1];
+                        $qualifikanten[$i + 1] = $qualifikanten[$j];
+                        $qualifikanten[$j] = $tmp;
+                        break;
+                    }
+                }
+            }
+        }
+        for ($i = 0; $i + 1 < $n; $i += 2) {
+            koEinzugBegegnungAnlegen($conn, $qualifikanten[$i]['id'], $qualifikanten[$i + 1]['id'], $ko_finallevel, intdiv($i, 2) + 1);
+        }
+    }
+
 //main
     function db_update($conn, $TurnierID){
         echo "<script>console.log('TurnierID2: " . $TurnierID . "');</script>";
@@ -1171,6 +1403,21 @@ if (php_sapi_name() !== 'cli') {
                     
                     if($einzug_ko_manuell_anlegen==0){ //FALL: AUTOMATISCH DIE STARTPOSITIONEN GENERIEREN
 
+                        // Konfigurierbarer KO-Einzug-Modus (Turnier_KO_Einzug_Modus, Standard = 1 =
+                        // bisheriges Verhalten unten). Wird NUR hier innerhalb des ohnehin schon
+                        // bestehenden automatischen Zweigs entschieden - am manuellen Schalter
+                        // (einzug_ko_manuell_anlegen) ändert das nichts.
+                        $koEinzugModus = 1;
+                        $sqlKoEinzugModus = 'SELECT fk_ko_einzug_modus FROM Turnier_Main WHERE id = ' . (int)$TurnierID;
+                        $resKoEinzugModus = $conn->query($sqlKoEinzugModus);
+                        if ($resKoEinzugModus && ($rowKoEinzugModus = $resKoEinzugModus->fetch_assoc()) && !empty($rowKoEinzugModus['fk_ko_einzug_modus'])) {
+                            $koEinzugModus = (int)$rowKoEinzugModus['fk_ko_einzug_modus'];
+                        }
+
+                    if ($koEinzugModus == 1) {
+                        // ============================================================================
+                        // MODUS 1 "NACHBARGRUPPEN-ÜBERKREUZUNG" - UNVERÄNDERTES BESTANDSVERHALTEN
+                        // ============================================================================
                         $sqlGruppe = 'SELECT * FROM Turnier_Gruppe WHERE id IN (SELECT fk_gruppe FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY turnierposition_for_ko asc, id asc'; //Nur Gruppen von Teams die zum aktuellen Turnier gehören
                         $resultGruppe = $conn->query($sqlGruppe);
                         
@@ -1393,7 +1640,15 @@ if (php_sapi_name() !== 'cli') {
                                 }
                             }
                             $zaehlerForKoPosition++;
-                        }    
+                        }
+
+                    } else {
+                        // ============================================================================
+                        // MODI 2-5 - NEUE, KONFIGURIERBARE PAARUNGSLOGIKEN (siehe Funktionen oberhalb
+                        // von db_update())
+                        // ============================================================================
+                        koEinzugModiAusfuehren($conn, $TurnierID, $koEinzugModus, $ko_finallevel);
+                    }
 
                     }else{ //FALL: SCHALTER GELEGT AUF MANUELLE PLATZIERUNG IN ERSTEM KO-LEVEL
                         //Erst Endplatzierungen für rausgeflogene Teams vergeben, sobald alle Startpositionen der KO-Phase vergeben sind
