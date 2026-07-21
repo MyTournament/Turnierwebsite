@@ -67,8 +67,10 @@ include_once '../../database/db_connection.php';
 
 include_once '../../variables.php';
 
-$teamId = $_GET['teamId'];
-$turnierId = $_GET['turnierId'];
+// SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber diese Felder - dieses Skript ist oeffentlich
+// per GET erreichbar, ganz ohne Login.
+$teamId = isset($_GET['teamId']) ? (int)$_GET['teamId'] : null;
+$turnierId = isset($_GET['turnierId']) ? (int)$_GET['turnierId'] : null;
 
 $sql = 'SELECT * FROM Turnier_Main WHERE id = '. $turnierId .'';
 $result = $conn->query($sql);

@@ -83,7 +83,11 @@ if (!headers_sent()) {
         if($captchaOk){
 			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
 
-			$TurnierID = $_POST['TurnierID']; //die �bergebene TurnierID benutzen und nicht die aus variables.php
+			// SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber dieses Feld, das ansonsten roh in
+			// mehreren Roh-SQL-Strings weiter unten landet (z.B. $sqlPhase/$sqlWarteliste) - dieses
+			// Formular ist oeffentlich und braucht KEINEN Login, war also ohne Cast durch jede/n
+			// unauthentifiziert ausnutzbar (z.B. per UNION SELECT ueber ein manipuliertes POST-Feld).
+			$TurnierID = (int)$_POST['TurnierID']; //die �bergebene TurnierID benutzen und nicht die aus variables.php
 
 			//SONDERFALL: WARTELISTE
 				echo "<script>console.log('Step: WARTELISTE - Aktuelle Turnierphase herausfinden')</script>";

@@ -14,25 +14,32 @@
     //include_once '../variables.php';
     //######################################
 
-    $TurnierID = $_POST['TurnierID'];
-    $spielerId = $_POST['spielerId']; //wird nur übergeben wenn vcard von Spielerinfo aufgerufen wird
+    // SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber diese beiden Felder (landen weiter unten
+    // roh in mehreren verketteten SQL-Strings).
+    $TurnierID = (int)$_POST['TurnierID'];
+    $spielerId = isset($_POST['spielerId']) && $_POST['spielerId'] !== '' ? (int)$_POST['spielerId'] : null; //wird nur übergeben wenn vcard von Spielerinfo aufgerufen wird
 
     // ============================================================================================
-    // RECHTE-AUDIT: Der Sammel-Export (alle Telefonnummern eines Turniers, kein spielerId gesetzt)
-    // hatte bisher KEINE Rechteprüfung - jeder, der das Formular in backstage_tel kannte/nachbaute,
-    // konnte sich alle Telefonnummern als vCard herunterladen. Zweite Prüfung hier (zusätzlich zur
-    // Button-Sichtbarkeit in index.php), falls jemand den Link/das Formular direkt anspricht.
-    if ($spielerId == NULL) {
-        include_once '../website_datachange/login_interface.php';
-        $vcBn = isset($_POST['bn']) ? $_POST['bn'] : null;
-        $vcPw = isset($_POST['pw']) ? $_POST['pw'] : null;
-        $vcRollenInfo = ($vcBn !== null && $vcPw !== null) ? getUserRollenInfo($conn, $vcBn, $vcPw) : null;
-        if ($vcRollenInfo === null || !$vcRollenInfo['flags']['teams']) {
-            http_response_code(403);
-            header("Content-Type: text/plain");
-            echo "Keine ausreichende Berechtigung.";
-            exit;
-        }
+    // RECHTE-AUDIT: Die Rechteprüfung galt bisher NUR für den Sammel-Export (alle Telefonnummern
+    // eines Turniers, kein spielerId gesetzt) - der Einzel-Abruf EINER Telefonnummer per spielerId
+    // hatte GAR KEINE Prüfung, obwohl laut Kommentar/Vorgabe nur von der (Schiedsrichter*in-only)
+    // Spielerinfo-Seite aus aufgerufen werden sollte. Jede beliebige Person konnte also, ganz ohne
+    // Login, per direktem POST an dieses Skript mit hochgezähltem spielerId nacheinander alle
+    // Telefonnummern einzeln abgreifen. Jetzt gilt die Prüfung für BEIDE Fälle: Sammel-Export
+    // braucht das teams-Flag (Moderator*in+), Einzel-Abruf zusätzlich auch das alle_spiele-Flag
+    // (Schiedsrichter*in), weil genau diese Rolle die Spielerinfo-Seite nutzen soll.
+    include_once '../website_datachange/login_interface.php';
+    $vcBn = isset($_POST['bn']) ? $_POST['bn'] : null;
+    $vcPw = isset($_POST['pw']) ? $_POST['pw'] : null;
+    $vcRollenInfo = ($vcBn !== null && $vcPw !== null) ? getUserRollenInfo($conn, $vcBn, $vcPw) : null;
+    $vcDarfSammelExport = $vcRollenInfo !== null && $vcRollenInfo['flags']['teams'];
+    $vcDarfEinzelAbruf = $vcRollenInfo !== null && ($vcRollenInfo['flags']['teams'] || $vcRollenInfo['flags']['alle_spiele']);
+    $vcErlaubt = ($spielerId === null) ? $vcDarfSammelExport : $vcDarfEinzelAbruf;
+    if (!$vcErlaubt) {
+        http_response_code(403);
+        header("Content-Type: text/plain");
+        echo "Keine ausreichende Berechtigung.";
+        exit;
     }
 
   //$sql="SELECT * FROM USER WHERE id=".$_GET['id'];

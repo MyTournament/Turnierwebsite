@@ -3,7 +3,9 @@
 include_once '../database/db_connection.php';
 //########################
 
-$TurnierID = $_POST["TurnierID"];
+// SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber dieses Feld - diese Datei ist der
+// oeffentliche, unauthentifizierte Team-Login-Check, also ohne jede Vorbedingung erreichbar.
+$TurnierID = (int)$_POST["TurnierID"];
 
 //Anmeldung
 $Benutzername = $_POST["bn"];
