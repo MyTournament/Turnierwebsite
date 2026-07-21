@@ -15,19 +15,16 @@ echo "<script>console.log('edit_account Checkpoint 2')</script>";
 // SELBST (rechte_neue_admins/rechte_neue_co_admins), NICHT AN IHRER ID.
 // ============================================================================================
 // Vorher wurde hart nach Rollen-ID geprüft (zielRolle==1 -> Admin, ==2 -> Co-Admin). Jetzt wird
-// stattdessen die Ziel-Rolle selbst aus System_Benutzer_in_Rolle nachgeschlagen: hat SIE das Flag
-// rechte_neue_admins, braucht der Vergebende ebenfalls rechte_neue_admins usw. - unabhängig von
-// IDs oder Namen, funktioniert also auch für später hinzukommende admin-artige Rollen.
+// stattdessen die Ziel-Rolle selbst nachgeschlagen: hat SIE das Flag rechte_neue_admins, braucht der
+// Vergebende ebenfalls rechte_neue_admins usw. - unabhängig von IDs oder Namen, funktioniert also
+// auch für später hinzukommende admin-artige Rollen. Die Flags kommen aus getRollenFlags()
+// (rollen_definitionen.php, Code statt DB-Tabelle - siehe Datei für den Hintergrund).
 function darfRolleVergeben($conn, $rollenInfoAdmin, $zielRolle) {
     if ($rollenInfoAdmin === null) { return false; }
     $flags = $rollenInfoAdmin['flags'];
-    $stmtZielRolle = $conn->prepare("SELECT rechte_neue_admins, rechte_neue_co_admins FROM System_Benutzer_in_Rolle WHERE id = ?");
-    $stmtZielRolle->bind_param("i", $zielRolle);
-    $stmtZielRolle->execute();
-    $zielRolleRow = $stmtZielRolle->get_result()->fetch_assoc();
-    if ($zielRolleRow === null) { return false; }
-    if ($zielRolleRow['rechte_neue_admins']) { return $flags['neue_admins']; }
-    if ($zielRolleRow['rechte_neue_co_admins']) { return $flags['neue_co_admins']; }
+    $zielRolleFlags = getRollenFlags($zielRolle);
+    if ($zielRolleFlags['rechte_neue_admins']) { return $flags['neue_admins']; }
+    if ($zielRolleFlags['rechte_neue_co_admins']) { return $flags['neue_co_admins']; }
     return $flags['restliche_rollen_vergeben'];
 }
 

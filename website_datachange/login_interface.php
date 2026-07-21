@@ -1,4 +1,6 @@
 <?php
+include_once '../database/rollen_definitionen.php';
+
 function getBenutzerListe($conn) {
 
     $stmt = $conn->prepare("SELECT * FROM `System_Benutzer_in` ORDER BY ID");
@@ -58,20 +60,24 @@ function getUserRollenInfo($conn, $bn, $pw) {
         try {
             $platzhalter = implode(',', array_fill(0, count($rolleIds), '?'));
             $types = str_repeat('i', count($rolleIds));
-            $stmtRollen = $conn->prepare("SELECT * FROM System_Benutzer_in_Rolle WHERE id IN ($platzhalter)");
+            // Nur noch id+name aus der DB (reine Anzeige-Metadaten) - die eigentlichen Rechte-Flags
+            // kommen jetzt aus getRollenFlags() (rollen_definitionen.php), nicht mehr aus den
+            // rechte_*-Spalten dieser Tabelle.
+            $stmtRollen = $conn->prepare("SELECT id, name FROM System_Benutzer_in_Rolle WHERE id IN ($platzhalter)");
             $stmtRollen->bind_param($types, ...$rolleIds);
             $stmtRollen->execute();
             $resultRollen = $stmtRollen->get_result();
             while ($rowRolle = $resultRollen->fetch_assoc()) {
                 $rollenNamen[(int)$rowRolle['id']] = $rowRolle['name'];
-                foreach ($flagNamen as $f) {
-                    if (isset($rowRolle['rechte_' . $f]) && (int)$rowRolle['rechte_' . $f] === 1) {
-                        $flags[$f] = true;
-                    }
-                }
             }
         } catch (Throwable $e) {
-            // Rollen-Tabelle nicht erreichbar - keine Rollen-Details verfügbar
+            // Rollen-Tabelle nicht erreichbar - keine Rollen-Namen verfügbar
+        }
+    }
+    foreach ($rolleIds as $rid) {
+        $rollenFlags = getRollenFlags($rid);
+        foreach ($flagNamen as $f) {
+            if (!empty($rollenFlags['rechte_' . $f])) { $flags[$f] = true; }
         }
     }
 
