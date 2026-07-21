@@ -538,7 +538,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php } ?>
     <div > <!-- class="logo" -->
         <!-- <img src="images/icon/sterni1.png" width="70" height="70" border="10" alt="Home"> -->
-        <img src="images/sterni_logo/logo_sterni.png" width="150" height=auto border="10" alt="Home">
+        <img src="images/sterni_logo/logo_sterni.png" class="site-logo" alt="Home">
     </div>
     <div class="content">
         <div class="inner">

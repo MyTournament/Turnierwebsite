@@ -1366,51 +1366,30 @@ repeat;
 	text-align: center;
 }
 
+	/* Kompakteres, aufgeraeumteres Startseiten-Intro: die frueheren senkrechten Verbindungsstriche
+	   zwischen Logo/Titel/Nav/Countdown (per :before-Pseudoelement) und die doppelten Rahmenlinien
+	   um jeden .content-Block sind komplett weg - moderne Sites trennen solche Abschnitte meist
+	   einfach per Abstand, nicht per Linie. Der Abstand zwischen den Bloecken ist dafuer bewusst
+	   spuerbar reduziert (3.5rem -> 1.75rem), damit es trotzdem nicht "leer" wirkt. */
 	#header > * {
 		-moz-transition: opacity 0.325s ease-in-out;
 		-webkit-transition: opacity 0.325s ease-in-out;
 		-ms-transition: opacity 0.325s ease-in-out;
 		transition: opacity 0.325s ease-in-out;
 		position: relative;
-		margin-top: 3.5rem;
+		margin-top: 1.75rem;
 	}
-
-		#header > *:before {
-			content: '';
-			display: block;
-			position: absolute;
-			top: calc(-3.5rem - 1px);
-			left: calc(50% - 1px);
-			width: 1px;
-			height: calc(3.5rem + 1px);
-			background: #ffffff;
-		}
 
 	#header > :first-child {
 		margin-top: 0;
 	}
 
-		#header > :first-child:before {
-			display: none;
-		}
-
-	#header .logo {
-		width: 5.5rem;
-		height: 5.5rem;
-		line-height: 5.5rem;
-		border: solid 1px #ffffff;
-		border-radius: 100%;
+	.site-logo {
+		width: 150px;
+		height: auto;
 	}
 
-		#header .logo .icon:before {
-			font-size: 2rem;
-		}
-
 	#header .content {
-		border-style: solid;
-		border-color: #ffffff;
-		border-top-width: 1px;
-		border-bottom-width: 1px;
 		max-width: 100%;
 	}
 
@@ -1423,7 +1402,7 @@ repeat;
 			-webkit-transition-delay: 0.25s;
 			-ms-transition-delay: 0.25s;
 			transition-delay: 0.25s;
-			padding: 3rem 2rem;
+			padding: 1.75rem 2rem;
 			max-height: 40rem;
 			overflow: hidden;
 		}
@@ -1629,26 +1608,15 @@ repeat;
 	@media screen and (max-width: 736px) {
 
 		#header > * {
-			margin-top: 2rem;
+			margin-top: 1.1rem;
 		}
 
-			#header > *:before {
-				top: calc(-2rem - 1px);
-				height: calc(2rem + 1px);
-			}
-
-		#header .logo {
-			width: 4.75rem;
-			height: 4.75rem;
-			line-height: 4.75rem;
+		.site-logo {
+			width: 100px;
 		}
-
-			#header .logo .icon:before {
-				font-size: 1.75rem;
-			}
 
 		#header .content .inner {
-			padding: 2.5rem 1rem;
+			padding: 1.4rem 1rem;
 		}
 
 		#header .content p {
@@ -1660,11 +1628,15 @@ repeat;
 	@media screen and (max-width: 630px) {
 
 		#header {
-			padding: 1.5rem 0;
+			padding: 1rem 0;
+		}
+
+		.site-logo {
+			width: 80px;
 		}
 
 			#header .content .inner {
-				padding: 2.5rem 0;
+				padding: 1.2rem 0.75rem;
 			}
 
 			#header nav ul {
