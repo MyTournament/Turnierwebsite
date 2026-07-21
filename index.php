@@ -18,6 +18,7 @@ if (isset($_GET['logout'])) {
 //IMPORT PHP-DOCS
 include_once 'database/db_connection.php'; //Datenbanklogin //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 //include_once 'database/db_backup.php';
+include_once 'website_functionalities/csrf.php'; // CSRF-Schutz (csrf_field()/csrf_verify()) - siehe Datei für Details
 
 include_once 'variables.php'; //Variablen einbinden (Turniernummer) //Wichtig dass das vor Test-Modus-Abfrage kommt weil Test-Modus das Ergebnis braucht
 
@@ -1912,6 +1913,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo "<form action='website_datachange/edit_account.php?test_turnier_id=$test_turnier_id' method='POST' onSubmit='return checkRegisterAccount(event)'>";
         }
     ?>
+        <?php echo csrf_field(); ?>
         <input type="text" id="reg_bn" name="reg_bn" class="Eingabe" placeholder="Gewünschter Benutzername &#9733;" style="color: white" maxlength="40" required autocomplete="username" value="<?php echo htmlspecialchars($regPrevBn, ENT_QUOTES, 'UTF-8'); ?>"><br/>
         <input type="password" id="reg_pw" name="reg_pw" class="Eingabe" placeholder="Passwort wählen &#9733;" style="color: white" required autocomplete="new-password"><br/>
         <input type="password" id="reg_pw2" name="reg_pw2" class="Eingabe" placeholder="Passwort wiederholen &#9733;" style="color: white" required autocomplete="new-password"><br/>
@@ -2129,6 +2131,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
             <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
             <input type='hidden' name='action' value='Begegnung_Hinzufuegen'/>
+            <?php echo csrf_field(); ?>
             <div class='field'>
                 <label for='demo-category'>Team 1 (Heimteam)</label>
                 <select name='team1' required>
@@ -2214,6 +2217,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES); ?>'/>
             <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>'/>
             <input type='hidden' name='action' value='Begegnung_Sperren'/>
+            <?php echo csrf_field(); ?>
             <div class='field'>
                 <label for='demo-category'>Begegnung wählen</label>
                 <select name='begegnungIdSperren' required>
@@ -3450,6 +3454,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <input type='hidden' name='pw' value='$pwAttr'/>
                 <input type='hidden' name='action' value='Turnier_Settings_Feld_Aendern'/>
                 <input type='hidden' name='feld' value='$feld'/>
+                " . csrf_field() . "
                 <input type='$inputType' name='wert' value='$valueAttr' class='Eingabe ts-input'>
                 <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
             </form>
@@ -3468,6 +3473,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <input type='hidden' name='pw' value='$pwAttr'/>
                 <input type='hidden' name='action' value='Turnier_Settings_Feld_Aendern'/>
                 <input type='hidden' name='feld' value='$feld'/>
+                " . csrf_field() . "
                 <input type='checkbox' id='$idAttr' name='wert' value='1' $checkedAttr>
                 <label for='$idAttr'>aktiviert</label>
                 <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
@@ -3732,6 +3738,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <button type='button' class='nm-pw-toggle' title='Benutzernamen ändern' onclick="var f=document.getElementById('nm_bn_form_<?php echo $nutzer['id']; ?>'); f.style.display = (f.style.display==='inline-flex') ? 'none' : 'inline-flex';">&#9998;</button>
                 <form action='website_datachange/edit_account.php' method='POST' class='nm-pwchange-form' id='nm_bn_form_<?php echo $nutzer['id']; ?>' style='display:none;' onsubmit="return confirm('Benutzernamen von <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich ändern?');">
                     <input type='hidden' name='action' value='Benutzername_Aendern'>
+                    <?php echo csrf_field(); ?>
                     <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
                     <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                     <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
@@ -3746,6 +3753,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                      HTML-Quelltext. -->
                 <form action='website_datachange/edit_account.php<?php echo $test_turnier_id!=0 ? "?test_turnier_id=$test_turnier_id" : ""; ?>' method='POST' class='nm-login-als'>
                     <input type='hidden' name='action' value='Login_Als_User'>
+                    <?php echo csrf_field(); ?>
                     <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
                     <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                     <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
@@ -3755,6 +3763,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <?php if ($loeschenErlaubt) { ?>
                 <form action='website_datachange/edit_account.php<?php echo $test_turnier_id!=0 ? "?test_turnier_id=$test_turnier_id" : ""; ?>' method='POST' class='nm-login-als' onsubmit="return confirm('Nutzer <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich unwiderruflich löschen?');">
                     <input type='hidden' name='action' value='Benutzer_Loeschen'>
+                    <?php echo csrf_field(); ?>
                     <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
                     <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                     <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
@@ -3772,6 +3781,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 if (nmDarfRolleVergeben($rollenFlagsById[$rid] ?? [], $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
                     echo "<form action='website_datachange/edit_account.php' method='POST' style='display:inline;margin:0;' onsubmit=\"return confirm('Rolle wirklich entfernen?');\">
                         <input type='hidden' name='action' value='Rolle_Entfernen'>
+                        " . csrf_field() . "
                         <input type='hidden' name='admin_bn' value='$bnAttrNm'>
                         <input type='hidden' name='admin_pw' value='$pwAttrNm'>
                         <input type='hidden' name='ziel_benutzer_id' value='{$nutzer['id']}'>
@@ -3792,6 +3802,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             ?>
             <form action='website_datachange/edit_account.php' method='POST' class='nm-addrole-form'>
                 <input type='hidden' name='action' value='Rolle_Hinzufuegen'>
+                <?php echo csrf_field(); ?>
                 <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
                 <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                 <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
@@ -3818,6 +3829,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     </span>
                     <form action='website_datachange/edit_account.php' method='POST' class='nm-pwchange-form' onsubmit="return confirm('Passwort von <?php echo htmlspecialchars($nutzer['bn'], ENT_QUOTES); ?> wirklich ändern?');">
                         <input type='hidden' name='action' value='Passwort_Aendern'>
+                        <?php echo csrf_field(); ?>
                         <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
                         <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                         <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
@@ -3898,6 +3910,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </style>
     <form action='website_datachange/edit_account.php' method='POST' onsubmit="if (document.querySelectorAll('input[name=\'neue_rollen[]\']').length === 0) { alert('Bitte mindestens eine Rolle hinzufügen.'); return false; } return true;">
         <input type='hidden' name='action' value='admin_erstellt_nutzer'/>
+        <?php echo csrf_field(); ?>
         <input type='hidden' name='admin_bn' value='<?php echo $nnBnAttr; ?>'>
         <input type='hidden' name='admin_pw' value='<?php echo $nnPwAttr; ?>'>
         <div class='field'>

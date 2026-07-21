@@ -124,7 +124,12 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     // direkt aus der DB) ausgewählt - $feld landet NUR dann in der SQL-Query, wenn es exakt in einer
     // der beiden Whitelists steht, ein SQL-Injection-Risiko über den Spaltennamen besteht also nicht.
     }else if ($action == 'Turnier_Settings_Feld_Aendern') {
-      if($darfTurnierSettingsAendern){
+      // SICHERHEIT: CSRF-Token-Pruefung - die Formulare, die auf diese Aktion posten (tsTextFeld/
+      // tsCheckboxFeld in index.php), schicken den Token seit dieser Aenderung mit.
+      if(!csrf_verify()){
+        $message = "Sicherheitsprüfung fehlgeschlagen (ungültiger oder abgelaufener Token). Bitte die Seite neu laden und erneut versuchen.";
+        echo "<script type='text/javascript'>alert('$message');</script>";
+      }else if($darfTurnierSettingsAendern){
         $erlaubteTextFelder = ['name', 'anzeige_titel', 'anzeige_subtitel', 'anzeige_datum', 'jahr',
             'startdatum', 'startzeit', 'countdown_start', 'enddatum', 'max_anzahl_teams',
             'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'excel_link', 'fk_ko_einzug_modus'];

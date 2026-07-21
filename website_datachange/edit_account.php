@@ -11,6 +11,18 @@ $pw = isset($_POST['pw']) ? $_POST['pw'] : '';
 echo "<script>console.log('edit_account Checkpoint 2')</script>";
 
 // ================================================================================================
+// CSRF-SCHUTZ - alle Formulare, die auf diese Aktionen posten (Nutzermanagement in index.php,
+// #register_account), schicken seit dieser Aenderung den Session-Token mit (siehe csrf.php). Bei
+// fehlendem/falschem Token wird die Aktion NICHT ausgefuehrt ($action geleert, keiner der folgenden
+// Zweige matcht dann mehr) - sicherer Fallback statt eines harten die().
+// ================================================================================================
+include_once '../website_functionalities/csrf.php';
+$csrfGeschuetzteAktionen = ['register', 'admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen', 'Passwort_Aendern', 'Benutzername_Aendern', 'Login_Als_User', 'Benutzer_Loeschen'];
+if (in_array($action, $csrfGeschuetzteAktionen, true) && !csrf_verify()) {
+    $action = '';
+}
+
+// ================================================================================================
 // CAPTCHA-CHECK FÜR DIE SELBSTREGISTRIERUNG (#register_account) - eigener formKey "user_register",
 // bewusst NICHT "register" (das ist bereits der formKey der Team-Anmeldung in edit_teams.php), damit
 // sich die beiden unabhängigen Captcha-Abläufe nicht gegenseitig überschreiben. Gleiches Muster wie
