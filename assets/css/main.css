@@ -2163,8 +2163,10 @@ repeat;
    manchmal sichtbar ist (nur im Testturnier bzw. nur mit ausreichenden Rechten). */
 .tbl-action-btn { display: inline-block; margin: 0 0 0.7rem; padding: 0.4rem 0.95rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; text-transform: none; line-height: 1.3; text-decoration: none; white-space: nowrap; cursor: pointer; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out; }
 .tbl-action-btn:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.4); }
-/* Nur im Testturnier sichtbar (z.B. "Zufällige Spiele eintragen") - dasselbe Dunkelblau wie vorher. */
-.tbl-action-btn--testmodus { background: rgba(18, 58, 92, 0.75); border-color: #2f6fae; }
+/* Nur im Testturnier UND mit passender Rolle sichtbar (z.B. "Zufällige Spiele eintragen") - Rahmenfarbe
+   kommt jetzt aus der sechsten Stufe des Admin-Farb-Legende-Systems (--admin-border-testspiele, türkis
+   für Admin/Co-Admin, neutral für alle anderen mit Zugriff) statt einem fest verdrahteten Blauton. */
+.tbl-action-btn--testmodus { background: rgba(18, 58, 92, 0.75); border-color: var(--admin-border-testspiele, #2f6fae); }
 .tbl-action-btn--testmodus:hover { background: rgba(18, 58, 92, 0.95); }
 /* Nur mit Rechten sichtbar (z.B. "Gruppe(n) finalisieren") - dasselbe Lila wie der Rest vom
    Backstage-Bereich. Fallback-Wert bei var(), weil --admin-accent nur definiert ist, wenn die Person

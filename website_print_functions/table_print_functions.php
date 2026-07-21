@@ -874,17 +874,19 @@
         }
     }
 
-    function printSpielplanGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id, $darfAlleSpieleBearbeiten = false, $bnEingeloggt = '', $pwEingeloggt = ''){
+    function printSpielplanGruppenphase($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id, $darfAlleSpieleBearbeiten = false, $bnEingeloggt = '', $pwEingeloggt = '', $darfZufaelligeSpieleEintragen = false){
         try {
             //Button, mit dem man den Bearbeitungsmodus starten kann
             printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#gruppenphase", $test_turnier_id);
 
             // ================================================================================================
-            // TESTMODUS: "Zufällige Spiele eintragen" (nur sichtbar/wirksam im Testturnier, dunkelblau)
+            // TESTMODUS: "Zufällige Spiele eintragen" (nur sichtbar/wirksam im Testturnier, türkiser Rahmen)
             // ================================================================================================
             // Führt zur Auswahlseite backstage_zufaellige_spiele, wo man den Prozentsatz der noch offenen
             // Gruppenphasen-Begegnungen wählt, die auf einen Schlag zufällig befüllt+finalisiert werden.
-            if ($test_turnier_id != 0) {
+            // Nur sichtbar für Admin/Co-Admin/Moderator*in/Backstage-Zugang/Schiedsrichter*in (siehe
+            // $darfZufaelligeSpieleEintragen in index.php) - vorher fehlte hier jede Rollenprüfung.
+            if ($test_turnier_id != 0 && $darfZufaelligeSpieleEintragen) {
                 echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=gruppenphase#backstage_zufaellige_spiele' class='tbl-action-btn tbl-action-btn--testmodus'>Zufällige Spiele eintragen</a></p>";
             }
 
@@ -1046,9 +1048,19 @@
     }
 
     // Losing Bracket: like group phase, but only group named 'Losing Bracket'
-    function printSpielplanLosingBracket($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id){
+    function printSpielplanLosingBracket($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $test_turnier_id, $darfZufaelligeSpieleEintragen = false){
         try {
             printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#losingbracket", $test_turnier_id);
+
+            // ================================================================================================
+            // TESTMODUS: "Zufällige Spiele eintragen" - gab es hier bisher gar nicht, obwohl es in
+            // Gruppenphase und K.-o.-Phase schon existierte. Losing-Bracket-Begegnungen laufen unter
+            // ko_finallevel=20 (siehe Turnier_KO_Finallevel), technisch also einfach eine weitere
+            // "Finalstufe" für den scope=ko-Zweig der Auswahlseite backstage_zufaellige_spiele.
+            // ================================================================================================
+            if ($test_turnier_id != 0 && $darfZufaelligeSpieleEintragen) {
+                echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=ko&zufall_ko_finallevel=20#backstage_zufaellige_spiele' class='tbl-action-btn tbl-action-btn--testmodus'>Zufällige Spiele eintragen</a></p>";
+            }
 
             // Schalter aus Turnier_Main wie in der Gruppenphase
             $schalterDreieck = 0; $loescheErsteZeileUndSpalte = 0;
@@ -1201,7 +1213,7 @@
 
     // RECHTE-AUDIT: 7. Parameter hieß vorher $istAdminOderCoAdmin - jetzt reines turnier_settings-Flag,
     // damit der Button/Toggle nur sichtbar ist, wenn edit_variables.php die Aktion auch wirklich annimmt.
-    function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id, $darfTurnierSettingsAendern = false, $bnEingeloggt = '', $pwEingeloggt = ''){
+    function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id, $darfTurnierSettingsAendern = false, $bnEingeloggt = '', $pwEingeloggt = '', $darfZufaelligeSpieleEintragen = false){
         //Button, mit dem man den Bearbeitungsmodus starten kann
         printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#kophase", $test_turnier_id);
 
@@ -1241,9 +1253,10 @@
                 echo "<h3>$name</h3>";
             }
             // ============================================================================================
-            // TESTMODUS: "Zufällige Spiele eintragen" für GENAU DIESE Finalstufe (nur im Testturnier, dunkelblau)
+            // TESTMODUS: "Zufällige Spiele eintragen" für GENAU DIESE Finalstufe (nur im Testturnier,
+            // türkiser Rahmen) - nur für Admin/Co-Admin/Moderator*in/Backstage-Zugang/Schiedsrichter*in.
             // ============================================================================================
-            if ($test_turnier_id != 0) {
+            if ($test_turnier_id != 0 && $darfZufaelligeSpieleEintragen) {
                 echo "<p><a href='?test_turnier_id=$test_turnier_id&zufall_scope=ko&zufall_ko_finallevel=$ko_finallevel#backstage_zufaellige_spiele' class='tbl-action-btn tbl-action-btn--testmodus'>Zufällige Spiele eintragen</a></p>";
             }
             echo "
