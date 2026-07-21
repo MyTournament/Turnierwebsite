@@ -2925,27 +2925,32 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='text' name='anzeige_subtitel' value='<?php echo htmlspecialchars($altesTurnier['anzeige_subtitel'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
             <label for='demo-category'>Anzeige-Datum (freier Text, z.B. "26.-28. September")</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.1rem 0 0.3rem;'>Wird aktuell bewusst NICHT ausgefüllt, damit nicht jede/r auf der Website sieht, wann genau das Turnier stattfindet.</p>
             <input type='text' name='anzeige_datum' value='<?php echo htmlspecialchars($altesTurnier['anzeige_datum'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
             <label for='demo-category'>Jahr</label>
             <input type='text' name='jahr' value='<?php echo htmlspecialchars($altesTurnier['jahr'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
             <label for='demo-category'>Startdatum</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.1rem 0 0.3rem;'>Erster Turniertag. Wird u.a. genutzt, um vergangene Turniere ("History") in der richtigen Reihenfolge zu sortieren - ansonsten aktuell rein informativ.</p>
             <input type='date' name='startdatum' value='<?php echo htmlspecialchars($altesTurnier['startdatum'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
             <label for='demo-category'>Startzeit</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.1rem 0 0.3rem;'>Uhrzeit des Turnierstarts. Aktuell rein informativ, wird sonst an keiner Stelle automatisch ausgewertet.</p>
             <input type='text' name='startzeit' value='<?php echo htmlspecialchars($altesTurnier['startzeit'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
-            <label for='demo-category'>Countdown-Start (Format wie bisher, z.B. "Sep 06, 2025 14:00:00")</label>
+            <label for='demo-category'>Countdown-Start</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.1rem 0 0.3rem;'>Bestimmt, worauf der Countdown auf der Startseite herunterzählt. Braucht genau dieses Format: "Sep 06, 2025 14:00:00".</p>
             <input type='text' name='countdown_start' value='<?php echo htmlspecialchars($altesTurnier['countdown_start'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
             <label for='demo-category'>Enddatum</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.1rem 0 0.3rem;'>Letzter Turniertag. Aktuell rein informativ, wird sonst an keiner Stelle automatisch ausgewertet.</p>
             <input type='date' name='enddatum' value='<?php echo htmlspecialchars($altesTurnier['enddatum'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
             <label for='demo-category'>Maximale Teamanzahl</label>
             <input type='number' name='max_anzahl_teams' min='0' value='<?php echo (int)($altesTurnier['max_anzahl_teams'] ?? 0); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
-            <label for='demo-category'>Teilnahmebeitrag</label>
+            <label for='demo-category'>Teilnahmebeitrag (in Euro)</label>
             <input type='text' name='teilnahmebeitrag' value='<?php echo htmlspecialchars($altesTurnier['teilnahmebeitrag'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
             <label for='demo-category'>Anzeige-Reihenfolge auf der Website (order_on_website)</label>
@@ -2985,6 +2990,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <h5><br/></h5>
             <input type='checkbox' id='neu_einzug_ko_manuell_anlegen' name='einzug_ko_manuell_anlegen' value='1' <?php echo (($altesTurnier['einzug_ko_manuell_anlegen'] ?? 0) == 1) ? "checked" : ""; ?>>
             <label for='neu_einzug_ko_manuell_anlegen'>Einzug in die K.-o.-Phase manuell anlegen</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.2rem 0 0;'>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden. Wichtig: es gibt dann zusätzlich noch ein eigenes Häkchen direkt in der K.-o.-Phase ("Gruppenphase beendet / K.-o.-Einzug fertig angelegt"), das erst gesetzt werden muss, damit die Website die manuell angelegten Begegnungen als startklar erkennt.</p>
             <p style='font-size:0.8rem;opacity:0.75;margin:0.2rem 0 0;'>Hinweis: Der Schalter direkt darunter ("Gruppenphase beendet / K.-o.-Einzug fertig angelegt") wird beim Anlegen dieses neuen Turniers immer automatisch zurückgesetzt, egal was hier angehakt ist - ein neues Turnier hat schließlich noch keine abgeschlossene Gruppenphase.</p>
             <h5><br/></h5>
             <input type='checkbox' id='neu_einzug_ko_fertig' name='einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei' value='1'>
@@ -2992,15 +2998,18 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <h5><br/></h5>
             <input type='checkbox' id='neu_nur_oberes_dreieck' name='nurOberesDreieckInGruppenphase' value='1' <?php echo (($altesTurnier['nurOberesDreieckInGruppenphase'] ?? 0) == 1) ? "checked" : ""; ?>>
             <label for='neu_nur_oberes_dreieck'>Nur oberes Dreieck in Gruppenphase</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.2rem 0 0;'>Jede Begegnung einer Gruppe wird in der Tabelle normalerweise doppelt angezeigt (einmal oberhalb, einmal unterhalb der Diagonale) - aktiviert zeigt die Tabelle das Ergebnis nur einmal (oberes Dreieck). Kompakter, aber Übersichtlichkeit vs. Kompaktheit: siehe Hinweis beim nächsten Häkchen.</p>
             <h5><br/></h5>
             <input type='checkbox' id='neu_loesche_erste_zeile' name='loescheErsteZeileUndSpalte' value='1' <?php echo (($altesTurnier['loescheErsteZeileUndSpalte'] ?? 0) == 1) ? "checked" : ""; ?>>
             <label for='neu_loesche_erste_zeile'>Lösche erste Zeile und Spalte (Gruppentabelle)</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.2rem 0 0;'>Blendet zusätzlich die erste Zeile/Spalte der Gruppentabelle aus (nur sinnvoll zusammen mit "Nur oberes Dreieck", da dort sonst leer). Macht die Tabelle noch kompakter, kann aber verwirren: z.B. sieht eine Gruppe mit 4 Teams dann so aus, als hätte sie nur 3, weil das erste Team nur noch in den Spaltenköpfen der anderen auftaucht, nicht mehr als eigene Zeile/Spalte.</p>
             <h5><br/></h5>
             <input type='checkbox' id='neu_losingbracket_open' name='losingbracket_open_for_ko_losers' value='1' <?php echo (($altesTurnier['losingbracket_open_for_ko_losers'] ?? 0) == 1) ? "checked" : ""; ?>>
             <label for='neu_losingbracket_open'>Losing Bracket offen für K.-o.-Verlierer</label>
             <h5><br/></h5>
             <input type='checkbox' id='neu_use_excel' name='use_excel' value='1' <?php echo (($altesTurnier['use_excel'] ?? 0) == 1) ? "checked" : ""; ?>>
             <label for='neu_use_excel'>Excel-Verknüpfung nutzen</label>
+            <p style='font-size:0.8rem;opacity:0.75;margin:0.2rem 0 0;'>Ersetzt den normalen (automatisch berechneten) Spielplan komplett durch eine eingebettete Excel-Tabelle - der normale Spielplan wird dann gar nicht mehr angezeigt. Nur aktivieren, wenn unten auch wirklich ein gültiger Excel-Link eingetragen wird.</p>
             <h5><br/></h5>
             <label for='demo-category'>Excel-Link</label>
             <input type='text' name='excel_link' value='<?php echo htmlspecialchars($altesTurnier['excel_link'] ?? ''); ?>' class='Eingabe' style='color: white'>
@@ -3129,7 +3138,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     ?>
     <div class='ts-setting'>
         <span class='ts-setting-label'>Einzug ins KO-System (Paarungsmodus)</span>
-        <span class='ts-hint'>Legt fest, nach welchem Schema die Gruppenplatzierungen auf die ersten K.-o.-Begegnungen verteilt werden. Ausführliche Erklärung mit Beispielen: eigener Menüpunkt "Einzug ins KO-System" im Settings-Menü.</span>
+        <span class='ts-hint'>Legt fest, nach welchem Schema die Gruppenplatzierungen auf die ersten K.-o.-Begegnungen verteilt werden. Ausführliche Erklärung mit Beispielen: <a href='#backstage_ko_einzug_modus'>eigener Menüpunkt "Einzug ins KO-System"</a> im Settings-Menü.</span>
         <?php if (!$curKoEinzugKompatibilitaet['ok']) { ?>
         <div style='background:rgba(231,76,60,0.15); border:1px solid #e74c3c; border-radius:6px; padding:0.5rem 0.8rem; font-size:0.8rem; margin-bottom:0.4rem;'>
             &#9888; Der aktuell gespeicherte Modus "<?php echo htmlspecialchars($curKoEinzugModusRow['name']); ?>" passt gerade NICHT zur aktuellen Konfiguration: <?php echo htmlspecialchars($curKoEinzugKompatibilitaet['grund']); ?> Solange das so bleibt, werden keine automatischen K.-o.-Begegnungen erzeugt.
@@ -3196,7 +3205,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
     <div class='ts-setting'>
         <span class='ts-setting-label'>Einzug K.-o.-Phase manuell anlegen</span>
-        <span class='ts-hint'>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch aus den Gruppenplatzierungen, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden.</span>
+        <span class='ts-hint'>Wenn aktiviert, berechnet die Website die ersten K.-o.-Paarungen nicht automatisch aus den Gruppenplatzierungen, sondern erwartet, dass diese manuell (z.B. über "Begegnungen bearbeiten") angelegt werden. Wichtig: bei aktiviertem Schalter gibt es zusätzlich noch ein eigenes Häkchen direkt in der K.-o.-Phase ("Gruppenphase beendet / K.-o.-Einzug fertig angelegt"), das erst gesetzt werden muss, damit die Website die manuell angelegten Begegnungen als startklar erkennt.</span>
         <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
             <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
             <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
@@ -3258,14 +3267,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     tsTextFeld('Name (intern)', 'Interner Name des Turniers.', 'name', $rowTurnierSettings['name'], 'text', $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Anzeige-Titel', 'Titel, wie er auf der Website angezeigt wird.', 'anzeige_titel', $rowTurnierSettings['anzeige_titel'], 'text', $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Anzeige-Untertitel', 'Untertitel auf der Website.', 'anzeige_subtitel', $rowTurnierSettings['anzeige_subtitel'], 'text', $TurnierID, $bnAttr, $pwAttr);
-    tsTextFeld('Anzeige-Datum', 'Freier Text, z.B. "26.-28. September".', 'anzeige_datum', $rowTurnierSettings['anzeige_datum'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Anzeige-Datum', 'Freier Text, z.B. "26.-28. September". Wird aktuell bewusst NICHT ausgefüllt, damit nicht jede/r auf der Website sieht, wann genau das Turnier stattfindet.', 'anzeige_datum', $rowTurnierSettings['anzeige_datum'], 'text', $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Jahr', 'Turnier-Jahr.', 'jahr', $rowTurnierSettings['jahr'], 'text', $TurnierID, $bnAttr, $pwAttr);
-    tsTextFeld('Startdatum', 'Erster Turniertag.', 'startdatum', $rowTurnierSettings['startdatum'], 'date', $TurnierID, $bnAttr, $pwAttr);
-    tsTextFeld('Startzeit', 'Uhrzeit des Turnierstarts.', 'startzeit', $rowTurnierSettings['startzeit'], 'text', $TurnierID, $bnAttr, $pwAttr);
-    tsTextFeld('Countdown-Start', 'Format wie bisher, z.B. "Sep 06, 2025 14:00:00".', 'countdown_start', $rowTurnierSettings['countdown_start'], 'text', $TurnierID, $bnAttr, $pwAttr);
-    tsTextFeld('Enddatum', 'Letzter Turniertag.', 'enddatum', $rowTurnierSettings['enddatum'], 'date', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Startdatum', 'Erster Turniertag. Wird u.a. genutzt, um vergangene Turniere ("History") in der richtigen Reihenfolge zu sortieren - ansonsten aktuell rein informativ.', 'startdatum', $rowTurnierSettings['startdatum'], 'date', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Startzeit', 'Uhrzeit des Turnierstarts. Aktuell rein informativ, wird sonst an keiner Stelle automatisch ausgewertet.', 'startzeit', $rowTurnierSettings['startzeit'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Countdown-Start', 'Bestimmt, worauf der Countdown auf der Startseite herunterzählt. Braucht genau dieses Format: "Sep 06, 2025 14:00:00".', 'countdown_start', $rowTurnierSettings['countdown_start'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Enddatum', 'Letzter Turniertag. Aktuell rein informativ, wird sonst an keiner Stelle automatisch ausgewertet.', 'enddatum', $rowTurnierSettings['enddatum'], 'date', $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Maximale Teamanzahl', 'Ab dieser Teamanzahl werden keine weiteren Anmeldungen mehr angenommen (Warteliste greift).', 'max_anzahl_teams', (int)$rowTurnierSettings['max_anzahl_teams'], 'number', $TurnierID, $bnAttr, $pwAttr);
-    tsTextFeld('Teilnahmebeitrag', 'Beitrag pro Team.', 'teilnahmebeitrag', $rowTurnierSettings['teilnahmebeitrag'], 'text', $TurnierID, $bnAttr, $pwAttr);
+    tsTextFeld('Teilnahmebeitrag', 'Beitrag pro Team, in Euro.', 'teilnahmebeitrag', $rowTurnierSettings['teilnahmebeitrag'], 'text', $TurnierID, $bnAttr, $pwAttr);
     // Anzeige-Reihenfolge (order_on_website) hier bewusst nicht mehr bearbeitbar - irrelevant für den
     // laufenden Betrieb. Die Spalte/der Wert bleibt in der Datenbank unangetastet, nur die
     // Bearbeitungsmöglichkeit an dieser Stelle wurde entfernt.
@@ -3296,10 +3305,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </form>
     </div>
     <?php
-    tsCheckboxFeld('Nur oberes Dreieck in Gruppenphase', 'Zeigt in der Gruppentabelle nur das obere Dreieck der Begegnungen an.', 'nurOberesDreieckInGruppenphase', $rowTurnierSettings['nurOberesDreieckInGruppenphase'], $TurnierID, $bnAttr, $pwAttr);
-    tsCheckboxFeld('Lösche erste Zeile und Spalte', 'Blendet die erste Zeile/Spalte der Gruppentabelle aus.', 'loescheErsteZeileUndSpalte', $rowTurnierSettings['loescheErsteZeileUndSpalte'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Nur oberes Dreieck in Gruppenphase', 'Jede Begegnung einer Gruppe wird in der Tabelle normalerweise doppelt angezeigt (einmal oberhalb, einmal unterhalb der Diagonale) - aktiviert zeigt die Tabelle das Ergebnis nur einmal (oberes Dreieck). Kompakter, aber Übersichtlichkeit vs. Kompaktheit: siehe Hinweis bei "Lösche erste Zeile und Spalte".', 'nurOberesDreieckInGruppenphase', $rowTurnierSettings['nurOberesDreieckInGruppenphase'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Lösche erste Zeile und Spalte', 'Blendet zusätzlich die erste Zeile/Spalte der Gruppentabelle aus (nur sinnvoll zusammen mit "Nur oberes Dreieck", da dort sonst leer). Macht die Tabelle noch kompakter, kann aber verwirren: z.B. sieht eine Gruppe mit 4 Teams dann so aus, als hätte sie nur 3, weil das erste Team nur noch in den Spaltenköpfen der anderen auftaucht, nicht mehr als eigene Zeile/Spalte.', 'loescheErsteZeileUndSpalte', $rowTurnierSettings['loescheErsteZeileUndSpalte'], $TurnierID, $bnAttr, $pwAttr);
     tsCheckboxFeld('Losing Bracket offen für K.-o.-Verlierer', 'Verlierer der K.-o.-Phase spielen im Losing Bracket weiter.', 'losingbracket_open_for_ko_losers', $rowTurnierSettings['losingbracket_open_for_ko_losers'], $TurnierID, $bnAttr, $pwAttr);
-    tsCheckboxFeld('Excel-Verknüpfung nutzen', 'Aktiviert die Anzeige/Nutzung des Excel-Links unten.', 'use_excel', $rowTurnierSettings['use_excel'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Excel-Verknüpfung nutzen', 'Ersetzt den normalen (automatisch berechneten) Spielplan komplett durch eine eingebettete Excel-Tabelle - der normale Spielplan wird dann gar nicht mehr angezeigt. Nur aktivieren, wenn unten auch wirklich ein gültiger Excel-Link eingetragen ist.', 'use_excel', $rowTurnierSettings['use_excel'], $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Excel-Link', 'Nur relevant, wenn "Excel-Verknüpfung nutzen" aktiviert ist.', 'excel_link', $rowTurnierSettings['excel_link'], 'text', $TurnierID, $bnAttr, $pwAttr);
     tsCheckboxFeld('Schnee-Effekt', 'Aktiviert den winterlichen Schnee-Effekt auf der Website.', 'schnee', $rowTurnierSettings['schnee'], $TurnierID, $bnAttr, $pwAttr);
     ?>
