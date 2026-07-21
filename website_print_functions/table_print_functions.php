@@ -1,4 +1,8 @@
 ﻿<?php
+    // getRollenFlags() wird hier u.a. in printSchiedsrichterInnen() gebraucht - explizit inkludiert,
+    // damit diese Datei nicht von der Include-Reihenfolge in index.php abhängt.
+    include_once __DIR__ . '/../database/rollen_definitionen.php';
+
     // ================================================================================================
     // KO-EINZUG-MODUS: KOMPATIBILITÄTS-PRÜFUNG (geteilt zwischen Turnier Settings und dem eigenen
     // "Einzug ins KO-System"-Menüpunkt, deshalb hier unbedingt/außerhalb jeder Rechte-Bedingung
@@ -285,18 +289,24 @@
         echo"
         <ul class='alt'>";
         // RECHTE-AUDIT: nur noch reines Flag rechte_alle_spiele=1, kein "OR fk_rolle IN (1,2)" mehr -
-        // Admin/Co-Admin haben dieses Flag in der Rollentabelle ohnehin gesetzt und tauchen daher
-        // automatisch mit auf, ohne dass hier nach Rollen-IDs gefragt werden muss.
+        // Admin/Co-Admin haben dieses Flag ohnehin gesetzt und tauchen daher automatisch mit auf,
+        // ohne dass hier nach Rollen-IDs gefragt werden muss. Das Flag kommt jetzt aus
+        // getRollenFlags() (rollen_definitionen.php) statt aus einer DB-Spalte, deshalb wird hier in
+        // PHP statt per SQL-WHERE gefiltert.
         try {
-            $sql = "SELECT DISTINCT sb.Benutzername FROM System_Benutzer_in sb
+            $sql = "SELECT DISTINCT sb.Benutzername, rel.fk_rolle FROM System_Benutzer_in sb
                     JOIN System_Benutzer_in_Relation_Rolle rel ON rel.fk_benutzer_in = sb.id
-                    JOIN System_Benutzer_in_Rolle sbr ON sbr.id = rel.fk_rolle
-                    WHERE sbr.rechte_alle_spiele = 1
                     ORDER BY sb.Benutzername ASC";
             $result = $conn->query($sql);
+            $bereitsAusgegeben = [];
             while ($row = $result->fetch_assoc()) {
                 $Benutzername = $row['Benutzername'];
-                echo "<li>$Benutzername</li>";
+                if (isset($bereitsAusgegeben[$Benutzername])) { continue; }
+                $flags = getRollenFlags((int)$row['fk_rolle']);
+                if (!empty($flags['rechte_alle_spiele'])) {
+                    echo "<li>" . htmlspecialchars($Benutzername) . "</li>";
+                    $bereitsAusgegeben[$Benutzername] = true;
+                }
             }
         } catch (Throwable $e) {
             // Rollen-Tabellen nicht erreichbar - Liste bleibt leer

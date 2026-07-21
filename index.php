@@ -398,7 +398,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-legende { max-width: 640px; margin: 1.5rem auto 0; padding: 0.8rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); font-size: 0.78rem; text-align: left; }
             .admin-legende h4 { margin: 0 0 0.5rem; font-size: 0.85rem; text-align: center; }
             .admin-legende-zeile { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0; }
-            .admin-legende-swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 4px; flex-shrink: 0; background: rgba(255,255,255,0.06); border: 2px solid var(--admin-border-standard); }
+            .admin-legende-swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 4px; flex-shrink: 0; background: rgba(255,255,255,0.06); border: 3px solid var(--admin-border-standard); }
             .admin-legende-swatch--teams { border-color: var(--admin-border-teams); }
             .admin-legende-swatch--coadmin { border-color: var(--admin-border-coadmin); }
             .admin-legende-swatch--adminonly { border-color: var(--admin-border-adminonly); }
@@ -1841,10 +1841,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: das jeweils passende Einzel-Recht reicht</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: nur Admin und Co-Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: nur "echte" Admins</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: sichtbar für Moderator*in, Backstage-Zugang, Co-Admin und Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: sichtbar für Backstage-Zugang, Co-Admin und Admin (nicht Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: sichtbar nur für Co-Admin und Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: sichtbar nur für Admin</div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -2540,7 +2540,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <a href='#backstage_warteliste' class='admin-menu-button admin-menu-button--teams'>Warteliste</a>
             <?php } ?>
             <?php if ($rechteFlags['backstage']) { ?>
-            <a href='#backstage_er_diagram' class='admin-menu-button'>ER-Diagramm</a>
+            <a href='#backstage_er_diagram' class='admin-menu-button admin-menu-button--teams'>ER-Diagramm</a>
             <?php } ?>
             <?php if ($istEchterAdmin) { ?>
             <a href='#backstage_verlauf' class='admin-menu-button admin-menu-button--adminonly'>Verlauf</a>
@@ -2549,10 +2549,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: das jeweils passende Einzel-Recht reicht</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: nur Admin und Co-Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: nur "echte" Admins</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: sichtbar für Moderator*in, Backstage-Zugang, Co-Admin und Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: sichtbar für Backstage-Zugang, Co-Admin und Admin (nicht Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: sichtbar nur für Co-Admin und Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: sichtbar nur für Admin</div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -3285,6 +3285,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         }
 
         // Alle Rollen (für Übersicht + Badge-Namen + eigene Flags je Rolle für nmDarfRolleVergeben)
+        // Name/Reihenfolge/Beschreibung kommen weiterhin aus der DB-Tabelle (reine Anzeige-Metadaten),
+        // die Rechte-Flags selbst aber aus getRollenFlags() (rollen_definitionen.php).
         $rollenNamenById = [];
         $rollenFlagsById = [];
         $rollenListeFuerUebersicht = [];
@@ -3292,7 +3294,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $resultRollen = $conn->query($sqlRollen);
         while ($rowRolle = $resultRollen->fetch_assoc()) {
             $rollenNamenById[(int)$rowRolle['id']] = $rowRolle['name'];
-            $rollenFlagsById[(int)$rowRolle['id']] = $rowRolle;
+            $rollenFlagsById[(int)$rowRolle['id']] = getRollenFlags((int)$rowRolle['id']);
             $rollenListeFuerUebersicht[] = $rowRolle;
         }
 
@@ -3518,7 +3520,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </div>
 
     <h5><br/></h5>
-    <a href='#backstage_neuen_nutzer_anlegen' class='admin-menu-button'>Neuen Nutzer anlegen</a>
+    <a href='#backstage_neuen_nutzer_anlegen' class='admin-menu-button admin-menu-button--coadmin'>Neuen Nutzer anlegen</a>
     <?php } ?>
     <h5><br /></h5>
     <a href='#backstage_daten_bearbeiten' class='button'>Zurück</a>
@@ -3566,7 +3568,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <option value='' disabled selected>Rolle hinzufügen ...</option>
                     <?php foreach ($nnRollen as $r) {
                         $rId = (int)$r['id'];
-                        if (nmDarfRolleVergeben($r, $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
+                        if (nmDarfRolleVergeben(getRollenFlags($rId), $darfNeueAdmins, $darfNeueCoAdmins, $darfRestlicheRollenVergeben)) {
                             echo "<option value='$rId'>" . htmlspecialchars($r['name']) . "</option>";
                         }
                     } ?>
