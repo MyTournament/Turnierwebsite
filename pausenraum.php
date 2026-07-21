@@ -86,16 +86,13 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
         .pausenraum-admin-box p { margin: 0 0 0.6rem; font-size: 0.85rem; opacity: 0.9; }
     </style>
     <div class="pausenraum-admin-box">
-        <h2>Für angemeldete Nutzer*innen</h2>
+        <h2>Nur für Admins/Co-Admins</h2>
         <p>Sterni Zähler, Bierball Locations und Achievements - nur für Admins/Co-Admins sichtbar.</p>
         <a href="#sterni_zaehler" class="button primary">Sterni Zähler <img src='images/icon/sterni1.png' width='20' height='20' alt=''></a>
         <br/><br/>
         <a href="#bierball_locations" class="button primary">Bierball Locations</a>
         <br/><br/>
         <a href="#achievements" class="button primary">Achievements</a>
-        <h3>&#9888; Hinweis</h3>
-        <p>Diese drei Features sind seit Kurzem wieder echt funktionierend (komplett neu geschrieben:
-        sicheres Login, Prepared Statements, CSRF-Schutz, XSS-Escaping) - nicht mehr nur eine Vorschau.</p>
     </div>
     <?php } ?>
 </article>
