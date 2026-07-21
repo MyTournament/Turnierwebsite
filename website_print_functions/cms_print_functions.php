@@ -1,4 +1,57 @@
-<?php 
+<?php
+    // ================================================================================================
+    // GEMEINSAMER TEIL DER CMS-EDIT-TOOLBAR: Hoch/Runter/Hinzufügen/Löschen - ersetzt den früheren
+    // einzelnen "Danach einfügen"-Button. Hoch/Runter tauschen die Reihenfolge (order_in_group) mit
+    // dem jeweiligen Nachbar-Baustein in derselben Gruppe (Aktion "Verschieben" in edit_content.php).
+    // Löschen steht jetzt HIER in der Hauptansicht (nicht mehr im Bearbeiten-Formular) und postet
+    // direkt an edit_content.php statt erst ein Formular zu öffnen - braucht deshalb bn/pw + CSRF-
+    // Token direkt an dieser Stelle. bn/pw kommen bewusst per global (wie auch test_turnier_id an
+    // anderer Stelle in dieser Datei) statt als zusätzlicher Parameter, um nicht alle ~34 Aufrufstellen
+    // von cmsPrintSection() in index.php anpassen zu müssen.
+    // ================================================================================================
+    function cmsToolbarBewegenUndLoeschen($content_id, $TurnierID){
+        global $bn, $pw, $test_turnier_id;
+        $bnSafe = htmlspecialchars((string)$bn, ENT_QUOTES, 'UTF-8');
+        $pwSafe = htmlspecialchars((string)$pw, ENT_QUOTES, 'UTF-8');
+        $ttid = isset($test_turnier_id) ? (int)$test_turnier_id : 0;
+        $actionUrl = 'website_datachange/edit_content.php' . ($ttid != 0 ? "?test_turnier_id=$ttid" : '');
+        echo "
+            <form method='post' action='$actionUrl' style='display:inline;margin:0;'>
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnSafe'/>
+                <input type='hidden' name='pw' value='$pwSafe'/>
+                " . csrf_field() . "
+                <input type='hidden' name='action' value='Verschieben'/>
+                <input type='hidden' name='richtung' value='hoch'/>
+                <button type='submit' class='cms-edit-btn' title='Baustein nach oben verschieben'>&#8593;</button>
+            </form>
+            <form method='post' action='$actionUrl' style='display:inline;margin:0;'>
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnSafe'/>
+                <input type='hidden' name='pw' value='$pwSafe'/>
+                " . csrf_field() . "
+                <input type='hidden' name='action' value='Verschieben'/>
+                <input type='hidden' name='richtung' value='runter'/>
+                <button type='submit' class='cms-edit-btn' title='Baustein nach unten verschieben'>&#8595;</button>
+            </form>
+            <form method='post' action='#addcontent' style='display:inline;margin:0;'>
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <button type='submit' class='cms-edit-btn' title='Neuen Baustein direkt danach einfügen'>&#8595;&#43; Danach einfügen</button>
+            </form>
+            <form method='post' action='$actionUrl' style='display:inline;margin:0;' onsubmit=\"return confirm('Diesen Baustein wirklich unwiderruflich löschen? Das kann nicht rückgängig gemacht werden.');\">
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnSafe'/>
+                <input type='hidden' name='pw' value='$pwSafe'/>
+                " . csrf_field() . "
+                <input type='hidden' name='action' value='Löschen'/>
+                <button type='submit' class='cms-edit-btn cms-edit-btn-delete' title='Diesen Baustein löschen'>&#128465; Löschen</button>
+            </form>
+        ";
+    }
+
     function cmsPrintSection($websiteId, $siteID, $TurnierID, $section, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $testTurnierMode){
         //SITE
         //checken ob es eine Site mit dieser ID gibt
@@ -109,12 +162,9 @@
                                     <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
                                     <button type='submit' class='cms-edit-btn' title='Diesen Baustein bearbeiten'>&#9998; Bearbeiten</button>
                                 </form>
-                                <span class='cms-edit-position'>Position $content_order_in_group</span>
-                                <form method='post' action='#addcontent'>
-                                    <input type='hidden' name='contentID' value='$content_id'/>
-                                    <button type='submit' class='cms-edit-btn' title='Neuen Baustein direkt danach einfügen'>&#8595;&#43; Danach einfügen</button>
-                                </form>
-                            </div>";
+                                <span class='cms-edit-position'>Position $content_order_in_group</span>";
+                        cmsToolbarBewegenUndLoeschen($content_id, $TurnierID);
+                        echo "</div>";
                         echo "<h3 class='cms-edit-function-label'>Funktion: $function()</h3>";
                         echo "<hr class='cms-edit-divider'>";
                     }else{
@@ -134,12 +184,9 @@
                                     <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
                                     <button type='submit' class='cms-edit-btn' title='Diesen Baustein bearbeiten'>&#9998; Bearbeiten</button>
                                 </form>
-                                <span class='cms-edit-position'>Position $content_order_in_group</span>
-                                <form method='post' action='#addcontent'>
-                                    <input type='hidden' name='contentID' value='$content_id'/>
-                                    <button type='submit' class='cms-edit-btn' title='Neuen Baustein direkt danach einfügen'>&#8595;&#43; Danach einfügen</button>
-                                </form>
-                            </div>";
+                                <span class='cms-edit-position'>Position $content_order_in_group</span>";
+                        cmsToolbarBewegenUndLoeschen($content_id, $TurnierID);
+                        echo "</div>";
                         echo "<$content_style_tag>$content_text</$content_style_tag>";
                         echo "<hr class='cms-edit-divider'>";
                     }else{
