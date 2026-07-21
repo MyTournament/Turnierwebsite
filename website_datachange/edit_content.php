@@ -1,4 +1,7 @@
 <?php
+// SICHERHEIT: MUSS vor dem ersten session_start() der Anfrage eingebunden werden.
+include_once '../website_functionalities/session_bootstrap.php';
+
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 
 $test_turnier_id = $_GET['test_turnier_id'];

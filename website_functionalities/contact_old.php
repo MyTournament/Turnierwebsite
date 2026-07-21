@@ -1,4 +1,6 @@
 <?php
+// SICHERHEIT: MUSS vor dem ersten session_start() der Anfrage eingebunden werden.
+include_once __DIR__ . '/session_bootstrap.php';
 if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
 
 $name = isset($_POST['name']) ? $_POST['name'] : '';
