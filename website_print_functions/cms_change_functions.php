@@ -16,6 +16,7 @@ function changeContent($conn, $TurnierID, $contentID, $content, $content_style_t
         // Strings verkettet wird (WHERE id = .../WHERE NOT id = ...).
         $functionSafe = $function ? (int)$function : null;
         echo"
+        <p class='cms-style-tag-warnung'>&#9888; Immer doppelte Anführungszeichen verwenden, niemals einfache!</p>
         <div class='cms-form-field'>
             <textarea type='text' id='changecontent1' name='content' placeholder='Inhalt'  rows='10' style='color: white'>$content</textarea>
             <span class='cms-form-hint'>Inhalt (freilassen wenn Function ausgeführt werden soll)</span>
@@ -104,6 +105,7 @@ function addContent($contentID, $TurnierID, $bn = '', $pw = ''){
     //$contentID = $_POST['contentID'];
     echo "<form action='website_datachange/edit_content.php' method='POST' onSubmit='return checkAGB4()' class='cms-form'>
 
+            <p class='cms-style-tag-warnung'>&#9888; Immer doppelte Anführungszeichen verwenden, niemals einfache!</p>
             <div class='cms-form-field'>
                 <textarea type='text' id='addcontent1' name='content' placeholder='Inhalt'  rows='10' style='color: white' required></textarea>
                 <span class='cms-form-hint'>Inhalt</span>

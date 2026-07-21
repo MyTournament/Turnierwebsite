@@ -62,9 +62,11 @@
     // bei Bedarf per SQL aufgeräumt werden.
     // ================================================================================================
     function printStyleTagHilfe(){
+        // Der "Immer doppelte Anführungszeichen"-Hinweis steht jetzt direkt über dem Inhalt-Feld im
+        // Formular selbst (siehe changeContent()/addContent() in cms_change_functions.php), damit man
+        // ihn VOR dem Eintippen sieht statt erst danach hier unten.
         echo "
         <div class='cms-style-tag-hilfe'>
-            <p class='cms-style-tag-warnung'>&#9888; Immer doppelte Anführungszeichen verwenden, niemals einfache!</p>
             <h3>Liste von Style-Tags</h3>
             <p class='cms-style-tag-erklaerung'>Style-Tag hier reinkopieren - dabei nur den Buchstaben kopieren (ohne &lt; &gt;). Tags lassen sich auch kombinieren oder nur auf Teile des Inhalts anwenden - dafür direkt im Inhalt-Feld einsetzen, z.B. \"&lt;b&gt;du bist fett&lt;/b&gt; und ich nicht\" - sieht dann so aus: <b>du bist fett</b> und ich nicht.</p>
             <ul class='cms-style-tag-liste'>
