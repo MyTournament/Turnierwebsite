@@ -668,7 +668,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <span>Spielplan</span>
                 </a></li>";
             ?>
-            <li><a href="https://www.paypal.com/paypalme/blankiball?country.x=DE&locale.x=de_DE">
+            <li><a href="#spenden">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5S3.5 15.4 3.5 9.2C3.5 6.3 5.8 4 8.6 4c1.5 0 2.9.7 3.4 2 .5-1.3 1.9-2 3.4-2 2.8 0 5.1 2.3 5.1 5.2 0 6.2-8.5 11.3-8.5 11.3z"/></svg>
                 <span>Spenden</span>
             </a></li>
@@ -740,7 +740,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             changeContent($conn, $TurnierID, $cid, $ccontent, $cstyle, $cfunc, $corder, $bn, $pw);
         }
     ?>
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <?php printStyleTagHilfe(); ?>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -749,7 +749,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h2>Content hinzufügen</h2>
     <p></p>
     <?php if (isset($_POST['contentID'])) { addContent($_POST['contentID'], $TurnierID, $bn, $pw); } ?>
-    <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
+    <?php printStyleTagHilfe(); ?>
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
 </article>
@@ -1639,6 +1639,24 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </div>
 </article>
 
+
+<!-- SPENDEN -->
+<article id="spenden">
+    <h2 class="major">Spenden</h2>
+    <p>Blankiball lebt davon, dass sich Leute in ihrer Freizeit unbezahlt darum kümmern - trotzdem entstehen ein paar Kosten, für die wir uns über jede Unterstützung freuen. Deine Spende hilft uns zum Beispiel bei:</p>
+    <ul>
+        <li>Getränken vor Ort</li>
+        <li>Preisen für die Sieger*innen</li>
+        <li>der Website (Hosting, Domain, ...)</li>
+        <li>Vorschuss für Merch</li>
+        <li>laufenden Kosten rund ums Turnier</li>
+        <li>Interviewtechnik (Kamera, Mikros, ...)</li>
+    </ul>
+    <p>Jeder Beitrag hilft, auch wenn's nur ein paar Euro sind - vielen Dank!</p>
+    <a href="https://www.paypal.com/paypalme/blankiball?country.x=DE&locale.x=de_DE" class="button primary">Jetzt spenden</a>
+    <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
+    <p></br></p>
+</article>
 
 <!-- ELEMENTS -->
 <?php include_once 'elements.php'; ?>

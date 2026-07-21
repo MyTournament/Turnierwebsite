@@ -1705,6 +1705,76 @@ repeat;
 		margin: 0.6rem 0;
 	}
 
+	/* Kompaktes Formular-Layout fuer "Content ändern"/"Content hinzufügen" - vorher stand zwischen
+	   jedem Feld ein eigener <p>-Hinweistext samt Standard-Absatzabstand plus "<h5><br/></h5>"-
+	   Abstandshalter, was insgesamt sehr viel Luft zwischen wenigen Feldern erzeugt hat. Jetzt: Feld +
+	   kleiner, gedimmter Hinweistext direkt darunter in einem gemeinsamen, eng geführten Block. */
+	.cms-form-field {
+		margin-bottom: 0.6rem;
+	}
+
+		.cms-form-field textarea,
+		.cms-form-field input[type='text'],
+		.cms-form-field select {
+			margin-bottom: 0.2rem;
+		}
+
+		.cms-form-hint {
+			display: block;
+			font-size: 0.72rem;
+			opacity: 0.65;
+			line-height: 1.3;
+		}
+
+	/* Style-Tag-Hilfe unter "Content ändern"/"Content hinzufügen" (siehe printStyleTagHilfe() in
+	   cms_print_functions.php) - fest im Code statt in der CMS-Datenbank, deshalb hier ein einziger
+	   kompakter Referenz-Block statt vieler einzelner Bausteine mit je eigener Bearbeiten-Toolbar. */
+	.cms-style-tag-hilfe {
+		text-align: left;
+		max-width: 32rem;
+		margin: 1rem auto 0;
+		padding: 0.8rem 1rem;
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(139, 92, 246, 0.25);
+		font-size: 0.85rem;
+	}
+
+		.cms-style-tag-hilfe h3 {
+			margin: 0.6rem 0 0.4rem;
+			font-size: 0.95rem;
+		}
+
+		.cms-style-tag-warnung {
+			margin: 0;
+			color: #ff8a8a;
+			font-weight: 600;
+		}
+
+		.cms-style-tag-erklaerung {
+			margin: 0 0 0.5rem;
+			opacity: 0.85;
+			font-size: 0.8rem;
+		}
+
+		.cms-style-tag-liste {
+			margin: 0;
+			padding-left: 1.2rem;
+		}
+
+			.cms-style-tag-liste li {
+				margin: 0.2rem 0;
+			}
+
+			.cms-style-tag-liste code {
+				background: rgba(139, 92, 246, 0.18);
+				border: 1px solid var(--admin-accent, #8b5cf6);
+				border-radius: 4px;
+				padding: 0.05rem 0.35rem;
+				margin-right: 0.4rem;
+				font-size: 0.8rem;
+			}
+
 	#header nav.use-middle:after {
 		content: '';
 		display: block;
@@ -1963,6 +2033,22 @@ repeat;
 	margin-top: 2rem;
 	text-align: center;
 }
+
+	/* ============================================================================================
+	   KOMPAKTERES FOOTER-LAYOUT (Sponsoren-Banner/Social-Media-Liste/Notfall-Audio etc.)
+	   ============================================================================================
+	   Dieser Inhalt kommt aus der CMS-Datenbank (CMS_Content, Section 22) - nicht direkt in dieser
+	   Datei änderbar. Dort verwendete Bilder haben teils sehr große Inline-Breiten (style="width:20rem")
+	   und es gibt viele aufeinanderfolgende <br>-Zeilenumbrüche, was viel vertikalen Platz frisst. Hier
+	   wird nur die DARSTELLUNG gestrafft, ohne den Datenbank-Inhalt selbst anzufassen:
+	   - Bilder werden auf eine vernünftige Maximalbreite gedeckelt (überschreibt auch die inline
+	     gesetzte Breite, daher !important)
+	   - direkt aufeinanderfolgende <br> werden zu einem einzelnen, kleineren Abstand zusammengefasst
+	   - Überschriften/Absätze bekommen engere Abstände als die Standard-Theme-Werte */
+	#footer img { max-width: min(60%, 9rem) !important; height: auto; margin: 0.4rem auto; }
+	#footer h3, #footer h4 { margin: 0.5rem 0; }
+	#footer p { margin: 0.4rem 0; }
+	#footer br + br { display: none; }
 
 	#footer .copyright {
 		letter-spacing: 0.2rem;

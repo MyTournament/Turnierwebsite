@@ -52,6 +52,33 @@
         ";
     }
 
+    // ================================================================================================
+    // STYLE-TAG-HILFE (unterhalb von "Content ändern"/"Content hinzufügen") - war vorher SELBST ein
+    // CMS-Abschnitt (Section 9, ~8 einzelne CMS_Content-Bausteine, jeder mit voller Bearbeiten-
+    // Toolbar). Auf expliziten Wunsch jetzt fest im Code statt in der Datenbank - kein Bearbeiten-
+    // Aufwand mehr nötig für eine reine Referenz-Erklärung, außerdem deutlich kompakter (ein
+    // einzelner Block statt 8 Bausteine mit je eigener Toolbar). Der alte Section-9-Aufruf ist damit
+    // ersetzt - die zugehörigen CMS_Content-Zeilen in der DB werden nicht mehr angezeigt, können aber
+    // bei Bedarf per SQL aufgeräumt werden.
+    // ================================================================================================
+    function printStyleTagHilfe(){
+        echo "
+        <div class='cms-style-tag-hilfe'>
+            <p class='cms-style-tag-warnung'>&#9888; Immer doppelte Anführungszeichen verwenden, niemals einfache!</p>
+            <h3>Liste von Style-Tags</h3>
+            <p class='cms-style-tag-erklaerung'>Style-Tag hier reinkopieren - dabei nur den Buchstaben kopieren (ohne &lt; &gt;). Tags lassen sich auch kombinieren oder nur auf Teile des Inhalts anwenden - dafür direkt im Inhalt-Feld einsetzen, z.B. \"&lt;b&gt;du bist fett&lt;/b&gt; und ich nicht\" - sieht dann so aus: <b>du bist fett</b> und ich nicht.</p>
+            <ul class='cms-style-tag-liste'>
+                <li><code>p</code> normaler Text</li>
+                <li><code>h*</code> Überschrift - * mit einer Zahl von 1 bis 6 ersetzen, h2 ist Standard</li>
+                <li><code>em</code> kursiv</li>
+                <li><code>br</code> Zeilenumbruch</li>
+                <li><code>u</code> unterstrichen</li>
+                <li><code>b</code> fett</li>
+            </ul>
+        </div>
+        ";
+    }
+
     function cmsPrintSection($websiteId, $siteID, $TurnierID, $section, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $testTurnierMode){
         //SITE
         //checken ob es eine Site mit dieser ID gibt
