@@ -367,14 +367,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <style>
             :root {
                 --admin-accent: #8b5cf6; --admin-accent-deep: #6d28d9; --admin-accent-light: #ddd6fe;
-                /* Zwei zusätzliche, dunklere Lila-Stufen zur optischen Unterscheidung, WER eine Funktion
-                   sehen darf: Standard-Lila (oben) = alle mit dem jeweils passenden Einzel-Recht,
-                   --coadmin = nur Admin+Co-Admin (z.B. Begegnungen bearbeiten, Verlauf/Traffic),
-                   --adminonly = nur echte Admins (z.B. Passwort anzeigen/ändern). */
-                --admin-accent-coadmin: #4c1d95; --admin-accent-coadmin-light: #5b21b6;
-                --admin-accent-adminonly: #2e1065; --admin-accent-adminonly-light: #3d1a7a;
-                /* Hellste Stufe: Funktionen, die schon mit dem einzelnen Teams-Recht gehen (Moderator*in) */
-                --admin-accent-teams: #a78bfa; --admin-accent-teams-light: #ddd6fe;
+                /* Alle Backstage-Buttons tragen denselben Lila-Verlauf als Hintergrund - WER eine
+                   Funktion sehen darf, zeigt stattdessen ein farbiger RAHMEN um den Button (siehe
+                   .admin-menu-button--teams/--coadmin/--adminonly weiter unten). Vier gut
+                   unterscheidbare, zum Lila passende Rahmenfarben: Türkis (Teams-Recht reicht),
+                   Blau (Standard-Einzelrecht, kein eigener Rahmen nötig), Bernstein (Admin+Co-Admin),
+                   Rot (nur echte Admins). */
+                --admin-border-teams: #2dd4bf;
+                --admin-border-standard: #60a5fa;
+                --admin-border-coadmin: #f59e0b;
+                --admin-border-adminonly: #ef4444;
             }
             #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(30, 12, 48, 0.94); border-bottom: 2px solid var(--admin-accent); box-shadow: 0 2px 12px rgba(139, 92, 246, 0.35); box-sizing: border-box; }
             #admin-bar-status { color: var(--admin-accent-light); font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
@@ -384,25 +386,21 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             #admin-bar .button { margin: 0; padding: 0.45rem 0.9rem; font-size: 0.8rem; white-space: nowrap; background: var(--admin-accent-deep); color: #ffffff !important; font-weight: 300 !important; }
             #wrapper { padding-top: 64px; }
             .admin-menu-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 640px; margin: 1rem auto; }
-            .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 1px solid rgba(255,255,255,0.15); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
+            .admin-menu-button { display: inline-block; min-width: 190px; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; line-height: 1.2; border-radius: 6px; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 2px solid var(--admin-border-standard); color: #f5f2ff !important; text-transform: none; letter-spacing: 0.02em; text-align: center; text-decoration: none; }
             .admin-menu-button:hover { background: linear-gradient(135deg, var(--admin-accent), #a78bfa); }
-            /* Dunklere Stufe: Funktionen, die nur Admin+Co-Admin sehen (z.B. Begegnungen bearbeiten, Verlauf) */
-            .admin-menu-button--coadmin { background: linear-gradient(135deg, var(--admin-accent-coadmin), var(--admin-accent-coadmin-light)); }
-            .admin-menu-button--coadmin:hover { background: linear-gradient(135deg, var(--admin-accent-coadmin-light), var(--admin-accent-deep)); }
-            /* Dunkelste Stufe: Funktionen, die nur echte Admins sehen (z.B. Passwort anzeigen/ändern) */
-            .admin-menu-button--adminonly { background: linear-gradient(135deg, var(--admin-accent-adminonly), var(--admin-accent-adminonly-light)); }
-            .admin-menu-button--adminonly:hover { background: linear-gradient(135deg, var(--admin-accent-adminonly-light), var(--admin-accent-coadmin)); }
-            /* Hellste Stufe: Funktionen, die schon mit dem einzelnen Teams-Recht gehen (Moderator*in) */
-            .admin-menu-button--teams { background: linear-gradient(135deg, var(--admin-accent-teams), var(--admin-accent-teams-light)); color: #f5f2ff !important; }
-            .admin-menu-button--teams:hover { background: linear-gradient(135deg, var(--admin-accent-teams-light), #ede9fe); }
+            /* Alle drei Rechte-Stufen nutzen denselben Lila-Hintergrund wie der Standard-Button -
+               einziger Unterschied ist die Rahmenfarbe (siehe :root weiter oben). */
+            .admin-menu-button--coadmin { border-color: var(--admin-border-coadmin); }
+            .admin-menu-button--adminonly { border-color: var(--admin-border-adminonly); }
+            .admin-menu-button--teams { border-color: var(--admin-border-teams); }
             /* Farb-Legende auf der Settings-Übersicht (nur für Admin/Co-Admin sichtbar) */
             .admin-legende { max-width: 640px; margin: 1.5rem auto 0; padding: 0.8rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); font-size: 0.78rem; text-align: left; }
             .admin-legende h4 { margin: 0 0 0.5rem; font-size: 0.85rem; text-align: center; }
             .admin-legende-zeile { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0; }
-            .admin-legende-swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 4px; flex-shrink: 0; background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); }
-            .admin-legende-swatch--teams { background: linear-gradient(135deg, var(--admin-accent-teams), var(--admin-accent-teams-light)); }
-            .admin-legende-swatch--coadmin { background: linear-gradient(135deg, var(--admin-accent-coadmin), var(--admin-accent-coadmin-light)); }
-            .admin-legende-swatch--adminonly { background: linear-gradient(135deg, var(--admin-accent-adminonly), var(--admin-accent-adminonly-light)); }
+            .admin-legende-swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 4px; flex-shrink: 0; background: rgba(255,255,255,0.06); border: 2px solid var(--admin-border-standard); }
+            .admin-legende-swatch--teams { border-color: var(--admin-border-teams); }
+            .admin-legende-swatch--coadmin { border-color: var(--admin-border-coadmin); }
+            .admin-legende-swatch--adminonly { border-color: var(--admin-border-adminonly); }
             /* Technisch weiterhin eine Checkbox (onchange sendet das Formular ab), sieht jetzt aber
                bewusst wie ein echter, kompakter Button aus - nicht wie ein Häkchen zum Ankreuzen.
                Die Checkbox selbst wird komplett unsichtbar gemacht (aber bleibt klickbar/fokussierbar);
@@ -429,10 +427,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 // Bewusst .button OHNE .primary (wie Settings/Infos) - .primary bringt eigene
                 // Schriftschnitt-Regeln aus dem Grundtheme mit, die hier für einen einheitlichen
                 // Look in der Admin-Leiste nicht gewünscht sind.
-                echo "<button type='submit' class='button'>Website Inhalte verlassen</button>";
+                echo "<button type='submit' class='button'>CMS verlassen</button>";
             } else {
                 echo "<input type='hidden' name='edit_content_mode' value='True'>
-                <button type='submit' class='button'>Website Inhalte bearbeiten</button>";
+                <button type='submit' class='button'>CMS</button>";
             }
             echo "</form>";
         }
@@ -1839,10 +1837,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Helles Lila: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Standard-Lila: das jeweils passende Einzel-Recht reicht</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Dunkles Lila: nur Admin und Co-Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Sehr dunkles Lila: nur "echte" Admins</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Türkiser Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: das jeweils passende Einzel-Recht reicht</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: nur Admin und Co-Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: nur "echte" Admins</div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -2480,10 +2478,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Helles Lila: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Standard-Lila: das jeweils passende Einzel-Recht reicht</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Dunkles Lila: nur Admin und Co-Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Sehr dunkles Lila: nur "echte" Admins</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Türkiser Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: das jeweils passende Einzel-Recht reicht</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: nur Admin und Co-Admin</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: nur "echte" Admins</div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -3205,14 +3203,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         .nm-pwchange-form input[type='text'] { width: 8rem; }
         .nm-addrole-form button { background: var(--admin-accent-deep); border-color: var(--admin-accent); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
         /* Passwort anzeigen/ändern ist strikt "echten" Admins vorbehalten (siehe $binIchEchterAdmin
-           weiter unten) - bekommt deshalb die dunkelste Lila-Stufe, statt das normale Admin-Lila von
-           z.B. "Rolle hinzufügen" (das auch Co-Admins bzw. andere Rollen-Vergebende sehen können). */
-        .nm-pwchange-form button { background: var(--admin-accent-adminonly-light); border-color: var(--admin-accent-adminonly); border-radius: 4px; border-width: 1px; border-style: solid; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
+           weiter unten) - bekommt deshalb denselben roten Rahmen wie die "adminonly"-Stufe im
+           Settings/Infos-Farbsystem, statt eines eigenen abweichenden Stils. */
+        .nm-pwchange-form button { background: linear-gradient(135deg, var(--admin-accent-deep), var(--admin-accent)); border: 2px solid var(--admin-border-adminonly); border-radius: 4px; color: #fff; cursor: pointer; padding: 0.15rem 0.5rem; font-size: 0.72rem; }
         /* Passwort anzeigen + ändern optisch als EIN zusammengehöriger Block statt zwei loser Elemente */
-        .nm-pw-group { display: inline-flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: rgba(46, 16, 101, 0.35); border: 1px solid var(--admin-accent-adminonly-light); border-radius: 6px; padding: 0.3rem 0.6rem; }
+        .nm-pw-group { display: inline-flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: rgba(139, 92, 246, 0.08); border: 2px solid var(--admin-border-adminonly); border-radius: 6px; padding: 0.3rem 0.6rem; }
         .nm-pw-label { font-size: 0.72rem; font-weight: 700; opacity: 0.85; }
         .nm-pw { opacity: 0.9; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
-        .nm-pw-toggle { border: none; background: none; color: var(--admin-accent-adminonly-light); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
+        .nm-pw-toggle { border: none; background: none; color: var(--admin-border-adminonly); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
         /* WICHTIG: bloße <button>-Elemente erben sonst die große Standard-Button-Optik der Website
            (2.75rem hoch, GROSSBUCHSTABEN, Letter-Spacing, weißer Schatten-Rahmen) - dadurch sah die
            Schrift größer/unpassender aus als die kleinen Buttons selbst. Hier gezielt NUR für die
