@@ -397,7 +397,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             /* Farb-Legende auf der Settings-Übersicht (nur für Admin/Co-Admin sichtbar) */
             .admin-legende { max-width: 640px; margin: 1.5rem auto 0; padding: 0.8rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); font-size: 0.78rem; text-align: left; }
             .admin-legende h4 { margin: 0 0 0.5rem; font-size: 0.85rem; text-align: center; }
-            .admin-legende-zeile { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0; }
+            .admin-legende-zeile { display: flex; align-items: flex-start; gap: 0.6rem; margin: 0.8rem 0; line-height: 1.5; }
+            .admin-legende-zeile .admin-legende-swatch { margin-top: 0.15rem; }
             .admin-legende-swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 4px; flex-shrink: 0; background: rgba(255,255,255,0.06); border: 3px solid var(--admin-border-standard); }
             .admin-legende-swatch--teams { border-color: var(--admin-border-teams); }
             .admin-legende-swatch--coadmin { border-color: var(--admin-border-coadmin); }
@@ -1841,10 +1842,38 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: sichtbar für Moderator*in, Backstage-Zugang, Co-Admin und Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: sichtbar für Backstage-Zugang, Co-Admin und Admin (nicht Moderator*in)</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: sichtbar nur für Co-Admin und Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: sichtbar nur für Admin</div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--teams'></span>
+                <div>
+                    <b>Grüner Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Moderator*in, Backstage-Zugang, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch'></span>
+                <div>
+                    <b>Blauer Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Backstage-Zugang, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Moderator*in, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--coadmin'></span>
+                <div>
+                    <b>Bernsteinfarbener Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--adminonly'></span>
+                <div>
+                    <b>Roter Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -2549,10 +2578,38 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: sichtbar für Moderator*in, Backstage-Zugang, Co-Admin und Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: sichtbar für Backstage-Zugang, Co-Admin und Admin (nicht Moderator*in)</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: sichtbar nur für Co-Admin und Admin</div>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: sichtbar nur für Admin</div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--teams'></span>
+                <div>
+                    <b>Grüner Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Moderator*in, Backstage-Zugang, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch'></span>
+                <div>
+                    <b>Blauer Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Backstage-Zugang, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Moderator*in, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--coadmin'></span>
+                <div>
+                    <b>Bernsteinfarbener Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--adminonly'></span>
+                <div>
+                    <b>Roter Rahmen</b><br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
+                </div>
+            </div>
         </div>
         <?php } ?>
         <h5><br/></h5>
