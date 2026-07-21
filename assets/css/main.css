@@ -1603,6 +1603,21 @@ repeat;
 			display: none;
 		}
 
+		/* Zwischenstufe fuer Tablet-Breiten (981px runter bis zur naechsten Stufe bei 736px) - sonst
+		   springt die Groesse direkt von "voller Desktop-Wert" auf "Handy-kompakt", was bei mittleren
+		   Breiten (Tablet/kleiner Laptop) unpassend ausgesehen haette. */
+		#header > * {
+			margin-top: 1.4rem;
+		}
+
+		.site-logo {
+			width: 120px;
+		}
+
+		#header .content .inner {
+			padding: 1.5rem 1.5rem;
+		}
+
 	}
 
 	@media screen and (max-width: 736px) {
