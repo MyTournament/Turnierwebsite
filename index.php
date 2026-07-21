@@ -366,6 +366,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $_SESSION['login_fail_count'] = ($rollenInfo !== null) ? 0 : ($_SESSION['login_fail_count'] + 1);
     }
     $rechteFlags = $rollenInfo['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
+    // "Zufällige Spiele eintragen"-Buttons (Gruppenphase/K.-o.-Phase/Losing Bracket, nur im Testmodus):
+    // sichtbar für Admin, Co-Admin, Moderator*in, Backstage-Zugang UND Schiedsrichter*in - exakt die
+    // Vereinigung aus backstage- und alle_spiele-Flag (Schiedsrichter*in hat nur Letzteres).
+    $darfZufaelligeSpieleEintragen = $rechteFlags['backstage'] || $rechteFlags['alle_spiele'];
 
     // ========================================================================================
     // RECHTE-AUDIT (KRITISCHER FIX): AB HIER NUR NOCH GRANULARE FLAGS STATT ADMIN/CO-ADMIN-SHORTCUT
@@ -454,6 +458,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $adminBorderCoadminWert = $istAdminOderCoAdmin ? '#f59e0b' : $adminBorderNeutral;
         $adminBorderAdminonlyWert = $istAdminOderCoAdmin ? '#ef4444' : $adminBorderNeutral;
         $adminBorderCmsWert = $istAdminOderCoAdmin ? '#ec4899' : $adminBorderNeutral;
+        // Sechste Stufe: braucht WEDER cms noch teams/turnier_settings, sondern backstage ODER
+        // alle_spiele - die einzige Kombination, die exakt Admin, Co-Admin, Moderator*in,
+        // Backstage-Zugang UND Schiedsrichter*in erfasst (Schiedsrichter*in hat sonst in keiner der
+        // obigen vier Stufen einen Platz, da er/sie kein backstage-Flag hat). Genutzt für die
+        // "Zufällige Spiele eintragen"-Buttons im Testmodus.
+        $adminBorderTestspieleWert = $istAdminOderCoAdmin ? '#14b8a6' : $adminBorderNeutral;
         echo "
         <style>
             :root {
@@ -474,6 +484,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                    deshalb eigene Farbe statt einer der obigen vier, die alle backstage-artige
                    Rechte betreffen. */
                 --admin-border-cms: $adminBorderCmsWert;
+                --admin-border-testspiele: $adminBorderTestspieleWert;
             }
             #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(30, 12, 48, 0.94); border-bottom: 2px solid var(--admin-accent); box-shadow: 0 2px 12px rgba(139, 92, 246, 0.35); box-sizing: border-box; }
             #admin-bar-status { color: var(--admin-accent-light); font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
@@ -505,6 +516,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             .admin-legende-swatch--coadmin { border-color: var(--admin-border-coadmin); }
             .admin-legende-swatch--adminonly { border-color: var(--admin-border-adminonly); }
             .admin-legende-swatch--cms { border-color: var(--admin-border-cms); }
+            .admin-legende-swatch--testspiele { border-color: var(--admin-border-testspiele); }
             /* Technisch weiterhin eine Checkbox (onchange sendet das Formular ab), sieht jetzt aber
                bewusst wie ein echter, kompakter Button aus - nicht wie ein Häkchen zum Ankreuzen.
                Die Checkbox selbst wird komplett unsichtbar gemacht (aber bleibt klickbar/fokussierbar);
@@ -1319,7 +1331,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </a>
     </div>
     <br/><br/>
-    <?php  printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id, $rechteFlags['alle_spiele'], $bn, $pw); ?>
+    <?php  printSpielplanGruppenphase($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id, $rechteFlags['alle_spiele'], $bn, $pw, $darfZufaelligeSpieleEintragen); ?>
     <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>  -->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>                          
@@ -1348,7 +1360,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     </div>
     <br/><br/>
     <?php //cmsPrintSection( $websiteId, $siteID, $TurnierID, 13, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> 
-    <?php printKO_PhaseTabellen($TurnierID, $conn, $LoggedInWithBackstageOrHigher, $gameEditMode, $expertenmodus, $test_turnier_id, $rechteFlags['turnier_settings'], $bn, $pw); ?>
+    <?php printKO_PhaseTabellen($TurnierID, $conn, $LoggedInWithBackstageOrHigher, $gameEditMode, $expertenmodus, $test_turnier_id, $rechteFlags['turnier_settings'], $bn, $pw, $darfZufaelligeSpieleEintragen); ?>
     <!--<a href="#spielplan" class="button">Zurück zur übersicht</a>-->
     <p></br></p>
     <p></br></p>
@@ -1361,7 +1373,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     //cmsPrintSection($websiteId, $siteID, $TurnierID, 35, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
     // Direkte Ausgabe: nur Losing-Bracket-Gruppe, aber mit den gleichen Tabellen wie Gruppenphase
     include_once 'website_print_functions/table_print_functions.php';
-    printSpielplanLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
+    printSpielplanLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id, $darfZufaelligeSpieleEintragen);
     printPunktetabelleLosingBracket($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id);
     ?>
     <!--<a href="#spielplan" class="button">Zurück zur Übersicht</a>-->
@@ -2194,6 +2206,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
                 </div>
             </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--testspiele'></span>
+                <div>
+                    <b>Türkiser Rahmen</b> (nur bei "Zufällige Spiele eintragen" in Gruppenphase/K.-o.-Phase/Losing Bracket, jeweils nur im Testmodus)<br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Benutzer*in
+                </div>
+            </div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -2946,6 +2966,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Co-Admin, Autor*in, Moderator*in, Backstage-Zugang, Schiedsrichter*in, Benutzer*in
                 </div>
             </div>
+            <div class='admin-legende-zeile'>
+                <span class='admin-legende-swatch admin-legende-swatch--testspiele'></span>
+                <div>
+                    <b>Türkiser Rahmen</b> (nur bei "Zufällige Spiele eintragen" in Gruppenphase/K.-o.-Phase/Losing Bracket, jeweils nur im Testmodus)<br>
+                    <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Moderator*in, Backstage-Zugang, Schiedsrichter*in, Co-Admin, Admin<br>
+                    <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Benutzer*in
+                </div>
+            </div>
         </div>
         <?php } ?>
         <h5><br/></h5>
@@ -3158,7 +3186,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php
     $zsScope = isset($_GET['zufall_scope']) ? $_GET['zufall_scope'] : '';
     $zsKoFinallevel = isset($_GET['zufall_ko_finallevel']) ? (int)$_GET['zufall_ko_finallevel'] : 0;
-    if ($test_turnier_id == 0 || !$rechteFlags['alle_spiele'] || !in_array($zsScope, ['gruppenphase', 'ko'], true)) {
+    if ($test_turnier_id == 0 || !$darfZufaelligeSpieleEintragen || !in_array($zsScope, ['gruppenphase', 'ko'], true)) {
     ?>
     <p>Diese Funktion ist nur im Testmodus verfügbar.</p>
     <?php } else {

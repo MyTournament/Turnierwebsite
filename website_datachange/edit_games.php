@@ -52,12 +52,19 @@ $pw = $_POST['pw'];
 // Turnier-Settings - NICHT Admin/Co-Admin-only, siehe Begegnung_Hinzufuegen/Begegnung_Sperren).
 $accountDarfSpieleBearbeiten = 0; //false
 $darfBegegnungenAnlegenSperren = false; //turnier_settings-Flag (z.B. Admin, Co-Admin, Backstage-Zugang)
+// Nur für die Testmodus-Aktion "Zufaellige_Spiele_Eintragen" (siehe weiter unten): bewusst ein eigenes,
+// WEITERES Recht statt $accountDarfSpieleBearbeiten wiederzuverwenden - dieses Flag hier darf/soll auch
+// Moderator*in und Backstage-Zugang erfassen (backstage-Flag), während $accountDarfSpieleBearbeiten für
+// das Bearbeiten EINZELNER (auch fremder) Spiele laut RECHTE-AUDIT bewusst strikt auf das alle_spiele-
+// Flag beschränkt bleibt (siehe Kommentar oben).
+$darfZufaelligeSpieleEintragen = false;
 $rollenInfoGames = getUserRollenInfo($conn, $bn, $pw);
 if ($rollenInfoGames !== null) {
   $darfBegegnungenAnlegenSperren = $rollenInfoGames['flags']['turnier_settings'];
   if ($rollenInfoGames['flags']['alle_spiele']) {
     $accountDarfSpieleBearbeiten = 1;
   }
+  $darfZufaelligeSpieleEintragen = $rollenInfoGames['flags']['backstage'] || $rollenInfoGames['flags']['alle_spiele'];
 }
 //Teams
 $teamListeFuerTurnier = getTeamsListeFuerTurnier($conn, $TurnierID);
@@ -548,7 +555,7 @@ if ($action == 'Ändern') {
 // bei "Finalisieren" auf status 5/7 gesetzt - Siegerteam-Berechnung und Bracket-Nachrücken übernimmt
 // danach wie immer db_update.php beim nächsten Seitenaufruf.
 }else if($action == 'Zufaellige_Spiele_Eintragen'){
-  if ($accountDarfSpieleBearbeiten == 1) {
+  if ($darfZufaelligeSpieleEintragen) {
     $sqlTypCheckZs = "SELECT type FROM Turnier_Main WHERE id = ?";
     $stmtTypCheckZs = $conn->prepare($sqlTypCheckZs);
     $stmtTypCheckZs->bind_param("i", $TurnierID);
