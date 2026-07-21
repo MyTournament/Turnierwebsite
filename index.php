@@ -3272,7 +3272,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     ?>
     <div class='ts-setting'>
         <span class='ts-setting-label'>Turnierphase</span>
-        <span class='ts-hint'>Alternativer Ort, um die Turnierphase zu setzen (siehe auch der eigene "Turnierphase"-Punkt im Settings-Menü mit ausführlichen Erklärungen).</span>
+        <span class='ts-hint'>Alternativer Ort, um die Turnierphase zu setzen (siehe auch der eigene "Turnierphase"-Punkt im Settings-Menü mit ausführlichen Erklärungen). Gruppenanzahl/-erstellung und Gruppeneinteilung stehen hier bewusst nicht zur Auswahl - dafür gibt es die eigenen Buttons "Gruppen für Gruppenphase generieren" und "Gruppeneinteilung losen" im Settings-Menü.</span>
         <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
             <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
             <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
@@ -3281,7 +3281,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <input type='hidden' name='feld' value='fk_turnier_phase'/>
             <select name='wert' class='ts-input'>
                 <?php
-                $sqlTsPhase = 'SELECT * FROM `Turnier_Setting_Phasen` ORDER BY logical_order';
+                // Phasen 4 (Gruppenanzahl/-erstellung) und 5 (Gruppeneinteilung) bewusst ausgeblendet -
+                // dieselbe Einschränkung wie beim eigenen "Turnierphase"-Menüpunkt, dafür gibt es die
+                // dedizierten Buttons "Gruppen für Gruppenphase generieren"/"Gruppeneinteilung losen".
+                $sqlTsPhase = 'SELECT * FROM `Turnier_Setting_Phasen` WHERE id NOT IN (4, 5) ORDER BY logical_order';
                 $resultTsPhase = $conn->query($sqlTsPhase);
                 while ($rowTsPhase = $resultTsPhase->fetch_assoc()) {
                     $selTsPhase = ($rowTsPhase['id'] == $rowTurnierSettings['fk_turnier_phase']) ? "selected" : "";
