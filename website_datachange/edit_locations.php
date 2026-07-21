@@ -7,8 +7,8 @@
 // Prepared Statements. Jetzt: dasselbe zentrale Login wie überall sonst auf der Website
 // (getUserRollenInfo), die Benutzer-ID kommt ausschließlich aus dem so validierten Login (nie aus
 // einem rohen $_POST-Feld), durchgehend Prepared Statements über myDb_execute(), CSRF-Token-Pflicht.
-// Sichtbarkeit/Nutzung ist an "mindestens eine zugewiesene Rolle" gebunden (siehe pausenraum.php) -
-// hier zusätzlich serverseitig nachgeprüft, nicht nur über die Sichtbarkeit der Buttons.
+// Sichtbarkeit/Nutzung ist Admin/Co-Admin-only (siehe pausenraum.php) - hier zusätzlich serverseitig
+// nachgeprüft, nicht nur über die Sichtbarkeit der Buttons.
 // ================================================================================================
 include_once '../website_functionalities/session_bootstrap.php';
 include_once '../database/db_connection.php';
@@ -21,8 +21,9 @@ $pw = isset($_POST['pw']) ? $_POST['pw'] : '';
 $TurnierID = isset($_POST['TurnierID']) ? (int)$_POST['TurnierID'] : 0;
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 
+// Admin/Co-Admin-only (identisch zu $istAdminOderCoAdmin/pausenraum.php - nicht "irgendeine Rolle").
 $rollenInfoLocations = getUserRollenInfo($conn, $bn, $pw);
-$darfPausenraumNutzen = ($rollenInfoLocations !== null) && (count($rollenInfoLocations['rolle_ids']) > 0);
+$darfPausenraumNutzen = ($rollenInfoLocations !== null) && ($rollenInfoLocations['ist_admin'] || $rollenInfoLocations['ist_co_admin']);
 
 if ($darfPausenraumNutzen && csrf_verify()) {
     $accountId = $rollenInfoLocations['benutzer_id'];

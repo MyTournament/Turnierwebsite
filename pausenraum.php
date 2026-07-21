@@ -13,7 +13,11 @@
 // jede beliebige Bewertung möglich gewesen - siehe die Team-/Spielername-XSS-Fixes an anderer Stelle
 // der Website).
 // ================================================================================================
-$pausenraumDarfNutzen = ($rollenInfo !== null) && (count($rollenInfo['rolle_ids']) > 0);
+// Sterni Zähler/Bierball Locations/Achievements sind bewusst Admin/Co-Admin-only (nicht "irgendeine
+// Rolle") - $istAdminOderCoAdmin ist dieselbe, schon in index.php berechnete Variable, die auch für
+// den Rest der Website Admin/Co-Admin-Funktionen absichert (identisch zur Bernstein-/Orange-Stufe im
+// Farb-Legende-System der Settings-Seite).
+$pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
 ?>
 
 <!-- PAUSENRAUM -->
@@ -31,61 +35,58 @@ $pausenraumDarfNutzen = ($rollenInfo !== null) && (count($rollenInfo['rolle_ids'
          als CMS-Inhalt im Footer, jetzt fest hier im Pausenraum. Die alte CMS-Version im Footer bleibt
          bestehen, bis sie über den roten "Löschen"-Button im CMS-Bearbeitungsmodus entfernt wird (das
          kann ich als Code-Änderung nicht selbst - siehe Chat). -->
+    <h2>Blankiball-Simulator</h2>
+    <p>Der Blankiball-Simulator als Video - schau dir an, wie er in echt aussieht.</p>
     <img src="images/Sonstiges/blankiball_simulator.jpg" alt="" style="width:20rem;max-width:100%;"/>
     <br/>
-    <a href="#blankiball_simulator" class="button primary">Blankiball-Simulator</a>
+    <a href="#blankiball_simulator" class="button primary">Zum Blankiball-Simulator</a>
 
     <p></br></p>
+    <h2>THE ONE</h2>
+    <p>Die eine Trinkspielapp, die alle anderen ersetzt.</p>
     <img src="images/Sonstiges/the_one_logo_weinglas_mit_schriftzug.png" alt="" style="width:20rem;max-width:100%;"/>
     <br/>
-    <h4>Die eine Trinkspielapp, die alle anderen ersetzt</h4>
     <a href="https://www.instagram.com/app.theone/" class="button primary">Zur App</a>
-
-    <p></br></p>
-    <h2>Für angemeldete Nutzer*innen</h2>
-    <?php if ($pausenraumDarfNutzen) { ?>
-        <p>Sterni Zähler, Bierball Locations und Achievements - für alle mit freigeschaltetem Account.</p>
-        <a href="#sterni_zaehler" class="button primary">Sterni Zähler <img src='images/icon/sterni1.png' width='20' height='20' alt=''></a>
-        <br/><br/>
-        <a href="#bierball_locations" class="button primary">Bierball Locations</a>
-        <br/><br/>
-        <a href="#achievements" class="button primary">Achievements</a>
-    <?php } else { ?>
-        <p>Sterni Zähler, Bierball Locations und Achievements sind für angemeldete Nutzer*innen mit
-        freigeschaltetem Account gedacht. <a href="#login">Hier geht's zum Login/Registrieren</a> - ein
-        Admin muss deinen frisch registrierten Account dann noch freischalten.</p>
-        <a class="button disabled">Sterni Zähler <img src='images/icon/sterni1.png' width='20' height='20' alt=''></a>
-        <br/><br/>
-        <a class="button disabled">Bierball Locations</a>
-        <br/><br/>
-        <a class="button disabled">Achievements</a>
-    <?php } ?>
 
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
 
-    <?php if (isset($istEchterAdmin) && $istEchterAdmin) { ?>
+    <?php
+    // ============================================================================================
+    // STERNI ZÄHLER / BIERBALL LOCATIONS / ACHIEVEMENTS - Admin/Co-Admin-only
+    // ============================================================================================
+    // Bewusst ein farbig umrandeter Kasten wie die übrigen Admin/Co-Admin-Funktionen der Website
+    // (Bernstein/Orange = --admin-border-coadmin, dieselbe Farbstufe wie in der Farb-Legende der
+    // Settings-Seite) - für alle anderen (auch angemeldete Nutzer*innen ohne Admin/Co-Admin-Rolle)
+    // komplett unsichtbar, nicht nur als deaktivierte Buttons, damit gar nicht erst auffällt, dass es
+    // diesen Bereich überhaupt gibt (gleiche Konvention wie z.B. beim Nutzermanagement-Button).
+    if ($pausenraumDarfNutzen) { ?>
     <style>
-        .pausenraum-admin-sandbox {
+        .pausenraum-admin-box {
             text-align: left;
             max-width: 32rem;
             margin: 1rem auto;
             padding: 0.9rem 1.1rem;
             border-radius: 8px;
-            background: rgba(122, 32, 32, 0.12);
-            border: 2px solid #a33;
+            background: rgba(245, 158, 11, 0.08);
+            border: 2px solid var(--admin-border-coadmin, #f59e0b);
         }
-        .pausenraum-admin-sandbox h3 { margin: 0 0 0.4rem; color: #ff8a8a; }
-        .pausenraum-admin-sandbox p { margin: 0 0 0.6rem; font-size: 0.85rem; opacity: 0.85; }
+        .pausenraum-admin-box h2, .pausenraum-admin-box h3 { margin: 0 0 0.4rem; }
+        .pausenraum-admin-box p { margin: 0 0 0.6rem; font-size: 0.85rem; opacity: 0.9; }
     </style>
-    <div class="pausenraum-admin-sandbox">
-        <h3>&#9888; Hinweis (nur für Admins sichtbar)</h3>
-        <p>Sterni Zähler, Bierball Locations und Achievements oben sind seit Kurzem wieder echte,
-        funktionierende Features (komplett neu geschrieben: sicheres Login, Prepared Statements,
-        CSRF-Schutz, XSS-Escaping) - nicht mehr nur eine Vorschau. Sichtbar/nutzbar für jede
-        angemeldete Person mit mindestens einer zugewiesenen Rolle.</p>
+    <div class="pausenraum-admin-box">
+        <h2>Für angemeldete Nutzer*innen</h2>
+        <p>Sterni Zähler, Bierball Locations und Achievements - nur für Admins/Co-Admins sichtbar.</p>
+        <a href="#sterni_zaehler" class="button primary">Sterni Zähler <img src='images/icon/sterni1.png' width='20' height='20' alt=''></a>
+        <br/><br/>
+        <a href="#bierball_locations" class="button primary">Bierball Locations</a>
+        <br/><br/>
+        <a href="#achievements" class="button primary">Achievements</a>
+        <h3>&#9888; Hinweis</h3>
+        <p>Diese drei Features sind seit Kurzem wieder echt funktionierend (komplett neu geschrieben:
+        sicheres Login, Prepared Statements, CSRF-Schutz, XSS-Escaping) - nicht mehr nur eine Vorschau.</p>
     </div>
     <?php } ?>
 </article>
@@ -430,7 +431,7 @@ function bbAchievementEintragen($conn, $accountId, $typeId, $addText, $TurnierID
 <article id="sterni_zaehler">
     <h1>Sterni Zähler</h1>
     <?php if (!$pausenraumDarfNutzen) { ?>
-        <p>Nur für angemeldete Nutzer*innen mit freigeschaltetem Account. <a href="#login">Login</a></p>
+        <p>Nur für Admins/Co-Admins verfügbar.</p>
     <?php } else {
         $sterniAccountId = $rollenInfo['benutzer_id'];
         $sterniJustIncremented = false;
@@ -506,7 +507,7 @@ function bbAchievementEintragen($conn, $accountId, $typeId, $addText, $TurnierID
 <article id="bierball_locations">
     <h1>Gute Bierball Locations</h1>
     <?php if (!$pausenraumDarfNutzen) { ?>
-        <p>Nur für angemeldete Nutzer*innen mit freigeschaltetem Account. <a href="#login">Login</a></p>
+        <p>Nur für Admins/Co-Admins verfügbar.</p>
     <?php } else { ?>
     <ul class="alt">
         <?php
@@ -659,7 +660,7 @@ function bbAchievementEintragen($conn, $accountId, $typeId, $addText, $TurnierID
         ?>
     </ul>
     <?php } else { ?>
-        <p>Nur für angemeldete Nutzer*innen mit freigeschaltetem Account. <a href="#login">Login</a></p>
+        <p>Nur für Admins/Co-Admins verfügbar.</p>
     <?php } ?>
     <a href="#pausenraum" class="button">Zurück</a>
     <p></br></p>
