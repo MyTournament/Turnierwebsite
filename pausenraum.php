@@ -36,10 +36,11 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
          bestehen, bis sie über den roten "Löschen"-Button im CMS-Bearbeitungsmodus entfernt wird (das
          kann ich als Code-Änderung nicht selbst - siehe Chat). -->
     <h2>Blankiball-Simulator</h2>
-    <p>Der Blankiball-Simulator als Video - schau dir an, wie er in echt aussieht.</p>
+    <p>Der Blankiball-Simulator als richtiges Steam-Spiel - selbst programmiert.</p>
     <img src="images/Sonstiges/blankiball_simulator.jpg" alt="" style="width:20rem;max-width:100%;"/>
     <br/>
-    <a href="#blankiball_simulator" class="button primary">Zum Blankiball-Simulator</a>
+    <!-- TODO: echten Steam-Store-Link eintragen, sobald bekannt (siehe Chat) -->
+    <a href="#blankiball_simulator" class="button primary">Zum Blankiball-Simulator auf Steam</a>
 
     <p></br></p>
     <h2>THE ONE</h2>
