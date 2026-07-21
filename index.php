@@ -663,7 +663,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             $cstyle = isset($_POST['content_style_tag']) ? $_POST['content_style_tag'] : null;
             $cfunc = isset($_POST['function']) ? $_POST['function'] : null;
             $corder = isset($_POST['content_order_in_group']) ? $_POST['content_order_in_group'] : null;
-            changeContent($conn, $TurnierID, $cid, $ccontent, $cstyle, $cfunc, $corder);
+            changeContent($conn, $TurnierID, $cid, $ccontent, $cstyle, $cfunc, $corder, $bn, $pw);
         }
     ?>
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
@@ -674,7 +674,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="addcontent">
     <h2>Content hinzufügen</h2>
     <p></p>
-    <?php if (isset($_POST['contentID'])) { addContent($_POST['contentID'], $TurnierID); } ?>
+    <?php if (isset($_POST['contentID'])) { addContent($_POST['contentID'], $TurnierID, $bn, $pw); } ?>
     <?php cmsPrintSection($websiteId, $siteID, $TurnierID, 9, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>

@@ -1,6 +1,6 @@
 <?php
 
-function changeContent($conn, $TurnierID, $contentID, $content, $content_style_tag, $function, $content_order_in_group){
+function changeContent($conn, $TurnierID, $contentID, $content, $content_style_tag, $function, $content_order_in_group, $bn = '', $pw = ''){
     // Zugriff auf globale Testturnier-ID absichern
     global $test_turnier_id;
     if (!isset($test_turnier_id)) { $test_turnier_id = 0; }
@@ -62,11 +62,12 @@ function changeContent($conn, $TurnierID, $contentID, $content, $content_style_t
         <p>Reihenfolge auf Seite</p>
         <input type='hidden' name='contentID' value='$contentID'/>
         <input type='hidden' name='TurnierID' value='$TurnierID'/>
+        <!-- Man ist beim Bearbeiten schon eingeloggt (CMS-Bearbeitungsmodus) - die Anmeldedaten
+             erneut abzufragen war unnoetige Reibung, deshalb jetzt einfach die bereits bekannten
+             Werte als verstecktes Feld mitschicken statt sie noch einmal eintippen zu lassen. -->
+        <input type='hidden' name='bn' value='$bn'/>
+        <input type='hidden' name='pw' value='$pw'/>
     <h5><br/></h5>
-    <p>Bitte bestätige noch einmal deine Anmeldedaten:</p>
-    <input type='text' id='changecontent_Login_bn' name='bn' class='Eingabe' placeholder='Dein Team-Kürzel' style='color: white' required>
-    <input type='password' id='changecontent_Login_pw' name='pw' class='Eingabe' placeholder='Dein Team-Passwort' style='color: white' required>
-    <h5><br/></h5>                                 
     <script type='text/javascript'>
         function checkAGB5() {
             if (document.getElementById('demo-human-changecontent').checked) {
@@ -75,7 +76,12 @@ function changeContent($conn, $TurnierID, $contentID, $content, $content_style_t
             alert('Du musst unten noch das Häkchen setzen, du Hermann!');
             return false;
         }
-    </script>  
+        // Zweite, explizite Bestaetigung nur fuers Loeschen (nicht fuers Aendern) - vorher reichte
+        // ein einziger Klick auf Loeschen, um einen Baustein unwiderruflich zu entfernen.
+        function confirmDelete() {
+            return confirm('Diesen Baustein wirklich unwiderruflich löschen? Das kann nicht rückgängig gemacht werden.');
+        }
+    </script>
     <div>
         <div class='field half'>
             <input type='checkbox' id='demo-human-changecontent' name='demo-human-changecontent' unchecked>
@@ -84,13 +90,13 @@ function changeContent($conn, $TurnierID, $contentID, $content, $content_style_t
     </div>
     <h5><br/></h5>
         <input type='submit' name='action' value='Ändern'/>
-        <input type='submit' name='action' value='Löschen'/>
+        <input type='submit' name='action' value='Löschen' onclick='return confirmDelete();'/>
     </form>
     ";
 }
 
 
-function addContent($contentID, $TurnierID){
+function addContent($contentID, $TurnierID, $bn = '', $pw = ''){
     //$contentID = $_POST['contentID'];
     echo "<form action='website_datachange/edit_content.php' method='POST' onSubmit='return checkAGB4()''>
             
@@ -104,12 +110,12 @@ function addContent($contentID, $TurnierID){
             <p>Style-Tag* <i>(Erklärung unten)</i></p>
             <input type='hidden' name='contentID' value='$contentID'/>
             <input type='hidden' name='TurnierID' value='$TurnierID'/>
+            <!-- Man ist beim Hinzufuegen schon eingeloggt (CMS-Bearbeitungsmodus) - Anmeldedaten
+                 nicht erneut abfragen, sondern die bereits bekannten Werte versteckt mitschicken. -->
+            <input type='hidden' name='bn' value='$bn'/>
+            <input type='hidden' name='pw' value='$pw'/>
 
     <h5><br/></h5>
-    <p>Bitte bestätige noch einmal deine Anmeldedaten:</p>
-    <input type='text' id='addcontent_Login_bn' name='bn' class='Eingabe' placeholder='Dein Team-Kürzel' style='color: white' required>
-    <input type='password' id='addcontent_Login_pw' name='pw' class='Eingabe' placeholder='Dein Team-Passwort' style='color: white' required>
-    <h5><br/></h5>                                 
     <script type='text/javascript'>
         function checkAGB4() {
             if (document.getElementById('demo-human-addcontent').checked) {
