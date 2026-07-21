@@ -363,6 +363,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // ein gezielter Fix: die theme-eigene .button.primary-Regel setzt schwarze Schrift
         // (für weisse Buttons gedacht), was im violetten Admin-Bar-Kontext unlesbar war - die
         // ID-Selektor-Spezifität von #admin-bar gewinnt hier bewusst gegen die Klassen-Regel.
+        // Die farbigen Rahmen sind nur zusammen mit der Farb-Legende sinnvoll interpretierbar - wer
+        // die Legende nicht sehen darf (alles außer Admin/Co-Admin), soll deshalb auch keine
+        // unterscheidbaren Rahmenfarben sehen, sondern den neutralen Standard-Rahmen wie vor Einführung
+        // des Farbsystems. Fällt hier bewusst auf PHP-Ebene, nicht per CSS "display:none" o.ä., damit
+        // Nicht-Admin/Co-Admin die Farbwerte gar nicht erst im Seitenquelltext bekommen.
+        $adminBorderNeutral = 'rgba(255,255,255,0.15)';
+        $adminBorderTeamsWert = $istAdminOderCoAdmin ? '#22c55e' : $adminBorderNeutral;
+        $adminBorderStandardWert = $istAdminOderCoAdmin ? '#3b82f6' : $adminBorderNeutral;
+        $adminBorderCoadminWert = $istAdminOderCoAdmin ? '#f59e0b' : $adminBorderNeutral;
+        $adminBorderAdminonlyWert = $istAdminOderCoAdmin ? '#ef4444' : $adminBorderNeutral;
+        $adminBorderCmsWert = $istAdminOderCoAdmin ? '#ec4899' : $adminBorderNeutral;
         echo "
         <style>
             :root {
@@ -373,15 +384,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                    unterscheidbare, zum Lila passende Rahmenfarben: Grün (Teams-Recht reicht), Blau
                    (Standard-Einzelrecht), Bernstein (Admin+Co-Admin), Rot (nur echte Admins) - Grün
                    und Blau liegen bewusst weiter auseinander als vorher Türkis/Blau, damit man sie
-                   auf den ersten Blick unterscheiden kann. */
-                --admin-border-teams: #22c55e;
-                --admin-border-standard: #3b82f6;
-                --admin-border-coadmin: #f59e0b;
-                --admin-border-adminonly: #ef4444;
+                   auf den ersten Blick unterscheiden kann. Werte kommen aus PHP: nur Admin/Co-Admin
+                   bekommen die echten Farben, alle anderen den neutralen Standard-Rahmen. */
+                --admin-border-teams: $adminBorderTeamsWert;
+                --admin-border-standard: $adminBorderStandardWert;
+                --admin-border-coadmin: $adminBorderCoadminWert;
+                --admin-border-adminonly: $adminBorderAdminonlyWert;
                 /* Fünfte Stufe: braucht nur das cms-Flag (Autor*in), kein Backstage-Zugang nötig -
                    deshalb eigene Farbe statt einer der obigen vier, die alle backstage-artige
                    Rechte betreffen. */
-                --admin-border-cms: #ec4899;
+                --admin-border-cms: $adminBorderCmsWert;
             }
             #admin-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem 1rem; background: rgba(30, 12, 48, 0.94); border-bottom: 2px solid var(--admin-accent); box-shadow: 0 2px 12px rgba(139, 92, 246, 0.35); box-sizing: border-box; }
             #admin-bar-status { color: var(--admin-accent-light); font-size: 0.8rem; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
