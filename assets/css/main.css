@@ -1584,6 +1584,55 @@ repeat;
 			pointer-events: none;
 		}
 
+	/* ==========================================================================================
+	   "#info"-Seite (die OEFFENTLICHE Info-Uebersicht mit "Ueber Blankiball"/"Fotos"/"Vergangene
+	   Turniere"/"FAQ" - nicht zu verwechseln mit der eingeloggten Backstage-"Infos"-Seite).
+	   Der Inhalt kommt komplett aus dem CMS (Section 15) - bewusst NUR CSS hier, der CMS-Inhalt
+	   selbst bleibt unangetastet und weiterhin normal ueber "Website Inhalte bearbeiten" editierbar.
+	   Die <br><br>-Zeilenumbrueche zwischen den Buttons werden ausgeblendet, die (weiterhin
+	   inline-block-en) Buttons brechen dadurch stattdessen von selbst um wie Woerter in einem Fliess-
+	   text - kein Flexbox auf dem CMS-Wrapper noetig (der enthaelt auch Ueberschrift/Text, die nicht
+	   mit umbrechen duerfen). Der Chip-Look folgt demselben Prinzip wie .icon-chip-button/die
+	   Hauptnavigation, nur ohne eigenes SVG-Icon-Element - das Emoji bleibt Teil des CMS-Texts.
+	   ACHTUNG: blendet ALLE <br> innerhalb von #info aus, nicht nur die zwischen den Buttons - falls
+	   im CMS-Beschreibungstext mal ein gezielter Zeilenumbruch noetig ist, bitte einen neuen Absatz
+	   statt <br> verwenden. */
+	#info br {
+		display: none;
+	}
+
+	#info a.button.primary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-width: 9rem;
+		height: auto;
+		margin: 0.4rem;
+		padding: 1rem 1.3rem;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.05);
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+		color: #ffffff !important;
+		font-weight: 600;
+		font-size: 0.76rem;
+		letter-spacing: 0.08em;
+		text-transform: none;
+		text-decoration: none;
+		transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+	}
+
+		#info a.button.primary:hover {
+			background-color: rgba(255, 255, 255, 0.1);
+			box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+			transform: translateY(-2px);
+		}
+
+		#info a.button.primary:active {
+			background-color: rgba(255, 255, 255, 0.16);
+			transform: translateY(0);
+		}
+
 	#header nav.use-middle:after {
 		content: '';
 		display: block;
