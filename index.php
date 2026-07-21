@@ -629,8 +629,14 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             // vorher automatisch von der generischen "#header .content p"-Regel).
             echo"<div class='hero-heading'><span class='hero-date'>$anzeige_datum</span><h1>$anzeige_titel</h1></div>";
             echo"<p class='hero-subtitle'>$anzeige_subtitel</p>";
+            // Instagram-Verlinkung fest im Code statt als Teil des CMS/Anzeige-Untertitels - auf
+            // Wunsch groesser und im ueblichen Instagram-Look (Kamera-Icon + Handle, Verlaufs-
+            // Farbverlauf als Pill-Badge) statt kleiner, reiner Textzeile.
+            echo"<a href='https://www.instagram.com/blankiball_official/?hl=de' target='_blank' rel='noopener' class='hero-instagram-link'>
+                    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='3' y='3' width='18' height='18' rx='5'/><circle cx='12' cy='12' r='4'/><circle cx='17.2' cy='6.8' r='0.6' fill='currentColor' stroke='none'/></svg>
+                    <span>&#64;blankiball_official</span>
+                </a>";
             ?>
-            <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
         </div>
     </div>
     <!--<button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>-->

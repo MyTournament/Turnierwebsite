@@ -1450,6 +1450,31 @@ repeat;
 			margin-top: 0.5rem;
 		}
 
+		/* Instagram-Verlinkung im Header: klassischer Instagram-Look (Kamera-Icon + Handle auf
+		   Verlaufs-Hintergrund als Pill-Badge) statt einer kleinen, reinen Textzeile - bewusst groesser
+		   und auffaelliger als der Untertitel darueber. */
+		.hero-instagram-link {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-top: 0.7rem;
+			padding: 0.5rem 1.1rem;
+			border-radius: 999px;
+			background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+			color: #ffffff !important;
+			font-weight: 600;
+			font-size: 0.95rem;
+			letter-spacing: 0.02em;
+			text-decoration: none;
+			text-transform: none;
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+		}
+
+			.hero-instagram-link:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 4px 14px rgba(238, 42, 123, 0.4);
+			}
+
 	/* Hauptnavigation (Info/Regeln/Teams/Spielplan/Spenden): dezente Karten-Chips mit eigenen
 	   Icons statt der alten Template-Optik (ein durchgehender umrandeter Kasten mit harten
 	   weissen Trennstrichen zwischen den Eintraegen und bunten Emojis als "Icons"). */
