@@ -46,6 +46,21 @@
     <a href="#blankiball_simulator_2d" class="button primary">&#127918; Zum Blankiball-Simulator 2D</a>
 
     <p></br></p>
+    <!-- Von der Startseite (Footer) hierher verschoben, auf ausdrücklichen Wunsch - vorher lag das
+         als CMS-Inhalt im Footer, jetzt fest hier im Pausenraum. Die alte CMS-Version im Footer bleibt
+         bestehen, bis sie über den roten "Löschen"-Button im CMS-Bearbeitungsmodus entfernt wird (das
+         kann ich als Code-Änderung nicht selbst - siehe Chat). -->
+    <img src="images/Sonstiges/blankiball_simulator.jpg" alt="" style="width:20rem;max-width:100%;"/>
+    <br/>
+    <a href="#blankiball_simulator" class="button primary">Blankiball-Simulator</a>
+
+    <p></br></p>
+    <img src="images/Sonstiges/the_one_logo_weinglas_mit_schriftzug.png" alt="" style="width:20rem;max-width:100%;"/>
+    <br/>
+    <h4>Die eine Trinkspielapp, die alle anderen ersetzt</h4>
+    <a href="https://www.instagram.com/app.theone/" class="button primary">Zur App</a>
+
+    <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
