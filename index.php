@@ -1119,7 +1119,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
         }
 
-        cmsPrintSection($websiteId, $siteID, $TurnierID, 2, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); // ALS PARAMETER SECTION ID überGEBEN (F�r CMS)
+        // Vorher CMS-Section 2 (Überschrift + "Gruppen"-Button + Funktion printTeams()) - auf
+        // ausdrücklichen Wunsch fest im Code statt im CMS, 1:1 nachgebaut wie es vorher aussah.
+        echo "<h2>Unsere glorreichen Teams</h2>";
+        echo "<a href='#gruppen' class='button primary'>&#128101; Gruppen</a>";
+        printTeams($TurnierID, $conn, $edit_content_mode, $gameEditMode, $expertenmodus);
         echo "</div>";
     }else{
         // login form
