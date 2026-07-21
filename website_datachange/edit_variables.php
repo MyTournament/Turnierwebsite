@@ -4,6 +4,7 @@ include_once '../website_functionalities/session_bootstrap.php';
 //########################
 include_once '../database/db_connection.php';
 include_once 'edit_interface.php';
+include_once '../website_functionalities/csrf.php';
 //########################
 
 // Output-Buffer aktivieren: die Aktionen Gruppen_Fuer_Gruppenphase_Generieren/Gruppeneinteilung_Losen
