@@ -1823,9 +1823,13 @@ repeat;
 
 	@media screen and (max-width: 980px) {
 
-		#header .content p br {
-			display: none;
-		}
+		/* ENTFERNT: "#header .content p br { display: none; }" hat auf Bildschirmen <= 980px (also
+		   praktisch jedes Handy/Tablet, dem haeufigsten Testfall) JEDEN Zeilenumbruch in JEDEM
+		   Absatz innerhalb der Kopfzeile ausgeblendet - trifft damit auch die CMS-Inhalte dort
+		   (Sections 32/19, "Anmeldefrist"), die dann faelschlich so aussahen, als wuerden <br> generell
+		   ignoriert. Die Hero-Ueberschrift/Subtitle haben inzwischen ohnehin eigene Klassen
+		   (.hero-heading/.hero-subtitle), die diese Regel nicht mehr braucht.
+		*/
 
 		/* Zwischenstufe fuer Tablet-Breiten (981px runter bis zur naechsten Stufe bei 736px) - sonst
 		   springt die Groesse direkt von "voller Desktop-Wert" auf "Handy-kompakt", was bei mittleren
