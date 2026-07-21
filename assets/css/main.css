@@ -1418,6 +1418,38 @@ repeat;
 			line-height: 2;
 		}
 
+		/* Datum + Titel in einer Zeile statt zwei gestapelten Ueberschriften; Untertitel bewusst
+		   NICHT in Grossbuchstaben (hoehere Selektor-Spezifitaet als die generische Regel oben,
+		   damit sie hier gezielt ueberschrieben wird). */
+		.hero-heading {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: baseline;
+			justify-content: center;
+			gap: 0.6rem;
+		}
+
+			.hero-heading h1 {
+				margin: 0;
+			}
+
+			.hero-date {
+				font-size: 0.85rem;
+				text-transform: uppercase;
+				letter-spacing: 0.15em;
+				opacity: 0.7;
+				white-space: nowrap;
+			}
+
+		#header .content p.hero-subtitle {
+			text-transform: none;
+			letter-spacing: 0.02em;
+			font-size: 0.95rem;
+			line-height: 1.6;
+			opacity: 0.85;
+			margin-top: 0.5rem;
+		}
+
 	/* Hauptnavigation (Info/Regeln/Teams/Spielplan/Spenden): dezente Karten-Chips mit eigenen
 	   Icons statt der alten Template-Optik (ein durchgehender umrandeter Kasten mit harten
 	   weissen Trennstrichen zwischen den Eintraegen und bunten Emojis als "Icons"). */
