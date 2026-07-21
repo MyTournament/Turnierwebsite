@@ -67,21 +67,21 @@ table.withBorderCollapse {
 }
 
 /* Responsive tweaks for Gruppenphase table */
+/* BUGFIX: "display: block" hat hier heimlich table-layout:fixed wirkungslos gemacht - table-layout
+   gilt laut Spezifikation NUR fuer Elemente mit display:table/inline-table, ein auf display:block
+   umgestelltes <table> faellt aus dieser Regel komplett raus und faellt auf die Browser-Standard-
+   Spaltenberechnung zurueck (Symptom: Tabelle wirkt links zusammengequetscht statt die volle Breite
+   zu nutzen, obwohl an anderer Stelle table-layout:fixed + width:100% gesetzt sind). Das Scrollen auf
+   schmalen Bildschirmen uebernimmt bereits der umgebende .matrix-table-wrap (overflow-x:auto),
+   deshalb braucht die Tabelle selbst kein eigenes display:block/overflow-x mehr. */
 #gruppenphase table.withBorderCollapse {
-    /* Ensure table never breaks layout on small screens */
     max-width: 100%;
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     table-layout: fixed;
 }
 
 /* Responsive tweaks for Losing Bracket table */
 #losingbracket table.withBorderCollapse {
     max-width: 100%;
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     table-layout: fixed;
 }
 @media screen and (max-width: 768px) {
