@@ -369,12 +369,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 --admin-accent: #8b5cf6; --admin-accent-deep: #6d28d9; --admin-accent-light: #ddd6fe;
                 /* Alle Backstage-Buttons tragen denselben Lila-Verlauf als Hintergrund - WER eine
                    Funktion sehen darf, zeigt stattdessen ein farbiger RAHMEN um den Button (siehe
-                   .admin-menu-button--teams/--coadmin/--adminonly weiter unten). Vier gut
-                   unterscheidbare, zum Lila passende Rahmenfarben: Türkis (Teams-Recht reicht),
-                   Blau (Standard-Einzelrecht, kein eigener Rahmen nötig), Bernstein (Admin+Co-Admin),
-                   Rot (nur echte Admins). */
-                --admin-border-teams: #2dd4bf;
-                --admin-border-standard: #60a5fa;
+                   .admin-menu-button--teams/--coadmin/--adminonly weiter unten). Vier deutlich
+                   unterscheidbare, zum Lila passende Rahmenfarben: Grün (Teams-Recht reicht), Blau
+                   (Standard-Einzelrecht), Bernstein (Admin+Co-Admin), Rot (nur echte Admins) - Grün
+                   und Blau liegen bewusst weiter auseinander als vorher Türkis/Blau, damit man sie
+                   auf den ersten Blick unterscheiden kann. */
+                --admin-border-teams: #22c55e;
+                --admin-border-standard: #3b82f6;
                 --admin-border-coadmin: #f59e0b;
                 --admin-border-adminonly: #ef4444;
             }
@@ -1840,7 +1841,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Türkiser Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
             <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: das jeweils passende Einzel-Recht reicht</div>
             <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: nur Admin und Co-Admin</div>
             <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: nur "echte" Admins</div>
@@ -2548,7 +2549,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
             <h4>Farb-Legende</h4>
-            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Türkiser Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
+            <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--teams'></span> Grüner Rahmen: reicht schon mit dem einzelnen "Teams"-Recht (z.B. Moderator*in)</div>
             <div class='admin-legende-zeile'><span class='admin-legende-swatch'></span> Blauer Rahmen: das jeweils passende Einzel-Recht reicht</div>
             <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--coadmin'></span> Bernsteinfarbener Rahmen: nur Admin und Co-Admin</div>
             <div class='admin-legende-zeile'><span class='admin-legende-swatch admin-legende-swatch--adminonly'></span> Roter Rahmen: nur "echte" Admins</div>
