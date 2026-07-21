@@ -4120,7 +4120,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php } else { ?>
     <p>Hier werden alle Datenbankänderungen dokumentiert, egal ob es um Löschung, Änderung oder Einfügen geht. Wenn ein Team ständig versucht, Dinge zu bearbeiten, die es nicht bearbeiten soll, siehst du das hier und kannst dem Team die Rechte wegnehmen. Die Änderungen sind in SQL formuliert. Falls du nicht weißt, wie SQL funktioniert, klicke einfach <a href='https://studyflix.de/informatik/structured-query-language-606'>hier</a></p>
     <?php if (!isset($_POST['load_db_verlauf'])) {
-        $ladeAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
+        // Fragment (#backstage_letzte_aenderung) an die Action gehaengt, damit die hash-basierte
+        // Navigation nach dem POST-Reload wieder auf dieser Seite bleibt statt auf die Startseite
+        // zu springen (vorher fehlte das Fragment komplett).
+        $ladeAction = ($test_turnier_id==0) ? '/#backstage_letzte_aenderung' : "/?test_turnier_id=$test_turnier_id#backstage_letzte_aenderung";
         echo "
         <form action='$ladeAction' method='POST'>
             <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
@@ -4134,13 +4137,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // Nur die letzten 500 Einträge, um die Website nicht wieder spürbar zu verlangsamen
         $sqlSystem_Data_DB_Verlauf = 'SELECT * FROM `System_Data_DB_Verlauf` ORDER BY ID desc LIMIT 500';
         $resultSystem_Data_DB_Verlauf = $conn->query($sqlSystem_Data_DB_Verlauf);
+        // Kompakte Darstellung statt <hr>+<p> pro Eintrag - die Theme-Standardabstände (hr: 2.75rem,
+        // p: 2rem) summierten sich pro Eintrag zu ~4.75rem Lücke, bei 500 Zeilen kaum überblickbar.
+        echo "<div style='text-align:left;font-size:0.85rem;'>";
         while ($rowSystem_Data_DB_Verlauf = $resultSystem_Data_DB_Verlauf->fetch_assoc()) {
             $data_db_verlauf_timestamp = $rowSystem_Data_DB_Verlauf['timestamp'];
             $data_db_verlauf_who = $rowSystem_Data_DB_Verlauf['fk_who'];
             $data_db_verlauf_content = $rowSystem_Data_DB_Verlauf['content'];
-            echo "<hr>";
-            echo "<p><b>" . htmlspecialchars($data_db_verlauf_who) . ":</b> " . htmlspecialchars($data_db_verlauf_content) . " ($data_db_verlauf_timestamp)</p>";
+            echo "<div style='padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.12);'><b>" . htmlspecialchars($data_db_verlauf_who) . ":</b> " . htmlspecialchars($data_db_verlauf_content) . " <span style='opacity:0.6'>($data_db_verlauf_timestamp)</span></div>";
         }
+        echo "</div>";
     } ?>
     <?php } ?>
     <a href='#' class='button'>Zurück</a>
@@ -4161,7 +4167,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php } else { ?>
     <p>Hier werden Website-Funktionalitäten getrackt.</p>
     <?php if (!isset($_POST['load_traffic'])) {
-        $ladeAction = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
+        // Fragment (#backstage_traffic) an die Action gehaengt, damit die hash-basierte Navigation
+        // nach dem POST-Reload wieder auf dieser Seite bleibt statt auf die Startseite zu springen
+        // (vorher fehlte das Fragment komplett).
+        $ladeAction = ($test_turnier_id==0) ? '/#backstage_traffic' : "/?test_turnier_id=$test_turnier_id#backstage_traffic";
         echo "
         <form action='$ladeAction' method='POST'>
             <input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'>
@@ -4178,14 +4187,16 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 LEFT JOIN `System_Traffic_Kategorien` k ON k.id = t.fk_kategorie
                 ORDER BY t.id DESC LIMIT 500';
         $result = $conn->query($sql);
+        // Kompakte Darstellung statt <hr>+<p> pro Eintrag - siehe DB-Verlauf weiter oben, gleiches Problem.
+        echo "<div style='text-align:left;font-size:0.85rem;'>";
         while ($row = $result->fetch_assoc()) {
             $traffic_timestamp = $row['timestamp'];
             $traffic_who = $row['fk_who'];
             $traffic_kategorie = $row['traffic_kategorie'];
             $traffic_text = $row['text'];
-            echo "<hr>";
-            echo "<p><b>" . htmlspecialchars($traffic_kategorie) . "</b> " . htmlspecialchars($traffic_who) . " " . htmlspecialchars($traffic_text) . " ($traffic_timestamp)</p>";
+            echo "<div style='padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.12);'><b>" . htmlspecialchars($traffic_kategorie) . "</b> " . htmlspecialchars($traffic_who) . " " . htmlspecialchars($traffic_text) . " <span style='opacity:0.6'>($traffic_timestamp)</span></div>";
         }
+        echo "</div>";
     } ?>
     <?php } ?>
     <a href='#' class='button'>Zurück</a>
