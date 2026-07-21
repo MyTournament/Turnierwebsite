@@ -909,19 +909,37 @@
                     $schalterDreieck = $rowSchalter['nurOberesDreieckInGruppenphase'];
                     $loescheErsteZeileUndSpalte = $rowSchalter['loescheErsteZeileUndSpalte'];
                 }
-                // MÖGLICHKEIT, EINE EINZELNE GRUPPE ZU FINALISIEREN (eigener Button statt anklickbarer
-                // Überschrift - die alte Variante nutzte einen falschen Action-Namen und hatte gar keine
-                // bn/pw-Felder, konnte serverseitig also nie funktionieren).
+                // MÖGLICHKEIT, EINE EINZELNE GRUPPE ZU FINALISIEREN/UNFINALISIEREN (eigener Button statt
+                // anklickbarer Überschrift - die alte Variante nutzte einen falschen Action-Namen und
+                // hatte gar keine bn/pw-Felder, konnte serverseitig also nie funktionieren).
                 echo "<div class='matrix-group-heading'>";
                 echo "<h2 style='display:inline-block; margin-right:0.6rem;'>Gruppe $gruppenname &#9733;</h2>";
                 if ($darfAlleSpieleBearbeiten) {
+                    // BUGFIX: Der Button zeigte bisher IMMER "Gruppe finalisieren" mit fest verdrahteter
+                    // Aktion Gruppe_Finalisieren, egal ob die Gruppe schon komplett finalisiert war -
+                    // ein Klick auf eine bereits finalisierte Gruppe lief dadurch ins Leere (Status blieb
+                    // gleich). Jetzt wie beim "Alle Gruppen"-Button: Zustand pro Gruppe prüfen und
+                    // Beschriftung/Aktion entsprechend zwischen Finalisieren/Unfinalisieren umschalten.
+                    $gruppeIdFuerCheck = (int)$rowGruppe['id'];
+                    $sqlGruppeGesamtCheck = 'SELECT COUNT(*) AS anzahl FROM Turnier_Begegnung WHERE ko_finallevel = 0 AND status <> 3 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ' . $gruppeIdFuerCheck . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ' . $gruppeIdFuerCheck . ')';
+                    $anzahlGruppeGesamt = (int)$conn->query($sqlGruppeGesamtCheck)->fetch_assoc()['anzahl'];
+                    $gruppeAction = 'Gruppe_Finalisieren';
+                    $gruppeLabel = 'Gruppe finalisieren';
+                    if ($anzahlGruppeGesamt > 0) {
+                        $sqlGruppeOffenCheck = 'SELECT COUNT(*) AS anzahl FROM Turnier_Begegnung WHERE ko_finallevel = 0 AND status NOT IN (3,5,6,7) AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ' . $gruppeIdFuerCheck . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ' . $gruppeIdFuerCheck . ')';
+                        $anzahlGruppeOffen = (int)$conn->query($sqlGruppeOffenCheck)->fetch_assoc()['anzahl'];
+                        if ($anzahlGruppeOffen === 0) {
+                            $gruppeAction = 'Gruppe_Uninalisieren';
+                            $gruppeLabel = 'Gruppe unfinalisieren';
+                        }
+                    }
                     echo "<form action='website_datachange/edit_games.php' method='POST' style='display:inline-block; margin:0;'>
                         <input type='hidden' name='TurnierID' value='$TurnierID'>
                         <input type='hidden' name='bn' value='$bnAttrSp'>
                         <input type='hidden' name='pw' value='$pwAttrSp'>
-                        <input type='hidden' name='action' value='Gruppe_Finalisieren'>
-                        <input type='hidden' name='groupId' value='" . $rowGruppe['id'] . "'>
-                        <button type='submit' class='tbl-action-btn tbl-action-btn--admin'>Gruppe finalisieren</button>
+                        <input type='hidden' name='action' value='$gruppeAction'>
+                        <input type='hidden' name='groupId' value='$gruppeIdFuerCheck'>
+                        <button type='submit' class='tbl-action-btn tbl-action-btn--admin'>$gruppeLabel</button>
                     </form>";
                 }
                 echo "</div>";
