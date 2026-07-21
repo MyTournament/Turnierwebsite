@@ -2043,17 +2043,17 @@ repeat;
 	   KOMPAKTERES FOOTER-LAYOUT (Sponsoren-Banner/Social-Media-Liste/Notfall-Audio etc.)
 	   ============================================================================================
 	   Dieser Inhalt kommt aus der CMS-Datenbank (CMS_Content, Section 22) - nicht direkt in dieser
-	   Datei änderbar. Dort verwendete Bilder haben teils sehr große Inline-Breiten (style="width:20rem")
-	   und es gibt viele aufeinanderfolgende <br>-Zeilenumbrüche, was viel vertikalen Platz frisst. Hier
-	   wird nur die DARSTELLUNG gestrafft, ohne den Datenbank-Inhalt selbst anzufassen:
-	   - Bilder werden auf eine vernünftige Maximalbreite gedeckelt (überschreibt auch die inline
-	     gesetzte Breite, daher !important)
-	   - direkt aufeinanderfolgende <br> werden zu einem einzelnen, kleineren Abstand zusammengefasst
-	   - Überschriften/Absätze bekommen engere Abstände als die Standard-Theme-Werte */
+	   Datei änderbar. Dort verwendete Bilder haben teils sehr große Inline-Breiten (style="width:20rem"),
+	   deshalb hier eine Maximalbreite (überschreibt auch die inline gesetzte Breite, daher !important)
+	   sowie etwas engere Standard-Abstände bei Überschriften/Absätzen.
+	   KORRIGIERT: es gab hier zusätzlich "#footer br + br { display: none; }", um aufeinanderfolgende
+	   <br> zusammenzufassen - das hat aber die bewusst vom CMS-Autor gesetzte Anzahl an Zeilenumbrüchen
+	   verändert (z.B. 5x <br/> hintereinander als groesserer Abstand wurden auf 1 sichtbares <br>
+	   reduziert). Die Anzahl der <br> im Inhalt soll dem CMS-Autor gehören, nicht heimlich per CSS
+	   gekürzt werden - deshalb ersatzlos entfernt. */
 	#footer img { max-width: min(60%, 9rem) !important; height: auto; margin: 0.4rem auto; }
 	#footer h3, #footer h4 { margin: 0.5rem 0; }
 	#footer p { margin: 0.4rem 0; }
-	#footer br + br { display: none; }
 
 	#footer .copyright {
 		letter-spacing: 0.2rem;
