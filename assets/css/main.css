@@ -1470,25 +1470,25 @@ repeat;
 				flex-direction: column;
 				align-items: center;
 				justify-content: center;
-				gap: 0.3rem;
-				min-width: 5.5rem;
+				gap: 0.4rem;
+				min-width: 6.8rem;
 				height: auto;
 				line-height: 1.3;
-				padding: 0.7rem 0.9rem 0.6rem;
-				border-radius: 12px;
+				padding: 1rem 1.2rem 0.85rem;
+				border-radius: 16px;
 				background: rgba(255, 255, 255, 0.05);
 				box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 				text-transform: uppercase;
 				letter-spacing: 0.1em;
-				font-size: 0.66rem;
+				font-size: 0.76rem;
 				font-weight: 600;
 				border-bottom: 0;
 				transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 			}
 
 				#header nav ul li a svg {
-					width: 22px;
-					height: 22px;
+					width: 30px;
+					height: 30px;
 					fill: none;
 					stroke: currentColor;
 					stroke-width: 1.6;
@@ -1511,6 +1511,67 @@ repeat;
 					opacity: 0.35;
 					pointer-events: none;
 				}
+
+	/* ==========================================================================================
+	   WIEDERVERWENDBARER ICON-CHIP-BUTTON (bewusst eine eigenstaendige KOPIE der Nav-Optik oben,
+	   keine gemeinsam genutzte Regel) - damit sich derselbe Look auch anderswo auf der Website
+	   verwenden laesst, z.B. in CMS-Textinhalten. Einfach auf einen Link anwenden:
+	   <a href="..." class="icon-chip-button">
+	       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+	            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">...</svg>
+	       <span>Beschriftung</span>
+	   </a>
+	   Fuer einen deaktivierten Zustand zusaetzlich die Klasse "disabled" an den Link.
+	   ========================================================================================== */
+	.icon-chip-button {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		min-width: 6.8rem;
+		height: auto;
+		line-height: 1.3;
+		padding: 1rem 1.2rem 0.85rem;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.05);
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		font-size: 0.76rem;
+		font-weight: 600;
+		color: #ffffff;
+		text-decoration: none;
+		border-bottom: 0;
+		transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+	}
+
+		.icon-chip-button svg {
+			width: 30px;
+			height: 30px;
+			fill: none;
+			stroke: currentColor;
+			stroke-width: 1.6;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		.icon-chip-button:hover {
+			background-color: rgba(255, 255, 255, 0.1);
+			box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+			transform: translateY(-2px);
+			color: #ffffff;
+		}
+
+		.icon-chip-button:active {
+			background-color: rgba(255, 255, 255, 0.16);
+			transform: translateY(0);
+		}
+
+		.icon-chip-button.disabled {
+			opacity: 0.35;
+			pointer-events: none;
+		}
 
 	#header nav.use-middle:after {
 		content: '';
@@ -1619,7 +1680,7 @@ repeat;
 					}
 
 					#header nav ul li a {
-						min-width: 4.6rem;
+						min-width: 5.6rem;
 					}
 
 			#header nav.use-middle:after {
