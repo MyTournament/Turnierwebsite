@@ -17,7 +17,9 @@ function evPhaseName($conn, $phaseId) {
     return $row['name'] ?? ('Phase ' . (int)$phaseId);
 }
 
-$TurnierID = $_POST['TurnierID'];
+// SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber dieses Feld (landet an mehreren Stellen roh
+// in SQL-Strings, u.a. via db_update()/Gruppen generieren weiter unten).
+$TurnierID = (int)$_POST['TurnierID'];
 
 //LOGIN
 include_once 'login_interface.php';

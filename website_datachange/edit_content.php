@@ -69,7 +69,8 @@ include_once 'edit_interface.php';
 
 
 
-$TurnierID = $_POST['TurnierID'];
+// SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber dieses Feld.
+$TurnierID = (int)$_POST['TurnierID'];
 
 
 //LOGIN
@@ -95,12 +96,14 @@ if ($successfulLogin == 0){ //fehlerhafter Login
   echo "<script type='text/javascript'>alert('$message');</script>";
 }else{
     //Variablen speichern
-    $contentID = $_POST['contentID'];
+    // SICHERHEIT: contentID landet weiter unten (Fall "Hinzufügen") roh in einem verketteten SQL-String
+    // ($sql_order_in_group) - (int)-Cast hier schliesst diese SQL-Injection direkt an der Quelle.
+    $contentID = (int)$_POST['contentID'];
     $content = $_POST['content'];
     $content_style_tag = $_POST['content_style_tag'];
     $function = $_POST['function'];
     if($function == "NULL"){$function = NULL;}
-    $content_order_in_group = $_POST['content_order_in_group'];
+    $content_order_in_group = (int)$_POST['content_order_in_group'];
 
     echo "<script>console.log('content: $content')</script>";
     echo "<script>console.log('content_style_tag: $content_style_tag')</script>";

@@ -4,19 +4,25 @@ include_once '../database/db_connection.php';
 include_once '../website_datachange/edit_interface.php';
 //##########################################################
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// SICHERHEIT: display_errors war hier fest auf 1 gesetzt - PHP-Fehler/Warnungen (inkl. Dateipfaden,
+// SQL-Fehlermeldungen etc.) wurden dadurch direkt in die HTTP-Antwort jeder Anfrage geschrieben,
+// sichtbar fuer jede Person, die dieses (teils oeffentlich erreichbare) Endpoint aufruft. Fehler
+// landen weiterhin ganz normal im Server-Error-Log (php.ini error_log), nur nicht mehr im Response.
+ini_set('display_errors', 0);
 
 ob_start();
 echo "<script>console.log('Testausgabe 1')</script>";
 
 //Variablen speichern
-$TurnierID = $_POST['TurnierID'];
+// SICHERHEIT: alles hier sind numerische DB-IDs - (int)-Cast direkt bei der Entgegennahme schliesst
+// SQL-Injection ueber diese Felder ein fuer alle Mal, unabhaengig davon, ob eine Query weiter unten
+// (oder in einer aufgerufenen Funktion wie db_update()) sie roh in einen SQL-String verkettet.
+$TurnierID = (int)$_POST['TurnierID'];
 //echo "<script>console.log('TurnierID: $TurnierID')</script>";
 
-$begegnungId = $_POST['begegnungId'];
+$begegnungId = (int)$_POST['begegnungId'];
 //echo "<script>console.log('begegnungId: $begegnungId')</script>";
-$spielID = $_POST['spielId'];
+$spielID = (int)$_POST['spielId'];
 //echo "<script>console.log('Id des Spiels das bearbeitet oder gelöscht wird wird: $spielID')</script>";
 $flaschen1 = $_POST['Flaschen1'];
 $flaschen2 = $_POST['Flaschen2'];
@@ -350,7 +356,7 @@ if ($action == 'Ändern') {
   }
 }else if($action == 'Gruppe_Finalisieren'){
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
-    $groupId = $_POST['groupId'];
+    $groupId = (int)$_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 4 THEN 7 ELSE 5 END WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php 8",$sql, array($groupId, $groupId));
 
@@ -380,7 +386,7 @@ if ($action == 'Ändern') {
   }
 }else if($action == 'Gruppe_Uninalisieren'){
   if($accountDarfSpieleBearbeiten == 1){ //Account-Login
-    $groupId = $_POST['groupId'];
+    $groupId = (int)$_POST['groupId'];
     $sql = "UPDATE Turnier_Begegnung SET `status` = CASE WHEN `status` = 7 THEN 4 ELSE 1 END WHERE status <> 3 AND ko_finallevel = 0 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?) AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_gruppe = ?)";
     myDb_execute($conn, $TurnierID, $bn, "edit_games.php 9",$sql, array($groupId, $groupId));
 
