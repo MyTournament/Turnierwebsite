@@ -13,9 +13,13 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
     echo "<script>console.log('myDb_execute after backup')</script>";
 
     echo "<script>console.log('myDb_execute start')</script>";
-    echo "<script>console.log('myDb_execute SQL', " . json_encode($sql) . ");</script>";
-    echo "<script>console.log('myDb_execute args', " . json_encode($argArray) . ");</script>";
-    error_log("myDb_execute start | SQL: $sql | Args: " . json_encode($argArray));
+    // SICHERHEIT: NIE die gebundenen Werte ($argArray) loggen/ausgeben - die enthalten je nach Aktion
+    // Klartext-Passwoerter (Registrierung, Passwort_Aendern, Team-Anmeldung, ...) und landeten vorher
+    // bei JEDER Schreibaktion unconditionally im HTTP-Response (<script>console.log(...)</script>,
+    // fuer jede/n einsehbar per Seitenquelltext/Devtools) UND im Server-Error-Log. Das reine SQL-
+    // Statement (nur die Vorlage mit "?"-Platzhaltern, keine Werte) ist unbedenklich und bleibt daher
+    // fuers Debugging im Server-Log.
+    error_log("myDb_execute start | SQL: $sql");
     /*
     //zählen wie viele Parameter ich habe
     $argCount = count($argArray); //weil erster Parameter ja der sql Befehl ist
@@ -57,11 +61,11 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
         echo "<script>console.log('myDb_execute Checkpoint 2')</script>";
         error_log("myDb_execute ok | SQL: $sql");
     } catch (mysqli_sql_exception $e) {
-        error_log("Fehler bei SQL: " . $e->getMessage());
+        // SICHERHEIT: Args/gebundene Werte bewusst NICHT mehr geloggt/ausgegeben (siehe Kommentar
+        // weiter oben) - nur noch Fehlermeldung und SQL-Vorlage ohne Werte.
+        error_log("Fehler bei SQL: " . $e->getMessage() . " | SQL: " . $sql);
         echo "<script>console.error('myDb_execute SQL error: " . addslashes($e->getMessage()) . "');</script>";
-        echo "<script>console.error('SQL: " . addslashes($sql) . "');</script>";
-        echo "<script>console.error('Args: " . addslashes(json_encode($argArray)) . "');</script>";
-        echo "<pre>SQL-Fehler: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "\nSQL: " . htmlspecialchars($sql, ENT_QUOTES, 'UTF-8') . "\nArgs: " . htmlspecialchars(json_encode($argArray), ENT_QUOTES, 'UTF-8') . "</pre>";
+        echo "<pre>SQL-Fehler: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "</pre>";
         die("SQL-Fehler: " . $e->getMessage());
     }
 
@@ -75,13 +79,22 @@ function myDb_execute($conn, $TurnierID, $bn, $ort_auf_website, $sql, $argArray)
         $insert_id = $conn->insert_id;
 
         //DB-VERLAUF
-        $values = " |||| bind_param(";
-        foreach ($argArray as &$value) {
-            //echo "Parameter: $value<br/>";
-            $values .= "$value, ";
+        // SICHERHEIT: Statements, die ein Passwort-Feld setzen (Registrierung, Team-Anmeldung,
+        // Passwort_Aendern, ...) loggen die tatsaechlichen Werte NICHT im Klartext - der DB-Verlauf ist
+        // dauerhaft und fuer Admins/Co-Admins einsehbar, damit waeren sonst alle je vergebenen
+        // Passwoerter fuer immer im Klartext archiviert gewesen.
+        $enthaeltPasswortFeld = (stripos($sql, 'password') !== false) || (stripos($sql, 'passwort') !== false);
+        if ($enthaeltPasswortFeld) {
+            $values = " |||| bind_param(*** Werte nicht geloggt, Statement enthaelt ein Passwort-Feld ***)";
+        } else {
+            $values = " |||| bind_param(";
+            foreach ($argArray as &$value) {
+                //echo "Parameter: $value<br/>";
+                $values .= "$value, ";
+            }
+            $values = substr($values, 0, -2);
+            $values .= ")";
         }
-        $values = substr($values, 0, -2);
-        $values .= ")";
         $content = $sql;
         $content .= $values;
         //echo "<br/>DB_VERLAUF:<br/>";
