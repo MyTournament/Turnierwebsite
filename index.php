@@ -3357,8 +3357,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h5><br /></h5>
     <h1>Nutzermanagement</h1>
     <?php
-    // Sichtbar, sobald irgendein Rollen-Vergabe-Recht vorhanden ist - kein Admin/Co-Admin-Shortcut.
-    $hatIrgendeinRollenVergabeRecht = $rechteFlags['neue_admins'] || $rechteFlags['neue_co_admins'] || $rechteFlags['restliche_rollen_vergeben'];
+    // RECHTE-AUDIT: Nutzermanagement (die ganze Seite, inkl. "Login als User") ist laut expliziter
+    // Vorgabe strikt Co-Admin/Admin vorbehalten - bewusst NICHT mehr nur über das
+    // restliche_rollen_vergeben-Flag geprüft (das heute zwar nur Admin/Co-Admin haben, aber falls das
+    // Flag später mal einer anderen Rolle für andere Zwecke gegeben würde, dürfte das NICHT
+    // automatisch auch Zugriff auf diese ganze Seite freischalten).
+    $hatIrgendeinRollenVergabeRecht = $istAdminOderCoAdmin;
     if (!$hatIrgendeinRollenVergabeRecht) { ?>
         <p>Keine ausreichende Berechtigung.</p>
     <?php } else {
@@ -3541,7 +3545,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     <input type='hidden' name='admin_bn' value='<?php echo $bnAttrNm; ?>'>
                     <input type='hidden' name='admin_pw' value='<?php echo $pwAttrNm; ?>'>
                     <input type='hidden' name='ziel_benutzer_id' value='<?php echo $nutzer['id']; ?>'>
-                    <button type='submit' class='admin-menu-button' style='min-width:auto;padding:0.15rem 0.5rem;font-size:0.7rem;'>Login als User</button>
+                    <button type='submit' class='admin-menu-button admin-menu-button--coadmin' style='min-width:auto;padding:0.15rem 0.5rem;font-size:0.7rem;'>Login als User</button>
                 </form>
                 <?php } ?>
             </div>
@@ -3629,7 +3633,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <a href='#backstage_nutzermanagement' class='button'>Zurück</a>
     <h5><br /></h5>
     <?php
-    $hatIrgendeinRollenVergabeRechtNeu = $rechteFlags['neue_admins'] || $rechteFlags['neue_co_admins'] || $rechteFlags['restliche_rollen_vergeben'];
+    // Gleiche Einschränkung wie bei backstage_nutzermanagement: strikt Co-Admin/Admin, nicht nur
+    // flag-basiert (siehe Kommentar dort).
+    $hatIrgendeinRollenVergabeRechtNeu = $istAdminOderCoAdmin;
     if (!$hatIrgendeinRollenVergabeRechtNeu) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else {
