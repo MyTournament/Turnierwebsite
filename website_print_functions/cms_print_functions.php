@@ -98,23 +98,25 @@
                         $function = $rowFunction['function'];
                     }
                     //Login überprüfen und je nachdem in Buttons oder normal anzeigen
-                    if ($LoggedIn) { //<a style='color: green' href='#'>Bearbeiten</a> |||| color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;
-                        //BEARBEITEN
-                        echo "<form method='post' action='#changecontent' style='display: inline;margin: 0 0 0 0;'>
-                                <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;display: inline;' class='height: 1px;' name='content' value='' class='button primary'>&#9998;</button>
-                                <input type='hidden' name='contentID' value='$content_id'/>
-                                <input type='hidden' name='function' value='$content_fk_function'/>
-                                <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
-                                <p style='display: inline;'>&#8595;$content_order_in_group</p>
-                                <!-- <button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>$content_order_in_group</button> -->
-                            </form> "; 
-                        //NEU EINFÜGEN
-                        echo "<form method='post' action='#addcontent' style='margin: 0 0 0 0;display: inline;'>
-                            <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;' class='height: 1px;' name='content' value='' class='button primary'>&#8595;+</button>
-                            <input type='hidden' name='contentID' value='$content_id'/>
-                        </form> ";
-                        echo "<h3 style='color: green;margin: 0 0 0 0;'>function -> $function ()</h3>";
-                        echo "<hr style='border-top: 3px solid green;margin: 0 0 0 0;'>";
+                    if ($LoggedIn) {
+                        // CMS-EDIT-TOOLBAR: einheitlich mit dem restlichen Backstage-Look (violett statt
+                        // grün), Buttons mit erklärenden Beschriftungen statt kryptischer Symbole allein,
+                        // Position klar beschriftet statt nacktem "↓3". CSS siehe main.css (.cms-edit-*).
+                        echo "<div class='cms-edit-toolbar'>
+                                <form method='post' action='#changecontent'>
+                                    <input type='hidden' name='contentID' value='$content_id'/>
+                                    <input type='hidden' name='function' value='$content_fk_function'/>
+                                    <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
+                                    <button type='submit' class='cms-edit-btn' title='Diesen Baustein bearbeiten'>&#9998; Bearbeiten</button>
+                                </form>
+                                <span class='cms-edit-position'>Position $content_order_in_group</span>
+                                <form method='post' action='#addcontent'>
+                                    <input type='hidden' name='contentID' value='$content_id'/>
+                                    <button type='submit' class='cms-edit-btn' title='Neuen Baustein direkt danach einfügen'>&#8595;&#43; Danach einfügen</button>
+                                </form>
+                            </div>";
+                        echo "<h3 class='cms-edit-function-label'>Funktion: $function()</h3>";
+                        echo "<hr class='cms-edit-divider'>";
                     }else{
                         //echo "Funktionsausführung aus DB: $function<br>";
                         call_user_func($function, $TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $testTurnierMode);
@@ -122,24 +124,24 @@
                     }
                 }else{ //FALL CONTENT
                     //Login überprüfen und je nachdem in Buttons oder normal anzeigen
-                    if ($LoggedIn) { //<a style='color: green' href='#'>Bearbeiten</a> |||| color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;
-                        //BEARBEITEN
-                        echo "<form method='post' action='#changecontent' style='display: inline;margin: 0 0 0 0;'>
-                                <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;display: inline;' class='height: 1px;' name='content' value='' class='button primary'>&#9998;</button> <!-- width: 100%;height: auto;white-space: normal; -->
-                                <input type='hidden' name='contentID' value='$content_id'/>
-                                <input type='hidden' name='content' value='$content_text'/>
-                                <input type='hidden' name='content_style_tag' value='$content_style_tag'/>
-                                <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
-                                <p style='display: inline;'>&#8595;$content_order_in_group</p>
-                                <!-- <button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'></button> -->
-                            </form> "; 
-                        //NEU EINFÜGEN
-                        echo "<form method='post' action='#addcontent' style='margin: 0 0 0 0;display: inline;'>
-                            <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;' class='height: 1px;' name='content' value='' class='button primary'>&#8595;+</button>
-                            <input type='hidden' name='contentID' value='$content_id'/>
-                        </form> ";
+                    if ($LoggedIn) {
+                        // CMS-EDIT-TOOLBAR: siehe Kommentar im FUNCTION-Zweig oben, gleiches Prinzip.
+                        echo "<div class='cms-edit-toolbar'>
+                                <form method='post' action='#changecontent'>
+                                    <input type='hidden' name='contentID' value='$content_id'/>
+                                    <input type='hidden' name='content' value='$content_text'/>
+                                    <input type='hidden' name='content_style_tag' value='$content_style_tag'/>
+                                    <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
+                                    <button type='submit' class='cms-edit-btn' title='Diesen Baustein bearbeiten'>&#9998; Bearbeiten</button>
+                                </form>
+                                <span class='cms-edit-position'>Position $content_order_in_group</span>
+                                <form method='post' action='#addcontent'>
+                                    <input type='hidden' name='contentID' value='$content_id'/>
+                                    <button type='submit' class='cms-edit-btn' title='Neuen Baustein direkt danach einfügen'>&#8595;&#43; Danach einfügen</button>
+                                </form>
+                            </div>";
                         echo "<$content_style_tag>$content_text</$content_style_tag>";
-                        echo "<hr style='border-top: 3px solid green;margin: 0 0 0 0;'>";
+                        echo "<hr class='cms-edit-divider'>";
                     }else{
                         if($content_style_tag){
                             echo "<$content_style_tag>$content_text</$content_style_tag>";
