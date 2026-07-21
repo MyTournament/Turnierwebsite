@@ -1896,6 +1896,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <input type="text" id="reg_bn" name="reg_bn" class="Eingabe" placeholder="Gewünschter Benutzername &#9733;" style="color: white" maxlength="40" required autocomplete="username" value="<?php echo htmlspecialchars($regPrevBn, ENT_QUOTES, 'UTF-8'); ?>"><br/>
         <input type="password" id="reg_pw" name="reg_pw" class="Eingabe" placeholder="Passwort wählen &#9733;" style="color: white" required autocomplete="new-password"><br/>
         <input type="password" id="reg_pw2" name="reg_pw2" class="Eingabe" placeholder="Passwort wiederholen &#9733;" style="color: white" required autocomplete="new-password"><br/>
+        <div class='field half' style='margin-top:0.4rem;'>
+            <input type='checkbox' id='reg_pw_zeigen' onclick="var t = this.checked ? 'text' : 'password'; document.getElementById('reg_pw').type = t; document.getElementById('reg_pw2').type = t;">
+            <label for='reg_pw_zeigen'>Passwort anzeigen</label>
+        </div>
         <h5><br/></h5>
         <?php
             require_once __DIR__ . '/website_functionalities/captcha_blanki.php';
