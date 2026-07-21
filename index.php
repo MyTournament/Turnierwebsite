@@ -2137,9 +2137,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     $sqlTeamBegegnungHinzufuegen = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY name';
                     $resultTeamBegegnungHinzufuegen = $conn->query($sqlTeamBegegnungHinzufuegen);
                     while ($rowTeamBegegnungHinzufuegen = $resultTeamBegegnungHinzufuegen->fetch_assoc()) {
-                        $TeamName = $rowTeamBegegnungHinzufuegen['name'];
-                        $TeamKuerzel = $rowTeamBegegnungHinzufuegen['kuerzel'];
-                        $TeamId = $rowTeamBegegnungHinzufuegen['id'];
+                        // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Teamname/-kuerzel
+                        $TeamName = htmlspecialchars($rowTeamBegegnungHinzufuegen['name'], ENT_QUOTES, 'UTF-8');
+                        $TeamKuerzel = htmlspecialchars($rowTeamBegegnungHinzufuegen['kuerzel'], ENT_QUOTES, 'UTF-8');
+                        $TeamId = (int)$rowTeamBegegnungHinzufuegen['id'];
                         echo "<option value=$TeamId>$TeamName ($TeamKuerzel)</option>";
                     }
                     ?>
@@ -2153,9 +2154,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                     $sqlTeamBegegnungHinzufuegen2 = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ' ORDER BY name';
                     $resultTeamBegegnungHinzufuegen2 = $conn->query($sqlTeamBegegnungHinzufuegen2);
                     while ($rowTeamBegegnungHinzufuegen2 = $resultTeamBegegnungHinzufuegen2->fetch_assoc()) {
-                        $TeamName = $rowTeamBegegnungHinzufuegen2['name'];
-                        $TeamKuerzel = $rowTeamBegegnungHinzufuegen2['kuerzel'];
-                        $TeamId = $rowTeamBegegnungHinzufuegen2['id'];
+                        // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Teamname/-kuerzel
+                        $TeamName = htmlspecialchars($rowTeamBegegnungHinzufuegen2['name'], ENT_QUOTES, 'UTF-8');
+                        $TeamKuerzel = htmlspecialchars($rowTeamBegegnungHinzufuegen2['kuerzel'], ENT_QUOTES, 'UTF-8');
+                        $TeamId = (int)$rowTeamBegegnungHinzufuegen2['id'];
                         echo "<option value=$TeamId>$TeamName ($TeamKuerzel)</option>";
                     }
                     ?>
@@ -2227,16 +2229,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                         $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_heimteam .'';
                         $resultTeam = $conn->query($sqlTeam);
                         while ($rowTeam = $resultTeam->fetch_assoc()) {
-                            $team1 = $rowTeam['name'];
-                            $team1_kuerzel = $rowTeam['kuerzel'];
+                            // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Teamname/-kuerzel
+                            $team1 = htmlspecialchars($rowTeam['name'], ENT_QUOTES, 'UTF-8');
+                            $team1_kuerzel = htmlspecialchars($rowTeam['kuerzel'], ENT_QUOTES, 'UTF-8');
                         }
                         //AUSWÄRTSTEAM
                         $fk_auswaertsteam = $rowBegegnung['fk_auswaertsteam'];
                         $sqlTeam = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $fk_auswaertsteam .'';
                         $resultTeam = $conn->query($sqlTeam);
                         while ($rowTeam = $resultTeam->fetch_assoc()) {
-                            $team2 = $rowTeam['name'];
-                            $team2_kuerzel = $rowTeam['kuerzel'];
+                            $team2 = htmlspecialchars($rowTeam['name'], ENT_QUOTES, 'UTF-8');
+                            $team2_kuerzel = htmlspecialchars($rowTeam['kuerzel'], ENT_QUOTES, 'UTF-8');
                         }
                         echo "<option value=$begegnungID>#$begegnungID | $ko_finallevel | $team1 ($team1_kuerzel) - $team2 ($team2_kuerzel)</option>";
                     }
@@ -2294,14 +2297,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $sqlTelefon = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .') ORDER BY ID DESC';
     $resultTelefon = $conn->query($sqlTelefon);
     while ($rowTelefon = $resultTelefon->fetch_assoc()) {
-        $spielername = $rowTelefon['name'];
-        $telefonnummer = $rowTelefon['telefonnummer'];
+        // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS - Spielername/Teamname/Telefonnummer
+        // sind alles bei der Team-Anmeldung frei waehlbare Felder.
+        $spielername = htmlspecialchars($rowTelefon['name'], ENT_QUOTES, 'UTF-8');
+        $telefonnummer = htmlspecialchars($rowTelefon['telefonnummer'], ENT_QUOTES, 'UTF-8');
         $teamID = $rowTelefon['fk_team'];
-        $timestamp = $rowTelefon['timestamp'];
+        $timestamp = htmlspecialchars($rowTelefon['timestamp'], ENT_QUOTES, 'UTF-8');
         $sqlTeamname = 'SELECT * FROM `Turnier_Team` WHERE geloescht = 0 AND id = '. $teamID .'';
         $resultTeamname = $conn->query($sqlTeamname);
+        $teamname = '';
         while ($rowTeamname = $resultTeamname->fetch_assoc()) {
-            $teamname = $rowTeamname['name'];
+            $teamname = htmlspecialchars($rowTeamname['name'], ENT_QUOTES, 'UTF-8');
         }
         echo "<p><b>$spielername</b> ( Telefonnummer: <b>$telefonnummer</b> | Team: <b>$teamname</b> | Spieler registriert seit: $timestamp )</p>";
     }
@@ -2835,7 +2841,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $resultWarteliste = $conn->query($sqlWarteliste);
     $zeahler = 1;
     while ($rowWarteliste = $resultWarteliste->fetch_assoc()) {
-        $a=$rowWarteliste["name"];
+        // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Team-/Spielernamen
+        $a=htmlspecialchars($rowWarteliste["name"], ENT_QUOTES, 'UTF-8');
         $teamId = $rowWarteliste["id"];
         $b=printKuerzelWithLink($conn, $teamId);
         $ausgabeString = "";
@@ -2843,7 +2850,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $sqlSpieler = 'SELECT * FROM `Turnier_Spieler_in` WHERE fk_team = ' . $rowWarteliste["id"] . ' ORDER BY ID';
         $resultSpieler = $conn->query($sqlSpieler);
         while ($rowSpieler = $resultSpieler->fetch_assoc()) {
-            $x=$rowSpieler["name"];
+            $x=htmlspecialchars($rowSpieler["name"], ENT_QUOTES, 'UTF-8');
             $ausgabeString .=  " $x ";
             $ausgabeString .=  "&#x007C;";
         }
@@ -2872,9 +2879,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     $resultPasswort = $conn->query($sqlPasswort);
     $zeahler = 1;
     while ($rowPasswort = $resultPasswort->fetch_assoc()) {
-        $a=$rowPasswort["name"];
+        // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Teamname/Team-Passwort (beides
+        // vom Team selbst bei der Anmeldung frei waehlbar).
+        $a=htmlspecialchars($rowPasswort["name"], ENT_QUOTES, 'UTF-8');
         $teamId = $rowPasswort["id"];
-        $passwort = $rowPasswort["password"];
+        $passwort = htmlspecialchars($rowPasswort["password"], ENT_QUOTES, 'UTF-8');
         $b=printKuerzelWithLink($conn, $teamId);
         $ausgabeString = "";
         $ausgabeString .= "$zeahler. $a <em>($b)</em> &mdash;";
