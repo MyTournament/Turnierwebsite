@@ -399,9 +399,25 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     } else {
         unset($_SESSION['admin_bn'], $_SESSION['admin_pw']);
     }
+    // ============================================================================================
+    // CMS-BEARBEITUNGSMODUS: JETZT SESSION-BASIERT STATT NUR PRO REQUEST
+    // ============================================================================================
+    // Vorher hing der Bearbeitungsmodus rein am POST-Feld "edit_content_mode" - jede Navigation oder
+    // jedes Absenden eines Formulars OHNE dieses Feld (z.B. nach dem Speichern/Löschen eines
+    // Bausteins, das über edit_content.php redirectet) hat den Modus stillschweigend wieder
+    // ausgeschaltet. Jetzt wird der Zustand in der Session gemerkt und bleibt so über Redirects und
+    // andere Aktionen hinweg erhalten, bis man aktiv auf "CMS verlassen" klickt. Der CMS/Backstage-
+    // Umschalt-Button schickt dafür jetzt explizit "True" ODER "False" mit (statt das Feld beim
+    // Ausschalten einfach wegzulassen) - nur SO ein expliziter Wert darf den Session-Zustand ändern,
+    // jedes andere Formular auf der Seite lässt ihn unangetastet.
     if (!isset($edit_content_mode)) { $edit_content_mode = False; }
     if($LoggedInWithCMSorHigher){
-        $edit_content_mode = isset($_POST["edit_content_mode"]) ? $_POST["edit_content_mode"] : False;
+        if (isset($_POST['edit_content_mode'])) {
+            $_SESSION['cms_edit_mode'] = ($_POST['edit_content_mode'] === 'True');
+        }
+        $edit_content_mode = isset($_SESSION['cms_edit_mode']) ? $_SESSION['cms_edit_mode'] : False;
+    } else {
+        unset($_SESSION['cms_edit_mode']);
     }
     // Leiste selbst erscheint bei JEDEM gültigen Login, auch ohne jede Rolle (z.B. frisch registrierte
     // Accounts) - dann eben nur mit "Eingeloggt als ..." + Logout und OHNE jeden Funktions-Button
@@ -515,7 +531,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 // Bewusst .button OHNE .primary (wie Settings/Infos) - .primary bringt eigene
                 // Schriftschnitt-Regeln aus dem Grundtheme mit, die hier für einen einheitlichen
                 // Look in der Admin-Leiste nicht gewünscht sind.
-                echo "<button type='submit' class='button button--cms'>CMS verlassen</button>";
+                // "False" wird jetzt explizit mitgeschickt (nicht mehr einfach weggelassen) - nur ein
+                // ausdrücklicher Wert darf den jetzt session-basierten Modus umschalten.
+                echo "<input type='hidden' name='edit_content_mode' value='False'>
+                <button type='submit' class='button button--cms'>CMS verlassen</button>";
             } else {
                 echo "<input type='hidden' name='edit_content_mode' value='True'>
                 <button type='submit' class='button button--cms'>CMS</button>";

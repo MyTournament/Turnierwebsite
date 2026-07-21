@@ -133,6 +133,34 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     }else if ($action == 'Löschen'){
       $sql = "DELETE FROM CMS_Content WHERE CMS_Content.id = ?;";
       myDb_execute($conn, $TurnierID, $bn, "edit_content.php 2", $sql, array($contentID));
+    }else if ($action == 'Verschieben'){
+      // Baustein mit dem jeweiligen Nachbarn (in derselben Gruppe) per Tausch der order_in_group
+      // nach oben/unten verschieben - ersetzt den früheren "Danach einfügen"-Mechanismus für diesen
+      // Zweck. Bewusst mit Prepared Statements (nicht wie makeSpaceInOrder() oben mit Roh-SQL).
+      $richtung = isset($_POST['richtung']) ? $_POST['richtung'] : '';
+      $stmtAktuell = $conn->prepare("SELECT fk_group, order_in_group FROM CMS_Content WHERE id = ?");
+      $stmtAktuell->bind_param("i", $contentID);
+      $stmtAktuell->execute();
+      $rowAktuell = $stmtAktuell->get_result()->fetch_assoc();
+      if ($rowAktuell !== null) {
+        $fkGroup = (int)$rowAktuell['fk_group'];
+        $orderAktuell = (int)$rowAktuell['order_in_group'];
+        if ($richtung === 'hoch') {
+          $stmtNachbar = $conn->prepare("SELECT id, order_in_group FROM CMS_Content WHERE fk_group = ? AND order_in_group < ? ORDER BY order_in_group DESC LIMIT 1");
+        } else {
+          $stmtNachbar = $conn->prepare("SELECT id, order_in_group FROM CMS_Content WHERE fk_group = ? AND order_in_group > ? ORDER BY order_in_group ASC LIMIT 1");
+        }
+        $stmtNachbar->bind_param("ii", $fkGroup, $orderAktuell);
+        $stmtNachbar->execute();
+        $rowNachbar = $stmtNachbar->get_result()->fetch_assoc();
+        if ($rowNachbar !== null) {
+          $nachbarId = (int)$rowNachbar['id'];
+          $orderNachbar = (int)$rowNachbar['order_in_group'];
+          $sqlSwap = "UPDATE CMS_Content SET order_in_group = ? WHERE id = ?";
+          myDb_execute($conn, $TurnierID, $bn, "edit_content.php Verschieben 1", $sqlSwap, array($orderNachbar, $contentID));
+          myDb_execute($conn, $TurnierID, $bn, "edit_content.php Verschieben 2", $sqlSwap, array($orderAktuell, $nachbarId));
+        }
+      }
     }else if ($action == 'Hinzufügen'){
       //Site, Section, Group & order_in_group des vorherigen Objekt rausfinden -> JOIN
       $sql_order_in_group = "SELECT * FROM CMS_Content, CMS_Content_Group, CMS_Content_Section, CMS_Content_Site ";

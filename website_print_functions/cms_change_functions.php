@@ -77,21 +77,15 @@ function changeContent($conn, $TurnierID, $contentID, $content, $content_style_t
             alert('Du musst unten noch das Häkchen setzen, du Hermann!');
             return false;
         }
-        // Zweite, explizite Bestaetigung nur fuers Loeschen (nicht fuers Aendern) - vorher reichte
-        // ein einziger Klick auf Loeschen, um einen Baustein unwiderruflich zu entfernen.
-        function confirmDelete() {
-            return confirm('Diesen Baustein wirklich unwiderruflich löschen? Das kann nicht rückgängig gemacht werden.');
-        }
     </script>
     <div>
         <div class='field half'>
             <input type='checkbox' id='demo-human-changecontent' name='demo-human-changecontent' unchecked>
-            <label for='demo-human-changecontent'>Ich verstehe, dass gelöschte oder veränderte Elemente nicht wiederhergestellt werden können.</label>
+            <label for='demo-human-changecontent'>Ich verstehe, dass veränderte Elemente nicht wiederhergestellt werden können.</label>
         </div>
     </div>
     <h5><br/></h5>
         <input type='submit' name='action' value='Ändern'/>
-        <input type='submit' name='action' value='Löschen' onclick='return confirmDelete();'/>
     </form>
     ";
 }

@@ -1675,6 +1675,18 @@ repeat;
 				background: var(--admin-accent, #8b5cf6);
 			}
 
+			/* Löschen steht jetzt direkt in der Haupt-Toolbar (nicht mehr im Bearbeiten-Formular) -
+			   eigene rote Einfärbung, damit er sich von den übrigen (violetten) Aktionen abhebt und
+			   nicht aus Versehen mit "Bearbeiten"/"Hoch"/"Runter" verwechselt wird. */
+			.cms-edit-btn-delete {
+				background: #7a2020;
+				border-color: #a33;
+			}
+
+				.cms-edit-btn-delete:hover {
+					background: #a33;
+				}
+
 		.cms-edit-position {
 			font-size: 0.72rem;
 			opacity: 0.7;
