@@ -347,10 +347,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     // die nur "alle_spiele" hat), kann sich zwar für's Spiele-Bearbeiten authentifizieren, sieht
     // aber nie den Backstage-Bereich - genau wie explizit gewünscht.
     $LoggedInWithBackstageOrHigher = $rollenInfo !== null && $rechteFlags['backstage'];
-    // Session-Persistenz: bewusst an CMS ODER Backstage gekoppelt (nicht nur Backstage alleine),
-    // sonst würde ein reiner Autor*in-Login (nur cms-Flag, kein backstage-Flag) nach jedem
-    // Content-Speichern die Session verlieren und müsste sich ständig neu einloggen.
-    if ($LoggedInWithCMSorHigher || $LoggedInWithBackstageOrHigher) {
+    // Session-Persistenz: an JEDEN gültigen Login gekoppelt (nicht nur CMS/Backstage), damit auch ein
+    // frisch registrierter Account ohne jede Rolle nach einem Redirect eingeloggt bleibt und die
+    // Admin-Leiste (siehe unten) durchgängig "Eingeloggt als ..." anzeigen kann.
+    if ($rollenInfo !== null) {
         // Login in der Session merken, damit er nach einem Redirect (z.B. edit_variables.php, edit_teams.php) erhalten bleibt
         $_SESSION['admin_bn'] = $bn;
         $_SESSION['admin_pw'] = $pw;
@@ -361,7 +361,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     if($LoggedInWithCMSorHigher){
         $edit_content_mode = isset($_POST["edit_content_mode"]) ? $_POST["edit_content_mode"] : False;
     }
-    if ($LoggedInWithCMSorHigher || $LoggedInWithBackstageOrHigher) {
+    // Leiste selbst erscheint bei JEDEM gültigen Login, auch ohne jede Rolle (z.B. frisch registrierte
+    // Accounts) - dann eben nur mit "Eingeloggt als ..." + Logout und OHNE jeden Funktions-Button
+    // (CMS/Settings/Infos prüfen weiter unten ohnehin jeweils ihr eigenes Flag einzeln). Vorher war die
+    // gesamte Leiste an CMS- oder Backstage-Flag gekoppelt, wodurch rechtelose Accounts nach dem Login
+    // gar kein Feedback bekamen, dass der Login überhaupt geklappt hat.
+    if ($rollenInfo !== null) {
         $adminBarActionUrl = ($test_turnier_id==0) ? '/' : "/?test_turnier_id=$test_turnier_id";
         // ========================================================================================
         // FIXIERTE VIOLETTE ADMIN-LEISTE (neu eingeführt: "logged-in"-Erkennungsfarbe fürs ganze Backstage)
