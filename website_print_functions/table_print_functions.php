@@ -1,4 +1,34 @@
 ﻿<?php
+    // ================================================================================================
+    // KO-EINZUG-MODUS: KOMPATIBILITÄTS-PRÜFUNG (geteilt zwischen Turnier Settings und dem eigenen
+    // "Einzug ins KO-System"-Menüpunkt, deshalb hier unbedingt/außerhalb jeder Rechte-Bedingung
+    // definiert, statt lokal in einem der beiden Artikel).
+    // ================================================================================================
+    // Prüft, ob ein KO-Einzug-Modus (Zeile aus Turnier_KO_Einzug_Modus) zur aktuellen Gruppenanzahl
+    // und Start-KO-Finalstufe passt. Gibt ['ok' => bool, 'grund' => string] zurück - $grund ist bei
+    // ok=true die Anzahl Qualifikanten/Gruppe, bei ok=false die konkrete Unvereinbarkeits-Erklärung.
+    function koEinzugModusKompatibel($modusRow, $anzahlGruppen, $startKoFinallevel) {
+        $anzahlGruppen = (int)$anzahlGruppen;
+        if ($anzahlGruppen < (int)$modusRow['min_anzahl_gruppen']) {
+            return ['ok' => false, 'grund' => 'Braucht mindestens ' . (int)$modusRow['min_anzahl_gruppen'] . ' Gruppen (aktuell: ' . $anzahlGruppen . ').'];
+        }
+        if (!empty($modusRow['max_anzahl_gruppen']) && $anzahlGruppen > (int)$modusRow['max_anzahl_gruppen']) {
+            return ['ok' => false, 'grund' => 'Erlaubt höchstens ' . (int)$modusRow['max_anzahl_gruppen'] . ' Gruppen (aktuell: ' . $anzahlGruppen . ').'];
+        }
+        if (!empty($modusRow['gruppenanzahl_muss_gerade_sein']) && $anzahlGruppen % 2 !== 0) {
+            return ['ok' => false, 'grund' => 'Braucht eine gerade Anzahl Gruppen (aktuell: ' . $anzahlGruppen . ').'];
+        }
+        $totalStartTeams = (int)pow(2, max(1, (int)$startKoFinallevel - 1));
+        if ($anzahlGruppen <= 0 || $totalStartTeams % $anzahlGruppen !== 0) {
+            return ['ok' => false, 'grund' => 'Die ' . $totalStartTeams . ' Startplätze der gewählten K.-o.-Startstufe lassen sich nicht gleichmäßig auf ' . $anzahlGruppen . ' Gruppen aufteilen.'];
+        }
+        $platzierungenProGruppe = intdiv($totalStartTeams, $anzahlGruppen);
+        if (!empty($modusRow['platzierungen_pro_gruppe']) && (int)$modusRow['platzierungen_pro_gruppe'] !== $platzierungenProGruppe) {
+            return ['ok' => false, 'grund' => 'Braucht genau ' . (int)$modusRow['platzierungen_pro_gruppe'] . ' Qualifikanten pro Gruppe, aktuell qualifizieren aber ' . $platzierungenProGruppe . ' pro Gruppe (' . $totalStartTeams . ' Startplätze ÷ ' . $anzahlGruppen . ' Gruppen).'];
+        }
+        return ['ok' => true, 'grund' => $platzierungenProGruppe . ' Qualifikant(en) pro Gruppe.'];
+    }
+
     function helloHermann($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus){
         $test = "baum";
         echo "Hallo Hermann $test";
