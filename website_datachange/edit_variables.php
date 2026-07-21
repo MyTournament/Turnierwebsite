@@ -1,4 +1,6 @@
 <?php
+// SICHERHEIT: MUSS vor dem ersten session_start() der Anfrage eingebunden werden.
+include_once '../website_functionalities/session_bootstrap.php';
 //########################
 include_once '../database/db_connection.php';
 include_once 'edit_interface.php';

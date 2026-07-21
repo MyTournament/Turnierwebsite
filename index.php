@@ -1,4 +1,8 @@
 <?php
+// SICHERHEIT: MUSS vor dem ersten session_start() der gesamten Anfrage eingebunden werden (siehe
+// Datei für Details - härtet HttpOnly/Secure/SameSite der Session-Cookies).
+include_once __DIR__ . '/website_functionalities/session_bootstrap.php';
+
 // ================================================================================================
 // SESSION-BASIERTE LOGIN-PERSISTENZ FÜR CMS/BACKSTAGE (Admin/Co-Admin/Autor*in/etc. bleiben eingeloggt)
 // ================================================================================================
