@@ -5,44 +5,25 @@
 // Der frühere Pausenraum-Inhalt (Sterni Zähler, Bierball Locations, Achievements) nutzte ein eigenes,
 // zweites Login-System mit unverschlüsselten SQL-Abfragen direkt aus $_POST (u.a. eine echte SQL-
 // Injection über accountId) und ein zweites, mit der heutigen Selbstregistrierung kollidierendes
-// "register_account". Auf ausdrücklichen Wunsch wird das NICHT als echtes, funktionierendes Feature
-// reaktiviert, sondern nur noch als rein statische, inerte Vorschau in einer rot umrandeten "Sandbox"-
-// Box gezeigt - sichtbar ausschließlich für echte Admins (nicht Co-Admin), als Erinnerung/Vorschau an
-// das, was früher hier stand. Keine der Buttons/Links darin ist aktuell funktional.
+// "register_account". Bei der Reaktivierung deshalb komplett neu geschrieben: dieselbe zentrale
+// Anmeldung wie überall sonst auf der Website ($rollenInfo/getUserRollenInfo), die Benutzer-ID kommt
+// ausschließlich aus diesem echten Login (nie aus einem rohen $_POST-Feld), durchgehend Prepared
+// Statements, CSRF-Token-Pflicht bei allen Formularen, und alle Nutzereingaben (Location-/Bewertungs-
+// namen etc.) werden beim Ausgeben mit htmlspecialchars() escaped (gespeichertes XSS wäre sonst über
+// jede beliebige Bewertung möglich gewesen - siehe die Team-/Spielername-XSS-Fixes an anderer Stelle
+// der Website).
+// ================================================================================================
+$pausenraumDarfNutzen = ($rollenInfo !== null) && (count($rollenInfo['rolle_ids']) > 0);
 ?>
 
 <!-- PAUSENRAUM -->
 <article id="pausenraum">
     <h1>Pausenraum</h1>
-
-    <?php if (isset($istEchterAdmin) && $istEchterAdmin) { ?>
-    <style>
-        .pausenraum-admin-sandbox {
-            text-align: left;
-            max-width: 32rem;
-            margin: 1rem auto;
-            padding: 0.9rem 1.1rem;
-            border-radius: 8px;
-            background: rgba(122, 32, 32, 0.12);
-            border: 2px solid #a33;
-        }
-        .pausenraum-admin-sandbox h3 { margin: 0 0 0.4rem; color: #ff8a8a; }
-        .pausenraum-admin-sandbox p { margin: 0 0 0.6rem; font-size: 0.85rem; opacity: 0.85; }
-        .pausenraum-admin-sandbox .button { margin: 0.2rem 0.3rem 0.2rem 0; }
-    </style>
-    <div class="pausenraum-admin-sandbox">
-        <h3>&#9888; Alter Pausenraum-Inhalt (nur für Admins sichtbar)</h3>
-        <p>Reine Vorschau/Sandbox - diese alten Funktionen (eigenes Login, Sterni Zähler, Bierball
-        Locations, Achievements) sind bewusst NICHT reaktiviert und funktionieren nicht wirklich.
-        Niemand außer Admins sieht diese Box.</p>
-        <a class="button disabled">Sterni Zähler <img src='images/icon/sterni1.png' width='16' height='16' alt=''></a>
-        <a class="button disabled">Bierball Locations</a>
-        <a class="button disabled">Achievements</a>
-    </div>
-    <?php } ?>
+    <p>Willkommen im Pausenraum! Hier findest du Beschäftigung für zwischen den Spielen - oder wenn
+    gerade kein Blankiball-Turnier läuft.</p>
 
     <h2>Blankiball-Simulator 2D</h2>
-    <p>Ein ganz kleines Wurfspiel für zwischendurch - zielen, werfen, treffen. Mit richtigem Bier gespielt, nicht nur digital &#128513;</p>
+    <p>Ein ganz kleines Wurfspiel für zwischendurch - zielen, werfen, treffen. Mit richtigem Bier gespielt, nicht nur digital.</p>
     <a href="#blankiball_simulator_2d" class="button primary">&#127918; Zum Blankiball-Simulator 2D</a>
 
     <p></br></p>
@@ -61,9 +42,52 @@
     <a href="https://www.instagram.com/app.theone/" class="button primary">Zur App</a>
 
     <p></br></p>
+    <h2>Für angemeldete Nutzer*innen</h2>
+    <?php if ($pausenraumDarfNutzen) { ?>
+        <p>Sterni Zähler, Bierball Locations und Achievements - für alle mit freigeschaltetem Account.</p>
+        <a href="#sterni_zaehler" class="button primary">Sterni Zähler <img src='images/icon/sterni1.png' width='20' height='20' alt=''></a>
+        <br/><br/>
+        <a href="#bierball_locations" class="button primary">Bierball Locations</a>
+        <br/><br/>
+        <a href="#achievements" class="button primary">Achievements</a>
+    <?php } else { ?>
+        <p>Sterni Zähler, Bierball Locations und Achievements sind für angemeldete Nutzer*innen mit
+        freigeschaltetem Account gedacht. <a href="#login">Hier geht's zum Login/Registrieren</a> - ein
+        Admin muss deinen frisch registrierten Account dann noch freischalten.</p>
+        <a class="button disabled">Sterni Zähler <img src='images/icon/sterni1.png' width='20' height='20' alt=''></a>
+        <br/><br/>
+        <a class="button disabled">Bierball Locations</a>
+        <br/><br/>
+        <a class="button disabled">Achievements</a>
+    <?php } ?>
+
+    <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
     <p></br></p> <!-- Abstände unten damit Button auf Handys nicht von Cookiewarnung überdeckt wird -->
     <p></br></p>
+
+    <?php if (isset($istEchterAdmin) && $istEchterAdmin) { ?>
+    <style>
+        .pausenraum-admin-sandbox {
+            text-align: left;
+            max-width: 32rem;
+            margin: 1rem auto;
+            padding: 0.9rem 1.1rem;
+            border-radius: 8px;
+            background: rgba(122, 32, 32, 0.12);
+            border: 2px solid #a33;
+        }
+        .pausenraum-admin-sandbox h3 { margin: 0 0 0.4rem; color: #ff8a8a; }
+        .pausenraum-admin-sandbox p { margin: 0 0 0.6rem; font-size: 0.85rem; opacity: 0.85; }
+    </style>
+    <div class="pausenraum-admin-sandbox">
+        <h3>&#9888; Hinweis (nur für Admins sichtbar)</h3>
+        <p>Sterni Zähler, Bierball Locations und Achievements oben sind seit Kurzem wieder echte,
+        funktionierende Features (komplett neu geschrieben: sicheres Login, Prepared Statements,
+        CSRF-Schutz, XSS-Escaping) - nicht mehr nur eine Vorschau. Sichtbar/nutzbar für jede
+        angemeldete Person mit mindestens einer zugewiesenen Rolle.</p>
+    </div>
+    <?php } ?>
 </article>
 
 <!-- ################################################################################################ -->
@@ -367,5 +391,276 @@
     <p></br></p>
     <a href="#pausenraum" class="button">Zurück zum Pausenraum</a>
     <p></br></p>
+    <p></br></p>
+</article>
+
+<?php
+// ================================================================================================
+// STERNI ZÄHLER / BIERBALL LOCATIONS / ACHIEVEMENTS - Backend-Helfer.
+// ================================================================================================
+// myDb_execute() braucht edit_interface.php, das index.php normalerweise nicht selbst einbindet
+// (nur die website_datachange/edit_*.php-Backend-Skripte tun das) - hier explizit nachgeladen.
+include_once 'website_datachange/edit_interface.php';
+
+function bbSterniIncrement($conn, $accountId, $TurnierID, $bn) {
+    $drink_type = "Sterni";
+    $sql = "INSERT INTO Pausenraum_Sterni_Zaehler (fk_account, drink_type) VALUES (?, ?)";
+    myDb_execute($conn, $TurnierID, $bn, "pausenraum sterni increment", $sql, array($accountId, $drink_type));
+}
+function bbSterniReset($conn, $accountId, $TurnierID, $bn) {
+    $sql = "DELETE FROM Pausenraum_Sterni_Zaehler WHERE fk_account = ?";
+    myDb_execute($conn, $TurnierID, $bn, "pausenraum sterni reset", $sql, array($accountId));
+}
+function bbSterniAnzahl($conn, $accountId) {
+    $stmt = $conn->prepare("SELECT COUNT(*) AS anzahl FROM Pausenraum_Sterni_Zaehler WHERE fk_account = ?");
+    $stmt->bind_param("i", $accountId);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    return (int)($row['anzahl'] ?? 0);
+}
+function bbAchievementEintragen($conn, $accountId, $typeId, $addText, $TurnierID, $bn) {
+    $sql = "INSERT INTO Pausenraum_Achievement (fk_account, fk_type, add_text) VALUES (?, ?, ?)";
+    myDb_execute($conn, $TurnierID, $bn, "pausenraum achievement", $sql, array($accountId, $typeId, $addText));
+}
+?>
+
+<!-- ################################################################################################ -->
+<!-- ###  STERNI ZÄHLER  ############################################################################# -->
+<!-- ################################################################################################ -->
+<article id="sterni_zaehler">
+    <h1>Sterni Zähler</h1>
+    <?php if (!$pausenraumDarfNutzen) { ?>
+        <p>Nur für angemeldete Nutzer*innen mit freigeschaltetem Account. <a href="#login">Login</a></p>
+    <?php } else {
+        $sterniAccountId = $rollenInfo['benutzer_id'];
+        $sterniJustIncremented = false;
+
+        // SICHERHEIT: CSRF-Pflicht + Login/Rollen-Check oben - vorher gab es hier gar keine Prüfung,
+        // der accountId kam sogar direkt unvalidiert aus $_POST.
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sterni_action']) && csrf_verify()) {
+            if ($_POST['sterni_action'] === 'increment') {
+                bbSterniIncrement($conn, $sterniAccountId, $TurnierID, $bn);
+                $sterniJustIncremented = true;
+            } else if ($_POST['sterni_action'] === 'reset') {
+                bbSterniReset($conn, $sterniAccountId, $TurnierID, $bn);
+            }
+        }
+
+        $sterniZaehler = bbSterniAnzahl($conn, $sterniAccountId);
+
+        // Meilenstein-Achievements nur direkt NACH einem echten Increment eintragen (nicht bei jedem
+        // Seiten-Reload, das war ein Bug in der alten Version - sonst gäbe es bei jedem Neuladen der
+        // Seite auf Stand "genau 1/20/50/100" ein weiteres, dupliziertes Achievement).
+        if ($sterniJustIncremented) {
+            $sterniMeilensteine = [1 => 1, 20 => 3, 50 => 4, 100 => 5];
+            if (isset($sterniMeilensteine[$sterniZaehler])) {
+                bbAchievementEintragen($conn, $sterniAccountId, $sterniMeilensteine[$sterniZaehler], '', $TurnierID, $bn);
+            }
+        }
+        ?>
+        <div style='text-align:center'>
+            <h3>Behalte immer den Überblick, wann du wie viel Sterni trinkst</h3>
+            <p></br></p>
+            <form method='post' action='#sterni_zaehler' style='display:inline;'>
+                <button style='width:auto;height:auto;'><img src='images/hermann_logo/export.png' width='200' height='200' alt=''></button>
+                <input type='hidden' name='sterni_action' value='increment'/>
+                <?php echo csrf_field(); ?>
+            </form>
+            <h2 style='color:red'>Du hast <b><?php echo $sterniZaehler; ?></b> Sternis getrunken!</h2>
+            <a href='#sterni_zaehler_statistik' class='button primary'>Statistik</a>
+            <p></p>
+            <form method='post' action='#sterni_zaehler' style='display:inline;' onsubmit="return confirm('Zähler wirklich auf 0 zurücksetzen?');">
+                <button style='width:auto;height:auto;'>Reset</button>
+                <input type='hidden' name='sterni_action' value='reset'/>
+                <?php echo csrf_field(); ?>
+            </form>
+        </div>
+    <?php } ?>
+    <a href="#pausenraum" class="button">Zurück</a>
+    <p></br></p>
+</article>
+
+<!-- STERNI ZÄHLER STATISTIK -->
+<article id="sterni_zaehler_statistik">
+    <h2>Deine Sterni-Zähler-Statistik</h2>
+    <a href="#sterni_zaehler" class="button">Zurück</a>
+    <p></p>
+    <?php if ($pausenraumDarfNutzen) {
+        $stmtHist = $conn->prepare("SELECT timestamp, drink_type FROM Pausenraum_Sterni_Zaehler WHERE fk_account = ? ORDER BY id DESC");
+        $stmtHist->bind_param("i", $rollenInfo['benutzer_id']);
+        $stmtHist->execute();
+        $resHist = $stmtHist->get_result();
+        echo "<ul class='alt'>";
+        while ($rowHist = $resHist->fetch_assoc()) {
+            echo "<li>" . htmlspecialchars($rowHist['timestamp']) . " : 1 " . htmlspecialchars($rowHist['drink_type']) . "</li>";
+        }
+        echo "</ul>";
+    } ?>
+    <a href="#sterni_zaehler" class="button">Zurück</a>
+    <p></br></p>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  BIERBALL LOCATIONS  ######################################################################## -->
+<!-- ################################################################################################ -->
+<article id="bierball_locations">
+    <h1>Gute Bierball Locations</h1>
+    <?php if (!$pausenraumDarfNutzen) { ?>
+        <p>Nur für angemeldete Nutzer*innen mit freigeschaltetem Account. <a href="#login">Login</a></p>
+    <?php } else { ?>
+    <ul class="alt">
+        <?php
+        $stmtLoc = $conn->prepare("SELECT id, name, description FROM Pausenraum_Location ORDER BY id ASC");
+        $stmtLoc->execute();
+        $resLoc = $stmtLoc->get_result();
+        while ($rowLoc = $resLoc->fetch_assoc()) {
+            $locationId = (int)$rowLoc['id'];
+            // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS - Location-Name/Beschreibung
+            // kommen von Nutzer*innen selbst (Formular "Location hinzufügen").
+            $locationName = htmlspecialchars($rowLoc['name'], ENT_QUOTES, 'UTF-8');
+            $locationDescription = htmlspecialchars($rowLoc['description'], ENT_QUOTES, 'UTF-8');
+            echo "<hr>";
+            echo "<h2 style='color: green'>$locationName</h2>";
+            echo "<p style='color: green'>Beschreibung: $locationDescription</p>";
+
+            $stmtBew = $conn->prepare("SELECT sterne FROM Pausenraum_Location_Bewertung WHERE fk_location = ?");
+            $stmtBew->bind_param("i", $locationId);
+            $stmtBew->execute();
+            $resBew = $stmtBew->get_result();
+            $summe = 0; $anzahl = 0;
+            while ($rowBew = $resBew->fetch_assoc()) {
+                $summe += (int)$rowBew['sterne'];
+                $anzahl++;
+            }
+            if ($anzahl > 0) {
+                echo "<p>Durchschnittliche Bewertung: " . round($summe / $anzahl, 1) . " &#9733; ($anzahl Bewertungen)</p>";
+            } else {
+                echo "<p><i>Noch keine Bewertungen</i></p>";
+            }
+            ?>
+            <form method='post' action='#bierball_locations_bewertungen' style='display:inline;'>
+                <input type='hidden' name='location_id' value='<?php echo $locationId; ?>'/>
+                <input type='hidden' name='location_name' value='<?php echo $locationName; ?>'/>
+                <button type='submit' class='button primary'>Bewertungen ansehen</button>
+            </form>
+            <?php
+        }
+        ?>
+    </ul>
+    <p><br/></p>
+    <a href='#bierball_locations_hinzufuegen' class='button primary'>Location hinzufügen</a>
+    <?php } ?>
+    <ul class="actions">
+        <li><a href="#pausenraum" class="button">Zurück</a></li>
+    </ul>
+    <p></br></p>
+</article>
+
+<!-- BIERBALL LOCATIONS: BEWERTUNGEN ANSEHEN -->
+<article id="bierball_locations_bewertungen">
+    <?php if ($pausenraumDarfNutzen && isset($_POST['location_id'])) {
+        $bewLocationId = (int)$_POST['location_id'];
+        $bewLocationName = htmlspecialchars(isset($_POST['location_name']) ? $_POST['location_name'] : '', ENT_QUOTES, 'UTF-8');
+        echo "<h1 style='color: green'>Bewertungen für $bewLocationName</h1>";
+        ?>
+        <ul class="alt">
+        <?php
+        $stmtBew = $conn->prepare("SELECT b.name, b.description, b.sterne, s.Benutzername AS autor FROM Pausenraum_Location_Bewertung b LEFT JOIN System_Benutzer_in s ON s.id = b.autor WHERE b.fk_location = ? ORDER BY b.id DESC");
+        $stmtBew->bind_param("i", $bewLocationId);
+        $stmtBew->execute();
+        $resBew = $stmtBew->get_result();
+        while ($rowBew = $resBew->fetch_assoc()) {
+            $autorName = $rowBew['autor'] !== null ? $rowBew['autor'] : 'unbekannter Autor';
+            echo "<li>" . htmlspecialchars($rowBew['name']) . " | " . htmlspecialchars($rowBew['description']) . " | " . (int)$rowBew['sterne'] . " &#9733; | Autor*in: " . htmlspecialchars($autorName) . "</li>";
+        }
+        ?>
+        </ul>
+        <form method='post' action='#bierball_locations_bewertungen_hinzufuegen'>
+            <input type='hidden' name='location_id' value='<?php echo $bewLocationId; ?>'/>
+            <input type='hidden' name='location_name' value='<?php echo $bewLocationName; ?>'/>
+            <button type='submit' class='button primary'>Bewertung hinzufügen</button>
+        </form>
+    <?php } ?>
+    <ul class="actions">
+        <li><a href="#bierball_locations" class="button">Zurück</a></li>
+    </ul>
+    <p></br></p>
+</article>
+
+<!-- BIERBALL LOCATIONS: LOCATION HINZUFÜGEN -->
+<article id="bierball_locations_hinzufuegen">
+    <h1>Location hinzufügen</h1>
+    <?php if ($pausenraumDarfNutzen) { ?>
+    <ul class="alt">
+        <form action="website_datachange/edit_locations.php" method="POST">
+            <input type="text" name="name" class="Eingabe" placeholder="Location" style="color: white" required><br/>
+            <input type="text" name="description" class="Eingabe" placeholder="Beschreibung" style="color: white" required><br/>
+            <input type='hidden' name='action' value='new_location'/>
+            <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES, 'UTF-8'); ?>'/>
+            <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES, 'UTF-8'); ?>'/>
+            <input type='hidden' name='TurnierID' value='<?php echo (int)$TurnierID; ?>'/>
+            <?php echo csrf_field(); ?>
+            <p><button type="submit">Posten</button></p>
+        </form>
+    </ul>
+    <?php } ?>
+    <ul class="actions">
+        <li><a href="#bierball_locations" class="button">Zurück</a></li>
+    </ul>
+    <p></br></p>
+</article>
+
+<!-- BIERBALL LOCATIONS: BEWERTUNG HINZUFÜGEN -->
+<article id="bierball_locations_bewertungen_hinzufuegen">
+    <h1>Bewertung hinzufügen</h1>
+    <?php if ($pausenraumDarfNutzen && isset($_POST['location_id'])) {
+        $neueBewLocationId = (int)$_POST['location_id'];
+        $neueBewLocationName = htmlspecialchars(isset($_POST['location_name']) ? $_POST['location_name'] : '', ENT_QUOTES, 'UTF-8');
+        ?>
+        <ul class="alt">
+            <form action="website_datachange/edit_locations.php" method="POST">
+                <input type="text" name="name" class="Eingabe" placeholder="Titel" style="color: white" required><br/>
+                <input type="number" min="0" max="5" name="sterne" class="Eingabe" placeholder="Sterne (0-5)" style="color: black" required><br/>
+                <input type="text" name="description" class="Eingabe" placeholder="Beschreibung" style="color: white" required><br/>
+                <input type='hidden' name='action' value='new_rating'/>
+                <input type='hidden' name='fk_location' value='<?php echo $neueBewLocationId; ?>'/>
+                <input type='hidden' name='location_name' value='<?php echo $neueBewLocationName; ?>'/>
+                <input type='hidden' name='bn' value='<?php echo htmlspecialchars($bn, ENT_QUOTES, 'UTF-8'); ?>'/>
+                <input type='hidden' name='pw' value='<?php echo htmlspecialchars($pw, ENT_QUOTES, 'UTF-8'); ?>'/>
+                <input type='hidden' name='TurnierID' value='<?php echo (int)$TurnierID; ?>'/>
+                <?php echo csrf_field(); ?>
+                <p><button type="submit">Posten</button></p>
+            </form>
+        </ul>
+    <?php } ?>
+    <ul class="actions">
+        <li><a href="#bierball_locations" class="button">Zurück</a></li>
+    </ul>
+    <p></br></p>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  ACHIEVEMENTS  ############################################################################## -->
+<!-- ################################################################################################ -->
+<article id="achievements">
+    <h1>Achievements</h1>
+    <?php if ($pausenraumDarfNutzen) { ?>
+    <ul class="alt">
+        <?php
+        $stmtAch = $conn->prepare("SELECT a.add_text, t.name AS typeName, s.Benutzername AS autor FROM Pausenraum_Achievement a LEFT JOIN Pausenraum_Achievement_Type t ON t.id = a.fk_type LEFT JOIN System_Benutzer_in s ON s.id = a.fk_account ORDER BY a.id DESC LIMIT 50");
+        $stmtAch->execute();
+        $resAch = $stmtAch->get_result();
+        while ($rowAch = $resAch->fetch_assoc()) {
+            $autorName = $rowAch['autor'] !== null ? $rowAch['autor'] : 'unbekannt';
+            $typeName = $rowAch['typeName'] !== null ? $rowAch['typeName'] : 'Achievement';
+            $addText = $rowAch['add_text'] !== null ? $rowAch['add_text'] : '';
+            echo "<li>" . htmlspecialchars($autorName) . " " . htmlspecialchars($typeName) . " " . htmlspecialchars($addText) . "</li>";
+        }
+        ?>
+    </ul>
+    <?php } else { ?>
+        <p>Nur für angemeldete Nutzer*innen mit freigeschaltetem Account. <a href="#login">Login</a></p>
+    <?php } ?>
+    <a href="#pausenraum" class="button">Zurück</a>
     <p></br></p>
 </article>
