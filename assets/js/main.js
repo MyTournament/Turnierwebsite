@@ -54,16 +54,12 @@
 		}
 
 	// Nav.
-		var $nav = $header.children('nav'),
-			$nav_li = $nav.find('li');
-
-		// Add "middle" alignment classes if we're dealing with an even number of items.
-			if ($nav_li.length % 2 == 0) {
-
-				$nav.addClass('use-middle');
-				$nav_li.eq( ($nav_li.length / 2) ).addClass('is-middle');
-
-			}
+		// ENTFERNT: das Original-Theme fuegte bei einer GERADEN Anzahl Nav-Items automatisch die
+		// Klasse "use-middle" hinzu, die per CSS eine senkrechte weisse Trennlinie in die Mitte der
+		// Navigation zeichnet (#header nav.use-middle:after in main.css) - gedacht fuer ein
+		// symmetrisches Logo-in-der-Mitte-Layout des alten Templates. Mit den eigenen Chip-Buttons
+		// (aktuell 6 Stueck, ebenfalls eine gerade Zahl) wirkte das nur noch wie ein stoerender alter
+		// Ueberrest quer durch die Navigation - deshalb komplett entfernt statt nur per CSS versteckt.
 
 	// Main.
 		// ==========================================================================

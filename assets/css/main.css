@@ -1776,20 +1776,9 @@ repeat;
 				font-size: 0.8rem;
 			}
 
-	#header nav.use-middle:after {
-		content: '';
-		display: block;
-		position: absolute;
-		top: 0;
-		left: calc(50% - 1px);
-		width: 1px;
-		height: 100%;
-		background: #ffffff;
-	}
-
-	#header nav.use-middle ul li.is-middle {
-		border-left: 0;
-	}
+	/* ENTFERNT: ".use-middle"/".is-middle" wurden nur noch von main.js gesetzt, das diese Klassen
+	   jetzt nicht mehr vergibt (siehe Kommentar dort) - hier ebenfalls entfernt statt als totes CSS
+	   liegen zu bleiben. */
 
 	body.is-article-visible #header {
 		-moz-transform: scale(0.95);
@@ -1897,10 +1886,6 @@ repeat;
 					#header nav ul li a {
 						min-width: 5.6rem;
 					}
-
-			#header nav.use-middle:after {
-				display: none;
-			}
 
 	}
 
