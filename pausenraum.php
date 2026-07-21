@@ -95,14 +95,14 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
 <!-- ################################################################################################ -->
 <!-- ###  BLANKIBALL-SIMULATOR 2D  ################################################################## -->
 <!-- ################################################################################################ -->
-<!-- Kleines, in sich geschlossenes Ziel-Wurfspiel (Vanilla-JS + Canvas). Steuerung per Pointer Events
-     (funktioniert dadurch identisch mit Maus am PC UND Touch am Handy/Tablet, ohne zwei getrennte
-     Code-Pfade). Ablauf: vom Wurfkreis unten nach oben ziehen zum Zielen, loslassen zum Werfen. Bei
-     Treffer beginnt eine Zeitmessung ("die andere Mannschaft darf trinken, bis 'Stop!' gerufen wird")
-     mit manuellem Stop-Button, weil die tatsächliche Dauer laut Regeln von den Spieler*innen selbst
-     bestimmt wird (aufstellen, zurücklaufen, "Stop!" rufen) und nicht von der Website vorgegeben
-     werden soll. Absichtlich sehr simpel gehalten ("ganz kleines Basic Spiel") - kein echtes Physik-
-     Modell, nur eine einfache geradlinige Flugbahn mit Kollisionsabfrage gegen die Flaschen-Hitboxen. -->
+<!-- Echtes 2-Spieler-Bierball/Flunkyball auf einem Gerät (Vanilla-JS + Canvas, Pointer Events fuer
+     Maus UND Touch gleichermassen). Regeln recherchiert (siehe Chat-Quellen: spielregeln.de,
+     beerpong.de, redcupshop.com u.a.) - EINE gemeinsame Flasche steht in der Mitte zwischen zwei
+     Team-Seiten, es wird IMMER abwechselnd geworfen (Team A, dann Team B, usw.). Trifft ein Team,
+     darf es trinken, bis das GEGNERISCHE Team die Flasche wieder aufgestellt und "Stopp!" gerufen hat
+     - danach ist genau dieses (verteidigende) Team automatisch am Zug. Das "Aufstellen" ist hier ein
+     Tipp-Minispiel (Fortschrittsbalken durch wiederholtes Tippen fuellen) statt eines einzelnen Stop-
+     Buttons, um das hektische Flasche-aufstellen-und-zurücklaufen wenigstens ein bisschen nachzustellen. -->
 <article id="blankiball_simulator_2d">
     <h1>Blankiball-Simulator 2D</h1>
     <a href="#pausenraum" class="button">Zurück zum Pausenraum</a>
@@ -125,7 +125,7 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
             margin: 0 auto;
             border-radius: 10px;
             border: 2px solid rgba(139, 92, 246, 0.4);
-            background: linear-gradient(180deg, #1b2a1b 0%, #14351a 55%, #0e2a12 100%);
+            background: linear-gradient(180deg, #14351a 0%, #1b2a1b 50%, #14351a 100%);
             touch-action: none;
         }
         #bbsim-instructions {
@@ -141,6 +141,18 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
         #bbsim-instructions h3 { margin: 0 0 0.4rem; }
         #bbsim-instructions ul { margin: 0 0 0.6rem; padding-left: 1.2rem; }
         #bbsim-instructions li { margin: 0.2rem 0; }
+        #bbsim-turn-indicator {
+            display: none;
+            max-width: 22rem;
+            margin: 0 auto 0.5rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        #bbsim-turn-indicator.bbsim-turn--a { background: rgba(59, 130, 246, 0.18); border: 1px solid #3b82f6; color: #93c5fd; }
+        #bbsim-turn-indicator.bbsim-turn--b { background: rgba(236, 72, 153, 0.18); border: 1px solid #ec4899; color: #f9a8d4; }
         #bbsim-status {
             max-width: 22rem;
             margin: 0.8rem auto 0;
@@ -156,9 +168,23 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
         }
-        #bbsim-stop-btn {
+        #bbsim-aufstellen-wrap {
             display: none;
-            margin-top: 0.6rem;
+            max-width: 22rem;
+            margin: 0.6rem auto 0;
+        }
+        #bbsim-aufstellen-bar {
+            height: 0.9rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.1);
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        #bbsim-aufstellen-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ffd166, #ef4444);
+            transition: width 0.1s ease;
         }
         #bbsim-reset-btn {
             display: none;
@@ -168,19 +194,27 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
 
     <div id="bbsim-wrap">
         <div id="bbsim-instructions">
-            <h3>Wie geht's?</h3>
+            <h3>Wie geht's? (Echtes Bierball/Flunkyball - zu zweit an einem Gerät)</h3>
             <ul>
-                <li>Vom kleinen Kreis unten mit Maus oder Finger nach oben ziehen, um Richtung &amp; Wurfstärke festzulegen - loslassen zum Werfen.</li>
-                <li>Triffst du eine Flasche, läuft die Zeit: die gegnerische Mannschaft darf trinken, bis in echt "Stop!" gerufen wird - dann auf den Stop-Button tippen.</li>
+                <li>Zwei Teams, eine gemeinsame Flasche in der Mitte: es wird immer abwechselnd geworfen - erst Team A, dann Team B, und so weiter.</li>
+                <li>Vom Wurfkreis auf der eigenen Seite (Team A unten, Team B oben) mit Maus oder Finger nach hinten ziehen zum Zielen, loslassen zum Werfen.</li>
+                <li>Flasche getroffen? Das werfende Team darf trinken - das <b>andere</b> Team muss dafür so schnell wie möglich auf den "Aufstellen!"-Button tippen, um die Flasche wieder hinzustellen und zurückzulaufen. Ist die Leiste voll, ist automatisch das aufstellende Team am Zug.</li>
+                <li>Daneben geworfen? Kein Trinken, direkt ist das andere Team dran.</li>
                 <li>Die vollständigen Regeln stehen unter <a href="#regeln">Regeln</a> - das hier ersetzt nur den Zielwurf, gespielt wird mit echtem Bier.</li>
             </ul>
             <button id="bbsim-start-btn" class="button primary">Los geht's!</button>
         </div>
 
+        <div id="bbsim-turn-indicator"></div>
         <canvas id="bbsim-canvas" width="330" height="480" style="display:none;"></canvas>
         <div id="bbsim-status"></div>
-        <button id="bbsim-stop-btn" class="button primary">&#9209; Stop!</button>
-        <button id="bbsim-reset-btn" class="button primary">Nächster Wurf</button>
+
+        <div id="bbsim-aufstellen-wrap">
+            <div id="bbsim-aufstellen-bar"><div id="bbsim-aufstellen-fill"></div></div>
+            <button id="bbsim-aufstellen-btn" class="button primary">&#128680; Jetzt aufstellen! Tippen!</button>
+        </div>
+
+        <button id="bbsim-reset-btn" class="button primary">Weiter</button>
     </div>
 
     <script>
@@ -189,61 +223,79 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
         var instructions = document.getElementById('bbsim-instructions');
         var canvas = document.getElementById('bbsim-canvas');
         var statusEl = document.getElementById('bbsim-status');
-        var stopBtn = document.getElementById('bbsim-stop-btn');
+        var turnEl = document.getElementById('bbsim-turn-indicator');
+        var aufstellenWrap = document.getElementById('bbsim-aufstellen-wrap');
+        var aufstellenBtn = document.getElementById('bbsim-aufstellen-btn');
+        var aufstellenFill = document.getElementById('bbsim-aufstellen-fill');
         var resetBtn = document.getElementById('bbsim-reset-btn');
         if (!startBtn || !canvas) { return; }
         var ctx = canvas.getContext('2d');
 
         var W = canvas.width, H = canvas.height;
-        var THROW_X = W / 2, THROW_Y = H - 40;
-        var BOTTLE_W = 22, BOTTLE_H = 46;
-        var bottles = [];
+        var THROW_X = W / 2;
+        var THROW_Y_A = H - 40; // Team A steht unten
+        var THROW_Y_B = 40;     // Team B steht oben
+        var BOTTLE_X = W / 2, BOTTLE_Y = H / 2; // EINE gemeinsame Flasche in der Mitte
+        var BOTTLE_W = 24, BOTTLE_H = 50;
+        var AUFSTELLEN_ZIEL = 100;
+        var AUFSTELLEN_SCHRITT = 9; // ca. 11-12 Taps bis die Flasche wieder steht
+
+        var currentTeam = 'A';
+        var bottleAlive = true;
         var ball = null; // {x,y,vx,vy}
-        var phase = 'idle'; // idle | aiming | flying | hit | miss
+        var phase = 'idle'; // idle | aiming | flying | drinking | miss
         var aimCurrent = null;
         var drinkStartTime = 0;
         var timerRAF = null;
+        var aufstellenProgress = 0;
 
-        function layoutBottles(){
-            bottles = [];
-            var count = 6;
-            var rowY = 70;
-            var gap = W / (count + 1);
-            for (var i = 1; i <= count; i++) {
-                bottles.push({ x: gap * i, y: rowY, w: BOTTLE_W, h: BOTTLE_H, alive: true });
-            }
+        function teamName(t){ return t === 'A' ? 'Team A' : 'Team B'; }
+        function gegnerTeam(t){ return t === 'A' ? 'B' : 'A'; }
+        function throwOriginY(){ return currentTeam === 'A' ? THROW_Y_A : THROW_Y_B; }
+
+        function updateTurnIndicator(){
+            turnEl.textContent = teamName(currentTeam) + ' ist dran';
+            turnEl.className = 'bbsim-turn--' + currentTeam.toLowerCase();
+            turnEl.style.display = 'block';
         }
 
         function resetRound(){
-            layoutBottles();
+            bottleAlive = true;
             ball = null;
             phase = 'idle';
             aimCurrent = null;
             statusEl.textContent = '';
             statusEl.className = '';
-            stopBtn.style.display = 'none';
+            aufstellenWrap.style.display = 'none';
+            aufstellenProgress = 0;
             resetBtn.style.display = 'none';
+            updateTurnIndicator();
             draw();
         }
 
         function draw(){
             ctx.clearRect(0, 0, W, H);
 
-            // Boden-/Wurfmarkierung
+            // Wurfkreise beider Seiten - die Seite, die gerade dran ist, wird hervorgehoben
             ctx.beginPath();
-            ctx.arc(THROW_X, THROW_Y, 16, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.arc(THROW_X, THROW_Y_A, 16, 0, Math.PI * 2);
+            ctx.strokeStyle = (currentTeam === 'A') ? 'rgba(147,197,253,0.9)' : 'rgba(255,255,255,0.3)';
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Flaschen
-            bottles.forEach(function(b){
-                if (!b.alive) { return; }
+            ctx.beginPath();
+            ctx.arc(THROW_X, THROW_Y_B, 16, 0, Math.PI * 2);
+            ctx.strokeStyle = (currentTeam === 'B') ? 'rgba(249,168,212,0.9)' : 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Die eine gemeinsame Flasche in der Mitte
+            if (bottleAlive) {
                 ctx.fillStyle = '#2ecc71';
-                ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h * 0.7);
+                ctx.fillRect(BOTTLE_X - BOTTLE_W/2, BOTTLE_Y - BOTTLE_H/2, BOTTLE_W, BOTTLE_H * 0.7);
                 ctx.fillStyle = '#27ae60';
-                ctx.fillRect(b.x - b.w/4, b.y - b.h/2 - b.h*0.3, b.w/2, b.h*0.3);
-            });
+                ctx.fillRect(BOTTLE_X - BOTTLE_W/4, BOTTLE_Y - BOTTLE_H/2 - BOTTLE_H*0.3, BOTTLE_W/2, BOTTLE_H*0.3);
+            }
 
             // Ball
             if (ball) {
@@ -256,7 +308,7 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
             // Ziellinie waehrend des Zielens
             if (phase === 'aiming' && aimCurrent) {
                 ctx.beginPath();
-                ctx.moveTo(THROW_X, THROW_Y);
+                ctx.moveTo(THROW_X, throwOriginY());
                 ctx.lineTo(aimCurrent.x, aimCurrent.y);
                 ctx.strokeStyle = 'rgba(255,209,102,0.8)';
                 ctx.lineWidth = 3;
@@ -290,11 +342,12 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
             if (phase !== 'aiming') { return; }
             evt.preventDefault();
             var pos = pointerPos(evt);
+            var originY = throwOriginY();
             var dx = pos.x - THROW_X;
-            var dy = pos.y - THROW_Y;
-            // Ziehen nach OBEN wirft nach oben Richtung Flaschen - Wurfrichtung ist daher entgegen der
-            // Zugrichtung (Slingshot-Prinzip), Kraft proportional zur Zugdistanz.
-            var power = Math.min(Math.sqrt(dx*dx + dy*dy) / 12, 16);
+            var dy = pos.y - originY;
+            // Ziehen nach HINTEN (weg von der Flasche) wirft nach VORN Richtung Flasche - Wurfrichtung
+            // ist daher entgegen der Zugrichtung (Slingshot-Prinzip), Kraft proportional zur Zugdistanz.
+            var power = Math.min(Math.sqrt(dx*dx + dy*dy) / 10, 18);
             if (power < 2) { // zu kurzer Zug -> kein Wurf, einfach abbrechen
                 phase = 'idle';
                 aimCurrent = null;
@@ -304,7 +357,7 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
             var angle = Math.atan2(dy, dx);
             ball = {
                 x: THROW_X,
-                y: THROW_Y,
+                y: originY,
                 vx: -Math.cos(angle) * power,
                 vy: -Math.sin(angle) * power
             };
@@ -318,15 +371,10 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            // Kollision mit Flaschen (einfache Rechteck-Abstandspruefung)
-            for (var i = 0; i < bottles.length; i++) {
-                var b = bottles[i];
-                if (!b.alive) { continue; }
-                if (Math.abs(ball.x - b.x) < b.w/2 + 8 && Math.abs(ball.y - b.y) < b.h/2 + 8) {
-                    b.alive = false;
-                    onHit();
-                    return;
-                }
+            if (bottleAlive && Math.abs(ball.x - BOTTLE_X) < BOTTLE_W/2 + 8 && Math.abs(ball.y - BOTTLE_Y) < BOTTLE_H/2 + 8) {
+                bottleAlive = false;
+                onHit();
+                return;
             }
 
             if (ball.x < -20 || ball.x > W + 20 || ball.y < -20 || ball.y > H + 20) {
@@ -339,44 +387,68 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
         }
 
         function onHit(){
-            phase = 'hit';
+            phase = 'drinking';
             ball = null;
             draw();
-            statusEl.textContent = 'TREFFER! 🍻 Die andere Mannschaft darf trinken...';
+            var werfer = currentTeam;
+            var verteidiger = gegnerTeam(currentTeam);
+            statusEl.innerHTML = 'TREFFER! 🍻 ' + teamName(werfer) + ' darf trinken - <span id="bbsim-timer">0.0s</span>';
             statusEl.className = 'bbsim-status--drink';
             drinkStartTime = Date.now();
-            stopBtn.style.display = 'inline-block';
-            resetBtn.style.display = 'none';
+            aufstellenProgress = 0;
+            aufstellenFill.style.width = '0%';
+            aufstellenBtn.textContent = '🚨 ' + teamName(verteidiger) + ': Jetzt aufstellen! Tippen!';
+            aufstellenWrap.style.display = 'block';
             tickTimer();
         }
 
         function tickTimer(){
-            if (phase !== 'hit') { return; }
+            if (phase !== 'drinking') { return; }
             var seconds = ((Date.now() - drinkStartTime) / 1000).toFixed(1);
-            statusEl.innerHTML = 'TREFFER! 🍻 Trinken, bis "Stop!" gerufen wird - <span id="bbsim-timer">' + seconds + 's</span>';
+            var timerSpan = document.getElementById('bbsim-timer');
+            if (timerSpan) { timerSpan.textContent = seconds + 's'; }
             timerRAF = requestAnimationFrame(tickTimer);
+        }
+
+        function onAufstellenTap(){
+            if (phase !== 'drinking') { return; }
+            aufstellenProgress = Math.min(aufstellenProgress + AUFSTELLEN_SCHRITT, AUFSTELLEN_ZIEL);
+            aufstellenFill.style.width = aufstellenProgress + '%';
+            if (aufstellenProgress >= AUFSTELLEN_ZIEL) {
+                onStoppGerufen();
+            }
+        }
+
+        function onStoppGerufen(){
+            if (timerRAF) { cancelAnimationFrame(timerRAF); timerRAF = null; }
+            var seconds = ((Date.now() - drinkStartTime) / 1000).toFixed(1);
+            var werfer = currentTeam;
+            var verteidiger = gegnerTeam(currentTeam);
+            statusEl.textContent = 'Stopp! ' + teamName(werfer) + ' hat ' + seconds + 's getrunken. ' + teamName(verteidiger) + ' ist jetzt dran.';
+            statusEl.className = '';
+            aufstellenWrap.style.display = 'none';
+            currentTeam = verteidiger; // nach dem Aufstellen ist das verteidigende Team automatisch dran
+            phase = 'idle';
+            bottleAlive = true;
+            updateTurnIndicator();
+            draw();
         }
 
         function onMiss(){
             phase = 'miss';
             ball = null;
             draw();
-            statusEl.textContent = 'Leider daneben! Nächster Versuch...';
+            statusEl.textContent = 'Daneben! ' + teamName(gegnerTeam(currentTeam)) + ' ist jetzt dran.';
             statusEl.className = '';
             resetBtn.style.display = 'inline-block';
         }
 
-        stopBtn.addEventListener('click', function(){
-            if (timerRAF) { cancelAnimationFrame(timerRAF); timerRAF = null; }
-            var seconds = ((Date.now() - drinkStartTime) / 1000).toFixed(1);
-            statusEl.textContent = 'Stop! Getrunken für ' + seconds + 's.';
-            statusEl.className = '';
-            stopBtn.style.display = 'none';
-            resetBtn.style.display = 'inline-block';
-            phase = 'stopped';
-        });
+        aufstellenBtn.addEventListener('click', onAufstellenTap);
 
-        resetBtn.addEventListener('click', resetRound);
+        resetBtn.addEventListener('click', function(){
+            currentTeam = gegnerTeam(currentTeam);
+            resetRound();
+        });
 
         canvas.addEventListener('pointerdown', onPointerDown);
         canvas.addEventListener('pointermove', onPointerMove);
