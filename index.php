@@ -549,12 +549,24 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </div>
     </div>
     <!--<button onclick="insert_traffic($conn, 1, 'anonym', 1 , ' hat sich die Regeln angesehen')"> Click2 </button>-->
+    <!-- Icons bewusst als schlichte, einfarbige Inline-SVGs statt der frueheren bunten Emojis -
+         passt sich per currentColor der Textfarbe an und fuegt sich damit ins ansonsten monochrome
+         Grundtheme der Website ein. -->
     <nav>
         <ul>
-            <li><a href="#info">ℹ️ Info</a></li>
-            <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">📖 Regeln</a></li>
-            <li class='button'><a href='#teams'>👩‍👧‍👦Teams</a></li>
-            <?php 
+            <li><a href="#info">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"/></svg>
+                <span>Info</span>
+            </a></li>
+            <li><a href="#regeln" onclick="insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich die Regeln angesehen');">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.67 4.67 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5v-13z"/><path d="M20 5.5c0-.83-.67-1.5-1.5-1.5H12v16h6.5c.83 0 1.5-.67 1.5-1.5v-13z"/></svg>
+                <span>Regeln</span>
+            </a></li>
+            <li><a href='#teams'>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M15.3 14.3c2.6.4 4.7 2.5 5.2 5.2"/></svg>
+                <span>Teams</span>
+            </a></li>
+            <?php
             //Aktuelle Turnierphase herausfinden - erstmal ID
                 $sqlTurnier = 'SELECT * FROM `Turnier_Main` WHERE id = '. $TurnierID .' ORDER BY ID';
                 $resultTurnier = $conn->query($sqlTurnier);
@@ -564,14 +576,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 }
 
                 //SPIELPLAN
-                if($turnier_phase_ID == 4 ||$turnier_phase_ID == 5 || $turnier_phase_ID == 7 || $turnier_phase_ID == 9 || $turnier_phase_ID == 11 || $turnier_phase_ID == 13){
-                    echo"<li><a href='#spielplan' >🗓️ Spielplan</a></li>";
-                    //onclick='"insert_traffic($conn, $websiteId, 'anonym', 1 , ' hat sich den Spielplan angesehen');"
-                }else{
-                    echo"<li class='button disabled'><a href='#spielplan'>🗓️ Spielplan</a></li>";
-                }
-            ?>    
-            <li><a href="https://www.paypal.com/paypalme/blankiball?country.x=DE&locale.x=de_DE">♥️ Spenden</a></li>
+                $spielplanIstAktiv = ($turnier_phase_ID == 4 || $turnier_phase_ID == 5 || $turnier_phase_ID == 7 || $turnier_phase_ID == 9 || $turnier_phase_ID == 11 || $turnier_phase_ID == 13);
+                $spielplanKlasse = $spielplanIstAktiv ? '' : " class='disabled'";
+                echo "<li><a href='#spielplan'$spielplanKlasse>
+                    <svg viewBox='0 0 24 24' aria-hidden='true'><rect x='3.5' y='5' width='17' height='15' rx='2'/><line x1='3.5' y1='9.5' x2='20.5' y2='9.5'/><line x1='7.5' y1='3' x2='7.5' y2='6.5'/><line x1='16.5' y1='3' x2='16.5' y2='6.5'/></svg>
+                    <span>Spielplan</span>
+                </a></li>";
+            ?>
+            <li><a href="https://www.paypal.com/paypalme/blankiball?country.x=DE&locale.x=de_DE">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5S3.5 15.4 3.5 9.2C3.5 6.3 5.8 4 8.6 4c1.5 0 2.9.7 3.4 2 .5-1.3 1.9-2 3.4-2 2.8 0 5.1 2.3 5.1 5.2 0 6.2-8.5 11.3-8.5 11.3z"/></svg>
+                <span>Spenden</span>
+            </a></li>
         </ul>
     </nav>
     <div class="content">
