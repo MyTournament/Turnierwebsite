@@ -550,9 +550,11 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 $anzeige_titel = $rowTurnier['anzeige_titel'];
                 $anzeige_subtitel = $rowTurnier['anzeige_subtitel'];
             }
-            echo"<h2>$anzeige_datum</h2>";
-            echo"<h1>$anzeige_titel</h1>";
-            echo"<p>$anzeige_subtitel</p>";
+            // Datum + Titel jetzt in einer Zeile (Datum als kleines Label davor statt als eigene
+            // Ueberschrift darueber), Untertitel darunter bewusst NICHT in Grossbuchstaben (das kam
+            // vorher automatisch von der generischen "#header .content p"-Regel).
+            echo"<div class='hero-heading'><span class='hero-date'>$anzeige_datum</span><h1>$anzeige_titel</h1></div>";
+            echo"<p class='hero-subtitle'>$anzeige_subtitel</p>";
             ?>
             <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 8, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?> <!--##### ALS PARAMETER SECTION ID überGEBEN (F�r CMS) #####-->
         </div>
