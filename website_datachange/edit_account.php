@@ -191,11 +191,56 @@ if($action == 'register'){
         header("Location: /?test_turnier_id=$test_turnier_id");
     }
     exit;
+
+// ================================================================================================
+// NUTZER LÖSCHEN - Admin und Co-Admin dürfen grundsätzlich Nutzer löschen, ABER: Admins dürfen
+// Admins und Co-Admins löschen, Co-Admins dürfen WEDER Admins NOCH andere Co-Admins löschen
+// (nur "einfache" Rollen wie Autor*in/Moderator*in/etc.). Serverseitig geprüft (nicht nur über die
+// Sichtbarkeit des Buttons in index.php), damit ein Co-Admin die Einschränkung nicht per direktem
+// POST-Request umgehen kann. Genau wie bei Login_Als_User wird die Ziel-Rolle über
+// getUserRollenInfo() auf ist_admin/ist_co_admin geprüft (identitätsbasiert über Rollen-ID 1/2, nicht
+// über Flags - die Flags rechte_neue_co_admins etc. sind bei Admin UND Co-Admin gleichzeitig gesetzt
+// und würden hier nicht zwischen beiden unterscheiden).
+// ================================================================================================
+}else if($action == 'Benutzer_Loeschen'){
+    $adminBn = $_POST['admin_bn'];
+    $adminPw = $_POST['admin_pw'];
+    $zielBenutzerId = (int)$_POST['ziel_benutzer_id'];
+
+    $rollenInfoAdmin = getUserRollenInfo($conn, $adminBn, $adminPw);
+    $istAdminOderCoAdminLoeschen = ($rollenInfoAdmin !== null) && ($rollenInfoAdmin['ist_admin'] || $rollenInfoAdmin['ist_co_admin']);
+
+    // Niemand kann sich selbst löschen (verhindert versehentliches Aussperren, z.B. der letzte Admin).
+    if ($istAdminOderCoAdminLoeschen && $zielBenutzerId > 0 && $zielBenutzerId !== $rollenInfoAdmin['benutzer_id']) {
+        $stmtZiel = $conn->prepare("SELECT Benutzername, Passwort FROM System_Benutzer_in WHERE id = ?");
+        $stmtZiel->bind_param("i", $zielBenutzerId);
+        $stmtZiel->execute();
+        $zielRow = $stmtZiel->get_result()->fetch_assoc();
+
+        if ($zielRow !== null) {
+            $rollenInfoZiel = getUserRollenInfo($conn, $zielRow['Benutzername'], $zielRow['Passwort']);
+            $zielIstAdmin = ($rollenInfoZiel !== null) && $rollenInfoZiel['ist_admin'];
+            $zielIstCoAdmin = ($rollenInfoZiel !== null) && $rollenInfoZiel['ist_co_admin'];
+            $darfLoeschen = $rollenInfoAdmin['ist_admin'] || (!$zielIstAdmin && !$zielIstCoAdmin);
+
+            if ($darfLoeschen) {
+                // Rollen-Zuordnungen zuerst entfernen (Fremdschlüssel-Beziehung), dann den Nutzer selbst.
+                try {
+                    $sqlRelLoeschen = "DELETE FROM System_Benutzer_in_Relation_Rolle WHERE fk_benutzer_in = ?";
+                    myDb_execute($conn, 0, $adminBn, "edit_account.php Benutzer_Loeschen Rollen", $sqlRelLoeschen, array($zielBenutzerId));
+                } catch (Throwable $e) {
+                    // Relation-Tabelle (noch) nicht vorhanden
+                }
+                $sqlLoeschen = "DELETE FROM System_Benutzer_in WHERE id = ?";
+                myDb_execute($conn, 0, $adminBn, "edit_account.php Benutzer_Loeschen", $sqlLoeschen, array($zielBenutzerId));
+            }
+        }
+    }
 }
 
 //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
 $test_turnier_id = $_GET['test_turnier_id'];
-$nutzermanagementActions = ['admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen', 'Passwort_Aendern', 'Benutzername_Aendern'];
+$nutzermanagementActions = ['admin_erstellt_nutzer', 'Rolle_Hinzufuegen', 'Rolle_Entfernen', 'Passwort_Aendern', 'Benutzername_Aendern', 'Benutzer_Loeschen'];
 if (in_array($action, $nutzermanagementActions, true)) {
     if($test_turnier_id==NULL){
         header("Location: /#backstage_nutzermanagement");
