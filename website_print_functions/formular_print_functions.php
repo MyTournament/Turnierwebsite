@@ -116,17 +116,18 @@
         </style>
         <?php echo '<h1>' . htmlspecialchars($heimteam, ENT_QUOTES, 'UTF-8') . ' vs. ' . htmlspecialchars($auswaertsteam, ENT_QUOTES, 'UTF-8') . '</h1>'; ?>
         <ul class="actions score-row fixed">
-            <li class="team-label"><?php echo $heimteam; ?></li>
-            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo $biereheimteam ?>' placeholder="Flaschen 1*" style="color: white" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
+            <li class="team-label"><?php echo htmlspecialchars($heimteam, ENT_QUOTES, 'UTF-8'); ?></li>
+            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen1" name="Flaschen1" class="Eingabe" value='<?php echo htmlspecialchars($biereheimteam, ENT_QUOTES, 'UTF-8'); ?>' placeholder="Flaschen 1*" style="color: white" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
             <li class="score-separator"><span style='font-size: clamp(1.4rem, 4vw, 2.25rem)'>:</span></li>
-            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo $biereauswaertsteam ?>' placeholder="Flaschen 2*" style="color: white" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
-            <li class="team-label"><?php echo $auswaertsteam; ?></li>
+            <li class="score-input"><input type="number" min="0" max="3" id="registergame_Flaschen2" name="Flaschen2" class="Eingabe" value='<?php echo htmlspecialchars($biereauswaertsteam, ENT_QUOTES, 'UTF-8'); ?>' placeholder="Flaschen 2*" style="color: white" required autocomplete="off" data-lpignore="true" data-1p-ignore data-keevault-ignore></li>
+            <li class="team-label"><?php echo htmlspecialchars($auswaertsteam, ENT_QUOTES, 'UTF-8'); ?></li>
         </ul>
         <div class="score-note"><b>(Ausgetrunkene Flaschen)</b></div>
-        <!-- values ?bergeben -->
-        <input type='hidden' name='heimteam' value='<?php echo $heimteam ?>'/>
-        <input type='hidden' name='auswaertsteam' value='<?php echo $auswaertsteam ?>'/>
-        <input type='hidden' name='spielId' value='<?php echo $spielId ?>'/> <!-- nur f?r editOrDelete relevant -->
+        <!-- values ?bergeben - SICHERHEIT: htmlspecialchars() gegen reflektiertes XSS, da diese Werte
+             roh aus $_POST kommen und ohne das hier direkt wieder in HTML-Attribute eingesetzt wurden. -->
+        <input type='hidden' name='heimteam' value='<?php echo htmlspecialchars($heimteam, ENT_QUOTES, 'UTF-8'); ?>'/>
+        <input type='hidden' name='auswaertsteam' value='<?php echo htmlspecialchars($auswaertsteam, ENT_QUOTES, 'UTF-8'); ?>'/>
+        <input type='hidden' name='spielId' value='<?php echo htmlspecialchars((string)$spielId, ENT_QUOTES, 'UTF-8'); ?>'/> <!-- nur f?r editOrDelete relevant -->
         <div class="note">Falls ein Spielstand wieder gelöscht werden soll, müsst ihr die Orga ansprechen (Löschen geht nur mit Admin-Accounts)</div>
     <!-- FALL: FINALISIEREN -->
     <?php }else if($action == 'final' || $action == 'final_group'){ ?>
@@ -136,7 +137,7 @@
     <?php } ?>
 
     <!-- Für add und final relevant -->
-    <input type='hidden' name='begegnungId' value='<?php echo $begegnungId ?>'/>
+    <input type='hidden' name='begegnungId' value='<?php echo htmlspecialchars((string)$begegnungId, ENT_QUOTES, 'UTF-8'); ?>'/>
 
     <!-- LOGIN  -->
     <script>
