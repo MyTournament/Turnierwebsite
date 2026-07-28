@@ -1331,6 +1331,66 @@ repeat;
 
 	}
 
+	/* Sobald eine Sektion (#main article) sichtbar ist, soll sie die komplette Seite füllen statt
+	   innerhalb des Wrapper-Innenabstands der Startseite zu "schweben" - der Innenabstand oben gehört
+	   nur zur Startseite (Hero/Header/Footer) und bleibt dort unangetastet, siehe Chat.
+	   WICHTIG: bewusst NUR links/rechts/unten auf 0 gesetzt, NIE per "padding"-Kurzform (die würde auch
+	   padding-top mit auf 0 setzen) - padding-top bleibt unangetastet, weil darüber die fixierte
+	   Admin-/Team-/Testmodus-Leiste ihren reservierten Platz bekommt (#wrapper{padding-top:64px} bzw.
+	   der JS-Stapel-Mechanismus in index.php/test_turnier_mode.php). Sonst würden die Leisten den
+	   Seiteninhalt verdecken, sobald man eingeloggt eine Sektion öffnet. */
+	body.is-article-visible #wrapper {
+		padding-left: 0;
+		padding-right: 0;
+		padding-bottom: 0;
+		align-items: stretch;
+	}
+
+	/* FLIESSEND STATT HARTEM SPRUNG (auf ausdrücklichen Wunsch, siehe Chat "sehr große Handys und
+	   Tablets... son Zwischenmodus"): der alte Umschaltpunkt lag bei 1100px, darunter gab's aber GAR
+	   keine Breiten-Obergrenze - ein 1000px breites Tablet bekam dadurch dieselbe randlose Vollbreiten-
+	   Optik wie ein 400px-Handy, nur eben breiter und dadurch mit viel Leerraum neben schmalen
+	   Komponenten (Karten-Grids etc.). Ab hier (700px, "große Handys/Tablets aufwärts") wächst die
+	   Breite jetzt STETIG mit dem Bildschirm mit (min()/clamp() statt fixer Werte) bis zu einer Decke
+	   von 64rem, OHNE dass irgendwo ein zweiter, sichtbarer Sprung passiert - Ränder, Eckenrundung und
+	   Zentrierung setzen genau an derselben Stelle ein. Echte, randlose Vollbild-Optik bleibt exklusiv
+	   den kleinsten Bildschirmen (unter 700px) vorbehalten, dort unverändert wie zuvor. */
+	@media screen and (min-width: 700px) {
+
+		body.is-article-visible #wrapper {
+			padding-left: clamp(0.5rem, 4vw, 2.5rem);
+			padding-right: clamp(0.5rem, 4vw, 2.5rem);
+			padding-bottom: clamp(1rem, 4vw, 3rem);
+			align-items: center;
+		}
+
+		body.is-article-visible #main {
+			-moz-align-items: center;
+			-webkit-align-items: center;
+			-ms-align-items: center;
+			align-items: center;
+			-moz-justify-content: center;
+			-webkit-justify-content: center;
+			-ms-justify-content: center;
+			justify-content: center;
+			min-height: 0;
+		}
+
+		body.is-article-visible #main article {
+			/* width:auto (statt eines festen Werts) lässt die Karte auf ihre tatsächliche Inhaltsbreite
+			   schrumpfen, wenn der Inhalt schmaler ist als die Decke - genau das "nimmt sich so viel
+			   Platz wie's braucht" aus dem Chat. min-width:0 statt eines festen Mindestwerts, damit auf
+			   700px auch wirklich noch Luft neben der Karte bleibt statt sofort ans Limit zu stoßen. */
+			width: auto;
+			min-width: 0;
+			max-width: min(100%, 64rem);
+			min-height: 0;
+			border-radius: 14px;
+			box-shadow: 0 30px 90px rgba(5, 12, 26, 0.35);
+		}
+
+	}
+
 	@media screen and (max-width: 630px) {
 
 		#wrapper {
@@ -1532,9 +1592,22 @@ repeat;
 					stroke-linejoin: round;
 				}
 
+				/* Jeder Nav-Punkt bekommt eine eigene Akzentfarbe (aus der bereits im Rest der Website
+				   verwendeten Farbpalette - ko-phase-btn/team-accent/admin-accent) statt eines einzigen
+				   einheitlichen Weiß-Tons für alle Icons - macht die Leiste auf den ersten Blick weniger
+				   nach generischem Icon-Set und mehr nach bewusst gestaltetem Menü. */
+				#header nav ul li a .nav-icon { display: inline-flex; color: var(--nav-accent, #ffffff); transition: filter 0.2s ease; }
+				#header nav ul li a:hover .nav-icon { filter: brightness(1.25); }
+				#header nav ul li a.nav-btn--info { --nav-accent: #f5b942; }
+				#header nav ul li a.nav-btn--regeln { --nav-accent: #5fb0ff; }
+				#header nav ul li a.nav-btn--teams { --nav-accent: #59c9a5; }
+				#header nav ul li a.nav-btn--spielplan { --nav-accent: #8b5cf6; }
+				#header nav ul li a.nav-btn--spenden { --nav-accent: #ff6b6b; }
+				#header nav ul li a.nav-btn--pausenraum { --nav-accent: #c98bd6; }
+
 				#header nav ul li a:hover {
 					background-color: rgba(255, 255, 255, 0.1);
-					box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+					box-shadow: inset 0 0 0 1px var(--nav-accent, rgba(255, 255, 255, 0.3)), 0 8px 18px -10px var(--nav-accent, transparent);
 					transform: translateY(-2px);
 				}
 
@@ -1929,20 +2002,26 @@ repeat;
 	display: -webkit-flex;
 	display: -ms-flex;
 	display: flex;
-	-moz-align-items: center;
-	-webkit-align-items: center;
-	-ms-align-items: center;
-	align-items: center;
-	-moz-justify-content: center;
-	-webkit-justify-content: center;
-	-ms-justify-content: center;
-	justify-content: center;
+	/* Vorher align-items/justify-content: center - #main article war dadurch eine kleine, mittig
+	   schwebende "Karte" mit sichtbarem Rand ringsum. Jetzt stretch/flex-start, damit der Artikel die
+	   volle Breite einnimmt und oben beginnt statt vertikal zentriert zu werden - siehe Chat ("nicht
+	   mehr so ein abgegrenztes Fenster... sondern die komplette Seite füllen"). */
+	-moz-align-items: stretch;
+	-webkit-align-items: stretch;
+	-ms-align-items: stretch;
+	align-items: stretch;
+	-moz-justify-content: flex-start;
+	-webkit-justify-content: flex-start;
+	-ms-justify-content: flex-start;
+	justify-content: flex-start;
 	-moz-flex-direction: column;
 	-webkit-flex-direction: column;
 	-ms-flex-direction: column;
 	flex-direction: column;
 	position: relative;
+	width: 100%;
 	max-width: 100%;
+	min-height: 100vh;
 	z-index: 3;
 }
 
@@ -1955,12 +2034,18 @@ repeat;
 		-webkit-transition: opacity 0.325s ease-in-out, -webkit-transform 0.325s ease-in-out;
 		-ms-transition: opacity 0.325s ease-in-out, -ms-transform 0.325s ease-in-out;
 		transition: opacity 0.325s ease-in-out, transform 0.325s ease-in-out;
-		padding: 4.5rem 2.5rem 1.5rem 2.5rem ;
+		/* Volle Seitenbreite statt fester 40rem-"Fenster"-Breite, keine Eck-Rundung mehr - der Artikel
+		   wirkt jetzt wie eine eigene volle Seite statt wie eine abgegrenzte, schwebende Karte. Seitliches
+		   Padding skaliert mit der Fensterbreite (clamp), damit auf sehr breiten Bildschirmen nicht alles
+		   am äußersten Rand klebt, auf schmalen aber trotzdem kompakt bleibt. */
+		padding: 3rem clamp(1rem, 5vw, 4rem) 2rem;
 		position: relative;
-		width: 40rem;
+		width: 100%;
 		max-width: 100%;
+		min-height: 100vh;
+		box-sizing: border-box;
 		background-color: rgba(27, 31, 34, 0.85);
-		border-radius: 4px;
+		border-radius: 0;
 		opacity: 0;
 	}
 
@@ -2146,13 +2231,49 @@ repeat;
 .phase-card--gruppen { border-top-color: #59c9a5; }
 .phase-card--ko { border-top-color: #5fb0ff; }
 .phase-card--losing { border-top-color: #c98bd6; }
+.phase-card--faq { border-top-color: #f5b942; }
+/* Icons in der Kartenüberschrift (#info-Seite: Über Blankiball/Fotos/Vergangene Turniere/FAQ) - gleiche
+   schlichte Linien-Icon-Optik wie die SVGs in der Hauptnavigation (stroke="currentColor"), eingefärbt
+   in der jeweiligen Kartenakzentfarbe statt der vorherigen bunten Emojis. */
+.phase-card h3 svg { flex-shrink: 0; }
+.phase-card--gruppen h3 svg { color: #59c9a5; }
+.phase-card--ko h3 svg { color: #5fb0ff; }
+.phase-card--losing h3 svg { color: #c98bd6; }
+.phase-card--faq h3 svg { color: #f5b942; }
+
+/* Gesamtturnier-Status je Phase-Karte (Spielplan-Übersicht) - siehe ermittlePhasenStatus() in
+   table_print_functions.php. Grün/pulsierend für "läuft gerade", damit auf einen Blick klar ist, wo
+   das Turnier aktuell aktiv ist - mehrere Karten können das gleichzeitig zeigen. */
+.phase-status-badge { display: inline-block; margin: 0.3rem 0 0.5rem; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.phase-status-badge--nicht_gestartet { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+.phase-status-badge--aktiv { background: rgba(34, 197, 94, 0.18); color: #4ade80; animation: phase-status-puls 2s ease-in-out infinite; }
+.phase-status-badge--abgeschlossen { background: rgba(59, 130, 246, 0.15); color: #7dabf8; }
+@keyframes phase-status-puls { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* "Ihr seid hier"-Pfeil (Spielplan-Übersicht): zeigt dem eingeloggten Team ganz deutlich, auf welcher
+   der drei Karten es gerade steht - eigene, auffällige Farbe (Team-Signalfarbe) statt der neutralen
+   Phasen-Badges oben, damit beides klar auseinanderzuhalten ist. Siehe Chat ("separat ganz deutlich
+   machen, in welcher Phase das eigene Team gerade ist... son Pfeil"). */
+.phase-card-pfeil { display: inline-flex; align-items: center; gap: 0.35rem; margin: -0.2rem 0 0.6rem; padding: 0.25rem 0.7rem; border-radius: 999px; background: var(--team-highlight, #fb923c); color: #1a0f00; font-size: 0.78rem; font-weight: 800; }
+.phase-card--eigene-phase { box-shadow: 0 0 0 2px var(--team-highlight, #fb923c); }
 
 /* Karten-Rahmen um CMS-Textinhalte (Info, Regeln, Teams-Anmeldeinfo) - der eigentliche Inhalt
    kommt weiterhin aus dem CMS, hier wird nur die Umgebung gefasst, damit es nicht wie einzelne
-   lose Textblöcke wirkt. */
-.cms-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 1.4rem 1.6rem; margin: 1rem 0 1.5rem; }
+   lose Textblöcke wirkt. max-width + margin:auto ist neu, seit #main article die volle Seitenbreite
+   ausfüllt (vorher automatisch durch die alte 40rem-Artikelbreite begrenzt) - reiner Fließtext bleibt
+   damit auf breiten Bildschirmen lesbar, andere (breitere) Komponenten sind davon nicht betroffen. */
+.cms-card { max-width: 50rem; margin-left: auto; margin-right: auto; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 1.4rem 1.6rem; margin-top: 1rem; margin-bottom: 1.5rem; }
 @media screen and (max-width: 736px) {
     .cms-card { padding: 1.1rem 1.15rem; }
+}
+
+/* CMS-Inhalte werden an vielen Stellen ohne eigenen .cms-card-Rahmen direkt in den Artikel geschrieben
+   (rohes <p>/<div> aus der Datenbank, siehe cmsPrintSection()) - seit #main article die volle
+   Seitenbreite ausfüllt, bräuchten nackte Fließtext-Absätze sonst eine eigene Begrenzung, sonst werden
+   die Zeilen auf breiten Bildschirmen unangenehm lang. ":not([class])" lässt bewusst gezielt gestylte
+   Listen/Absätze (eigene Komponenten wie .alt, .phase-cards, ...) unangetastet. */
+#main article p, #main article ul:not([class]), #main article ol:not([class]) {
+    max-width: 55rem;
 }
 
 /* Einheitliche, ruhigere Buttons für Spielplan-Aktionen (Zufällige Spiele eintragen, Gruppe(n)
@@ -2175,14 +2296,149 @@ repeat;
 .tbl-action-btn--admin { background: rgba(139, 92, 246, 0.22); border-color: var(--admin-accent, #8b5cf6); }
 .tbl-action-btn--admin:hover { background: rgba(139, 92, 246, 0.38); }
 
-/* Wrapper für die kleinen NxN-Spielplan-Matrixtabellen (Gruppenphase/Losing-Bracket): sorgt nur für
-   horizontales Scrollen auf schmalen Bildschirmen, erzwingt aber KEINE eigene Breite mehr - die
-   Tabelle selbst füllt weiterhin die volle Breite (table.withBorderCollapse{width:100%} weiter oben).
-   table-layout:fixed sorgt dafür, dass alle Spalten gleichmäßig verteilt werden statt (wie bei
-   table-layout:auto) den Zellinhalt links zusammenzuquetschen und den Rest als Leerraum stehen zu lassen. */
+/* ================================================================================================
+   BEARBEITUNGSMODUS FÜR ERGEBNISSE (Gruppenphase/K.-o.-Phase/Losing-Bracket): Legende + Buttons.
+   Ersetzt die frühere Sammlung harter Inline-Styles (#7700FF, #00FF00, "background-color:red" etc.)
+   durch feste Klassen, damit Farben/Größen an einer Stelle gepflegt werden und zum Rest des
+   Farbsystems (--team-accent aus der Team-Leiste, .tbl-action-btn-Sprache) passen.
+   ================================================================================================ */
+.game-edit-legend { display: flex; flex-direction: column; gap: 0.4rem; max-width: 640px; margin: 0.5rem 0 1rem; padding: 0.6rem 0.9rem; border-radius: 10px; background: rgba(20, 184, 166, 0.08); border: 1px solid rgba(20, 184, 166, 0.3); }
+.game-edit-legend-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; line-height: 1.3; }
+.game-edit-legend-swatch { flex-shrink: 0; width: clamp(1.2rem, 4vw, 1.6rem); height: clamp(1.2rem, 4vw, 1.6rem); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: clamp(0.75rem, 2.2vw, 0.95rem); color: #ffffff; }
+.game-edit-legend-swatch--add { background: #3b82f6; }
+.game-edit-legend-swatch--final { background: #16a34a; }
+.game-edit-legend-swatch--unfinal { background: #ef4444; }
+/* Bewusst ein dunkleres Rot als --unfinal, damit die beiden Swatches in der Legende trotz verwandter
+   Bedeutung (beides "Achtung"-Aktionen) unterscheidbar bleiben. */
+.game-edit-legend-swatch--sperren { background: #b91c1c; font-size: clamp(0.65rem, 1.9vw, 0.85rem); }
+.game-edit-legend-swatch--score { width: auto; min-width: clamp(1.2rem, 4vw, 1.6rem); padding: 0 0.3rem; background: rgba(255,255,255,0.14); font-size: clamp(0.68rem, 1.8vw, 0.82rem); }
+/* Wiederverwendbare Variante derselben "3:1"-Badge-Optik für JEDE Anzeige eines (bereits
+   finalisierten, nicht mehr klickbaren) Spielstands - siehe printGames() in
+   table_print_functions.php. Grenzt mehrere Spielstände einer Begegnung sauber voneinander ab,
+   statt als eine lange Zeichenkette zu verschwimmen. */
+.game-score-badge { display: inline-flex; align-items: center; justify-content: center; min-width: clamp(1.3rem, 4vw, 1.7rem); padding: clamp(0.08rem, 0.5vw, 0.18rem) clamp(0.3rem, 1vw, 0.45rem); margin: 0 clamp(0.12rem, 0.5vw, 0.2rem) clamp(0.12rem, 0.5vw, 0.2rem) 0; border-radius: 6px; background: rgba(255,255,255,0.14); font-weight: 700; font-size: clamp(0.68rem, 1.8vw, 0.85rem); color: #ffffff; }
+/* Responsiv: auf schmalen Bildschirmen (Handy/Tablet) nehmen die Buttons deutlich weniger Platz weg -
+   clamp() statt fester rem-Werte, damit es keinen harten Sprung an einem Breakpoint gibt, sondern
+   stufenlos mit der Bildschirmbreite mitskaliert (gleiches Prinzip wie .score-row in
+   formular_print_functions.php). */
+.game-edit-btn { display: inline-flex; align-items: center; justify-content: center; margin: 0 clamp(0.15rem, 1vw, 0.3rem) clamp(0.15rem, 1vw, 0.3rem) 0; border: none; border-radius: 6px; color: #ffffff; cursor: pointer; font-weight: 600; line-height: 1; transition: filter 0.15s ease-in-out; }
+.game-edit-btn:hover { filter: brightness(1.15); }
+.game-edit-btn--score { background: rgba(255,255,255,0.14); padding: clamp(0.2rem, 1vw, 0.35rem) clamp(0.35rem, 1.6vw, 0.6rem); font-size: clamp(0.68rem, 2vw, 0.85rem); font-weight: 500; white-space: nowrap; }
+/* Quadratisch statt asymmetrisch gepolstert (vorher mehr horizontales als vertikales Padding, dadurch
+   "in die Länge gezogen") - feste Breite=Höhe, exakt dieselben clamp()-Maße wie .game-edit-legend-swatch,
+   damit Button und Legenden-Kachel gleich groß und wirklich kompakt sind. */
+.game-edit-btn--add, .game-edit-btn--final, .game-edit-btn--unfinal, .begegnung-sperren-btn {
+    width: clamp(1.2rem, 4vw, 1.6rem); height: clamp(1.2rem, 4vw, 1.6rem); padding: 0; font-size: clamp(0.75rem, 2.2vw, 0.95rem);
+}
+/* Bewusst NICHT --team-accent (teal) oder --team-highlight (Orange) - die sind für "hier spielt euer
+   Team" reserviert (Team-Leiste, eigene Zeile/Spalte, Team-Status-Box). Blau/Grün hier noch einmal
+   feinjustiert (heller/freundlicher als vorher), damit sie sich klar von der neuen orangen
+   Team-Signalfarbe absetzen und trotzdem gut zueinander passen, da beide oft gleichzeitig sichtbar
+   sind (z.B. eine eigene, orange markierte Zeile mit einem grünen Finalisieren-Button darin). */
+.game-edit-btn--add { background: #3b82f6; }
+.game-edit-btn--final { background: #16a34a; }
+.game-edit-btn--unfinal { background: #ef4444; }
+/* Login-Prompt, der den früheren öffentlichen "Ergebnisse eintragen"-Button ersetzt */
+.game-edit-login-prompt { max-width: 420px; margin: 0.5rem 0 1rem; padding: 0.7rem 0.9rem; border-radius: 10px; background: rgba(20, 184, 166, 0.08); border: 1px solid rgba(20, 184, 166, 0.3); }
+.game-edit-login-prompt h4 { margin: 0 0 0.4rem; font-size: 0.9rem; }
+.game-edit-login-prompt .Eingabe { margin: 0 0 0.4rem; }
+.game-edit-login-prompt .note { font-size: 0.75rem; opacity: 0.8; margin: 0.4rem 0 0; }
+.game-edit-noaccess { max-width: 420px; margin: 0.5rem 0 1rem; padding: 0.55rem 0.9rem; border-radius: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.85rem; }
+/* Kleiner, bewusst unauffälliger Hinweis für eingeloggte Teams über den Spielplan-Tabellen */
+.game-edit-team-hint { max-width: 640px; margin: -0.4rem 0 0.8rem; font-size: 0.75rem; opacity: 0.65; }
+
+/* Aufklappbarer Hinweis (K.-o.-Einzug-Modus auf der Punktetabellen-Seite, Spielstand-Erklärung in der
+   Gruppenphase): schlichte <details>/<summary> ohne Standard-Browser-Dreieck, eigener Pfeil per
+   ::before, der beim Öffnen um 90° rotiert. */
+.details-hint { max-width: 640px; margin: 0 auto 1.2rem; padding: 0.6rem 1rem; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14); font-size: 0.85rem; text-align: left; }
+.details-hint summary { cursor: pointer; font-weight: 600; list-style: none; }
+.details-hint summary::-webkit-details-marker { display: none; }
+.details-hint summary::before { content: '\25B8'; display: inline-block; margin-right: 0.4rem; transition: transform 0.15s ease; }
+.details-hint[open] summary::before { transform: rotate(90deg); }
+.details-hint p { margin: 0.6rem 0 0; opacity: 0.85; }
+.ko-einzug-modus-hint { border-color: rgba(139, 92, 246, 0.35); background: rgba(139, 92, 246, 0.08); }
+
+/* Teaminfo-Seite: Kopfzeile + kompakte Facts-Leiste statt einzelner h2/p-Blöcke pro Kennzahl */
+.team-info-header { text-align: center; margin-bottom: 0.4rem; }
+.team-info-kuerzel { opacity: 0.7; font-weight: 400; }
+.team-info-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin: 0 0 1.3rem; }
+.team-info-stat { min-width: 6.5rem; padding: 0.55rem 0.8rem; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); text-align: center; }
+.team-info-stat-label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.65; margin-bottom: 0.2rem; }
+.team-info-stat-value { display: block; font-size: 1.05rem; font-weight: 700; }
+/* Hinweis statt disabled Button, wenn die Turnierphase Bearbeitung grundsätzlich nicht erlaubt
+   (Turnier noch nicht gestartet, Anmeldephase, Warteliste, Turnier vorbei, ...) - bewusst neutral/blau
+   statt rot, weil das kein Fehler ist, sondern einfach der aktuelle Turnierstand. */
+.game-edit-phase-hint { max-width: 420px; margin: 0.5rem 0 1rem; padding: 0.55rem 0.9rem; border-radius: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.85rem; }
+
+/* Hervorhebung für das eingeloggte Team: eigene Zeile/Spalte/Zelle in den Spielplan-Matrixtabellen
+   (Gruppenphase, Losing Bracket) und eigene Zeile in den KO-Phase-Tabellen, damit Teams auf einen
+   Blick sehen, wo sie gerade spielen. Gleiche Akzentfarbe wie .team-status-box (--team-highlight,
+   Orange) - bewusst NICHT mehr --team-accent (Teal), das ist jetzt exklusiv die Team-Leiste selbst,
+   siehe Chat ("Signalfarbe nutzen, um die Sachen zu markieren, die das Team selber betreffen"). */
+/* BUGFIX: "!important" auf dem Hintergrund hat bisher auch den soliden grünen Sieger-Hintergrund
+   (per Inline-Style background-color:green in printKO_PhaseTabellen/printTurnierbaum gesetzt, für
+   Zellen/Karten des Gewinnerteams) komplett übermalt, sobald eine Begegnung GLEICHZEITIG die eigene
+   war UND schon final gewonnen war - man konnte dann nicht mehr sehen, dass man gewonnen hat. Jetzt
+   ohne "!important": der umrandende Rahmen (box-shadow) markiert weiterhin zuverlässig "das ist eure
+   Begegnung", der satte grüne Hintergrund gewinnt aber wieder gegen die dezente orange Tönung, wo
+   beides gleichzeitig zutrifft - siehe Chat. */
+.own-team-cell, .own-team-row { background: rgba(251, 146, 60, 0.22); box-shadow: inset 0 0 0 2px var(--team-highlight, #fb923c); }
+.matrix-group-heading--own-team h2 { color: var(--team-highlight, #fb923c); }
+.own-team-badge { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; background: rgba(251, 146, 60, 0.18); border: 1px solid var(--team-highlight, #fb923c); color: var(--team-highlight, #fb923c); vertical-align: middle; }
+/* Vergangenheitsform ("Ihr habt hier gespielt") - dezenter/grau statt der auffälligen orangen
+   Signalfarbe, damit auf einen Blick klar ist: das ist erledigt, nicht mehr aktuell. Auf ausdrücklichen
+   Wunsch, damit intuitiver sichtbar wird, wo das Turnier gerade tatsächlich steht. */
+.own-team-badge--past { background: rgba(148, 163, 184, 0.16); border-color: rgba(148, 163, 184, 0.5); color: #cbd5e1; }
+
+/* WhatsApp-Click-to-Chat-Link bei der Telefonnummer in der Spielerinfo - eigenständige, an die
+   WhatsApp-Markenfarbe angelehnte Pille statt eines normalen Fließtext-Links, damit sofort klar ist,
+   dass ein Klick direkt in den Chat springt statt nur die Nummer zu markieren. */
+.whatsapp-link { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 999px; background: rgba(37, 211, 102, 0.16); border: 1px solid #25d366; color: #1da851; text-decoration: none; vertical-align: middle; }
+.whatsapp-link:hover { background: rgba(37, 211, 102, 0.28); }
+
+/* Rangliste (print_platzierungen(), siehe #rangliste in index.php) - etwas Luft links/rechts und
+   abgerundete Ecken, damit die eigene, orange hervorgehobene Zeile (.own-team-row) nicht wie ein
+   hartkantiger Balken bis an den Seitenrand wirkt. */
+.platzierungs-zeile { padding-left: 0.6rem; padding-right: 0.6rem; border-radius: 6px; }
+
+/* ================================================================================================
+   TEAM-STATUS-BOX: kontextabhängiger Hinweis für eingeloggte Teams, wo sie im Turnier gerade
+   stehen (Startseite + Popup direkt nach dem Eintragen eines Ergebnisses).
+   ================================================================================================ */
+.team-status-box { max-width: 640px; margin: 0 auto 1.2rem; padding: 1rem 1.2rem; border-radius: 12px; background: rgba(251, 146, 60, 0.1); border: 1px solid var(--team-highlight, #fb923c); text-align: center; }
+.team-status-box h4 { margin: 0 0 0.4rem; font-size: 1rem; }
+.team-status-box p { margin: 0 0 0.6rem; font-size: 0.88rem; }
+.team-status-box--win { background: rgba(250, 204, 21, 0.12); border-color: #facc15; }
+.team-status-box--eliminated { background: rgba(148, 163, 184, 0.1); border-color: rgba(148, 163, 184, 0.4); }
+
+/* Wrapper für die kleinen NxN-Spielplan-Matrixtabellen (Gruppenphase/Losing-Bracket).
+   BUGFIX: table-layout:fixed + width:100% hat bei Gruppen/Bracket mit vielen Teams (z.B. 30 im
+   Losing Bracket) jede Spalte auf einen Bruchteil der Breite gequetscht - die +/✓/★-Buttons haben
+   aber eine CSS-Mindestgröße und sind dadurch über die viel zu schmalen Zellgrenzen hinausgequollen
+   und wirkten "überlagert". Jetzt: table-layout:auto (Spaltenbreite richtet sich nach dem Inhalt,
+   also den Buttons) + min-width auf Zellen, damit die Tabelle bei vielen Spalten breiter wird als
+   der Wrapper - overflow-x:auto lässt dann horizontal scrollen statt zu quetschen. */
 .matrix-table-wrap { width: 100%; margin: 0 0 1.3rem; overflow-x: auto; }
-.matrix-table-wrap table.withBorderCollapse { table-layout: fixed; }
+.matrix-table-wrap table.withBorderCollapse { table-layout: auto; width: auto; min-width: 100%; }
+.matrix-table-wrap table.withBorderCollapse th,
+.matrix-table-wrap table.withBorderCollapse td { min-width: clamp(1.8rem, 6vw, 2.6rem); }
+/* In den Matrixzellen dürfen die Bearbeiten-Buttons deutlich kompakter sein als z.B. in der KO-Tabelle -
+   dort steht pro Zeile nur ein Spiel, hier potenziell dutzende Spalten nebeneinander. */
+.matrix-table-wrap .game-edit-btn { margin: 0 clamp(0.05rem, 0.4vw, 0.15rem) clamp(0.05rem, 0.4vw, 0.15rem) 0; }
+.matrix-table-wrap .game-edit-btn--add,
+.matrix-table-wrap .game-edit-btn--final,
+.matrix-table-wrap .game-edit-btn--unfinal { width: clamp(1rem, 3.2vw, 1.35rem); height: clamp(1rem, 3.2vw, 1.35rem); padding: 0; font-size: clamp(0.65rem, 1.6vw, 0.85rem); }
+.matrix-table-wrap .game-score-badge { min-width: clamp(1.1rem, 3vw, 1.4rem); padding: clamp(0.04rem, 0.3vw, 0.1rem) clamp(0.2rem, 0.7vw, 0.3rem); margin: 0 clamp(0.06rem, 0.3vw, 0.12rem) clamp(0.06rem, 0.3vw, 0.12rem) 0; font-size: clamp(0.62rem, 1.5vw, 0.8rem); }
 .matrix-group-heading { text-align: center; margin: 0 0 0.5rem; }
+
+/* Turnierbaum-Karten (.bracket-games, siehe printTurnierbaum()): der editierbare "3:1"-Button für noch
+   nicht finalisierte Spiele (.game-edit-btn--score) hatte deutlich mehr Padding als die statische Badge
+   für bereits finalisierte Spiele (.game-score-badge) - dadurch wirkten offene Begegnungen im Baum
+   spürbar größer als finalisierte. Beide jetzt auf identische, kompakte Maße gebracht. */
+.bracket-games .game-edit-btn--score { padding: clamp(0.08rem, 0.5vw, 0.18rem) clamp(0.3rem, 1vw, 0.45rem); font-size: clamp(0.68rem, 1.8vw, 0.85rem); font-weight: 700; }
+.bracket-games .game-edit-btn--add,
+.bracket-games .game-edit-btn--final,
+.bracket-games .game-edit-btn--unfinal { width: clamp(1.1rem, 3.4vw, 1.4rem); height: clamp(1.1rem, 3.4vw, 1.4rem); }
 
 /* Highlighted banner CTA */
 .cta-banner { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem; text-align:center; padding:1rem; margin:.5rem 0 1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); }

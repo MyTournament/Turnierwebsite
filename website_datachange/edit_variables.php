@@ -40,10 +40,15 @@ $rollenInfoVariables = getUserRollenInfo($conn, $bn, $pw);
 $successfulLogin = ($rollenInfoVariables !== null) ? 1 : 0;
 $rechteFlagsVariables = $rollenInfoVariables['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
 $darfTurnierSettingsAendern = $rollenInfoVariables !== null && $rechteFlagsVariables['turnier_settings'];
-// "Neues Turnier anlegen" ist bewusst strenger als der Rest der Turnier-Settings: laut Nutzer soll
-// das (anders als Turnierphase/Turnier-Settings/Gruppen generieren/Gruppeneinteilung losen, die alle
-// schon mit dem turnier_settings-Flag gehen, also auch für z.B. die Rolle "Backstage-Zugang")
-// exklusiv Admin und Co-Admin vorbehalten bleiben.
+// Betriebliche Turnier-Aktionen (Gruppen generieren, KO-Einzug-Modus wählen, Gruppenphase/KO-Einzug
+// für fertig erklären): auf ausdrücklichen Wunsch am teams-Flag statt turnier_settings, damit
+// Turniermaster (hat teams, aber NICHT turnier_settings) diese auch bedienen kann - Admin/Co-Admin
+// haben beide Flags ohnehin gesetzt und bleiben unverändert berechtigt.
+$darfTeamsBearbeitenVariables = $rollenInfoVariables !== null && $rechteFlagsVariables['teams'];
+// "Neues Turnier anlegen" und "Gruppeneinteilung losen" bleiben bewusst strenger als der Rest:
+// exklusiv Admin und Co-Admin vorbehalten (siehe jeweiliger Kommentar bei der Aktion weiter unten),
+// anders als Turnierphase/Turnier-Settings (turnier_settings-Flag) und die operativen Aktionen oben
+// (teams-Flag, inkl. Turniermaster).
 $istAdminOderCoAdminVariables = $rollenInfoVariables !== null && ($rollenInfoVariables['ist_admin'] || $rollenInfoVariables['ist_co_admin']);
 
 $action = isset($_POST['action']) ? $_POST['action'] : null;
@@ -132,14 +137,21 @@ if ($successfulLogin == 0){ //fehlerhafter Login
       if(!csrf_verify()){
         $message = "Sicherheitsprüfung fehlgeschlagen (ungültiger oder abgelaufener Token). Bitte die Seite neu laden und erneut versuchen.";
         echo "<script type='text/javascript'>alert('$message');</script>";
-      }else if($darfTurnierSettingsAendern){
+      }else{
         $erlaubteTextFelder = ['name', 'anzeige_titel', 'anzeige_subtitel', 'anzeige_datum', 'jahr',
             'startdatum', 'startzeit', 'countdown_start', 'enddatum', 'max_anzahl_teams',
             'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'excel_link', 'fk_ko_einzug_modus'];
-        $erlaubteCheckboxFelder = ['nurOberesDreieckInGruppenphase', 'loescheErsteZeileUndSpalte',
+        $erlaubteCheckboxFelder = ['nurOberesDreieckInGruppenphase', 'nurOberesDreieckInLosingBracket', 'loescheErsteZeileUndSpalte',
             'losingbracket_open_for_ko_losers', 'use_excel', 'schnee'];
         $feld = isset($_POST['feld']) ? $_POST['feld'] : '';
-        if (in_array($feld, $erlaubteTextFelder, true)) {
+        // fk_ko_einzug_modus gehört inhaltlich zu "Einzug ins KO-System" (eigener Menüpunkt, teams-Flag
+        // = Admin/Co-Admin/Turniermaster) - alle anderen Felder hier bleiben echte Turnier-Settings
+        // (turnier_settings-Flag = exklusiv Admin/Co-Admin).
+        $darfDiesesFeldAendern = ($feld === 'fk_ko_einzug_modus') ? $darfTeamsBearbeitenVariables : $darfTurnierSettingsAendern;
+        if (!$darfDiesesFeldAendern) {
+          $message = "Leider hast du nicht die nötigen Rechte, um die Turnier Settings zu bearbeiten. Wende dich an Richard, um mehr Rechte zu erhalten.";
+          echo "<script type='text/javascript'>alert('$message');</script>";
+        } else if (in_array($feld, $erlaubteTextFelder, true)) {
           $wert = isset($_POST['wert']) ? $_POST['wert'] : '';
           $sql = "UPDATE `Turnier_Main` SET `$feld` = ? WHERE `id` = ?;";
           $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Feld_Aendern text", $sql, array($wert, $TurnierID));
@@ -148,9 +160,6 @@ if ($successfulLogin == 0){ //fehlerhafter Login
           $sql = "UPDATE `Turnier_Main` SET `$feld` = ? WHERE `id` = ?;";
           $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Feld_Aendern checkbox", $sql, array($wert, $TurnierID));
         }
-      }else{
-        $message = "Leider hast du nicht die nötigen Rechte, um die Turnier Settings zu bearbeiten. Wende dich an Richard, um mehr Rechte zu erhalten.";
-        echo "<script type='text/javascript'>alert('$message');</script>";
       }
 
     // ============================================================================================
@@ -164,7 +173,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     // Zwischenzustand für den Nutzer sichtbar wird, da alles serverseitig in einem Rutsch passiert) ->
     // Phase auf die gewählte Folge-Phase setzen.
     }else if ($action == 'Gruppen_Fuer_Gruppenphase_Generieren') {
-      if($darfTurnierSettingsAendern){
+      if($darfTeamsBearbeitenVariables){
         $ggNeueAnzahlGruppen = (int)$_POST['anzahl_gruppen'];
         $ggDanachPhase = (int)$_POST['danach_turnierphase'];
 
@@ -199,10 +208,26 @@ if ($successfulLogin == 0){ //fehlerhafter Login
     // - würfelt Teams ohne Gruppe gleichmäßig auf die vorhandenen Gruppen). Jetzt auch für echte,
     // laufende Turniere nutzbar - der frühere Testturnier-only-Check (type=2) wurde entfernt.
     }else if ($action == 'Gruppeneinteilung_Losen') {
-      if($darfTurnierSettingsAendern){
+      // RECHTE-AUDIT: bewusst strenger als der Rest der Turnier-Settings und auch strenger als die
+      // teams-Flag-Funktionen, die Turniermaster inzwischen bedienen darf - laut Nutzer eine
+      // "superfragile" Funktion (kann während laufender Spiele die Gruppenzuordnung durcheinander-
+      // bringen), deshalb exklusiv Admin/Co-Admin vorbehalten, genau wie "Neues Turnier anlegen".
+      if($istAdminOderCoAdminVariables){
         $glDanachPhase = (int)$_POST['danach_turnierphase'];
 
-        if ($glDanachPhase > 0) {
+        // ZUSÄTZLICHE SICHERHEITSSPERRE: Sind für dieses Turnier schon Spielstände eingetragen, muss
+        // das Formular in index.php den Bestätigungs-Flag mitschicken (dort erst nach Warnhinweis +
+        // erneutem Login sichtbar) - fehlt er, wird serverseitig abgebrochen. Das ist KEIN Ersatz für
+        // die Rechte-Prüfung oben, sondern eine zusätzliche Bremse gegen versehentliches/automatisiertes
+        // Auslösen dieser schwer rückgängig zu machenden Aktion.
+        $glSpieleVorhanden = false;
+        $resGlSpieleCheck = $conn->query('SELECT COUNT(*) AS anzahl FROM Turnier_Spiel s JOIN Turnier_Begegnung b ON b.id = s.fk_begegnung WHERE b.fk_heimteam IN (SELECT id FROM Turnier_Team WHERE fk_turnier = ' . $TurnierID . ')');
+        if ($resGlSpieleCheck && ($rowGlSpieleCheck = $resGlSpieleCheck->fetch_assoc())) {
+          $glSpieleVorhanden = ((int)$rowGlSpieleCheck['anzahl'] > 0);
+        }
+        $glBestaetigt = isset($_POST['spiele_bereits_eingetragen_bestaetigt']) && $_POST['spiele_bereits_eingetragen_bestaetigt'] === '1';
+
+        if ($glDanachPhase > 0 && (!$glSpieleVorhanden || $glBestaetigt)) {
           $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = 5 WHERE `id` = ?;";
           myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 1", $sql, array($TurnierID));
 
@@ -216,14 +241,17 @@ if ($successfulLogin == 0){ //fehlerhafter Login
           $sql = "UPDATE `Turnier_Main` SET `fk_turnier_phase` = ? WHERE `id` = ?;";
           myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Gruppeneinteilung_Losen 2", $sql, array($glDanachPhase, $TurnierID));
           $_SESSION['flash_success'] = 'Gruppeneinteilung erfolgreich gelost. Turnierphase ist jetzt "' . evPhaseName($conn, $glDanachPhase) . '".';
+        } else if ($glDanachPhase > 0 && $glSpieleVorhanden && !$glBestaetigt) {
+          $message = "Für dieses Turnier sind bereits Spiele eingetragen - die Bestätigung dafür fehlt. Bitte über den Warnhinweis auf der Seite gehen, nicht direkt absenden.";
+          echo "<script type='text/javascript'>alert('$message');</script>";
         }
       }else{
-        $message = "Leider hast du nicht die nötigen Rechte, um die Gruppeneinteilung zu losen. Wende dich an Richard, um mehr Rechte zu erhalten.";
+        $message = "Leider hast du nicht die nötigen Rechte, um die Gruppeneinteilung zu losen - das dürfen nur Admin und Co-Admin. Wende dich an Richard, um mehr Rechte zu erhalten.";
         echo "<script type='text/javascript'>alert('$message');</script>";
       }
 
     }else if ($action == 'Einzug_KO_Fertig_Umschalten') {
-      if($darfTurnierSettingsAendern){
+      if($darfTeamsBearbeitenVariables){
         $sql = "UPDATE `Turnier_Main` SET `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = CASE WHEN `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei` = 1 THEN 0 ELSE 1 END WHERE `id` = ?;";
         $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php 5", $sql, array($TurnierID));
       }else{ //Nicht genug Rechte
@@ -264,7 +292,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
           }
           // Checkboxen: nicht gesendet = 0
           $checkboxFelder = ['einzug_ko_manuell_anlegen', 'einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei',
-              'nurOberesDreieckInGruppenphase', 'loescheErsteZeileUndSpalte', 'losingbracket_open_for_ko_losers',
+              'nurOberesDreieckInGruppenphase', 'nurOberesDreieckInLosingBracket', 'loescheErsteZeileUndSpalte', 'losingbracket_open_for_ko_losers',
               'use_excel', 'schnee'];
           foreach ($checkboxFelder as $feld) {
             if (array_key_exists($feld, $alteZeile)) {
@@ -334,7 +362,13 @@ $rueckAnkerMap = [
     // Nach dem Losen direkt zu den Gruppen weiterleiten, damit man das Ergebnis sofort sieht
     'Gruppeneinteilung_Losen' => 'gruppen',
 ];
-$rueckAnker = $rueckAnkerMap[$action] ?? 'backstage_daten_bearbeiten';
+// Optionaler Override per verstecktem Formularfeld, falls dieselbe Aktion von mehreren Seiten aus
+// ausgelöst werden kann (z.B. der Einzug-KO-manuell-Schalter jetzt sowohl in den Turnier Settings als
+// auch direkt im Menüpunkt "Einzug ins KO-System") - ohne Override würde man nach dem Speichern immer
+// zur "Standard"-Seite der Aktion springen statt dorthin zurück, wo man das Formular abgeschickt hat.
+$rueckAnker = isset($_POST['rueck_anker']) && $_POST['rueck_anker'] !== ''
+    ? preg_replace('/[^a-zA-Z0-9_]/', '', $_POST['rueck_anker'])
+    : ($rueckAnkerMap[$action] ?? 'backstage_daten_bearbeiten');
 $test_turnier_id = $_GET['test_turnier_id'];
 if($test_turnier_id==NULL){
     header("Location: /#$rueckAnker");

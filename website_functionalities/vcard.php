@@ -26,7 +26,7 @@
     // Spielerinfo-Seite aus aufgerufen werden sollte. Jede beliebige Person konnte also, ganz ohne
     // Login, per direktem POST an dieses Skript mit hochgezähltem spielerId nacheinander alle
     // Telefonnummern einzeln abgreifen. Jetzt gilt die Prüfung für BEIDE Fälle: Sammel-Export
-    // braucht das teams-Flag (Moderator*in+), Einzel-Abruf zusätzlich auch das alle_spiele-Flag
+    // braucht das teams-Flag (Turniermaster+), Einzel-Abruf zusätzlich auch das alle_spiele-Flag
     // (Schiedsrichter*in), weil genau diese Rolle die Spielerinfo-Seite nutzen soll.
     include_once '../website_datachange/login_interface.php';
     $vcBn = isset($_POST['bn']) ? $_POST['bn'] : null;

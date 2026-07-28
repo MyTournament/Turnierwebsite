@@ -263,22 +263,31 @@
 			$body.on('click', function(event) {
 
 				// ==================================================================
-				// FIX: KLICKS IN DER ADMIN-LEISTE LOESTEN EINE RACE CONDITION AUS
+				// FIX: KLICKS AUF INTERNE HASH-LINKS AUSSERHALB VON #main LOESTEN EINE
+				// RACE CONDITION AUS (frueher nur fuer #admin-bar gefixt, siehe Chat -
+				// derselbe Bug tauchte spaeter bei der Team-Leiste, dem Login-Button oben
+				// rechts und Links in Fehlermeldungen wieder auf, weil die Ausnahme dort
+				// hart auf "#admin-bar" verdrahtet war statt generisch)
 				// ==================================================================
 				// Links innerhalb eines <article> bekommen weiter oben stopPropagation(),
 				// damit ein Klick darauf NICHT auch diesen globalen "irgendwo hinklicken
-				// schliesst das aktuelle Menue"-Handler ausloest. Die Admin-Leiste (#admin-bar,
-				// z.B. Settings/Infos/CMS/Logout) liegt aber ausserhalb von #main und hatte
-				// diesen Schutz nicht - ein Klick z.B. auf "Infos" waehrend "Settings" offen
-				// war, loeste dadurch GLEICHZEITIG sowohl diesen Hide-Aufruf als auch den vom
-				// Hash-Wechsel ausgeloesten Show-Aufruf aus. Beide Aufrufe laufen mit eigenen
-				// verzoegerten setTimeout-Schritten und raeumen sich gegenseitig die Timer weg
-				// (siehe clearPendingTimers() in _show), wodurch das alte Menue nie richtig
-				// versteckt wurde - es blieb sichtbar und schob das neue Menue sichtbar nach
-				// unten (Symptom: man musste erst um die Hoehe des alten Menues runterscrollen).
-				// Klicks innerhalb der Admin-Leiste werden deshalb jetzt genauso behandelt wie
-				// Klicks innerhalb eines Artikels.
-					if ($(event.target).closest('#admin-bar').length > 0)
+				// schliesst das aktuelle Menue"-Handler ausloest. Alles, was AUSSERHALB von
+				// #main liegt (Admin-/Team-Leiste, der Login-Button oben rechts, Buttons in
+				// Fehlermeldungen, der "Backstage"-Link im Footer, ...), hatte diesen Schutz
+				// bisher nicht - ein Klick auf so einen Link loeste dadurch GLEICHZEITIG sowohl
+				// diesen Hide-Aufruf als auch den vom Hash-Wechsel ausgeloesten Show-Aufruf aus.
+				// Beide Aufrufe laufen mit eigenen verzoegerten setTimeout-Schritten und raeumen
+				// sich gegenseitig die Timer weg (siehe clearPendingTimers() in _show), wodurch
+				// das alte Menue nie richtig versteckt wurde - es blieb sichtbar und schob das
+				// neue Menue sichtbar nach unten (Symptom: die neue Seite erschien um die Hoehe
+				// der vorherigen nach unten verschoben).
+				// Generischer Fix statt weiterer Einzel-Ausnahmen: JEDER Klick auf einen <a>,
+				// dessen href auf ein tatsaechlich vorhandenes <article> zeigt, wird hier
+				// ignoriert - das Zeigen/Wechseln uebernimmt in jedem Fall bereits der
+				// hashchange-Handler weiter unten (inkl. dessen eigenem "aktuellen Artikel
+				// schliessen und neuen zeigen"-Zweig).
+					var $hashLink = $(event.target).closest('a[href^="#"]');
+					if ($hashLink.length > 0 && $main_articles.filter($hashLink.attr('href')).length > 0)
 						return;
 
 				// Article visible? Hide.

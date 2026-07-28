@@ -139,18 +139,40 @@
     <!-- Für add und final relevant -->
     <input type='hidden' name='begegnungId' value='<?php echo htmlspecialchars((string)$begegnungId, ENT_QUOTES, 'UTF-8'); ?>'/>
 
-    <!-- LOGIN  -->
-    <script>
-        try {
-            document.getElementById('changegame_bn')?.setAttribute('autocomplete','username');
-            document.getElementById('changegame_pw')?.setAttribute('autocomplete','current-password');
-        } catch (e) {}
-    </script>
-    <h5><br/></h5>                                 
-    <label for="demo-category">Login</label>
-    <input type="text" id="changegame_bn" name="bn" class="Eingabe" placeholder="Dein Team-Kürzel" style="color: white" required>
-    <input type="password" id="changegame_pw" name="pw" class="Eingabe" placeholder="Dein Team-Passwort" style="color: white" required>
-    <h5><br/></h5>                                 
+    <!-- LOGIN -->
+    <?php
+        // ============================================================================================
+        // AUTOFILL AUS SESSION: wer schon als Team ODER Account eingeloggt ist (siehe index.php), muss
+        // Kürzel/Passwort hier nicht erneut eintippen - genau wie beim Rest der Backstage-Formulare.
+        // Team zuerst geprüft, da Team- und Account-Login sich gegenseitig ausschließen (index.php).
+        // edit_games.php prüft bn/pw beim Absenden trotzdem unverändert erneut gegen die DB (doppelte
+        // Absicherung bleibt bestehen, hier wird nur die eingebettete Eingabe automatisiert).
+        $autoLoginBn = null; $autoLoginPw = null; $autoLoginLabel = null;
+        if (isset($_SESSION['team_bn']) && isset($_SESSION['team_pw'])) {
+            $autoLoginBn = $_SESSION['team_bn']; $autoLoginPw = $_SESSION['team_pw'];
+            $autoLoginLabel = 'Team ' . htmlspecialchars($autoLoginBn, ENT_QUOTES, 'UTF-8');
+        } else if (isset($_SESSION['admin_bn']) && isset($_SESSION['admin_pw'])) {
+            $autoLoginBn = $_SESSION['admin_bn']; $autoLoginPw = $_SESSION['admin_pw'];
+            $autoLoginLabel = htmlspecialchars((string)$autoLoginBn, ENT_QUOTES, 'UTF-8');
+        }
+    ?>
+    <?php if ($autoLoginBn !== null && $autoLoginPw !== null) { ?>
+        <p class="note">Eingeloggt als <b><?php echo $autoLoginLabel; ?></b></p>
+        <input type="hidden" name="bn" value="<?php echo htmlspecialchars($autoLoginBn, ENT_QUOTES, 'UTF-8'); ?>">
+        <input type="hidden" name="pw" value="<?php echo htmlspecialchars($autoLoginPw, ENT_QUOTES, 'UTF-8'); ?>">
+    <?php } else { ?>
+        <script>
+            try {
+                document.getElementById('changegame_bn')?.setAttribute('autocomplete','username');
+                document.getElementById('changegame_pw')?.setAttribute('autocomplete','current-password');
+            } catch (e) {}
+        </script>
+        <h5><br/></h5>
+        <label for="demo-category">Login</label>
+        <input type="text" id="changegame_bn" name="bn" class="Eingabe" placeholder="Dein Team-Kürzel" style="color: white" required>
+        <input type="password" id="changegame_pw" name="pw" class="Eingabe" placeholder="Dein Team-Passwort" style="color: white" required>
+        <h5><br/></h5>
+    <?php } ?>
 
     <!-- FALL: HINZUFÜGEN, ÄNDERN ODER LÖSCHEN -->
     <?php if($action == 'add' || $action == 'editOrDelete'){ ?>
@@ -411,58 +433,20 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <?php
 }
 
-function printSpielerInfoLogin($TurnierID, $conn, $spielerId){
+// $bnEingeloggt/$pwEingeloggt: auf ausdrücklichen Wunsch kein separates Login-Formular mehr - wer
+// diesen Button überhaupt sehen kann, ist schon als Admin/Co-Admin eingeloggt (siehe index.php,
+// Sichtbarkeit an $istAdminOderCoAdmin gekoppelt), die eigenen Zugangsdaten aus der Session werden
+// einfach mitgeschickt statt nochmal abgefragt. Die eigentliche Berechtigung wird serverseitig in
+// edit_website_bullerei.php trotzdem NOCHMAL geprüft (zweite, echte Absicherung - nicht nur die
+// UI-Sichtbarkeit hier) und zeigt bei fehlender Berechtigung eine Fehlermeldung.
+function printBullereiKommt($conn, $websiteId, $TurnierID, $bnEingeloggt = '', $pwEingeloggt = ''){
+    $bnAttrBullerei = htmlspecialchars($bnEingeloggt, ENT_QUOTES, 'UTF-8');
+    $pwAttrBullerei = htmlspecialchars($pwEingeloggt, ENT_QUOTES, 'UTF-8');
     ?>
-    <title>Adressbuch</title>
-    <div id="LogIn">
-    <p></br></p>
-    <h1>Spieler*in-Info</h1>
-    <p>Bitte logge dich ein, um mehr Infos zu einem konkreten Spieler zu erhalten. (zum Beispiel die Telefonnummer)</p>
-    <h3>Diese Funktion kann nur von Schiedsrichter*innen genutzt werden!</h3>
-    <?php
-    $test_turnier_id = isset($_GET['test_turnier_id']) ? $_GET['test_turnier_id'] : 0;
-    if($test_turnier_id==0){ //Fall: normales Turnier
-        echo "<form action='/?spielerId=$spielerId#spielerinfo' method='POST' onSubmit='return checkAGBspielerinfo()'>";
-    }else{ //Testturniere
-        echo "<form action='/?spielerId=$spielerId&test_turnier_id=$test_turnier_id#spielerinfo' method='POST' onSubmit='return checkAGB()'>";
-    }
-    ?>
-    <script type="text/javascript">
-        function checkAGBspielerinfo() {
-        if (document.getElementById('spielerinfo').checked) {
-            return true;
-        }
-        alert('Du musst unten noch das Häkchen setzen, du Hermann!');
-        return false;
-    }
-    </script> 
-    <input type="text" name="bn" class="Eingabe" placeholder="username" style="color: white" required>
-    <input type="password" class="Eingabe" name="pw" placeholder="password" style="color: white" required>
-    <p></p>
-    <div>
-        <div class="field half">
-            <input type="checkbox" id="spielerinfo" name="spielerinfo" unchecked>
-            <label for="spielerinfo">Ich werde die Telefnummern nicht an Dritte weitergeben und bin auch nicht Jeff Bezos.</label>
-        </div>
-    </div>
-    <p></p>
-    <button value="Anmelden" type="submit">Anmelden</button>
-    </form>
-    <?php
-}
-
-function printBullereiKommt($conn, $websiteId, $TurnierID){
-    ?>
-    <title>Adressbuch</title>
     <div id="LogIn">
     <h2>Website temporär offline nehmen</h2>
     <p>Für den Fall, dass die Website aus irgendeinem Grund offline genommen werden soll, ist das hier möglich. Bitte nutze diese Funktion nicht aus Spaß, da die Website dann wirklich deaktiviert ist und erst durch einen Administrator wieder aktiviert werden muss.</p>
     <form action="website_datachange/edit_website_bullerei.php" method="POST" onSubmit="return checkAGBbullerei()">
-    <h4>Kürzel/Account & Passwort</h4>
-    <input type="text" id="kuerzel" name="bn" class="Eingabe" placeholder="Kürzel/Account" style="color: white" required><br/>
-    <input type="password" id="passwort" name="pw" class="Eingabe" placeholder="Passwort" style="color: white" required><br/>
-    <h5><br/></h5>
-    <title>[ untitled ]</title>                                
     <script type="text/javascript">
         function checkAGBbullerei() {
         if (document.getElementById('bullerei').checked) {
@@ -471,7 +455,7 @@ function printBullereiKommt($conn, $websiteId, $TurnierID){
         alert('Du musst unten noch das Häkchen setzen, du Hermann!');
         return false;
     }
-    </script> 
+    </script>
     <div>
         <div class="field half">
             <input type="checkbox" id="bullerei" name="bullerei" unchecked>
@@ -480,6 +464,8 @@ function printBullereiKommt($conn, $websiteId, $TurnierID){
     </div>
     <p></br></p>
     <input type='hidden' name='action' value='take_offline'/>
+    <input type='hidden' name='bn' value='<?php echo $bnAttrBullerei; ?>'/>
+    <input type='hidden' name='pw' value='<?php echo $pwAttrBullerei; ?>'/>
     <?php echo "<input type='hidden' name='websiteId' value='$websiteId'/>"; ?>
     <?php echo "<input type='hidden' name='TurnierID' value='$TurnierID'/>"; ?>
     <p><button id="btn_login_Bullerei" value="Absenden" type="submit">Website offline nehmen</button></p>

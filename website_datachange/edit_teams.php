@@ -262,7 +262,7 @@ if (!headers_sent()) {
 		$pw = $_POST['pw'];
 
 		// ====================================================================
-		// RECHTE-AUDIT: TEAMS BEARBEITEN NUR NOCH ÜBER DAS "teams"-FLAG (Moderator*in)
+		// RECHTE-AUDIT: TEAMS BEARBEITEN NUR NOCH ÜBER DAS "teams"-FLAG (Turniermaster)
 		// ====================================================================
 		// Kein Admin/Co-Admin-Shortcut mehr - Admin/Co-Admin haben das teams-Flag
 		// in der Rollentabelle ohnehin gesetzt und sind damit weiterhin berechtigt.
@@ -271,6 +271,10 @@ if (!headers_sent()) {
 		if ($rollenInfoTeams !== null && $rollenInfoTeams['flags']['teams']) {
 			$successfulLogin = 1;
 		}
+		// "Teams generieren" (nur Testturniere, siehe unten) ist bewusst breiter als der Rest dieser
+		// Datei: jede Person mit backstage-Flag (Admin, Co-Admin, Turniermaster, Backstage-Zugang) darf
+		// das, nicht erst ab dem engeren teams-Flag - siehe Chat/index.php Menü-Punkt "Teams generieren".
+		$darfTeamsGenerieren = $rollenInfoTeams !== null && $rollenInfoTeams['flags']['backstage'];
 		//Teams
 		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant
 		//FALL: Team-Login -> Bearbeitungsrechte nur f�r eigene Begegnungen
@@ -384,7 +388,7 @@ if (!headers_sent()) {
 
 		// ====================================================================
 		// NEU: TEAMNAME UND SPIELERNAMEN INLINE BEARBEITEN (Teil des Teams-
-		// bearbeiten-Neubaus) - Moderator*in (teams-Flag) darf laut Vorgabe auch
+		// bearbeiten-Neubaus) - Turniermaster (teams-Flag) darf laut Vorgabe auch
 		// Teamnamen und einzelne Spielernamen im Freitext ändern.
 		// ====================================================================
 		}else if($action == 'Team_Name_Aendern'){
@@ -461,7 +465,7 @@ if (!headers_sent()) {
 		// Teams im echten, laufenden Turnier anlegen. Kürzel und Passwort sind bewusst identisch
 		// (z.B. "T5"/"T5"), damit einzelne Team-Logins beim Testen leicht nachvollzogen werden können.
 		}else if($action == 'Teams_Generieren'){
-			if ($successfulLogin == 1) {
+			if ($darfTeamsGenerieren) {
 				$sqlTypCheck = "SELECT type FROM Turnier_Main WHERE id = ?";
 				$stmtTypCheck = $conn->prepare($sqlTypCheck);
 				$stmtTypCheck->bind_param("i", $TurnierID);

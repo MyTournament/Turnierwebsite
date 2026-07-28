@@ -23,39 +23,36 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
 <!-- PAUSENRAUM -->
 <article id="pausenraum">
     <style>
-        /* Überblick soll auf einen Blick erfassbar sein: alles horizontal zentriert, Überschriften
-           deutlich größer/kräftiger als die Buttons darunter (vorher optisch kaum unterscheidbar). */
-        #pausenraum { text-align: center; }
-        #pausenraum h2 { font-size: 1.7rem; font-weight: 700; margin-bottom: 0.3rem; }
-        #pausenraum img { display: block; margin: 0 auto; }
+        /* Kacheln statt einer langen, zentrierten Liste - wiederverwendet exakt das Karten-Muster der
+           Spielplan-Übersicht (.phase-cards/.phase-card, siehe main.css) für einen einheitlichen Look
+           statt einer eigenen Extra-Optik nur für diese Seite. */
         #pausenraum .pausenraum-admin-box { text-align: left; } /* Admin-Box bleibt links lesbar */
     </style>
-    <h1>Pausenraum</h1>
-    <p>Willkommen im Pausenraum! Hier findest du Beschäftigung für zwischen den Spielen - oder wenn
-    gerade kein Blankiball-Turnier läuft.</p>
+    <h1 class="section-header">Pausenraum</h1>
+    <p class="muted">Willkommen im Pausenraum! Hier findest du Beschäftigung für zwischen den Spielen - oder wenn gerade kein Blankiball-Turnier läuft.</p>
 
-    <h2>Blankiball-Simulator 2D</h2>
-    <p>Ein ganz kleines Wurfspiel für zwischendurch - zielen, werfen, treffen. Mit richtigem Bier gespielt, nicht nur digital.</p>
-    <a href="#blankiball_simulator_2d" class="button primary">&#127918; Zum Blankiball-Simulator 2D</a>
-
-    <p></br></p>
-    <!-- Von der Startseite (Footer) hierher verschoben, auf ausdrücklichen Wunsch - vorher lag das
-         als CMS-Inhalt im Footer, jetzt fest hier im Pausenraum. Die alte CMS-Version im Footer bleibt
-         bestehen, bis sie über den roten "Löschen"-Button im CMS-Bearbeitungsmodus entfernt wird (das
-         kann ich als Code-Änderung nicht selbst - siehe Chat). -->
-    <h2>Blankiball-Simulator 3D</h2>
-    <p>Der Blankiball-Simulator als richtiges Steam-Spiel - selbst programmiert.</p>
-    <img src="images/Sonstiges/blankiball_simulator.jpg" alt="" style="width:20rem;max-width:100%;"/>
-    <br/>
-    <!-- TODO: echten Steam-Store-Link eintragen, sobald bekannt (siehe Chat) -->
-    <a href="#blankiball_simulator" class="button primary">Zum Blankiball-Simulator 3D auf Steam</a>
-
-    <p></br></p>
-    <h2>THE ONE</h2>
-    <p>Die eine Trinkspielapp, die alle anderen ersetzt.</p>
-    <img src="images/Sonstiges/the_one_logo_weinglas_mit_schriftzug.png" alt="" style="width:20rem;max-width:100%;"/>
-    <br/>
-    <a href="https://www.instagram.com/app.theone/" class="button primary">Zur App</a>
+    <div class="phase-cards">
+      <div class="phase-card phase-card--gruppen">
+        <h3>&#127918; Blankiball-Simulator 2D</h3>
+        <p class="muted">Ein ganz kleines Wurfspiel für zwischendurch - zielen, werfen, treffen. Mit richtigem Bier gespielt, nicht nur digital.</p>
+        <a href="#blankiball_simulator_2d" class="button primary">Jetzt spielen</a>
+      </div>
+      <!-- Von der Startseite (Footer) hierher verschoben, auf ausdrücklichen Wunsch - vorher lag das
+           als CMS-Inhalt im Footer, jetzt fest hier im Pausenraum. Die alte CMS-Version im Footer bleibt
+           bestehen, bis sie über den roten "Löschen"-Button im CMS-Bearbeitungsmodus entfernt wird (das
+           kann ich als Code-Änderung nicht selbst - siehe Chat). -->
+      <div class="phase-card phase-card--ko">
+        <h3><img class="icon" src="images/Sonstiges/blankiball_simulator.jpg" alt="" style="border-radius:6px;"> Blankiball-Simulator 3D</h3>
+        <p class="muted">Der Blankiball-Simulator als richtiges Steam-Spiel - selbst programmiert.</p>
+        <!-- TODO: echten Steam-Store-Link eintragen, sobald bekannt (siehe Chat) -->
+        <a href="#blankiball_simulator" class="button primary">Auf Steam ansehen</a>
+      </div>
+      <div class="phase-card phase-card--losing">
+        <h3><img class="icon" src="images/Sonstiges/the_one_logo_weinglas_mit_schriftzug.png" alt=""> THE ONE</h3>
+        <p class="muted">Die eine Trinkspielapp, die alle anderen ersetzt.</p>
+        <a href="https://www.instagram.com/app.theone/" class="button primary">Zur App</a>
+      </div>
+    </div>
 
     <p></br></p>
     <a href="#" class="button">Zurück zur Startseite</a>
@@ -120,7 +117,11 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
             margin: 0 auto;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: none;
+            /* BUGFIX: touch-action:none stand hier auf dem GESAMTEN Wrapper, nicht nur auf dem Canvas -
+               dadurch ließ sich die Seite auf dem Handy nicht mehr scrollen, sobald man z.B. den
+               Anleitungstext (#bbsim-instructions) berührt hat. Die Pointer-Events fürs Zielen/Werfen
+               hängen ausschließlich am Canvas (siehe unten), das braucht touch-action:none also nur
+               dort - der Rest des Wrappers soll normal scrollbar bleiben. */
         }
         #bbsim-canvas {
             display: block;

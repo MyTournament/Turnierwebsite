@@ -520,7 +520,14 @@ if (php_sapi_name() !== 'cli') {
             $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei = (int)$row['einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei'];
             $losingbracket_open_for_ko_losers = isset($row['losingbracket_open_for_ko_losers']) ? (int)$row['losingbracket_open_for_ko_losers'] : 0;
         }
-        $koLosersAllowed = ($losingbracket_open_for_ko_losers === 1 && $einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei === 1);
+        // BUGFIX: vorher wurde hier zusätzlich `einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei === 1`
+        // verlangt - dieses Flag wird aber AUSSCHLIESSLICH über den manuellen Umschalter in der K.-o.-Phase
+        // gesetzt (siehe edit_variables.php, Aktion "Einzug_KO_Fertig_Umschalten") und bleibt bei automatischem
+        // KO-Einzug (einzug_ko_manuell_anlegen = 0) für immer 0. Der "KO-Verlierer landen im Losing Bracket"-
+        // Schalter hat dadurch bei automatischem KO-Einzug NIE gewirkt, egal ob er aktiviert war. Die
+        // eigentliche "ist die K.-o.-Phase überhaupt schon angelegt"-Prüfung passiert ohnehin schon
+        // mode-abhängig weiter unten (Zeile ~560ff, per Return-Guard) - hier reicht der reine Schalter.
+        $koLosersAllowed = ($losingbracket_open_for_ko_losers === 1);
 
         // Prüfen, ob Gruppenphase komplett ist (alle Gruppenspiele final)
         $alleGruppenFinal = 1; // TRUE
