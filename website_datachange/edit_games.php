@@ -7,6 +7,26 @@ include_once '../website_datachange/edit_interface.php';
 include_once '../website_functionalities/csrf.php';
 //##########################################################
 
+// ================================================================================================
+// SCHEMA-CHECK: gesperrt_von/gesperrt_am auf Turnier_Begegnung sind optionale Spalten (für "wer/wann
+// gesperrt" in der Liste gesperrter Begegnungen) - schema-aware statt hart vorausgesetzt, damit
+// Sperren/Entsperren nicht mit einem SQL-Fehler abbricht, falls diese Spalten (noch) nicht angelegt
+// wurden. Ergebnis wird für die Dauer des Requests gecacht (statt bei jedem Aufruf neu abzufragen).
+// ================================================================================================
+function hatBegegnungSperrTrackingSpalten($conn) {
+    static $ergebnis = null;
+    if ($ergebnis === null) {
+        $ergebnis = false;
+        $stmt = $conn->prepare("SELECT COUNT(*) AS anzahl FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Turnier_Begegnung' AND COLUMN_NAME IN ('gesperrt_von', 'gesperrt_am')");
+        if ($stmt) {
+            $stmt->execute();
+            $row = $stmt->get_result()->fetch_assoc();
+            $ergebnis = ($row && (int)$row['anzahl'] === 2);
+        }
+    }
+    return $ergebnis;
+}
+
 // SICHERHEIT: display_errors war hier fest auf 1 gesetzt - PHP-Fehler/Warnungen (inkl. Dateipfaden,
 // SQL-Fehlermeldungen etc.) wurden dadurch direkt in die HTTP-Antwort jeder Anfrage geschrieben,
 // sichtbar fuer jede Person, die dieses (teils oeffentlich erreichbare) Endpoint aufruft. Fehler
@@ -48,19 +68,19 @@ $pw = $_POST['pw'];
 // Shortcut hier würde das Recht faktisch von der Rolle statt vom Flag abhängig
 // machen, was der Nutzer ausdrücklich nicht mehr will.
 // $darfBegegnungenAnlegenSperren bleibt separat bestehen, weil "Begegnung anlegen" und
-// "Begegnung sperren" ein eigenes Recht sind (turnier_settings-Flag, wie die übrigen
-// Turnier-Settings - NICHT Admin/Co-Admin-only, siehe Begegnung_Hinzufuegen/Begegnung_Sperren).
+// "Begegnung sperren" ein eigenes Recht sind (teams-Flag = Admin/Co-Admin/Turniermaster, siehe
+// rollen_definitionen.php und Begegnung_Hinzufuegen/Begegnung_Sperren/Begegnung_Entsperren).
 $accountDarfSpieleBearbeiten = 0; //false
-$darfBegegnungenAnlegenSperren = false; //turnier_settings-Flag (z.B. Admin, Co-Admin, Backstage-Zugang)
+$darfBegegnungenAnlegenSperren = false; //teams-Flag (Admin, Co-Admin, Turniermaster)
 // Nur für die Testmodus-Aktion "Zufaellige_Spiele_Eintragen" (siehe weiter unten): bewusst ein eigenes,
 // WEITERES Recht statt $accountDarfSpieleBearbeiten wiederzuverwenden - dieses Flag hier darf/soll auch
-// Moderator*in und Backstage-Zugang erfassen (backstage-Flag), während $accountDarfSpieleBearbeiten für
+// Turniermaster und Backstage-Zugang erfassen (backstage-Flag), während $accountDarfSpieleBearbeiten für
 // das Bearbeiten EINZELNER (auch fremder) Spiele laut RECHTE-AUDIT bewusst strikt auf das alle_spiele-
 // Flag beschränkt bleibt (siehe Kommentar oben).
 $darfZufaelligeSpieleEintragen = false;
 $rollenInfoGames = getUserRollenInfo($conn, $bn, $pw);
 if ($rollenInfoGames !== null) {
-  $darfBegegnungenAnlegenSperren = $rollenInfoGames['flags']['turnier_settings'];
+  $darfBegegnungenAnlegenSperren = $rollenInfoGames['flags']['teams'];
   if ($rollenInfoGames['flags']['alle_spiele']) {
     $accountDarfSpieleBearbeiten = 1;
   }
@@ -516,9 +536,16 @@ if ($action == 'Ändern') {
 
     if ($begegnungIdSperren > 0) {
       // Status 6 = "gesperrt": db_update.php lässt Begegnungen mit diesem Status unangetastet
-      // (siehe begegnungErstellen() in database/db_update.php)
-      $sql = "UPDATE Turnier_Begegnung SET status = 6 WHERE id = ?";
-      myDb_execute($conn, $TurnierID, $bn, "edit_games.php 11", $sql, array($begegnungIdSperren));
+      // (siehe begegnungErstellen() in database/db_update.php). Wer/wann gesperrt hat wird nur
+      // gespeichert, wenn die Spalten gesperrt_von/gesperrt_am existieren (schema-aware statt hart
+      // vorausgesetzt) - siehe hatBegegnungSperrTrackingSpalten() weiter unten in dieser Datei.
+      if (hatBegegnungSperrTrackingSpalten($conn)) {
+        $sql = "UPDATE Turnier_Begegnung SET status = 6, gesperrt_von = ?, gesperrt_am = NOW() WHERE id = ?";
+        myDb_execute($conn, $TurnierID, $bn, "edit_games.php Begegnung_Sperren", $sql, array($bn, $begegnungIdSperren));
+      } else {
+        $sql = "UPDATE Turnier_Begegnung SET status = 6 WHERE id = ?";
+        myDb_execute($conn, $TurnierID, $bn, "edit_games.php 11", $sql, array($begegnungIdSperren));
+      }
     }
 
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
@@ -532,6 +559,41 @@ if ($action == 'Ändern') {
   }else{ //keine ausreichenden Rechte
 
     //WEITERLEITUNG ZURÜCK - mit eventueller TestTurnierID
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_failure");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_failure");
+    }
+  }
+
+// ================================================================================================
+// BEGEGNUNG ENTSPERREN: Gegenstück zu Begegnung_Sperren - setzt status zurück auf 1 ("normal"), damit
+// der Auto-Scheduler die Begegnung wieder ganz normal berechnen/überschreiben kann. Gleiche Rechte-
+// Prüfung wie beim Sperren (teams-Flag = Admin/Co-Admin/Turniermaster).
+// ================================================================================================
+}else if($action == 'Begegnung_Entsperren'){
+  if($darfBegegnungenAnlegenSperren && csrf_verify()){
+    $begegnungIdEntsperren = (int)$_POST['begegnungIdEntsperren'];
+
+    if ($begegnungIdEntsperren > 0) {
+      if (hatBegegnungSperrTrackingSpalten($conn)) {
+        $sql = "UPDATE Turnier_Begegnung SET status = 1, gesperrt_von = NULL, gesperrt_am = NULL WHERE id = ? AND status = 6";
+      } else {
+        $sql = "UPDATE Turnier_Begegnung SET status = 1 WHERE id = ? AND status = 6";
+      }
+      myDb_execute($conn, $TurnierID, $bn, "edit_games.php Begegnung_Entsperren", $sql, array($begegnungIdEntsperren));
+    }
+
+    $test_turnier_id = $_GET['test_turnier_id'];
+    if($test_turnier_id==NULL){
+        header("Location: /#edit_games_success");
+    }else{
+        header("Location: /?test_turnier_id=$test_turnier_id#edit_games_success");
+    }
+
+  }else{ //keine ausreichenden Rechte
+
     $test_turnier_id = $_GET['test_turnier_id'];
     if($test_turnier_id==NULL){
         header("Location: /#edit_games_failure");

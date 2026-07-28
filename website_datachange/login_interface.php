@@ -1,6 +1,54 @@
 <?php
 include_once '../database/rollen_definitionen.php';
 
+// ================================================================================================
+// ACCOUNT-AVATARE: kuratierte Emoji-Liste statt Bilder-Upload (kein Missbrauchspotential/Speicher-
+// platz-Thema, sofort auf jeder Website konsistent). WICHTIG: die Spalte `avatar` auf
+// `System_Benutzer_in` existiert nicht zwangsläufig schon in jeder Datenbank (diese Website hat kein
+// Migrations-System, Schema-Änderungen werden manuell nachgezogen - siehe Chat) - deshalb läuft JEDER
+// Zugriff auf diese Spalte hier bewusst über eine eigene, defensiv try/catch-gekapselte Query statt
+// über ein `SELECT avatar, ...`/`UPDATE ... SET avatar = ...` mitten in einer der zentralen,
+// sicherheitskritischen Login-Abfragen weiter unten - schlägt die Spalte fehl (weil sie fehlt), bricht
+// dadurch niemals der Login/die Registrierung, sondern nur das rein kosmetische Avatar-Feature selbst.
+// ================================================================================================
+function getProfilAvatarOptionen() {
+    return ['🍺','🍻','🎉','🎊','🏆','🥇','🥈','🥉','⚽','🏐','🏀','🎯','🎱','😎','🤙','🕺','💃','🐻','🦁','🐯','🐸','🐵','🦄','🐶','🐱','🦊','🐼','🐨','🐔','🦉','🦅','🐺','🐙','🦀','🌟','🔥','⚡','🎸','🎧','🚀','🛸','👑','🎃','👻','🤖','🥳','🍀'];
+}
+
+// Liefert den anzuzeigenden Avatar für einen Account: der explizit gespeicherte Wert hat Vorrang,
+// sonst deterministisch aus der Nutzer-ID abgeleitet (wirkt "zufällig zugelost" - siehe Chat -, ohne
+// dass bei der Registrierung extra ein Schreibzugriff auf die evtl. noch fehlende Spalte nötig wäre,
+// und bleibt über mehrere Seitenaufrufe hinweg stabil statt bei jedem Laden neu zu würfeln).
+function ermittleAnzeigeAvatar($conn, $benutzerId) {
+    $optionen = getProfilAvatarOptionen();
+    $gespeichert = null;
+    try {
+        $stmt = $conn->prepare("SELECT avatar FROM System_Benutzer_in WHERE id = ?");
+        $stmt->bind_param("i", $benutzerId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $gespeichert = $row['avatar'] ?? null;
+    } catch (Throwable $e) {
+        // Spalte "avatar" (noch) nicht vorhanden - Fallback unten greift automatisch.
+    }
+    if (!empty($gespeichert) && in_array($gespeichert, $optionen, true)) { return $gespeichert; }
+    return $optionen[((int)$benutzerId) % count($optionen)];
+}
+
+// Speichert einen neu gewählten Avatar - $avatar MUSS vorher gegen getProfilAvatarOptionen() geprüft
+// sein (siehe Eigenes_Profil_Speichern in edit_account.php), damit hier nicht ungeprüft beliebige
+// Zeichenketten in die DB gelangen. Gibt true/false zurück, wirft aber nie - siehe Kommentar oben.
+function nutzerAvatarSpeichern($conn, $benutzerId, $avatar) {
+    try {
+        $stmt = $conn->prepare("UPDATE System_Benutzer_in SET avatar = ? WHERE id = ?");
+        if ($stmt === false) { return false; }
+        $stmt->bind_param("si", $avatar, $benutzerId);
+        return $stmt->execute();
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 function getBenutzerListe($conn) {
 
     $stmt = $conn->prepare("SELECT * FROM `System_Benutzer_in` ORDER BY ID");
@@ -15,6 +63,59 @@ function getTeamsListeFuerTurnier($conn, $TurnierID){
     $result = $stmt->get_result();
 
     return $result;
+}
+
+// ================================================================================================
+// TEAM-LOGIN (Gegenstück zu getUserRollenInfo() für Teams statt Accounts)
+// ================================================================================================
+// Prüft Kürzel+Passwort gegen Turnier_Team fürs aktuelle Turnier (bzw. Testturnier, je nachdem was
+// als $TurnierID übergeben wird) und gibt bei Erfolg die komplette Team-Zeile zurück (u.a. id,
+// bearbeitungsrechte), sonst null - sicherer Default wie bei getUserRollenInfo().
+function getTeamLoginInfo($conn, $TurnierID, $bn, $pw) {
+    if ($bn === null || $pw === null || $bn === '' || $pw === '') { return null; }
+    $stmt = $conn->prepare("SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ? AND kuerzel = ? AND password = ?");
+    $tid = (int)$TurnierID;
+    $stmt->bind_param("iss", $tid, $bn, $pw);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    return $row ?: null;
+}
+
+// ================================================================================================
+// GENAUERE LOGIN-FEHLERMELDUNGEN: unterscheidet "Kürzel/Benutzername existiert nicht" von
+// "existiert, aber Passwort falsch" - reine Existenz-Checks (ignorieren das Passwort komplett),
+// damit ein fehlgeschlagener Login-Versuch gezielt sagen kann, WAS falsch war.
+// ================================================================================================
+function teamKuerzelExistiertInTurnier($conn, $TurnierID, $bn) {
+    if ($bn === null || $bn === '') { return false; }
+    $stmt = $conn->prepare("SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ? AND kuerzel = ?");
+    $tid = (int)$TurnierID;
+    $stmt->bind_param("is", $tid, $bn);
+    $stmt->execute();
+    return (bool)$stmt->get_result()->fetch_assoc();
+}
+// ================================================================================================
+// TEAM-LOGIN GEGEN VERGANGENE TURNIERE (type = 3) PRÜFEN - auf ausdrücklichen Wunsch, siehe Chat:
+// wenn Kürzel+Passwort im AKTUELLEN Turnier nicht existieren, aber exakt zu einem Team aus einem
+// vergangenen Turnier derselben Website passen, soll der Login-Fehler gezielt auf "Vergangene
+// Turniere" verweisen statt nur zu sagen "gibt es nicht" - das Team hat ja mitgespielt, nur eben
+// nicht in diesem Turnier. Reiner Lese-Check, ändert nichts, wird nur für die Fehlermeldung gebraucht.
+// ================================================================================================
+function getTeamLoginInfoAusVergangenemTurnier($conn, $websiteId, $bn, $pw) {
+    if ($bn === null || $pw === null || $bn === '' || $pw === '') { return null; }
+    $stmt = $conn->prepare("SELECT t.id, t.fk_turnier, m.name AS turnier_name FROM Turnier_Team t JOIN Turnier_Main m ON m.id = t.fk_turnier WHERE t.geloescht = 0 AND m.fk_website = ? AND m.type = 3 AND t.kuerzel = ? AND t.password = ? ORDER BY m.startdatum DESC LIMIT 1");
+    $wid = (int)$websiteId;
+    $stmt->bind_param("iss", $wid, $bn, $pw);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    return $row ?: null;
+}
+function benutzernameExistiert($conn, $bn) {
+    if ($bn === null || $bn === '') { return false; }
+    $stmt = $conn->prepare("SELECT id FROM System_Benutzer_in WHERE Benutzername = ?");
+    $stmt->bind_param("s", $bn);
+    $stmt->execute();
+    return (bool)$stmt->get_result()->fetch_assoc();
 }
 
 // ================================================================================================
