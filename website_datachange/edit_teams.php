@@ -356,6 +356,27 @@ if (!headers_sent()) {
 				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
+		// ====================================================================
+		// WARTELISTE: TEAM FREIGEBEN - schiebt ein Team von der Warteliste ins
+		// Turnier (fk_turnier setzen, Warteliste-Zuordnung loesen). Nur mit
+		// teams-Flag, identisch zu den uebrigen Team-Aktionen dieser Datei.
+		// ====================================================================
+		}else if($action == 'Warteliste_Freigeben'){
+			if ($successfulLogin == 1) {
+				$teamId = (int)$_POST['team'];
+				$zielTurnierId = (int)$TurnierID;
+				$sql = "UPDATE Turnier_Team SET fk_turnier = ?, fk_warteliste = NULL WHERE id = ? AND fk_warteliste IS NOT NULL";
+				myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Warteliste_Freigeben",$sql, array($zielTurnierId, $teamId));
+				$_SESSION['flash_success'] = 'Team wurde von der Warteliste ins Turnier aufgenommen.';
+			}
+
+			$test_turnier_id = $_GET['test_turnier_id'] ?? null;
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_warteliste");
+			}else{
+				header("Location: /?test_turnier_id=" . (int)$test_turnier_id . "#backstage_warteliste");
+			}
+
 		}else if($action == 'rechte_weg'){
 			if ($successfulLogin == 1) {
 				$teamId = $_POST['team'];

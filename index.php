@@ -3849,9 +3849,23 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else { ?>
     <?php
+    // Hinweis: Grenze aus den Turnier-Settings, aktuelle Teamzahl und ob die Warteliste gerade aktiv ist
+    $wlTurnier = $conn->query('SELECT max_anzahl_teams, fk_turnier_phase FROM Turnier_Main WHERE id = ' . (int)$TurnierID)->fetch_assoc();
+    $wlMax = (int)($wlTurnier['max_anzahl_teams'] ?? 0);
+    $wlAktiv = ((int)($wlTurnier['fk_turnier_phase'] ?? 0) === 12);
+    $wlAngemeldet = (int)($conn->query('SELECT COUNT(*) AS c FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . (int)$TurnierID)->fetch_assoc()['c'] ?? 0);
+    ?>
+    <p style='font-size:0.85rem;opacity:0.85;'>
+        Die Warteliste wird automatisch aktiviert, sobald <b><?php echo $wlMax; ?> Teams</b> angemeldet sind (einstellbar unter Turnier Settings &gt; Maximale Teamanzahl).
+        Ab dann landen neue Anmeldungen hier statt direkt im Turnier und können einzeln freigegeben werden.
+        Aktuell sind <b><?php echo $wlAngemeldet; ?> Teams</b> im Turnier angemeldet - die Warteliste ist <b><?php echo $wlAktiv ? 'aktiv' : 'nicht aktiv'; ?></b>.
+    </p>
+    <?php
     $sqlWarteliste = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_warteliste IN (SELECT id FROM `Turnier_Warteliste` WHERE fk_turnier = '. $TurnierID .')';
     $resultWarteliste = $conn->query($sqlWarteliste);
     $zeahler = 1;
+    if ($resultWarteliste->num_rows === 0) { echo "<p><i>Aktuell steht kein Team auf der Warteliste.</i></p>"; }
+    $wlFreigabeAction = ($test_turnier_id == 0) ? 'website_datachange/edit_teams.php' : 'website_datachange/edit_teams.php?test_turnier_id=' . (int)$test_turnier_id;
     while ($rowWarteliste = $resultWarteliste->fetch_assoc()) {
         // SICHERHEIT: htmlspecialchars() gegen gespeichertes XSS ueber Team-/Spielernamen
         $a=htmlspecialchars($rowWarteliste["name"], ENT_QUOTES, 'UTF-8');
@@ -3868,6 +3882,17 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         }
         $zeahler++;
         $ausgabeString = substr($ausgabeString, 0, -8);
+        // Freigabe-Button nur mit teams-Flag (Turniermaster/Co-Admin/Admin) - Backstage-Zugang sieht die Liste nur
+        if ($rechteFlags['teams']) {
+            $ausgabeString .= " <form action='$wlFreigabeAction' method='POST' style='display:inline;margin:0 0 0 0.5rem;' onsubmit=\"return confirm('Dieses Team ins Turnier aufnehmen?');\">"
+                . "<input type='hidden' name='action' value='Warteliste_Freigeben'/>"
+                . "<input type='hidden' name='team' value='" . (int)$teamId . "'/>"
+                . "<input type='hidden' name='TurnierID' value='" . (int)$TurnierID . "'/>"
+                . "<input type='hidden' name='bn' value='" . htmlspecialchars($bn, ENT_QUOTES) . "'/>"
+                . "<input type='hidden' name='pw' value='" . htmlspecialchars($pw, ENT_QUOTES) . "'/>"
+                . "<button type='submit' class='button small' style='font-size:0.7rem;height:auto;line-height:1.6;padding:0.1rem 0.8rem;'>Ins Turnier aufnehmen</button>"
+                . "</form>";
+        }
         echo "<li>$ausgabeString</li>";
     }
     ?>
