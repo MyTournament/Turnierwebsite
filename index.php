@@ -106,15 +106,8 @@ if (!isset($is_localhost)) { $is_localhost = is_local_env(); }
 
 //TRAFFIC
 include_once 'database/traffic_analytics.php';
-if (!$is_localhost) { insert_traffic($conn, $websiteId, 'anonym', 3 , ' hat die Website besucht'); }
-
-$sqlAnzahlWebsiteBesuche = 'SELECT COUNT(*) AS c FROM `System_Traffic` WHERE fk_kategorie = 3 AND fk_website = '. (int)$websiteId;
-$restultAnzahlWebsiteBesuche = $conn->query($sqlAnzahlWebsiteBesuche);
-$anzahlWebsiteBesuche = 0;
-if ($restultAnzahlWebsiteBesuche) {
-    $rowAnzahlWebsiteBesuche = $restultAnzahlWebsiteBesuche->fetch_assoc();
-    if ($rowAnzahlWebsiteBesuche && isset($rowAnzahlWebsiteBesuche['c'])) { $anzahlWebsiteBesuche = (int)$rowAnzahlWebsiteBesuche['c']; }
-}
+// Seitenaufruf mit anonymer Geräte-ID zählen (Auswertung unter Infos > Website-Besuche)
+if (!$is_localhost) { insert_seitenaufruf($conn, $websiteId); }
 ?>
 
 <!DOCTYPE HTML>
@@ -2305,13 +2298,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage">
     <!-- ================================================================================================
          BACKSTAGE-EINSTIEGSSEITE - KOMPAKT, ABER MIT LUFT ZWISCHEN DEN VIER BEREICHEN
-         (Testmodus / Login / Registrieren / Anzahl Websitebesuche)
+         (Testmodus / Login / Registrieren)
          ================================================================================================
          Nicht mehr die alten "<p></br></p>"-Doppel-Abstandshalter, aber auch nicht komplett ohne Luft -
          jeder Bereich ist ein .login-section-Block mit moderatem margin-bottom, und Dropdown/Button
          innerhalb eines Formulars haben ueber .login-form-row einen kleinen eigenen Abstand.
-         "Anzahl Websitebesuche" ist an den Schluss gerueckt (unwichtig fuer den eigentlichen Login-
-         Zweck). Pausenraum-Link, das CMS-Inhalte-Paket direkt danach (Section 18), Rangliste- und
+         Die Besucherstatistik liegt unter Infos > Website-Besuche. Pausenraum-Link, das CMS-Inhalte-Paket direkt danach (Section 18), Rangliste- und
          Bookmark-Link sind auskommentiert - "Registrieren" bleibt bewusst aktiv. -->
     <style>
         .login-section { margin-bottom: 1.6rem; }
@@ -2405,11 +2397,6 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php /* cmsPrintSection($websiteId, $siteID, $TurnierID, 18, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); */ ?>
     <!-- <a href='#rangliste' class='button primary'>Rangliste</a> -->
     <!-- <a id="bookmark-this" href="#" title="Bookmark This Page">Bookmark This Page</a> -->
-
-    <div class='login-section'>
-        <h2>Anzahl Websitebesuche</h2>
-        <?php echo"<p>$anzahlWebsiteBesuche</p>"; ?>
-    </div>
 
     <p></br></p> <!-- Abst�nde unten damit Button auf Handys nicht von Cookiewarnung �berdeckt wird -->
     <p></br></p>
@@ -2717,7 +2704,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <div class='admin-legende-zeile'>
                 <span class='admin-legende-swatch admin-legende-swatch--backstage'></span>
                 <div>
-                    <b>Blauer Rahmen</b>: Telefonnummern, Team-Passwörter, Warteliste, ER-Diagramm (Infos-Menü); im Testmodus zusätzlich "Teams generieren" (eigene dunkelblaue Testmodus-Optik statt Rahmenfarbe)<br>
+                    <b>Blauer Rahmen</b>: Telefonnummern, Team-Passwörter, Warteliste, ER-Diagramm, Website-Besuche (Infos-Menü); im Testmodus zusätzlich "Teams generieren" (eigene dunkelblaue Testmodus-Optik statt Rahmenfarbe)<br>
                     <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Turniermaster, Backstage-Zugang, Co-Admin, Admin<br>
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Schiedsrichter*in, Benutzer*in
                 </div>
@@ -2780,6 +2767,237 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <a href='#backstage_info' class='button'>Zurück</a>
         <h5><br /></h5>
     </div>
+</article>
+
+<!-- ################################################################################################ -->
+<!-- ###  WEBSITE-BESUCHE - Kennzahlen + scrollbares Zeitreihen-Diagramm (Tag/Woche/Monat)        ### -->
+<!-- ################################################################################################ -->
+<article id="backstage_besuche">
+    <h2>Website-Besuche</h2>
+    <?php if (!$rechteFlags['backstage']) { ?>
+    <p>Keine ausreichende Berechtigung.</p>
+    <?php } else {
+        $besuchsStat = get_besuchsstatistik($conn, $websiteId);
+        $bsZahl = function($n) { return number_format((int)$n, 0, ',', '.'); };
+    ?>
+    <style>
+        #backstage_besuche { --bs-aufrufe: #3987e5; --bs-geraete: #d95926; --bs-grid: rgba(255,255,255,0.10); --bs-text-2: rgba(255,255,255,0.72); }
+        .bs-hinweis { font-size: 0.8rem; color: var(--bs-text-2); margin: 0 0 1.2rem; }
+        .bs-kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin-bottom: 1.6rem; }
+        .bs-kachel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: 10px; padding: 0.8rem 1rem; }
+        .bs-kachel-titel { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bs-text-2); margin: 0 0 0.35rem; }
+        .bs-kachel-wert { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.1; }
+        .bs-kachel-sub { font-size: 0.75rem; color: var(--bs-text-2); margin-top: 0.2rem; }
+        .bs-steuerung { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.6rem; }
+        .bs-segmente { display: inline-flex; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; overflow: hidden; }
+        .bs-segmente button { background: none; border: 0; box-shadow: none; color: #fff; font-size: 0.75rem; height: auto; line-height: 1; padding: 0.5rem 0.9rem; letter-spacing: 0.04em; }
+        .bs-segmente button[aria-pressed='true'] { background: rgba(255,255,255,0.18); font-weight: 700; }
+        .bs-legende { display: flex; gap: 1rem; font-size: 0.78rem; color: var(--bs-text-2); }
+        .bs-legende span::before { content: ''; display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 3px; margin-right: 0.35rem; vertical-align: -1px; background: var(--c); }
+        .bs-diagramm-rahmen { position: relative; }
+        .bs-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; padding-bottom: 0.4rem; }
+        .bs-scroll svg { display: block; }
+        .bs-tooltip { position: absolute; pointer-events: none; background: #11151d; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.45rem 0.65rem; font-size: 0.75rem; color: #fff; white-space: nowrap; display: none; z-index: 5; }
+        .bs-tooltip b { display: block; margin-bottom: 0.2rem; }
+        .bs-leer { color: var(--bs-text-2); font-style: italic; }
+        .bs-achse { position: absolute; left: 0; top: 0; pointer-events: none; background: linear-gradient(90deg, rgba(30,34,43,0.95) 70%, rgba(30,34,43,0)); }
+        .bs-achse span { position: absolute; right: 6px; font-size: 10px; color: var(--bs-text-2); }
+        .bs-tabelle-toggle { margin-top: 1rem; font-size: 0.8rem; }
+        .bs-tabelle { width: 100%; font-size: 0.8rem; }
+    </style>
+
+    <p class='bs-hinweis'>Jeder Seitenaufruf wird mit Zeitpunkt gezählt, auch Reloads und wiederkehrende Besuche. Zusätzlich erkennt die Website Geräte über eine anonyme, zufällige Kennung im Browser - so lässt sich abschätzen, wie viele verschiedene Endgeräte die Seite nutzen. Bots und Crawler werden nicht mitgezählt.<?php if ($besuchsStat['geraete_seit']) { echo ' Geräte werden seit ' . htmlspecialchars(date('d.m.Y', strtotime($besuchsStat['geraete_seit']))) . ' erfasst, ältere Aufrufe enthalten keine Geräteinformation.'; } ?></p>
+
+    <div class='bs-kacheln'>
+        <div class='bs-kachel'><p class='bs-kachel-titel'>Aufrufe gesamt</p><div class='bs-kachel-wert'><?php echo $bsZahl($besuchsStat['aufrufe_gesamt']); ?></div><div class='bs-kachel-sub'><?php echo $bsZahl($besuchsStat['geraete_gesamt']); ?> verschiedene Geräte</div></div>
+        <div class='bs-kachel'><p class='bs-kachel-titel'>Heute</p><div class='bs-kachel-wert'><?php echo $bsZahl($besuchsStat['aufrufe_heute']); ?></div><div class='bs-kachel-sub'><?php echo $bsZahl($besuchsStat['geraete_heute']); ?> Geräte</div></div>
+        <div class='bs-kachel'><p class='bs-kachel-titel'>Letzte 7 Tage</p><div class='bs-kachel-wert'><?php echo $bsZahl($besuchsStat['aufrufe_7']); ?></div><div class='bs-kachel-sub'><?php echo $bsZahl($besuchsStat['geraete_7']); ?> Geräte</div></div>
+        <div class='bs-kachel'><p class='bs-kachel-titel'>Letzte 30 Tage</p><div class='bs-kachel-wert'><?php echo $bsZahl($besuchsStat['aufrufe_30']); ?></div><div class='bs-kachel-sub'><?php echo $bsZahl($besuchsStat['geraete_30']); ?> Geräte</div></div>
+    </div>
+
+    <div class='bs-steuerung'>
+        <div class='bs-segmente' role='group' aria-label='Zeitraster'>
+            <button type='button' data-raster='tag'>Tag</button>
+            <button type='button' data-raster='woche'>Woche</button>
+            <button type='button' data-raster='monat' aria-pressed='true'>Monat</button>
+        </div>
+        <div class='bs-legende'>
+            <span style='--c: var(--bs-aufrufe)'>Aufrufe</span>
+            <span style='--c: var(--bs-geraete)'>Verschiedene Geräte</span>
+        </div>
+    </div>
+    <div class='bs-diagramm-rahmen'>
+        <div class='bs-scroll' id='bs-scroll'></div>
+        <div id='bs-achse'></div>
+        <div class='bs-tooltip' id='bs-tooltip'></div>
+    </div>
+    <details class='bs-tabelle-toggle'>
+        <summary>Als Tabelle anzeigen</summary>
+        <div id='bs-tabelle'></div>
+    </details>
+
+    <script>
+    (function () {
+        var REIHEN = <?php echo json_encode($besuchsStat['reihen'], JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+        var MONATE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+        var scrollEl = document.getElementById('bs-scroll');
+        var tipEl = document.getElementById('bs-tooltip');
+        var tabEl = document.getElementById('bs-tabelle');
+        var achseEl = document.getElementById('bs-achse');
+        var fmt = function (n) { return n === null ? 'nicht erfasst' : n.toLocaleString('de-DE'); };
+
+        // ---- Lückenlose Zeitachse: Perioden ohne Aufrufe als 0 auffüllen ----
+        function isoWoche(d) {
+            var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            var tag = t.getUTCDay() || 7;
+            t.setUTCDate(t.getUTCDate() + 4 - tag);
+            var jahrStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+            var nr = Math.ceil(((t - jahrStart) / 86400000 + 1) / 7);
+            return t.getUTCFullYear() + '-W' + (nr < 10 ? '0' : '') + nr;
+        }
+        function schluessel(d, raster) {
+            var m = d.getMonth() + 1, t = d.getDate();
+            if (raster === 'monat') { return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m; }
+            if (raster === 'woche') { return isoWoche(d); }
+            return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (t < 10 ? '0' : '') + t;
+        }
+        function startDatum(p, raster) {
+            if (raster === 'monat') { var a = p.split('-'); return new Date(+a[0], +a[1] - 1, 1); }
+            if (raster === 'woche') {
+                var b = p.split('-W'), j = +b[0], w = +b[1];
+                var jan4 = new Date(j, 0, 4), montag = new Date(jan4);
+                montag.setDate(jan4.getDate() - ((jan4.getDay() || 7) - 1) + (w - 1) * 7);
+                return montag;
+            }
+            var c = p.split('-'); return new Date(+c[0], +c[1] - 1, +c[2]);
+        }
+        function naechste(d, raster) {
+            var n = new Date(d);
+            if (raster === 'monat') { n.setMonth(n.getMonth() + 1, 1); }
+            else if (raster === 'woche') { n.setDate(n.getDate() + 7); }
+            else { n.setDate(n.getDate() + 1); }
+            return n;
+        }
+        function aufgefuellt(raster) {
+            var daten = REIHEN[raster] || [];
+            if (!daten.length) { return []; }
+            var index = {};
+            daten.forEach(function (r) { index[r.p] = r; });
+            var out = [], d = startDatum(daten[0].p, raster), ende = new Date();
+            var sicherung = 0;
+            while (d <= ende && sicherung++ < 20000) {
+                var k = schluessel(d, raster);
+                out.push(index[k] ? { p: k, d: new Date(d), a: index[k].a, g: index[k].g } : { p: k, d: new Date(d), a: 0, g: null });
+                d = naechste(d, raster);
+            }
+            return out;
+        }
+        function beschriftung(r, raster, lang) {
+            var d = r.d;
+            if (raster === 'monat') { return MONATE[d.getMonth()] + (lang || d.getMonth() === 0 ? ' ' + d.getFullYear() : ''); }
+            if (raster === 'woche') { return (lang ? 'KW ' : 'KW') + r.p.split('-W')[1] + (lang ? ' ' + r.p.split('-W')[0] : ''); }
+            return d.getDate() + '.' + (d.getMonth() + 1) + '.' + (lang ? d.getFullYear() : '');
+        }
+
+        // ---- Diagramm (inline SVG, gruppierte Balken, eine gemeinsame y-Achse) ----
+        function zeichne(raster) {
+            var daten = aufgefuellt(raster);
+            if (!daten.length) {
+                scrollEl.innerHTML = "<p class='bs-leer'>Noch keine Aufrufe erfasst.</p>";
+                tabEl.innerHTML = '';
+                return;
+            }
+            var H = 260, oben = 16, unten = 44, links = 44, gruppe = raster === 'tag' ? 18 : 34;
+            var balken = (gruppe - 6) / 2;
+            var breite = Math.max(scrollEl.clientWidth || 600, links + daten.length * gruppe + 12);
+            var max = 0;
+            daten.forEach(function (r) { max = Math.max(max, r.a, r.g || 0); });
+            var schritt = Math.pow(10, Math.floor(Math.log10(Math.max(max, 1))));
+            var achseMax = Math.ceil(Math.max(max, 1) / schritt) * schritt;
+            var hoehe = H - oben - unten;
+            var y = function (v) { return oben + hoehe - (v / achseMax) * hoehe; };
+            var ns = 'http://www.w3.org/2000/svg';
+            var svg = '<svg xmlns="' + ns + '" width="' + breite + '" height="' + H + '" role="img" aria-label="Website-Aufrufe und verschiedene Geräte je ' + raster + '">';
+            // Raster + y-Achse (recessiv)
+            for (var i = 0; i <= 4; i++) {
+                var v = achseMax * i / 4, yy = y(v);
+                svg += '<line x1="' + links + '" x2="' + breite + '" y1="' + yy + '" y2="' + yy + '" stroke="var(--bs-grid)" />';
+            }
+            // y-Achsen-Beschriftung als eigene, feststehende Ebene links - bleibt beim horizontalen
+            // Scrollen sichtbar
+            var achse = "<div class='bs-achse' style='width:" + links + "px;height:" + H + "px'>";
+            for (var j = 0; j <= 4; j++) {
+                achse += "<span style='top:" + (y(achseMax * j / 4) - 7) + "px'>" + Math.round(achseMax * j / 4).toLocaleString('de-DE') + '</span>';
+            }
+            achseEl.innerHTML = achse + '</div>';
+            // Beschriftungsdichte: nicht jeden Balken beschriften
+            var jede = raster === 'tag' ? 7 : (raster === 'woche' ? 4 : 1);
+            daten.forEach(function (r, idx) {
+                var x0 = links + idx * gruppe + 3;
+                var basis = y(0);
+                function saeule(x, wert, farbe) {
+                    if (!wert) { return ''; }
+                    var hy = y(wert), h = basis - hy, rad = Math.min(4, balken / 2, h);
+                    // oben abgerundet, unten gerade auf der Basislinie
+                    return '<path d="M' + x + ',' + basis + 'V' + (hy + rad) + 'Q' + x + ',' + hy + ' ' + (x + rad) + ',' + hy +
+                        'H' + (x + balken - rad) + 'Q' + (x + balken) + ',' + hy + ' ' + (x + balken) + ',' + (hy + rad) + 'V' + basis + 'Z" fill="' + farbe + '" />';
+                }
+                svg += saeule(x0, r.a, 'var(--bs-aufrufe)');
+                svg += saeule(x0 + balken + 2, r.g, 'var(--bs-geraete)');
+                // Hover-Ziel: ganze Spaltenbreite und -höhe, größer als die Balken selbst
+                svg += '<rect class="bs-hit" data-i="' + idx + '" x="' + (links + idx * gruppe) + '" y="' + oben + '" width="' + gruppe + '" height="' + hoehe + '" fill="transparent" />';
+                if (idx % jede === 0) {
+                    svg += '<text x="' + (x0 + balken) + '" y="' + (H - unten + 16) + '" text-anchor="middle" font-size="10" fill="var(--bs-text-2)">' + beschriftung(r, raster, false) + '</text>';
+                }
+            });
+            svg += '<line x1="' + links + '" x2="' + breite + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="rgba(255,255,255,0.35)" />';
+            svg += '</svg>';
+            scrollEl.innerHTML = svg;
+            scrollEl.scrollLeft = scrollEl.scrollWidth; // neueste Daten zuerst sichtbar
+
+            scrollEl.querySelectorAll('.bs-hit').forEach(function (el) {
+                el.addEventListener('mouseenter', zeigeTip);
+                el.addEventListener('click', zeigeTip);
+                el.addEventListener('mouseleave', function () { tipEl.style.display = 'none'; });
+            });
+            function zeigeTip(ev) {
+                var r = daten[+ev.currentTarget.getAttribute('data-i')];
+                tipEl.innerHTML = '<b>' + beschriftung(r, raster, true) + '</b>Aufrufe: ' + fmt(r.a) + '<br>Verschiedene Geräte: ' + fmt(r.g);
+                var rahmen = scrollEl.parentNode.getBoundingClientRect(), ziel = ev.currentTarget.getBoundingClientRect();
+                tipEl.style.display = 'block';
+                var links2 = ziel.left - rahmen.left + ziel.width / 2 - tipEl.offsetWidth / 2;
+                tipEl.style.left = Math.max(0, Math.min(links2, rahmen.width - tipEl.offsetWidth)) + 'px';
+                tipEl.style.top = '0px';
+            }
+
+            // Tabellenansicht (neueste zuerst)
+            var t = "<table class='bs-tabelle'><thead><tr><th>Zeitraum</th><th>Aufrufe</th><th>Geräte</th></tr></thead><tbody>";
+            daten.slice().reverse().forEach(function (r) {
+                if (!r.a && r.g === null) { return; }
+                t += '<tr><td>' + beschriftung(r, raster, true) + '</td><td>' + fmt(r.a) + '</td><td>' + fmt(r.g) + '</td></tr>';
+            });
+            tabEl.innerHTML = t + '</tbody></table>';
+        }
+
+        var aktuell = 'monat';
+        document.querySelectorAll('#backstage_besuche .bs-segmente button').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                aktuell = btn.getAttribute('data-raster');
+                document.querySelectorAll('#backstage_besuche .bs-segmente button').forEach(function (b) { b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+                zeichne(aktuell);
+            });
+        });
+        // Artikel ist beim Laden versteckt (Hash-Navigation) - erst zeichnen, wenn er sichtbar wird
+        function vielleichtZeichnen() { if (location.hash === '#backstage_besuche') { setTimeout(function () { zeichne(aktuell); }, 350); } }
+        window.addEventListener('hashchange', vielleichtZeichnen);
+        window.addEventListener('resize', function () { if (location.hash === '#backstage_besuche') { zeichne(aktuell); } });
+        vielleichtZeichnen();
+    })();
+    </script>
+    <?php } ?>
+    <h5><br/></h5>
+    <a href='#backstage_info' class='button'>Zurück</a>
+    <h5><br /></h5>
 </article>
 
 <!-- ########  Begegnungen bearbeiten  ######### -->
@@ -3555,6 +3773,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <?php if ($istEchterAdmin) { ?>
             <a href='#backstage_verlauf' class='admin-menu-button admin-menu-button--adminonly'>Verlauf</a>
             <?php } ?>
+            <?php if ($rechteFlags['backstage']) { ?>
+            <a href='#backstage_besuche' class='admin-menu-button admin-menu-button--backstage'>Website-Besuche</a>
+            <?php } ?>
         </div>
         <?php if ($istAdminOderCoAdmin) { ?>
         <div class='admin-legende'>
@@ -3571,7 +3792,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <div class='admin-legende-zeile'>
                 <span class='admin-legende-swatch admin-legende-swatch--backstage'></span>
                 <div>
-                    <b>Blauer Rahmen</b>: Telefonnummern, Team-Passwörter, Warteliste, ER-Diagramm (Infos-Menü); im Testmodus zusätzlich "Teams generieren" (eigene dunkelblaue Testmodus-Optik statt Rahmenfarbe)<br>
+                    <b>Blauer Rahmen</b>: Telefonnummern, Team-Passwörter, Warteliste, ER-Diagramm, Website-Besuche (Infos-Menü); im Testmodus zusätzlich "Teams generieren" (eigene dunkelblaue Testmodus-Optik statt Rahmenfarbe)<br>
                     <span style='color:#2ecc71;'>&check; Sichtbar für:</span> Turniermaster, Backstage-Zugang, Co-Admin, Admin<br>
                     <span style='color:#e74c3c;'>&#10007; Nicht sichtbar für:</span> Autor*in, Schiedsrichter*in, Benutzer*in
                 </div>
