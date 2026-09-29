@@ -1,9 +1,7 @@
-on: 
-  push:
-    branches:
-      - main
-      - dev
-name: 🚀 Deploy website on push
+# Automatisches Deployment bei Push ist derzeit deaktiviert - nur manuell über "Run workflow" startbar.
+on:
+  workflow_dispatch:
+name: 🚀 Deploy website
 jobs:
   web-deploy:
     name: 🎉 Deploy
