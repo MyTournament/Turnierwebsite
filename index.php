@@ -2459,7 +2459,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 
     <h2>Profil bearbeiten</h2>
     <div class='login-section' style='max-width:400px;margin:0 auto;'>
-        <form action='website_datachange/edit_account.php<?php echo $test_turnier_id!=0 ? "?test_turnier_id=$test_turnier_id" : ""; ?>' method='POST' onsubmit="return confirm('Profil wirklich aktualisieren?');">
+        <form action='website_datachange/edit_account.php<?php echo $test_turnier_id!=0 ? "?test_turnier_id=$test_turnier_id" : ""; ?>' method='POST' onsubmit="return profilPasswortPruefen() && confirm('Profil wirklich aktualisieren?');">
             <input type='hidden' name='action' value='Eigenes_Profil_Speichern'>
             <?php echo csrf_field(); ?>
             <input type='hidden' name='admin_bn' value='<?php echo $profilBnAttr; ?>'>
@@ -2483,10 +2483,27 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 <label for='profil_pw' style='display:block;font-size:0.78rem;opacity:0.8;margin-bottom:0.2rem;'>Neues Passwort <i>(leer lassen für keine Änderung)</i></label>
                 <input type='password' id='profil_pw' name='neues_passwort' placeholder='Neues Passwort' class='Eingabe' style='color:white;width:100%;' autocomplete='new-password'>
             </div>
+            <div class='login-form-row' style='text-align:left;'>
+                <input type='password' id='profil_pw2' name='neues_passwort_wiederholen' placeholder='Neues Passwort wiederholen' class='Eingabe' style='color:white;width:100%;' autocomplete='new-password'>
+            </div>
+            <div class='login-form-row field half' style='text-align:left;'>
+                <input type='checkbox' id='profil_pw_zeigen' onclick="var t = this.checked ? 'text' : 'password'; document.getElementById('profil_pw').type = t; document.getElementById('profil_pw2').type = t;">
+                <label for='profil_pw_zeigen'>Passwort anzeigen</label>
+            </div>
             <button type='submit' class='button primary'>Speichern</button>
         </form>
     </div>
     <script>
+        // Neues Passwort muss zweimal identisch eingegeben werden (gleiche Regel wie bei der Registrierung)
+        function profilPasswortPruefen() {
+            var pw1 = document.getElementById('profil_pw');
+            var pw2 = document.getElementById('profil_pw2');
+            if (pw1 && pw2 && (pw1.value !== '' || pw2.value !== '') && pw1.value !== pw2.value) {
+                alert('Die beiden Passwörter stimmen nicht überein.');
+                return false;
+            }
+            return true;
+        }
         function profilAvatarWaehlen(btn) {
             document.querySelectorAll('.profil-avatar-opt--aktiv').forEach(function(b) { b.classList.remove('profil-avatar-opt--aktiv'); });
             btn.classList.add('profil-avatar-opt--aktiv');

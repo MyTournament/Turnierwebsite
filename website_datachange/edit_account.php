@@ -264,6 +264,13 @@ if($action == 'register'){
             }
         }
         $aktuellesPw = $adminPw;
+        // Serverseitige Gegenprüfung der Passwort-Wiederholung (die Prüfung im Browser lässt sich umgehen)
+        $neuesPasswortWiederholt = trim(isset($_POST['neues_passwort_wiederholen']) ? $_POST['neues_passwort_wiederholen'] : '');
+        if ($neuesPasswort !== '' && $neuesPasswort !== $neuesPasswortWiederholt) {
+            if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+            $_SESSION['flash_error_profil'] = 'Die beiden Passwörter stimmen nicht überein - das Passwort wurde nicht geändert.';
+            $neuesPasswort = '';
+        }
         if ($neuesPasswort !== '') {
             $sqlPwAendern = "UPDATE System_Benutzer_in SET Passwort = ? WHERE id = ?";
             myDb_execute($conn, 0, $adminBn, "edit_account.php Eigenes_Profil_Speichern pw", $sqlPwAendern, array($neuesPasswort, $eigeneId));
