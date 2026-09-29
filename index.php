@@ -981,6 +981,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         while ($rowTurnier = $resultTurnier->fetch_assoc()) {
             $turnier_phase_ID = $rowTurnier['fk_turnier_phase'];
             $schnee = $rowTurnier['schnee'];
+            // ?? 0: die Spalte herbstlaub existiert erst nach der zugehörigen Schema-Erweiterung
+            $herbstlaub = $rowTurnier['herbstlaub'] ?? 0;
         }
     // Statusbox nur für eingeloggte Teams: wo im Turnier stehen wir gerade? (siehe
     // getTeamStatusInfo()/printTeamStatusBox() in table_print_functions.php). Steht
@@ -4038,6 +4040,9 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <h5><br/></h5>
             <input type='checkbox' id='neu_schnee' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>>
             <label for='neu_schnee'>Schnee-Effekt</label>
+            <h5><br/></h5>
+            <input type='checkbox' id='neu_herbstlaub' name='herbstlaub' value='1' <?php echo (($altesTurnier['herbstlaub'] ?? 0) == 1) ? "checked" : ""; ?>>
+            <label for='neu_herbstlaub'>Herbstlaub-Effekt</label>
         </div>
         <script type='text/javascript'>
             function neuesTurnierIstRealesTurnier() {
@@ -4336,6 +4341,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     tsCheckboxFeld('Excel-Verknüpfung nutzen', 'Ersetzt den normalen (automatisch berechneten) Spielplan komplett durch eine eingebettete Excel-Tabelle - der normale Spielplan wird dann gar nicht mehr angezeigt. Nur aktivieren, wenn unten auch wirklich ein gültiger Excel-Link eingetragen ist.', 'use_excel', $rowTurnierSettings['use_excel'], $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Excel-Link', 'Nur relevant, wenn "Excel-Verknüpfung nutzen" aktiviert ist.', 'excel_link', $rowTurnierSettings['excel_link'], 'text', $TurnierID, $bnAttr, $pwAttr);
     tsCheckboxFeld('Schnee-Effekt', 'Aktiviert den winterlichen Schnee-Effekt auf der Website. Zeigt zusätzlich an drei Stellen (direkt unter "Team anmelden" auf der Startseite, über den drei Phase-Karten auf der Spielplan-Seite, und weiterhin unten im Footer) einen Button zu den Special-Regeln für den Adventscup an - gedacht für Turniere rund um die Weihnachtszeit.', 'schnee', $rowTurnierSettings['schnee'], $TurnierID, $bnAttr, $pwAttr);
+    tsCheckboxFeld('Herbstlaub-Effekt', 'Lässt statt Schneeflocken bunte Herbstblätter über die Website fallen - gedacht für Turniere im Herbst. Ist gleichzeitig der Schnee-Effekt aktiv, hat der Schnee Vorrang.', 'herbstlaub', $rowTurnierSettings['herbstlaub'] ?? 0, $TurnierID, $bnAttr, $pwAttr);
     ?>
 
     <h5><br /></h5>
@@ -5370,6 +5376,8 @@ if($schnee==1){
     echo '<script type="text/javascript">',
         'startSnow();',
      '</script>';
+}else if(($herbstlaub ?? 0)==1){
+    echo '<script type="text/javascript" src="assets/js/leaves.js"></script>';
 }else{
     include_once 'assets/js/cookies.js';
     echo "<script type='text/javascript' id='cookieinfo'

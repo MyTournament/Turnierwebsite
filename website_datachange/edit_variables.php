@@ -142,7 +142,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
             'startdatum', 'startzeit', 'countdown_start', 'enddatum', 'max_anzahl_teams',
             'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'excel_link', 'fk_ko_einzug_modus'];
         $erlaubteCheckboxFelder = ['nurOberesDreieckInGruppenphase', 'nurOberesDreieckInLosingBracket', 'loescheErsteZeileUndSpalte',
-            'losingbracket_open_for_ko_losers', 'use_excel', 'schnee'];
+            'losingbracket_open_for_ko_losers', 'use_excel', 'schnee', 'herbstlaub'];
         $feld = isset($_POST['feld']) ? $_POST['feld'] : '';
         // fk_ko_einzug_modus gehört inhaltlich zu "Einzug ins KO-System" (eigener Menüpunkt, teams-Flag
         // = Admin/Co-Admin/Turniermaster) - alle anderen Felder hier bleiben echte Turnier-Settings
@@ -293,7 +293,7 @@ if ($successfulLogin == 0){ //fehlerhafter Login
           // Checkboxen: nicht gesendet = 0
           $checkboxFelder = ['einzug_ko_manuell_anlegen', 'einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei',
               'nurOberesDreieckInGruppenphase', 'nurOberesDreieckInLosingBracket', 'loescheErsteZeileUndSpalte', 'losingbracket_open_for_ko_losers',
-              'use_excel', 'schnee'];
+              'use_excel', 'schnee', 'herbstlaub'];
           foreach ($checkboxFelder as $feld) {
             if (array_key_exists($feld, $alteZeile)) {
               $alteZeile[$feld] = isset($_POST[$feld]) ? 1 : 0;
