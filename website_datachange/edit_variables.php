@@ -142,7 +142,9 @@ if ($successfulLogin == 0){ //fehlerhafter Login
             'startdatum', 'startzeit', 'countdown_start', 'enddatum', 'max_anzahl_teams',
             'teilnahmebeitrag', 'order_on_website', 'fk_turnier_phase', 'excel_link', 'fk_ko_einzug_modus'];
         $erlaubteCheckboxFelder = ['nurOberesDreieckInGruppenphase', 'nurOberesDreieckInLosingBracket', 'loescheErsteZeileUndSpalte',
-            'losingbracket_open_for_ko_losers', 'use_excel', 'schnee', 'herbstlaub'];
+            'losingbracket_open_for_ko_losers', 'use_excel'];
+        // schnee/herbstlaub bewusst NICHT hier: die beiden schließen sich gegenseitig aus und werden
+        // gemeinsam über Turnier_Settings_Saison_Effekt_Aendern gesetzt (siehe unten).
         $feld = isset($_POST['feld']) ? $_POST['feld'] : '';
         // fk_ko_einzug_modus gehört inhaltlich zu "Einzug ins KO-System" (eigener Menüpunkt, teams-Flag
         // = Admin/Co-Admin/Turniermaster) - alle anderen Felder hier bleiben echte Turnier-Settings
@@ -160,6 +162,26 @@ if ($successfulLogin == 0){ //fehlerhafter Login
           $sql = "UPDATE `Turnier_Main` SET `$feld` = ? WHERE `id` = ?;";
           $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Feld_Aendern checkbox", $sql, array($wert, $TurnierID));
         }
+      }
+
+    // ============================================================================================
+    // SAISON-EFFEKT: SCHNEE ODER HERBSTLAUB (ODER KEINER) - NIE BEIDES GLEICHZEITIG
+    // ============================================================================================
+    // Beide Spalten werden in einem einzigen UPDATE gesetzt, damit die Datenbank nie einen Zustand
+    // mit schnee = 1 UND herbstlaub = 1 enthält.
+    }else if ($action == 'Turnier_Settings_Saison_Effekt_Aendern') {
+      if(!csrf_verify()){
+        $message = "Sicherheitsprüfung fehlgeschlagen (ungültiger oder abgelaufener Token). Bitte die Seite neu laden und erneut versuchen.";
+        echo "<script type='text/javascript'>alert('$message');</script>";
+      }else if(!$darfTurnierSettingsAendern){
+        $message = "Leider hast du nicht die nötigen Rechte, um die Turnier Settings zu bearbeiten. Wende dich an Richard, um mehr Rechte zu erhalten.";
+        echo "<script type='text/javascript'>alert('$message');</script>";
+      }else{
+        $saisonEffekt = isset($_POST['saison_effekt']) ? $_POST['saison_effekt'] : 'keiner';
+        $schneeWert = ($saisonEffekt === 'schnee') ? 1 : 0;
+        $herbstlaubWert = ($saisonEffekt === 'herbstlaub') ? 1 : 0;
+        $sql = "UPDATE `Turnier_Main` SET `schnee` = ?, `herbstlaub` = ? WHERE `id` = ?;";
+        $insert_id = myDb_execute($conn, $TurnierID, $bn, "edit_variables.php Saison_Effekt_Aendern", $sql, array($schneeWert, $herbstlaubWert, $TurnierID));
       }
 
     // ============================================================================================
@@ -293,12 +315,16 @@ if ($successfulLogin == 0){ //fehlerhafter Login
           // Checkboxen: nicht gesendet = 0
           $checkboxFelder = ['einzug_ko_manuell_anlegen', 'einzug_ko_fertig_manuell_angelegt_bzw_gruppenphase_vorbei',
               'nurOberesDreieckInGruppenphase', 'nurOberesDreieckInLosingBracket', 'loescheErsteZeileUndSpalte', 'losingbracket_open_for_ko_losers',
-              'use_excel', 'schnee', 'herbstlaub'];
+              'use_excel'];
           foreach ($checkboxFelder as $feld) {
             if (array_key_exists($feld, $alteZeile)) {
               $alteZeile[$feld] = isset($_POST[$feld]) ? 1 : 0;
             }
           }
+          // Saison-Effekt: eine Auswahl für schnee/herbstlaub, damit nie beide gleichzeitig aktiv sind
+          $saisonEffekt = isset($_POST['saison_effekt']) ? $_POST['saison_effekt'] : 'keiner';
+          if (array_key_exists('schnee', $alteZeile)) { $alteZeile['schnee'] = ($saisonEffekt === 'schnee') ? 1 : 0; }
+          if (array_key_exists('herbstlaub', $alteZeile)) { $alteZeile['herbstlaub'] = ($saisonEffekt === 'herbstlaub') ? 1 : 0; }
           // BUGFIX: Ein neu angelegtes Turnier (auch als Kopie eines alten) hat per Definition noch
           // keine abgeschlossene Gruppenphase. Dieser Schalter darf NIE vom kopierten Ausgangsturnier
           // (bzw. von einem versehentlich gesetzten Formularwert) übernommen werden - sonst hält sich

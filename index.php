@@ -4038,11 +4038,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             <label for='demo-category'>Excel-Link</label>
             <input type='text' name='excel_link' value='<?php echo htmlspecialchars($altesTurnier['excel_link'] ?? ''); ?>' class='Eingabe' style='color: white'>
             <h5><br/></h5>
-            <input type='checkbox' id='neu_schnee' name='schnee' value='1' <?php echo (($altesTurnier['schnee'] ?? 0) == 1) ? "checked" : ""; ?>>
-            <label for='neu_schnee'>Schnee-Effekt</label>
-            <h5><br/></h5>
-            <input type='checkbox' id='neu_herbstlaub' name='herbstlaub' value='1' <?php echo (($altesTurnier['herbstlaub'] ?? 0) == 1) ? "checked" : ""; ?>>
-            <label for='neu_herbstlaub'>Herbstlaub-Effekt</label>
+            <?php $neuSaisonEffekt = (($altesTurnier['schnee'] ?? 0) == 1) ? 'schnee' : ((($altesTurnier['herbstlaub'] ?? 0) == 1) ? 'herbstlaub' : 'keiner'); ?>
+            <label for='neu_saison_effekt'>Saison-Effekt</label>
+            <select id='neu_saison_effekt' name='saison_effekt'>
+                <option value='keiner' <?php echo $neuSaisonEffekt === 'keiner' ? 'selected' : ''; ?>>Kein Effekt</option>
+                <option value='schnee' <?php echo $neuSaisonEffekt === 'schnee' ? 'selected' : ''; ?>>Schnee</option>
+                <option value='herbstlaub' <?php echo $neuSaisonEffekt === 'herbstlaub' ? 'selected' : ''; ?>>Herbstlaub</option>
+            </select>
         </div>
         <script type='text/javascript'>
             function neuesTurnierIstRealesTurnier() {
@@ -4340,9 +4342,28 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     tsCheckboxFeld('Losing Bracket offen für K.-o.-Verlierer', 'Verlierer der K.-o.-Phase spielen im Losing Bracket weiter.', 'losingbracket_open_for_ko_losers', $rowTurnierSettings['losingbracket_open_for_ko_losers'], $TurnierID, $bnAttr, $pwAttr);
     tsCheckboxFeld('Excel-Verknüpfung nutzen', 'Ersetzt den normalen (automatisch berechneten) Spielplan komplett durch eine eingebettete Excel-Tabelle - der normale Spielplan wird dann gar nicht mehr angezeigt. Nur aktivieren, wenn unten auch wirklich ein gültiger Excel-Link eingetragen ist.', 'use_excel', $rowTurnierSettings['use_excel'], $TurnierID, $bnAttr, $pwAttr);
     tsTextFeld('Excel-Link', 'Nur relevant, wenn "Excel-Verknüpfung nutzen" aktiviert ist.', 'excel_link', $rowTurnierSettings['excel_link'], 'text', $TurnierID, $bnAttr, $pwAttr);
-    tsCheckboxFeld('Schnee-Effekt', 'Aktiviert den winterlichen Schnee-Effekt auf der Website. Zeigt zusätzlich an drei Stellen (direkt unter "Team anmelden" auf der Startseite, über den drei Phase-Karten auf der Spielplan-Seite, und weiterhin unten im Footer) einen Button zu den Special-Regeln für den Adventscup an - gedacht für Turniere rund um die Weihnachtszeit.', 'schnee', $rowTurnierSettings['schnee'], $TurnierID, $bnAttr, $pwAttr);
-    tsCheckboxFeld('Herbstlaub-Effekt', 'Lässt statt Schneeflocken bunte Herbstblätter über die Website fallen - gedacht für Turniere im Herbst. Ist gleichzeitig der Schnee-Effekt aktiv, hat der Schnee Vorrang.', 'herbstlaub', $rowTurnierSettings['herbstlaub'] ?? 0, $TurnierID, $bnAttr, $pwAttr);
+    // Schnee und Herbstlaub schließen sich gegenseitig aus - daher EINE Auswahl statt zweier
+    // unabhängiger Checkboxen. Die eigene Aktion in edit_variables.php setzt beide Spalten gemeinsam.
+    $tsSaisonEffekt = ((int)$rowTurnierSettings['schnee'] === 1) ? 'schnee'
+        : (((int)($rowTurnierSettings['herbstlaub'] ?? 0) === 1) ? 'herbstlaub' : 'keiner');
     ?>
+    <div class='ts-setting'>
+        <span class='ts-setting-label'>Saison-Effekt</span>
+        <span class='ts-hint'>Dekorativer Effekt auf der Website. "Schnee" zeigt zusätzlich an drei Stellen (direkt unter "Team anmelden" auf der Startseite, über den drei Phase-Karten auf der Spielplan-Seite, und unten im Footer) einen Button zu den Special-Regeln für den Adventscup an - gedacht für Turniere rund um die Weihnachtszeit. "Herbstlaub" lässt bunte Herbstblätter über die Website fallen.</span>
+        <form action='website_datachange/edit_variables.php' method='POST' class='ts-row'>
+            <input type='hidden' name='TurnierID' value='<?php echo $TurnierID; ?>'/>
+            <input type='hidden' name='bn' value='<?php echo $bnAttr; ?>'/>
+            <input type='hidden' name='pw' value='<?php echo $pwAttr; ?>'/>
+            <input type='hidden' name='action' value='Turnier_Settings_Saison_Effekt_Aendern'/>
+            <?php echo csrf_field(); ?>
+            <select name='saison_effekt' class='ts-input'>
+                <option value='keiner' <?php echo $tsSaisonEffekt === 'keiner' ? 'selected' : ''; ?>>Kein Effekt</option>
+                <option value='schnee' <?php echo $tsSaisonEffekt === 'schnee' ? 'selected' : ''; ?>>Schnee</option>
+                <option value='herbstlaub' <?php echo $tsSaisonEffekt === 'herbstlaub' ? 'selected' : ''; ?>>Herbstlaub</option>
+            </select>
+            <label class='admin-toggle'><input type='checkbox' onchange='this.form.submit()'> <span>bestätigen</span></label>
+        </form>
+    </div>
 
     <h5><br /></h5>
     <?php } ?>
