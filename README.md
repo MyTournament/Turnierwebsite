@@ -15,6 +15,12 @@ tournaments (history) and sandboxed test tournaments.
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 ![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)
 
+![Start page](docs/screenshots/home.jpg)
+
+| Schedule overview | Knockout bracket | Podium |
+| --- | --- | --- |
+| ![Schedule overview](docs/screenshots/schedule.jpg) | ![Knockout bracket](docs/screenshots/bracket.jpg) | ![Podium](docs/screenshots/podium.jpg) |
+
 ---
 
 ## Highlights
