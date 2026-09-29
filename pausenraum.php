@@ -37,14 +37,14 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
         <p class="muted">Ein ganz kleines Wurfspiel für zwischendurch - zielen, werfen, treffen. Mit richtigem Bier gespielt, nicht nur digital.</p>
         <a href="#blankiball_simulator_2d" class="button primary">Jetzt spielen</a>
       </div>
-      <!-- Von der Startseite (Footer) hierher verschoben, auf ausdrücklichen Wunsch - vorher lag das
+      <!-- Von der Startseite (Footer) hierher verschoben - vorher lag das
            als CMS-Inhalt im Footer, jetzt fest hier im Pausenraum. Die alte CMS-Version im Footer bleibt
-           bestehen, bis sie über den roten "Löschen"-Button im CMS-Bearbeitungsmodus entfernt wird (das
-           kann ich als Code-Änderung nicht selbst - siehe Chat). -->
+           bestehen, bis sie über den roten "Löschen"-Button im CMS-Bearbeitungsmodus entfernt wird (der
+           Inhalt liegt in der Datenbank, nicht im Code). -->
       <div class="phase-card phase-card--ko">
         <h3><img class="icon" src="images/Sonstiges/blankiball_simulator.jpg" alt="" style="border-radius:6px;"> Blankiball-Simulator 3D</h3>
         <p class="muted">Der Blankiball-Simulator als richtiges Steam-Spiel - selbst programmiert.</p>
-        <!-- TODO: echten Steam-Store-Link eintragen, sobald bekannt (siehe Chat) -->
+        <!-- TODO: echten Steam-Store-Link eintragen, sobald bekannt -->
         <a href="#blankiball_simulator" class="button primary">Auf Steam ansehen</a>
       </div>
       <div class="phase-card phase-card--losing">
@@ -98,7 +98,7 @@ $pausenraumDarfNutzen = isset($istAdminOderCoAdmin) && $istAdminOderCoAdmin;
 <!-- ###  BLANKIBALL-SIMULATOR 2D  ################################################################## -->
 <!-- ################################################################################################ -->
 <!-- Echtes 2-Spieler-Bierball/Flunkyball auf einem Gerät (Vanilla-JS + Canvas, Pointer Events fuer
-     Maus UND Touch gleichermassen). Regeln recherchiert (siehe Chat-Quellen: spielregeln.de,
+     Maus UND Touch gleichermassen). Regeln angelehnt an gängige Quellen (spielregeln.de,
      beerpong.de, redcupshop.com u.a.) - EINE gemeinsame Flasche steht in der Mitte zwischen zwei
      Team-Seiten, es wird IMMER abwechselnd geworfen (Team A, dann Team B, usw.). Trifft ein Team,
      darf es trinken, bis das GEGNERISCHE Team die Flasche wieder aufgestellt und "Stopp!" gerufen hat

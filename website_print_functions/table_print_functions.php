@@ -42,7 +42,7 @@
     // $eigenesTeamId: falls gerade ein Team eingeloggt ist, dessen ID - $darfAllePasswoerterSehen:
     // Admin/Co-Admin/Turniermaster/Backstage-Zugang (backstage-Flag, siehe rollen_definitionen.php) -
     // steuert zusammen mit $eigenesTeamId weiter unten, ob der "Passwort anzeigen"-Button auf dieser
-    // Teamseite überhaupt gerendert wird (nur fürs eigene Team bzw. mit Backstage-Rechten, siehe Chat).
+    // Teamseite überhaupt gerendert wird (nur fürs eigene Team bzw. mit Backstage-Rechten).
     function printTeamInfo($TurnierID, $conn, $teamId, $eigenesTeamId = null, $darfAllePasswoerterSehen = false){ //NICHT IM CMS
         // SICHERHEIT: (int)-Cast schliesst SQL-Injection (defensiv - diese Seite ist komplett
         // oeffentlich ohne Login erreichbar, der Aufrufer in index.php castet zwar bereits, aber
@@ -152,7 +152,7 @@
             ";
 
             // ========================================================================================
-            // TEAM-PASSWORT ANZEIGEN - auf ausdrücklichen Wunsch NUR hier auf der eigenen Teamseite
+            // TEAM-PASSWORT ANZEIGEN - NUR hier auf der eigenen Teamseite
             // (fürs eingeloggte Team selbst) bzw. für Admin/Co-Admin/Turniermaster/Backstage-Zugang auf
             // JEDER Teamseite. Alle anderen (andere eingeloggte Teams, nicht eingeloggt) sehen den
             // Button gar nicht erst - kein Hinweis, dass es ihn überhaupt gibt. Passwort selbst bleibt
@@ -252,7 +252,7 @@
 
     // ================================================================================================
     // GESAMTTURNIER-STATUS: welche der drei Phasen (Gruppenphase/K.-o.-Phase/Losing Bracket) läuft
-    // gerade? Auf ausdrücklichen Wunsch für die Spielplan-Übersicht, damit auf einen Blick klar wird,
+    // gerade? Für die Spielplan-Übersicht, damit auf einen Blick klar wird,
     // wo das Turnier insgesamt gerade steht - unabhängig vom eingeloggten Team. Jede Phase bekommt einen
     // von drei Zuständen: 'nicht_gestartet' (noch keine Begegnungen), 'aktiv' (mindestens eine offene
     // Begegnung) oder 'abgeschlossen' (alle Begegnungen finalisiert). Bewusst rein lesend, exakt
@@ -264,7 +264,7 @@
     // abgeschlossen") gestellt ist, zeigten trotzdem einzelne Karten (v.a. Losing-Bracket, das oft gar
     // nicht für jedes Team offen ist) noch "Läuft gerade", weil ihr Status rein aus den Begegnungsdaten
     // abgeleitet wurde. Der explizite "abgeschlossen"-Schalter ist die Aussage der Turnierleitung und
-    // muss daher Vorrang vor der reinen Datenlage haben - siehe Chat.
+    // muss daher Vorrang vor der reinen Datenlage haben.
     // ================================================================================================
     function ermittlePhasenStatus($conn, $TurnierID, $turnier_phase_ID = null) {
         if ((int)$turnier_phase_ID === 9) {
@@ -449,7 +449,7 @@
     // Gesamtturnier-Status-Badge (siehe ermittlePhasenStatus()) und, falls ein Team eingeloggt ist,
     // einem "Ihr seid hier"-Pfeil auf genau der Karte, die zu dessen aktuellem Status passt (abgeleitet
     // aus demselben cta_href, das auch die Team-Status-Box auf der Startseite verlinkt - beide Stellen
-    // bleiben dadurch automatisch konsistent). Auf ausdrücklichen Wunsch, siehe Chat.
+    // bleiben dadurch automatisch konsistent).
     // ================================================================================================
     function printSpielplanPhaseKarten($conn, $TurnierID, $eigenesTeamId, $turnier_phase_ID) {
         $phasenStatus = ermittlePhasenStatus($conn, $TurnierID, $turnier_phase_ID);
@@ -506,7 +506,7 @@
         return 'https://wa.me/' . $ziffern;
     }
 
-    // RECHTE-AUDIT (siehe Chat): vorher musste man sich HIER noch einmal separat einloggen, obwohl man
+    // RECHTE-AUDIT: vorher musste man sich HIER noch einmal separat einloggen, obwohl man
     // z.B. als Admin/Co-Admin/Turniermaster/Backstage-Zugang schon ganz normal eingeloggt war - dieses
     // doppelte Login-Formular ist jetzt komplett weg. $bn/$pw kommen von außen (index.php löst das
     // session-basiert auf, gleiches Muster wie überall sonst auf der Website) statt aus einem eigenen
@@ -662,7 +662,7 @@
     // K.-o.-Tabelle (Login, +/✓/★-Buttons, Sperren-Button, Begegnungs-ID, Green-Card-Punkt, Legende) -
     // dafür werden dieselben geteilten Bausteine genutzt wie printKO_PhaseTabellen (printEditModeStuff,
     // printBegegnungSperrenUI, ermittleBegegnungsDaten, printGames), damit beide Ansichten nie
-    // auseinanderlaufen können. Siehe Chat ("alle Funktionalitäten die's auch in der KO Tabelle gibt").
+    // auseinanderlaufen können.
     function printTurnierbaum($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id, $bnEingeloggt = '', $pwEingeloggt = '', $darfZufaelligeSpieleEintragen = false, $darfAlleSpieleBearbeiten = false, $eigenesTeamId = null, $darfTeamsBearbeiten = false, $darfTurnierSettingsAendern = false){
         $rowMain = $conn->query('SELECT start_ko_finallevel FROM Turnier_Main WHERE id = ' . (int)$TurnierID)->fetch_assoc();
         $start_ko_finallevel = (int)($rowMain['start_ko_finallevel'] ?? 0);
@@ -705,7 +705,7 @@
             .bracket-round { display: flex; flex-direction: column; width: clamp(170px, 20vw, 220px); flex: 0 0 auto; }
             /* Auffällig UND beim vertikalen Scrollen fixiert (position:sticky relativ zu .bracket-scroll),
                damit bei einer langen Runde (z.B. Achtelfinale mit 8 Spielen) immer klar bleibt, welche
-               Runde man gerade sieht - siehe Chat (sollen deutlich mehr ins Auge rutschen und dableiben). */
+               Runde man gerade sieht. */
             .bracket-round-title { position: sticky; top: 0; z-index: 8; text-align: center; text-transform: uppercase; letter-spacing: 0.06em; font-size: 1rem; font-weight: 800; color: #ffffff; background: linear-gradient(180deg, #101c32 72%, rgba(16,28,50,0)); padding: 0.55rem 0.3rem 1rem; margin: 0 0 0.2rem; border-bottom: 2px solid var(--bracket-accent); white-space: nowrap; }
             .bracket-round-matches { position: relative; }
             .bracket-match { position: relative; background: var(--bracket-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.5rem 0.6rem 0.4rem; margin: 0 0 0.9rem; box-shadow: 0 8px 24px rgba(10, 18, 36, 0.35); color: #eaf1ff; }
@@ -743,8 +743,7 @@
         $statusFilterBaum = $istBackstageEingeloggt ? '`status` <> 3' : '`status` NOT IN (3, 6)';
 
         // Spiel um Platz 3 vorab laden - wird weiter unten NICHT als eigene Spalte, sondern INNERHALB
-        // der Finale-Spalte (mit Abstand darunter) eingehängt, siehe Chat ("kann gerne einmal unterm
-        // Finale sein... nicht direkt drunter, sondern mit 'n bisschen Abstand").
+        // der Finale-Spalte (mit etwas Abstand unter dem Finale) eingehängt.
         $bdP3 = null;
         $rundenNameP3 = 'Spiel um Platz 3';
         $rowPlatz3 = $conn->query('SELECT * FROM `Turnier_Begegnung` WHERE ' . $statusFilterBaum . ' AND ko_finallevel = 1 AND fk_heimteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') AND fk_auswaertsteam IN (SELECT id FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = ' . $TurnierID . ') ORDER BY id DESC LIMIT 1')->fetch_assoc();
@@ -785,7 +784,7 @@
                 // entschieden, aber die hier stehenden zwei Teams sind NICHT genau deren beide Sieger -
                 // kommt z.B. zustande, wenn nachträglich eine Begegnung gesperrt und die Nachfolge-Runde
                 // per Green Card manuell neu besetzt wurde. Nur relevant ab der zweiten Runde (die erste
-                // hat keine Zubringer-Spiele, die Teams stehen dort von Anfang an fest). Siehe Chat.
+                // hat keine Zubringer-Spiele, die Teams stehen dort von Anfang an fest).
                 $istAnomalie = ($bd['status'] == 4 || $bd['status'] == 7);
                 if (!$istAnomalie && $ko_finallevel < $start_ko_finallevel) {
                     $feederLevel = $ko_finallevel + 1;
@@ -1002,8 +1001,8 @@
             }
 
             // ============================================================================================
-            // DRAG-TO-SCROLL PER MAUS (siehe Chat: "am PC mit Drag and Drop durchnavigieren, nicht nur
-            // scrollen") - reine Maus-Events (mousedown/mousemove/mouseup), Touch-Geräte scrollen weiterhin
+            // DRAG-TO-SCROLL PER MAUS: am PC lässt sich der Turnierbaum durch Ziehen navigieren
+            // - reine Maus-Events (mousedown/mousemove/mouseup), Touch-Geräte scrollen weiterhin
             // ganz normal per Fingergeste, damit kollidiert das hier nicht. Ein SCHWELLENWERT unterscheidet
             // "nur geklickt" von "wirklich gezogen" - erst ab ein paar Pixel Bewegung wird tatsächlich
             // gescrollt UND danach der folgende Klick unterdrückt (sonst würde z.B. ein Team-Link/Button
@@ -1146,11 +1145,11 @@
     }
     function print_sieger_innen_treppe($platzierungen){
         // NEU DESIGNT: echtes Siegertreppchen (3 unterschiedlich hohe Stufen, Gold/Silber/Bronze) statt
-        // der vorherigen rohen CSS-Grid-Kästen mit rotem Hintergrund - auf ausdrücklichen Wunsch, siehe
-        // Chat. Reihenfolge visuell klassisch 2.-1.-3. (1. Platz in der Mitte, am höchsten).
+        // der vorherigen rohen CSS-Grid-Kästen mit rotem Hintergrund.
+        // Reihenfolge visuell klassisch 2.-1.-3. (1. Platz in der Mitte, am höchsten).
         // SICHERHEIT: Teamnamen sind hier bereits in trigger_sieger_innen_treppe() htmlspecialchars()-
         // escaped (siehe dort) - hier nicht nochmal escapen, sonst werden z.B. "&" doppelt kodiert.
-        // Namen verlinken auf ausdrücklichen Wunsch zur jeweiligen Teamseite (gleiches Linkziel wie
+        // Namen verlinken zur jeweiligen Teamseite (gleiches Linkziel wie
         // printKuerzelWithLink() an anderer Stelle: ?teamId=X#teaminfo).
         $platzLink = function($platzierung) {
             if ($platzierung === "platzhalter") { return '<i>noch nicht bestimmt</i>'; }
@@ -1197,7 +1196,7 @@
     }
 
     // War bisher nirgends aufgerufen - die "#rangliste"-Seite zeigte stattdessen nur einen CMS-Text-
-    // Platzhalter. Auf ausdrücklichen Wunsch jetzt direkt bei "#rangliste" eingebunden (siehe index.php),
+    // Platzhalter. Jetzt direkt bei "#rangliste" eingebunden (siehe index.php),
     // CMS-Bindung dafür entfernt.
     function print_platzierungen($TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $eigenesTeamId = null){
         echo "<ul class='alt platzierungs-liste'>";
@@ -1223,8 +1222,7 @@
                 $teamId = $rowTeam['id'];
                 $teamKuerzel = printKuerzelWithLink($conn, $teamId);
                 $teamName .= " ($teamKuerzel)";
-                // Eigene Zeile hervorheben (gleiche Signalfarbe wie in den anderen Tabellen) - auf
-                // ausdrücklichen Wunsch auch hier.
+                // Eigene Zeile hervorheben (gleiche Signalfarbe wie in den anderen Tabellen).
                 if ($eigenesTeamId && (int)$teamId === (int)$eigenesTeamId) { $eigeneZeileKlasse = ' own-team-row'; }
             }
             echo "<li class=\"platzierungs-zeile$eigeneZeileKlasse\">$platzierungsZaehler. $teamName</li>";
@@ -1345,7 +1343,7 @@
         // RECHTE-AUDIT: die interaktiven Buttons (Score bearbeiten/"+"/"✓") waren bisher überall sichtbar,
         // sobald irgendeine Bearbeitungsberechtigung vorlag - ein eingeloggtes Team sah sie also auch bei
         // fremden Begegnungen, obwohl ein Klick dort ohnehin serverseitig abgelehnt wird (siehe
-        // $spielGehoertZuTeam-Prüfung in edit_games.php). Auf ausdrücklichen Wunsch jetzt schon in der
+        // $spielGehoertZuTeam-Prüfung in edit_games.php). Jetzt schon in der
         // Anzeige eingeschränkt: wer das blanket "alle Spiele bearbeiten"-Recht hat (Schiri/Admin/
         // Co-Admin/Turniermaster), sieht die Buttons weiterhin überall - ein eingeloggtes Team nur noch
         // bei den eigenen Begegnungen. Das Unfinalisieren (★) bleibt bewusst exklusiv an $darfUnfinalisieren
@@ -1391,7 +1389,7 @@
                 <?php
             }else{
                 // Gleiche kleine Badge-Optik wie die "3:1"-Kachel in der Bearbeiten-Legende (siehe
-                // .game-edit-legend-swatch--score) - auf ausdrücklichen Wunsch überall wiederverwendet,
+                // .game-edit-legend-swatch--score) - überall wiederverwendet,
                 // wo Spielstände angezeigt werden, damit sich mehrere Spiele einer Begegnung optisch
                 // klar voneinander abgrenzen statt als eine lange Zeichenkette zu verschwimmen.
                 echo "<span class='game-score-badge'>$a:$b</span>"; //FALL: SCHON FINAL
@@ -1504,8 +1502,8 @@
                     $istEigeneGruppe = ((int)$conn->query($sqlEigeneGruppeCheck)->fetch_assoc()['anzahl'] > 0);
                 }
                 // NEU: ist diese Gruppe komplett fertig gespielt (alle Begegnungen finalisiert)? Bestimmt,
-                // ob das "Ihr spielt hier"-Badge in Gegenwarts- oder Vergangenheitsform steht - macht auf
-                // ausdrücklichen Wunsch intuitiver sichtbar, wo das Turnier gerade steht. Gleiche
+                // ob das "Ihr spielt hier"-Badge in Gegenwarts- oder Vergangenheitsform steht - macht
+                // intuitiver sichtbar, wo das Turnier gerade steht. Gleiche
                 // Zähl-Logik wie beim Finalisieren/Unfinalisieren-Button weiter unten, hier aber
                 // unabhängig von Bearbeitungsrechten berechnet, da auch nicht-berechtigte Teams das
                 // Badge sehen sollen.
@@ -1782,8 +1780,8 @@
             $gruppenphase_spiele=$rowTeamZeile["gruppenphase_spiele"];
             $gruppenphase_flaschen=$rowTeamZeile["gruppenphase_flaschen"];
             $gruppenphase_punkte=$rowTeamZeile["gruppenphase_punkte"];
-            // Eigene Zeile hervorheben (gleiche Klasse/Farbe wie in den Spielplan-Tabellen) - auf
-            // ausdrücklichen Wunsch auch in den Punktetabellen, nicht nur beim Spielplan selbst. Pro
+            // Eigene Zeile hervorheben (gleiche Klasse/Farbe wie in den Spielplan-Tabellen) -
+            // auch in den Punktetabellen, nicht nur beim Spielplan selbst. Pro
             // <td> statt auf dem <tr> gesetzt, weil box-shadow (Teil von .own-team-row) auf <tr>-Elementen
             // in keinem gängigen Browser gerendert wird - nur der Hintergrund würde durchscheinen.
             $rowClassPkt = ($eigenesTeamId && (int)$teamId === (int)$eigenesTeamId) ? " own-team-row" : "";
@@ -1870,8 +1868,8 @@
         </style>
         ";
         // RECHTE-AUDIT: Begegnungs-ID, Sperren-Button und diese beiden Menü-Links hängen am teams-Flag
-        // (= Admin/Co-Admin/Turniermaster, siehe rollen_definitionen.php) - auf ausdrücklichen Wunsch,
-        // siehe Chat. "Begegnung bearbeiten" heißt jetzt "Green-Card-Begegnung erstellen" (reine
+        // (= Admin/Co-Admin/Turniermaster, siehe rollen_definitionen.php).
+        // "Begegnung bearbeiten" heißt jetzt "Green-Card-Begegnung erstellen" (reine
         // Anlegen-Funktion, Sperren ist rausgelöst in den neuen Sperren-Button je Begegnung), dazu eine
         // neue Übersicht aller gesperrten Begegnungen.
         if ($darfTeamsBearbeiten) {
@@ -1936,7 +1934,7 @@
         $siegerteam = $rowBegegnung['fk_siegerteam'];
         $status = $rowBegegnung['status'];
         $istGesperrt = ($status == 6);
-        // Auf ausdrücklichen Wunsch nur für Turniermaster/Co-Admin/Admin sichtbar (gleiches Flag wie
+        // Nur für Turniermaster/Co-Admin/Admin sichtbar (gleiches Flag wie
         // die Begegnungs-ID/Sperren-Button weiter unten) - für alle anderen (auch eingeloggte Teams)
         // bleibt eine Green-Card-Begegnung optisch nicht von einer normalen Begegnung unterscheidbar.
         $greenCardDot = ($darfTeamsBearbeiten && ($status == 4 || $status == 7)) ? " <span class='green-card-dot' title='Green Card (manuell angelegt)'></span>" : '';
@@ -1978,10 +1976,9 @@
 
     // RECHTE-AUDIT: 7. Parameter ($darfTurnierSettingsAendern) ist jetzt NUR noch für "Turnier
     // abschließen" (exklusiv Admin/Co-Admin) zuständig. Green-Card/Sperren/Begegnungs-ID/KO-Einzug-
-    // fertig-Toggle hängen seit der Rechte-Erweiterung auf ausdrücklichen Wunsch am neuen letzten
-    // Parameter $darfTeamsBearbeiten (teams-Flag = Admin/Co-Admin/Turniermaster), siehe Chat
-    // ("Turniermaster soll immer mindestens das können was Backstage kann" + die Liste konkreter
-    // Funktionen, die Turniermaster jetzt zusätzlich bedienen darf).
+    // fertig-Toggle hängen am letzten Parameter $darfTeamsBearbeiten
+    // (teams-Flag = Admin/Co-Admin/Turniermaster), damit auch die Rolle Turniermaster diese
+    // operativen Funktionen bedienen kann.
     function printKO_PhaseTabellen($TurnierID, $conn, $istBackstageEingeloggt, $gameEditMode, $expertenmodus, $test_turnier_id, $darfTurnierSettingsAendern = false, $bnEingeloggt = '', $pwEingeloggt = '', $darfZufaelligeSpieleEintragen = false, $darfAlleSpieleBearbeiten = false, $eigenesTeamId = null, $darfTeamsBearbeiten = false){
         //Button, mit dem man den Bearbeitungsmodus starten kann
         printEditModeStuff($conn, $TurnierID, $gameEditMode, $expertenmodus, "#kophase", $test_turnier_id, $darfAlleSpieleBearbeiten, $darfTeamsBearbeiten);
@@ -2013,7 +2010,7 @@
                 $name = $rowFinallevel["name"];
                 // NEU: "Ihr spielt hier"/"Ihr habt hier gespielt"-Badge auch in der K.-o.-Phase (gab es
                 // bisher nur bei Gruppenphase/Losing Bracket) - Gegenwarts-/Vergangenheitsform je nachdem,
-                // ob die eigene Begegnung dieser Runde schon finalisiert ist. Siehe Chat.
+                // ob die eigene Begegnung dieser Runde schon finalisiert ist.
                 $koRundeEigeneBadge = '';
                 if ($eigenesTeamId) {
                     $sqlEigeneRunde = 'SELECT status FROM Turnier_Begegnung WHERE ko_finallevel = ' . $ko_finallevel . ' AND status <> 3 AND (fk_heimteam = ' . (int)$eigenesTeamId . ' OR fk_auswaertsteam = ' . (int)$eigenesTeamId . ') ORDER BY id DESC LIMIT 1';

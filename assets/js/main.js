@@ -264,7 +264,7 @@
 
 				// ==================================================================
 				// FIX: KLICKS AUF INTERNE HASH-LINKS AUSSERHALB VON #main LOESTEN EINE
-				// RACE CONDITION AUS (frueher nur fuer #admin-bar gefixt, siehe Chat -
+				// RACE CONDITION AUS (frueher nur fuer #admin-bar gefixt -
 				// derselbe Bug tauchte spaeter bei der Team-Leiste, dem Login-Button oben
 				// rechts und Links in Fehlermeldungen wieder auf, weil die Ausnahme dort
 				// hart auf "#admin-bar" verdrahtet war statt generisch)

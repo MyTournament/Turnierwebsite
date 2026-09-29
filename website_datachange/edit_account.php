@@ -142,8 +142,8 @@ if($action == 'register'){
 // ================================================================================================
 // ROLLEN + PASSWORT IN EINEM RUTSCH SPEICHERN - ersetzt die früheren Einzel-Aktionen
 // Rolle_Hinzufuegen/Rolle_Entfernen/Passwort_Aendern (je eine pro Klick, jede mit eigenem Redirect/
-// Page-Reload). Auf ausdrücklichen Wunsch (siehe Chat: "nervig, wenn man mehrere Rollen hinzufügen
-// will und die Seite jedes Mal neu lädt") sammelt das Nutzermanagement jetzt alle Änderungen an
+// Page-Reload). Damit nicht jede einzelne Änderung die Seite neu lädt,
+// sammelt das Nutzermanagement jetzt alle Änderungen an
 // einem Nutzer (mehrere Rollen hinzufügen/entfernen, Passwort ändern) clientseitig und schickt sie
 // erst bei Klick auf "Speichern" gemeinsam in EINEM POST-Request - dadurch nur noch ein Reload
 // (und damit ein "Wiedersuchen" des Nutzers) pro Bearbeitungsvorgang statt pro Einzeländerung.
@@ -285,7 +285,7 @@ if($action == 'register'){
 // ================================================================================================
 // ADMIN-KOMMENTAR ÄNDERN: rein interne Notiz zu einem Nutzer (z.B. echter Name hinter einem
 // Pseudonym), nie öffentlich sichtbar. Anders als Benutzername/Passwort bewusst für Admin UND
-// Co-Admin freigegeben, nicht nur "echte" Admins - siehe explizite Vorgabe im Chat.
+// Co-Admin freigegeben, nicht nur "echte" Admins.
 // ================================================================================================
 }else if($action == 'Admin_Kommentar_Aendern'){
     $adminBn = $_POST['admin_bn'];
@@ -410,7 +410,7 @@ $nutzermanagementActions = ['admin_erstellt_nutzer', 'Nutzer_Rollen_Speichern', 
 if (in_array($action, $nutzermanagementActions, true)) {
     // nm_scroll_zu: sagt der Nutzermanagement-Seite nach dem Reload, zu welcher Nutzer-Karte sie
     // automatisch scrollen und sie kurz aufklappen/hervorheben soll - erspart das manuelle
-    // Wiedersuchen des gerade bearbeiteten Nutzers in der Liste (siehe Chat). $zielBenutzerId wird von
+    // Wiedersuchen des gerade bearbeiteten Nutzers in der Liste. $zielBenutzerId wird von
     // jeder der obigen Aktionen gesetzt (nur die tatsächlich ausgeführte Aktion beeinflusst hier
     // etwas, da pro Request immer nur ein einziger $action-Zweig läuft).
     $nmScrollZu = (isset($zielBenutzerId) && $zielBenutzerId > 0) ? (int)$zielBenutzerId : null;

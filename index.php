@@ -21,7 +21,7 @@ if (isset($_GET['logout'])) {
 
 // ================================================================================================
 // KO-PHASE: TURNIERBAUM- ODER TABELLENANSICHT - reine Anzeige-Präferenz für die Dauer der Session,
-// bewusst KEINE Datenbank-Spalte dafür (siehe Chat). Turnierbaum ist der neue Standard. Umschaltbar
+// bewusst KEINE Datenbank-Spalte dafür. Turnierbaum ist der neue Standard. Umschaltbar
 // per einfachem GET-Link (nicht POST) - harmlos bei Seiten-Reload, kein "Formular erneut senden".
 // ================================================================================================
 if (isset($_GET['ko_ansicht']) && in_array($_GET['ko_ansicht'], ['baum', 'tabelle'], true)) {
@@ -41,7 +41,7 @@ if (isset($_POST['cb_action']) && $_POST['cb_action'] === 'check' && isset($_POS
     $_SESSION['flash_error_login_captcha'] = $loginCbRes['ok']
         ? 'Captcha bestätigt. Du kannst jetzt einloggen.'
         : (($loginCbRes['remaining']>0) ? ('Captcha falsch. Verbleibende Versuche: '.$loginCbRes['remaining']) : 'Captcha 3x fehlgeschlagen. Die Seite wurde neu geladen.');
-    // Es gibt inzwischen zwei Account-Login-Formulare (#login und #backstage, siehe Chat) - ein
+    // Es gibt inzwischen zwei Account-Login-Formulare (#login und #backstage) - ein
     // verstecktes Feld im jeweiligen Formular sagt, zu welchem davon nach dem Captcha-Check
     // zurückgesprungen werden soll (Standard: #login, die neue primäre Login-Seite).
     $cbReturnHash = isset($_POST['cb_return_hash']) ? preg_replace('/[^a-zA-Z0-9_]/', '', $_POST['cb_return_hash']) : '';
@@ -122,7 +122,7 @@ if ($restultAnzahlWebsiteBesuche) {
     <head>
         <?php if ($_SERVER['REQUEST_METHOD'] === 'POST') { ?>
         <!-- "Formular erneut senden?" beim Reload vermeiden - diesmal bewusst OHNE Server-Redirect
-             (der hat beim ersten Versuch den Login kaputt gemacht, siehe Chat/Git-Historie). Rein
+             (der hat beim ersten Versuch den Login kaputt gemacht, siehe Git-Historie). Rein
              client-seitig: die Seite wird ganz normal fertig gerendert wie bisher, nur die
              Browser-Historie wird per history.replaceState() auf eine GET-Adresse umgeschrieben.
              Kann dadurch nichts an der eigentlichen Seite kaputt machen - im schlimmsten Fall wirkt
@@ -439,7 +439,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     // Backstage-Bereich (Lila Balken, Settings, Infos/Verlauf, alle backstage_*-Artikel):
     // ausschließlich über das "backstage"-Flag. Wer dieses Flag nicht hat (z.B. Schiedsrichter*in,
     // die nur "alle_spiele" hat), kann sich zwar für's Spiele-Bearbeiten authentifizieren, sieht
-    // aber nie den Backstage-Bereich - genau wie explizit gewünscht.
+    // aber nie den Backstage-Bereich.
     $LoggedInWithBackstageOrHigher = $rollenInfo !== null && $rechteFlags['backstage'];
     // Session-Persistenz: an JEDEN gültigen Login gekoppelt (nicht nur CMS/Backstage), damit auch ein
     // frisch registrierter Account ohne jede Rolle nach einem Redirect eingeloggt bleibt und die
@@ -490,7 +490,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             if (teamKuerzelExistiertInTurnier($conn, $TurnierID, $teamLoginVersuchBn)) {
                 $_SESSION['flash_error_team_login'] = 'Passwort falsch.';
             } else {
-                // ZUSATZ-CHECK (siehe Chat): das Kürzel+Passwort könnte zu einem VERGANGENEN Turnier
+                // ZUSATZ-CHECK: das Kürzel+Passwort könnte zu einem VERGANGENEN Turnier
                 // gehören (Team hat früher mal mitgespielt) - dann ist "gibt es nicht" irreführend,
                 // stattdessen gezielt auf "Vergangene Turniere" verweisen statt nur "existiert nicht".
                 $teamAusVergangenemTurnier = getTeamLoginInfoAusVergangenemTurnier($conn, $websiteId, $teamLoginVersuchBn, $teamLoginVersuchPw);
@@ -585,7 +585,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // Vorher eigenes Blau für "Standard"/turnier_settings - seit turnier_settings exklusiv bei
         // Admin/Co-Admin liegt (nicht mehr auch Turniermaster, siehe rollen_definitionen.php), ist die
         // Sichtbarkeit identisch zur Bernstein-Stufe. Zwei Farben für dieselbe Zielgruppe wären nur
-        // verwirrend gewesen, deshalb auf denselben Bernstein-Wert zusammengelegt (siehe Chat).
+        // verwirrend gewesen, deshalb auf denselben Bernstein-Wert zusammengelegt.
         $adminBorderCoadminWert = $istAdminOderCoAdmin ? '#f59e0b' : $adminBorderNeutral;
         $adminBorderStandardWert = $adminBorderCoadminWert;
         $adminBorderAdminonlyWert = $istAdminOderCoAdmin ? '#ef4444' : $adminBorderNeutral;
@@ -632,8 +632,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             #admin-bar-status { color: var(--admin-accent-light); font-size: 0.78rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
             .admin-bar-avatar { flex-shrink: 0; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--admin-accent-deep); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; }
             .admin-bar-name { color: #fff; }
-            /* Avatar+Name sind jetzt gemeinsam EIN Klick-Ziel zur eigenen Profilseite (#account_profil,
-               siehe Chat) - eigener Link-Wrapper statt Text-Unterstreichung, damit es weiterhin wie ein
+            /* Avatar+Name sind jetzt gemeinsam EIN Klick-Ziel zur eigenen Profilseite (#account_profil)
+               - eigener Link-Wrapper statt Text-Unterstreichung, damit es weiterhin wie ein
                Profil-Chip aussieht statt wie ein gewöhnlicher Textlink. */
             .admin-bar-profil-link { display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; border-radius: 999px; padding: 0.1rem 0.4rem 0.1rem 0.1rem; transition: background-color 0.15s ease-in-out; }
             .admin-bar-profil-link:hover { background: rgba(255,255,255,0.12); }
@@ -781,13 +781,13 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         $teamInitialsBar = htmlspecialchars(strtoupper(substr((string)$teamLoginInfo['kuerzel'], 0, 2)), ENT_QUOTES, 'UTF-8');
         echo "
         <style>
-            /* --team-accent (Teal/Grün) bleibt der Hintergrund/Rahmen der Leiste selbst - auf
-               ausdrücklichen Wunsch beibehalten. NEU: --team-highlight, eine warme, komplementäre
+            /* --team-accent (Teal/Grün) bleibt der Hintergrund/Rahmen der Leiste selbst.
+               NEU: --team-highlight, eine warme, komplementäre
                Signalfarbe (Orange) für die Leisten-SCHRIFT UND als Markierung überall dort, wo etwas
                das eigene Team betrifft (eigene Zeilen/Karten in Tabellen/Turnierbaum, Team-Status-Box,
                Teamzertifikat-Banner). Grund: das vorherige einheitliche Teal kollidierte optisch zu stark
                mit dem hellen Gruen des Finalisieren-Buttons und dem Blau des Plus-Buttons, die oft in
-               derselben Ansicht auftauchen - siehe Chat. */
+               derselben Ansicht auftauchen. */
             :root { --team-accent: #14b8a6; --team-accent-deep: #0f766e; --team-accent-light: #99f6e4; --team-highlight: #fb923c; }
             /* Kompakte Account-Chip-Leiste statt breiter Statuszeile (Muster wie bei anderen Websites
                üblich: kleines Avatar-Badge + Name, Logout bleibt bewusst direkt daneben statt hinter
@@ -796,7 +796,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             /* Avatar-Kreis (voll eingefärbt, Teal-Hintergrund + weiße Initialen) bleibt klar als eigenes
                Icon-Element abgegrenzt - direkt daneben ist der gesamte Textbereich einheitlich orange
                (vorher wechselte die Farbe MITTEN in der Phrase Team plus Kuerzel von Orange auf Weiss,
-               das wirkte unruhig/zufaellig statt bewusst gestaltet - siehe Chat). */
+               das wirkte unruhig/zufaellig statt bewusst gestaltet). */
             #team-bar-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--team-highlight); white-space: nowrap; }
             .team-bar-avatar { flex-shrink: 0; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--team-accent-deep); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 700; }
             .team-bar-name b { color: var(--team-highlight); font-weight: 800; }
@@ -815,7 +815,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         </div>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // Reihenfolge auf Wunsch geändert: Team-/Account-Leiste (wer eingeloggt ist) steht jetzt
+                // Reihenfolge: Team-/Account-Leiste (wer eingeloggt ist) steht jetzt
                 // immer ZUOBERST, die Testmodus-Leiste darunter - vorher war es umgekehrt. Team-Leiste
                 // und Admin-Leiste schließen sich gegenseitig aus, daher hier nur admin-bar als 'davor'
                 // berücksichtigt (praktisch also immer top:0). Die Gesamt-Padding-Berechnung zählt
@@ -836,7 +836,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         ";
     }
     // ================================================================================================
-    // IMMER ERREICHBARER MINI-LOGIN-LINK (oben rechts) - auf ausdrücklichen Wunsch, siehe Chat: bisher
+    // IMMER ERREICHBARER MINI-LOGIN-LINK (oben rechts): bisher
     // gab es #login nur über einen längst auskommentierten Footer-Link, dadurch war die Login-Seite
     // ohne die genaue URL faktisch nicht mehr erreichbar - z.B. für Teams, die sich nach Turnierende
     // noch einmal einloggen wollen (Zertifikat, eigene Daten). Bewusst NUR sichtbar, wenn niemand
@@ -863,7 +863,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     }
     // ================================================================================================
     // ACCOUNT-LOGIN-FEHLERMELDUNGEN (Session-Flash) - AUSSERHALB jedes <article>, weil es inzwischen
-    // ZWEI Account-Login-Formulare gibt (#login und #backstage, siehe Chat) und diese Meldungen sonst
+    // ZWEI Account-Login-Formulare gibt (#login und #backstage) und diese Meldungen sonst
     // nur auf dem Formular gezeigt würden, das im HTML-Quelltext zuerst steht (unset() nach der ersten
     // Anzeige, das zweite Formular hätte danach nichts mehr zum Anzeigen). So läuft die Anzeige egal auf
     // welcher der beiden Seiten sichtbar (gleiches Prinzip wie flash_error_team_login direkt darüber).
@@ -959,8 +959,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             // vorher automatisch von der generischen "#header .content p"-Regel).
             echo"<div class='hero-heading'><span class='hero-date'>$anzeige_datum</span><h1>$anzeige_titel</h1></div>";
             echo"<p class='hero-subtitle'>$anzeige_subtitel</p>";
-            // Instagram-Verlinkung fest im Code statt als Teil des CMS/Anzeige-Untertitels - auf
-            // Wunsch groesser und im ueblichen Instagram-Look (Kamera-Icon + Handle, Verlaufs-
+            // Instagram-Verlinkung fest im Code statt als Teil des CMS/Anzeige-Untertitels -
+            // groesser und im ueblichen Instagram-Look (Kamera-Icon + Handle, Verlaufs-
             // Farbverlauf als Pill-Badge) statt kleiner, reiner Textzeile.
             echo"<a href='https://www.instagram.com/blankiball_official/?hl=de' target='_blank' rel='noopener' class='hero-instagram-link'>
                     <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='3' y='3' width='18' height='18' rx='5'/><circle cx='12' cy='12' r='4'/><circle cx='17.2' cy='6.8' r='0.6' fill='currentColor' stroke='none'/></svg>
@@ -983,8 +983,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             $schnee = $rowTurnier['schnee'];
         }
     // Statusbox nur für eingeloggte Teams: wo im Turnier stehen wir gerade? (siehe
-    // getTeamStatusInfo()/printTeamStatusBox() in table_print_functions.php). Auf ausdrücklichen
-    // Wunsch über den 6 Nav-Buttons auf der Startseite statt (wie vorher) darunter - Teams sollen den
+    // getTeamStatusInfo()/printTeamStatusBox() in table_print_functions.php). Steht
+    // über den 6 Nav-Buttons auf der Startseite statt (wie vorher) darunter - Teams sollen den
     // Status als Erstes sehen, ohne erst an der Nav vorbeischauen zu müssen.
     if ($teamEingeloggt) {
         printTeamStatusBox($conn, $TurnierID, (int)$teamLoginInfo['id'], $turnier_phase_ID);
@@ -1464,8 +1464,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             echo"<a href='#anmelden' class='button disabled'>Team anmelden</a>";
         }
 
-        // Vorher CMS-Section 2 (Überschrift + "Gruppen"-Button + Funktion printTeams()) - auf
-        // ausdrücklichen Wunsch fest im Code statt im CMS, 1:1 nachgebaut wie es vorher aussah.
+        // Vorher CMS-Section 2 (Überschrift + "Gruppen"-Button + Funktion printTeams()) -
+        // jetzt fest im Code statt im CMS, 1:1 nachgebaut wie es vorher aussah.
         echo "<h2>Unsere glorreichen Teams</h2>";
         echo "<a href='#gruppen' class='button primary'>&#128101; Gruppen</a>";
         // BUGFIX: <li> ohne umschließendes <ul> rendert mit Browser-Standard-Bullet UND der von
@@ -1514,7 +1514,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     // SICHERHEIT: (int)-Cast schliesst SQL-Injection - printSpielerInfo() baut daraus weiter unten
     // einen rohen, nicht vorbereiteten SQL-String.
     // Kein eigenes Login-Formular mehr hier - $bn/$pw kommen aus dem normalen, oben schon
-    // aufgeloesten Session-Login (Admin/Co-Admin/Turniermaster/Backstage-Zugang), siehe Chat.
+    // aufgeloesten Session-Login (Admin/Co-Admin/Turniermaster/Backstage-Zugang).
     $spielerId = isset($_GET['spielerId']) ? (int)$_GET['spielerId'] : null;
     printSpielerInfo($TurnierID, $conn, $spielerId, $bn, $pw);
     ?>
@@ -1733,7 +1733,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 <!-- INFOS -->
 <article id="info">
-    <!-- Auf ausdrücklichen Wunsch nicht mehr über das CMS (Section 15), sondern fest hier eingebaut
+    <!-- Nicht mehr über das CMS (Section 15), sondern fest hier eingebaut
          und im Karten-Stil der Spielplan-Übersicht (.phase-cards) neu designt statt der vorherigen
          gestapelten Buttons mit <br/><br/> dazwischen. -->
     <h1 class="section-header">Info</h1>
@@ -2001,7 +2001,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 <!-- SIEGER_INNEN TREPPE -->
-<!-- Auf ausdrücklichen Wunsch nicht mehr über das CMS (Section 22), sondern fest hier eingebaut und
+<!-- Nicht mehr über das CMS (Section 22), sondern fest hier eingebaut und
      neu designt - siehe print_sieger_innen_treppe() in table_print_functions.php. Die alte CMS-
      Function-Zuordnung (fk_function -> "trigger_sieger_innen_treppe") bleibt in der DB einfach
      ungenutzt liegen, wird aber nirgends mehr aufgerufen. -->
@@ -2012,8 +2012,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 <!-- RANGLISTE: war bisher reiner CMS-Textplatzhalter (Section 23), zeigte also nie eine echte
-     Platzierung - print_platzierungen() gab es im Code schon, wurde aber nirgends aufgerufen. Auf
-     ausdrücklichen Wunsch jetzt direkt hier eingebunden, CMS-Bindung entfernt. -->
+     Platzierung - print_platzierungen() gab es im Code schon, wurde aber nirgends aufgerufen.
+     Jetzt direkt hier eingebunden, CMS-Bindung entfernt. -->
 <article id="rangliste">
     <h1 class="section-header">&#127942; Rangliste</h1>
     <p class="muted">Die Endplatzierung aller Teams - wird laufend aktualisiert, sobald Teams ausscheiden bzw. ihre Platzierung feststeht.</p>
@@ -2022,7 +2022,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p></br></p>
 </article>
 
-<!-- BULLEREI KOMMT: auf ausdrücklichen Wunsch nicht mehr öffentlich im Footer, sondern nur noch für
+<!-- BULLEREI KOMMT: nicht mehr öffentlich im Footer, sondern nur noch für
      Admin/Co-Admin/Turniermaster im Backstage-Bereich (teams-Flag) - vorher konnte JEDE(R)
      Website-Besucher*in dieses Formular öffnen. -->
 <article id='backstage_bullerei_kommt'>
@@ -2235,7 +2235,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 </article>
 
 
-<!-- LOGIN - reine Login-Seite, Ziel des "Login"-Buttons oben rechts (siehe Chat: soll bewusst NICHT
+<!-- LOGIN - reine Login-Seite, Ziel des "Login"-Buttons oben rechts (soll bewusst NICHT
      dieselbe Seite wie "Backstage" unten sein, siehe #backstage direkt darunter). Bietet sowohl
      Team- als auch Account-Login an; beide laufen über denselben, bereits weiter oben vorhandenen
      Session-Mechanismus (POST-Feldnamen team_login_kuerzel/team_login_passwort bzw. bn/pw) - hier
@@ -2296,8 +2296,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <p></br></p>
 </article>
 
-<!-- BACKSTAGE - Testmodus, Account-Login (nochmal, siehe Chat), Account-Registrierung und
-     Besucherzahl - Ziel des "Backstage"-Links im Footer. Ehemals #login; auf ausdrücklichen Wunsch
+<!-- BACKSTAGE - Testmodus, Account-Login (zusätzlich zu #login), Account-Registrierung und
+     Besucherzahl - Ziel des "Backstage"-Links im Footer. Ehemals #login; wurde
      umbenannt/aufgeteilt, damit der "Login"-Button oben rechts auf eine eigene, schlankere Seite ohne
      Testmodus/Registrierung/Besucherzahl führen kann (siehe #login direkt darüber). -->
 <article id="backstage">
@@ -2310,7 +2310,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
          innerhalb eines Formulars haben ueber .login-form-row einen kleinen eigenen Abstand.
          "Anzahl Websitebesuche" ist an den Schluss gerueckt (unwichtig fuer den eigentlichen Login-
          Zweck). Pausenraum-Link, das CMS-Inhalte-Paket direkt danach (Section 18), Rangliste- und
-         Bookmark-Link sind auf Wunsch auskommentiert - "Registrieren" bleibt bewusst aktiv. -->
+         Bookmark-Link sind auskommentiert - "Registrieren" bleibt bewusst aktiv. -->
     <style>
         .login-section { margin-bottom: 1.6rem; }
         .login-form-row { margin-bottom: 0.6rem; }
@@ -2356,10 +2356,10 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // oben AUSSERHALB jedes <article> angezeigt (siehe Kommentar dort) - es gibt jetzt zwei
         // Account-Login-Formulare (hier und auf #login), eine Anzeige pro Formular hätte die Meldung
         // nur auf einem der beiden gezeigt.
-        // UX (siehe Chat): bewusst KEIN "zurück zur vorherigen Sektion"-Mechanismus für den Account-
+        // UX: bewusst KEIN "zurück zur vorherigen Sektion"-Mechanismus für den Account-
         // Login - anders als beim Team-Login soll man nach dem Login als Account/Admin/Co-Admin auf der
-        // Startseite landen (war zwischenzeitlich testweise auch hier eingebaut, auf ausdrücklichen
-        // Wunsch wieder entfernt - das Team-Login-Formular in printEditModeStuff() bleibt wie gehabt
+        // Startseite landen (war zwischenzeitlich testweise auch hier eingebaut, wurde
+        // wieder entfernt - das Team-Login-Formular in printEditModeStuff() bleibt wie gehabt
         // hash-erhaltend, weil dort die Action-URL den Hash direkt enthält).
         if($test_turnier_id==0){ //Fall: normales Turnier
             echo "<form action='/' method='POST'>";
@@ -2396,7 +2396,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         <a href='#register_account' class='button primary'>Registrieren</a>
     </div>
 
-    <!-- Auf Wunsch auskommentiert: Pausenraum-Link, CMS-Inhalte-Paket (Section 18), Rangliste- und Bookmark-Link.
+    <!-- Auskommentiert: Pausenraum-Link, CMS-Inhalte-Paket (Section 18), Rangliste- und Bookmark-Link.
          Der PHP-Aufruf ist bewusst NICHT nur in einen HTML-Kommentar gepackt (PHP-Tags werden auch
          innerhalb von HTML-Kommentaren weiterhin ausgefuehrt), sondern per PHP-Kommentar deaktiviert. -->
     <!-- <a href="#pausenraum">?? Pausenraum</a> -->
@@ -2650,8 +2650,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         //   "Bullerei kommt" hängen aus historischen/Sicherheitsgründen direkt an $istAdminOderCoAdmin
         //   statt am Flag, sind aber audience-mäßig identisch (daher derselbe Bernstein-Rahmen).
         // - teams-Flag (Grün, Admin/Co-Admin/Turniermaster): "Teams bearbeiten"/"...einsortieren" UND
-        //   (auf ausdrücklichen Wunsch, siehe Chat "Turniermaster soll alles können was Backstage kann,
-        //   nur mit Schreiben dazu") die operativen Turnier-Funktionen "Gruppen für Gruppenphase
+        //   (Turniermaster kann alles, was Backstage-Zugang kann, plus
+        //   Schreibrechte) die operativen Turnier-Funktionen "Gruppen für Gruppenphase
         //   generieren", "Einzug ins KO-System", "Green-Card-Begegnung erstellen", "Liste gesperrter
         //   Begegnungen" und "Bullerei kommt" - Turniermaster darf das jetzt genauso wie Admin/Co-Admin.
         // "Teams generieren" ist NUR im Testmodus sichtbar (dunkelblau statt violett) und braucht
@@ -2784,7 +2784,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
 <article id="backstage_greencard_begegnungen_erstellen">
     <h1>&#127942; Green-Card-Begegnung erstellen</h1>
     <?php // RECHTE-AUDIT: teams-Flag = Admin/Co-Admin/Turniermaster (siehe rollen_definitionen.php) -
-    // Begegnungen sperren ist auf ausdrücklichen Wunsch in einen eigenen Button je Begegnung in der
+    // Begegnungen sperren ist in einen eigenen Button je Begegnung in der
     // K.-o.-Phase umgezogen (printKO_PhaseTabellen), diese Seite kann seitdem nur noch Green-Card-
     // Begegnungen anlegen. ?>
     <?php if (!$rechteFlags['teams']) { ?>
@@ -2964,7 +2964,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h1>Telefonnummern</h1>
     <?php // RECHTE-AUDIT: personenbezogene Daten (Telefonnummern) - war bisher ungeschuetzt per
     // direktem Hash-Link erreichbar. Jetzt am backstage-Flag (Admin/Co-Admin/Turniermaster/
-    // Backstage-Zugang), auf ausdrücklichen Wunsch - siehe Chat. ?>
+    // Backstage-Zugang). ?>
     <?php if (!$rechteFlags['backstage']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else { ?>
@@ -3456,7 +3456,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     ?>
     <p>Legt fest, nach welchem Schema die Gruppenplatzierungen auf die ersten K.-o.-Begegnungen verteilt werden. Wirkt nur, solange der Schalter "Einzug K.-o.-Phase manuell anlegen" unten <b>nicht</b> aktiviert ist - ist er aktiviert, wird stattdessen alles manuell über "Begegnungen bearbeiten" angelegt und die Auswahl weiter unten komplett ignoriert.</p>
     <?php
-        // Auf ausdrücklichen Wunsch direkt hier eingebettet (vorher nur als Text-Hinweis mit Link zu den
+        // Direkt hier eingebettet (vorher nur als Text-Hinweis mit Link zu den
         // Turnier Settings) - wer sich mit dem Einzug ins KO-System befasst, soll den Schalter fürs
         // manuelle Anlegen nicht auf einer separaten Seite suchen müssen. Bleibt trotzdem exklusiv
         // Admin/Co-Admin vorbehalten (gleiches Flag wie in den Turnier Settings selbst) - Turniermaster
@@ -3621,7 +3621,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h2>Warteliste</h2>
     <?php // RECHTE-AUDIT: personenbezogene Daten (Teilnehmer*innen-Namen) - war bisher ungeschuetzt
     // per direktem Hash-Link erreichbar. Jetzt am backstage-Flag (Admin/Co-Admin/Turniermaster/
-    // Backstage-Zugang), auf ausdrücklichen Wunsch - siehe Chat. ?>
+    // Backstage-Zugang). ?>
     <?php if (!$rechteFlags['backstage']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else { ?>
@@ -3660,12 +3660,12 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <h2>Team-Passwörter</h2>
     <?php // RECHTE-AUDIT: Team-Passwörter sind besonders sensibel - war bisher ungeschuetzt per
     // direktem Hash-Link erreichbar. Jetzt am backstage-Flag (Admin/Co-Admin/Turniermaster/
-    // Backstage-Zugang), auf ausdrücklichen Wunsch - siehe Chat. ?>
+    // Backstage-Zugang). ?>
     <?php if (!$rechteFlags['backstage']) { ?>
     <p>Keine ausreichende Berechtigung.</p>
     <?php } else { ?>
     <?php
-    // Auf ausdrücklichen Wunsch stehen Passwörter nicht mehr direkt offen in der Liste (zu leicht aus
+    // Passwörter stehen nicht mehr direkt offen in der Liste (zu leicht aus
     // Versehen mitgelesen/über die Schulter geschaut) - stattdessen erst per Klick auf "anzeigen" pro
     // Zeile einblendbar, siehe togglePasswortSichtbarkeit() unten.
     $sqlPasswort = 'SELECT * FROM Turnier_Team WHERE geloescht = 0 AND fk_turnier = '. $TurnierID .'';
@@ -4418,8 +4418,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 'rolle_ids' => $rolleIds,
             ];
         }
-        // Auf ausdrücklichen Wunsch alphabetisch statt nach Rollen-/Berechtigungsstärke sortiert (siehe
-        // Chat) - Benutzername ist eindeutig, daher reicht ein einfacher String-Vergleich.
+        // Alphabetisch statt nach Rollen-/Berechtigungsstärke sortiert
+        // - Benutzername ist eindeutig, daher reicht ein einfacher String-Vergleich.
         usort($alleNutzerMitRollen, function($a, $b) { return strcasecmp($a['bn'], $b['bn']); });
 
         $bnAttrNm = htmlspecialchars($bn, ENT_QUOTES);
@@ -4429,7 +4429,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         .nm-rollen-tabelle { width: 100%; margin-bottom: 1.2rem; font-size: 0.82rem; }
         .nm-userlist { margin-bottom: 1rem; }
         /* ============================================================================================
-           NUTZER-KARTE ALS AKKORDEON (<details>/<summary>) - auf ausdrücklichen Wunsch: kompakte
+           NUTZER-KARTE ALS AKKORDEON (<details>/<summary>): kompakte
            Liste (Avatar + Name + evtl. Klarname-Kommentar + Rollen-Chips), die sich erst auf Klick zu
            allen Bearbeitungsmöglichkeiten aufklappt, statt alles dauerhaft ausgebreitet zu zeigen.
            ============================================================================================ */
@@ -4573,8 +4573,8 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
             $nmInitial = htmlspecialchars(ermittleAnzeigeAvatar($conn, $nutzer['id']), ENT_QUOTES, 'UTF-8');
             ?>
             <!-- Kompakte Zeile (immer sichtbar): Avatar, Name, evtl. Klarname-Kommentar, Rollen als
-                 kleine Chips rechts, Pfeil - auf Klick klappt die ganze Karte auf. Auf ausdrücklichen
-                 Wunsch, siehe Chat: vorher waren alle Bearbeitungsfunktionen für JEDEN Nutzer dauerhaft
+                 kleine Chips rechts, Pfeil - auf Klick klappt die ganze Karte auf.
+                 Vorher waren alle Bearbeitungsfunktionen für JEDEN Nutzer dauerhaft
                  ausgebreitet, was die Liste bei vielen Nutzern unübersichtlich machte. -->
             <summary class='nm-user-summary'>
                 <span class='nm-user-summary-main'>
@@ -4653,7 +4653,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
                 </div>
 
                 <!-- Rollen + Passwort: EIN gemeinsames Formular, das erst per "Speichern" abgesendet
-                     wird - auf ausdrücklichen Wunsch (siehe Chat), damit mehrere Rollenänderungen
+                     wird, damit mehrere Rollenänderungen
                      nicht mehr jede für sich einen Page-Reload auslösen. Bis zum Speichern passiert
                      alles rein clientseitig (siehe nmStageRoleAdd()/nmToggleRoleRemove() weiter unten),
                      die Hidden-Inputs rollen_hinzufuegen[]/rollen_entfernen[] werden erst dabei erzeugt. -->
@@ -4729,7 +4729,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
         // ============================================================================================
         // NUTZERMANAGEMENT: ROLLEN + PASSWORT ERST CLIENTSEITIG SAMMELN, DANN GEMEINSAM SPEICHERN
         // ============================================================================================
-        // Auf ausdrücklichen Wunsch (siehe Chat): "+ hinzufügen" und das "×" an einer Rolle senden NICHT
+        // "+ hinzufügen" und das "×" an einer Rolle senden NICHT
         // mehr sofort ein eigenes Formular ab (vorher: ein Page-Reload PRO Einzeländerung). Stattdessen
         // wird der Zustand rein im DOM gesammelt (neue Badges bzw. "durchgestrichene" Badges + jeweils
         // ein verstecktes Input-Feld im gemeinsamen Formular) und erst beim Klick auf "Speichern" in
@@ -5269,7 +5269,7 @@ if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
     <?php  cmsPrintSection($websiteId, $siteID, $TurnierID, 22, $conn, $edit_content_mode, $gameEditMode, $expertenmodus, $test_turnier_id); ?>
     <!-- Alter "Backstage"-Link lag jahrelang tot in einem auskommentierten Legacy-Block weiter unten
          (siehe dort) - hier stattdessen ein neuer, schlanker Link, damit #backstage (Testmodus/
-         Account-Registrierung/Besucherzahl) überhaupt wieder erreichbar ist, siehe Chat. -->
+         Account-Registrierung/Besucherzahl) überhaupt wieder erreichbar ist. -->
     <p class="copyright"><a href="#backstage">Backstage</a></p>
                     <!--<div><b><p>Folge uns auf Instagram, um alle aktuellen Infos und Updates zu bekommen:</p></b>
                     <b><p style="font-size: 30px"><a style="color: white" href="https://www.instagram.com/blankiball_official/?hl=de/"><img src="images/icon/insta.png" width="30" height="30" border="0" alt="Home"> @blankiball_official</a></p></b><!--<h3>📢Offizieller Start:</h3>

@@ -1333,7 +1333,7 @@ repeat;
 
 	/* Sobald eine Sektion (#main article) sichtbar ist, soll sie die komplette Seite füllen statt
 	   innerhalb des Wrapper-Innenabstands der Startseite zu "schweben" - der Innenabstand oben gehört
-	   nur zur Startseite (Hero/Header/Footer) und bleibt dort unangetastet, siehe Chat.
+	   nur zur Startseite (Hero/Header/Footer) und bleibt dort unangetastet.
 	   WICHTIG: bewusst NUR links/rechts/unten auf 0 gesetzt, NIE per "padding"-Kurzform (die würde auch
 	   padding-top mit auf 0 setzen) - padding-top bleibt unangetastet, weil darüber die fixierte
 	   Admin-/Team-/Testmodus-Leiste ihren reservierten Platz bekommt (#wrapper{padding-top:64px} bzw.
@@ -1346,8 +1346,8 @@ repeat;
 		align-items: stretch;
 	}
 
-	/* FLIESSEND STATT HARTEM SPRUNG (auf ausdrücklichen Wunsch, siehe Chat "sehr große Handys und
-	   Tablets... son Zwischenmodus"): der alte Umschaltpunkt lag bei 1100px, darunter gab's aber GAR
+	/* FLIESSEND STATT HARTEM SPRUNG (Zwischenmodus für sehr große Handys und
+	   Tablets): der alte Umschaltpunkt lag bei 1100px, darunter gab's aber GAR
 	   keine Breiten-Obergrenze - ein 1000px breites Tablet bekam dadurch dieselbe randlose Vollbreiten-
 	   Optik wie ein 400px-Handy, nur eben breiter und dadurch mit viel Leerraum neben schmalen
 	   Komponenten (Karten-Grids etc.). Ab hier (700px, "große Handys/Tablets aufwärts") wächst die
@@ -1378,8 +1378,8 @@ repeat;
 
 		body.is-article-visible #main article {
 			/* width:auto (statt eines festen Werts) lässt die Karte auf ihre tatsächliche Inhaltsbreite
-			   schrumpfen, wenn der Inhalt schmaler ist als die Decke - genau das "nimmt sich so viel
-			   Platz wie's braucht" aus dem Chat. min-width:0 statt eines festen Mindestwerts, damit auf
+			   schrumpfen, wenn der Inhalt schmaler ist als die Decke - die Karte nimmt sich also nur
+			   so viel Platz, wie sie braucht. min-width:0 statt eines festen Mindestwerts, damit auf
 			   700px auch wirklich noch Luft neben der Karte bleibt statt sofort ans Limit zu stoßen. */
 			width: auto;
 			min-width: 0;
@@ -2004,8 +2004,8 @@ repeat;
 	display: flex;
 	/* Vorher align-items/justify-content: center - #main article war dadurch eine kleine, mittig
 	   schwebende "Karte" mit sichtbarem Rand ringsum. Jetzt stretch/flex-start, damit der Artikel die
-	   volle Breite einnimmt und oben beginnt statt vertikal zentriert zu werden - siehe Chat ("nicht
-	   mehr so ein abgegrenztes Fenster... sondern die komplette Seite füllen"). */
+	   volle Breite einnimmt und oben beginnt statt vertikal zentriert zu werden - die
+	   Sektion füllt so die komplette Seite statt wie ein abgegrenztes Fenster zu wirken. */
 	-moz-align-items: stretch;
 	-webkit-align-items: stretch;
 	-ms-align-items: stretch;
@@ -2252,8 +2252,7 @@ repeat;
 
 /* "Ihr seid hier"-Pfeil (Spielplan-Übersicht): zeigt dem eingeloggten Team ganz deutlich, auf welcher
    der drei Karten es gerade steht - eigene, auffällige Farbe (Team-Signalfarbe) statt der neutralen
-   Phasen-Badges oben, damit beides klar auseinanderzuhalten ist. Siehe Chat ("separat ganz deutlich
-   machen, in welcher Phase das eigene Team gerade ist... son Pfeil"). */
+   Phasen-Badges oben, damit beides klar auseinanderzuhalten ist. */
 .phase-card-pfeil { display: inline-flex; align-items: center; gap: 0.35rem; margin: -0.2rem 0 0.6rem; padding: 0.25rem 0.7rem; border-radius: 999px; background: var(--team-highlight, #fb923c); color: #1a0f00; font-size: 0.78rem; font-weight: 800; }
 .phase-card--eigene-phase { box-shadow: 0 0 0 2px var(--team-highlight, #fb923c); }
 
@@ -2374,20 +2373,20 @@ repeat;
    (Gruppenphase, Losing Bracket) und eigene Zeile in den KO-Phase-Tabellen, damit Teams auf einen
    Blick sehen, wo sie gerade spielen. Gleiche Akzentfarbe wie .team-status-box (--team-highlight,
    Orange) - bewusst NICHT mehr --team-accent (Teal), das ist jetzt exklusiv die Team-Leiste selbst,
-   siehe Chat ("Signalfarbe nutzen, um die Sachen zu markieren, die das Team selber betreffen"). */
+   damit alles, was das eigene Team betrifft, einheitlich in der Signalfarbe markiert ist. */
 /* BUGFIX: "!important" auf dem Hintergrund hat bisher auch den soliden grünen Sieger-Hintergrund
    (per Inline-Style background-color:green in printKO_PhaseTabellen/printTurnierbaum gesetzt, für
    Zellen/Karten des Gewinnerteams) komplett übermalt, sobald eine Begegnung GLEICHZEITIG die eigene
    war UND schon final gewonnen war - man konnte dann nicht mehr sehen, dass man gewonnen hat. Jetzt
    ohne "!important": der umrandende Rahmen (box-shadow) markiert weiterhin zuverlässig "das ist eure
    Begegnung", der satte grüne Hintergrund gewinnt aber wieder gegen die dezente orange Tönung, wo
-   beides gleichzeitig zutrifft - siehe Chat. */
+   beides gleichzeitig zutrifft. */
 .own-team-cell, .own-team-row { background: rgba(251, 146, 60, 0.22); box-shadow: inset 0 0 0 2px var(--team-highlight, #fb923c); }
 .matrix-group-heading--own-team h2 { color: var(--team-highlight, #fb923c); }
 .own-team-badge { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; background: rgba(251, 146, 60, 0.18); border: 1px solid var(--team-highlight, #fb923c); color: var(--team-highlight, #fb923c); vertical-align: middle; }
 /* Vergangenheitsform ("Ihr habt hier gespielt") - dezenter/grau statt der auffälligen orangen
-   Signalfarbe, damit auf einen Blick klar ist: das ist erledigt, nicht mehr aktuell. Auf ausdrücklichen
-   Wunsch, damit intuitiver sichtbar wird, wo das Turnier gerade tatsächlich steht. */
+   Signalfarbe, damit auf einen Blick klar ist: das ist erledigt, nicht mehr aktuell. So wird
+   intuitiver sichtbar, wo das Turnier gerade tatsächlich steht. */
 .own-team-badge--past { background: rgba(148, 163, 184, 0.16); border-color: rgba(148, 163, 184, 0.5); color: #cbd5e1; }
 
 /* WhatsApp-Click-to-Chat-Link bei der Telefonnummer in der Spielerinfo - eigenständige, an die

@@ -41,7 +41,7 @@ $successfulLogin = ($rollenInfoVariables !== null) ? 1 : 0;
 $rechteFlagsVariables = $rollenInfoVariables['flags'] ?? array_fill_keys(['neue_admins','neue_co_admins','restliche_rollen_vergeben','turnier_settings','cms','teams','backstage','alle_spiele'], false);
 $darfTurnierSettingsAendern = $rollenInfoVariables !== null && $rechteFlagsVariables['turnier_settings'];
 // Betriebliche Turnier-Aktionen (Gruppen generieren, KO-Einzug-Modus wählen, Gruppenphase/KO-Einzug
-// für fertig erklären): auf ausdrücklichen Wunsch am teams-Flag statt turnier_settings, damit
+// für fertig erklären): am teams-Flag statt turnier_settings, damit
 // Turniermaster (hat teams, aber NICHT turnier_settings) diese auch bedienen kann - Admin/Co-Admin
 // haben beide Flags ohnehin gesetzt und bleiben unverändert berechtigt.
 $darfTeamsBearbeitenVariables = $rollenInfoVariables !== null && $rechteFlagsVariables['teams'];

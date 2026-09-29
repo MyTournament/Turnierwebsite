@@ -55,7 +55,7 @@
     // ================================================================================================
     // STYLE-TAG-HILFE (unterhalb von "Content ändern"/"Content hinzufügen") - war vorher SELBST ein
     // CMS-Abschnitt (Section 9, ~8 einzelne CMS_Content-Bausteine, jeder mit voller Bearbeiten-
-    // Toolbar). Auf expliziten Wunsch jetzt fest im Code statt in der Datenbank - kein Bearbeiten-
+    // Toolbar). Jetzt fest im Code statt in der Datenbank - kein Bearbeiten-
     // Aufwand mehr nötig für eine reine Referenz-Erklärung, außerdem deutlich kompakter (ein
     // einzelner Block statt 8 Bausteine mit je eigener Toolbar). Der alte Section-9-Aufruf ist damit
     // ersetzt - die zugehörigen CMS_Content-Zeilen in der DB werden nicht mehr angezeigt, können aber

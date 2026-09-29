@@ -86,7 +86,7 @@ if ($history_turnier_id != 0) {
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auf Wunsch: Testmodus-Leiste steht jetzt UNTER der Team-/Account-Leiste (vorher umgekehrt) -
+            // Testmodus-Leiste steht UNTER der Team-/Account-Leiste (vorher umgekehrt) -
             // daher hier zusätzlich zu #admin-bar auch #team-bar als 'davor' berücksichtigen. Die Gesamt-
             // Padding-Berechnung zählt trotzdem alle drei Leisten zusammen (siehe gleicher Kommentar im
             // Team-Leisten-Skript in index.php), damit unabhängig von der Skript-Reihenfolge dasselbe

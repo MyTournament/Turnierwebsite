@@ -433,7 +433,7 @@ function printTeamAnmelden($TurnierID, $test_turnier_id, $teilnahmebeitrag){
     <?php
 }
 
-// $bnEingeloggt/$pwEingeloggt: auf ausdrücklichen Wunsch kein separates Login-Formular mehr - wer
+// $bnEingeloggt/$pwEingeloggt: kein separates Login-Formular mehr - wer
 // diesen Button überhaupt sehen kann, ist schon als Admin/Co-Admin eingeloggt (siehe index.php,
 // Sichtbarkeit an $istAdminOderCoAdmin gekoppelt), die eigenen Zugangsdaten aus der Session werden
 // einfach mitgeschickt statt nochmal abgefragt. Die eigentliche Berechtigung wird serverseitig in

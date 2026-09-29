@@ -47,14 +47,14 @@ function getRollenDefinitionen() {
         // in index.php/edit_variables.php/edit_games.php/edit_website_bullerei.php).
         // rechte_turnier_settings bleibt dagegen false: die grundlegenden Turnier-Einstellungen
         // (Turnierphase, Neues Turnier anlegen) UND "Gruppeneinteilung losen" (eigenes, noch strengeres
-        // Admin/Co-Admin-only-Gate, kein Flag) sind exklusiv Admin/Co-Admin vorbehalten - siehe Chat.
+        // Admin/Co-Admin-only-Gate, kein Flag) sind exklusiv Admin/Co-Admin vorbehalten.
         10 => [
             'rechte_neue_admins' => false, 'rechte_neue_co_admins' => false, 'rechte_restliche_rollen_vergeben' => false,
             'rechte_turnier_settings' => false, 'rechte_cms' => false, 'rechte_teams' => true,
             'rechte_backstage' => true, 'rechte_alle_spiele' => false,
         ],
         // Backstage-Zugang: REINE Lese-/Sichtbarkeits-Rolle (Infos/Verlauf im Backstage-Bereich sehen),
-        // darf NICHTS bearbeiten - weder Teams noch Turnier-Settings (beide false, siehe Chat).
+        // darf NICHTS bearbeiten - weder Teams noch Turnier-Settings (beide false).
         15 => [
             'rechte_neue_admins' => false, 'rechte_neue_co_admins' => false, 'rechte_restliche_rollen_vergeben' => false,
             'rechte_turnier_settings' => false, 'rechte_cms' => false, 'rechte_teams' => false,

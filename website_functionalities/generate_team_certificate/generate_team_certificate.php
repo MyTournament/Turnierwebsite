@@ -11,8 +11,7 @@ function cp1252($text) {
 }
 
 // Farbschema an den alten Papier-Look (pngwing.com.png) angelehnt: dunkles Braun für Fließtext, ein
-// wärmeres Bordeaux/Terrakotta für Überschriften & Zahlen, gedecktes Gold für Rahmen/Linien - siehe
-// Chat ("Layout aufpimpen").
+// wärmeres Bordeaux/Terrakotta für Überschriften & Zahlen, gedecktes Gold für Rahmen/Linien.
 define('FARBE_TEXT', [64, 44, 26]);
 define('FARBE_AKZENT', [123, 40, 30]);
 define('FARBE_GOLD', [150, 108, 46]);

@@ -273,7 +273,7 @@ if (!headers_sent()) {
 		}
 		// "Teams generieren" (nur Testturniere, siehe unten) ist bewusst breiter als der Rest dieser
 		// Datei: jede Person mit backstage-Flag (Admin, Co-Admin, Turniermaster, Backstage-Zugang) darf
-		// das, nicht erst ab dem engeren teams-Flag - siehe Chat/index.php Menü-Punkt "Teams generieren".
+		// das, nicht erst ab dem engeren teams-Flag - siehe index.php, Menü-Punkt "Teams generieren".
 		$darfTeamsGenerieren = $rollenInfoTeams !== null && $rollenInfoTeams['flags']['backstage'];
 		//Teams
 		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant

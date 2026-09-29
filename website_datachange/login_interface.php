@@ -5,7 +5,7 @@ include_once '../database/rollen_definitionen.php';
 // ACCOUNT-AVATARE: kuratierte Emoji-Liste statt Bilder-Upload (kein Missbrauchspotential/Speicher-
 // platz-Thema, sofort auf jeder Website konsistent). WICHTIG: die Spalte `avatar` auf
 // `System_Benutzer_in` existiert nicht zwangsläufig schon in jeder Datenbank (diese Website hat kein
-// Migrations-System, Schema-Änderungen werden manuell nachgezogen - siehe Chat) - deshalb läuft JEDER
+// Migrations-System, Schema-Änderungen werden manuell nachgezogen) - deshalb läuft JEDER
 // Zugriff auf diese Spalte hier bewusst über eine eigene, defensiv try/catch-gekapselte Query statt
 // über ein `SELECT avatar, ...`/`UPDATE ... SET avatar = ...` mitten in einer der zentralen,
 // sicherheitskritischen Login-Abfragen weiter unten - schlägt die Spalte fehl (weil sie fehlt), bricht
@@ -16,7 +16,7 @@ function getProfilAvatarOptionen() {
 }
 
 // Liefert den anzuzeigenden Avatar für einen Account: der explizit gespeicherte Wert hat Vorrang,
-// sonst deterministisch aus der Nutzer-ID abgeleitet (wirkt "zufällig zugelost" - siehe Chat -, ohne
+// sonst deterministisch aus der Nutzer-ID abgeleitet (wirkt "zufällig zugelost", ohne
 // dass bei der Registrierung extra ein Schreibzugriff auf die evtl. noch fehlende Spalte nötig wäre,
 // und bleibt über mehrere Seitenaufrufe hinweg stabil statt bei jedem Laden neu zu würfeln).
 function ermittleAnzeigeAvatar($conn, $benutzerId) {
@@ -95,7 +95,7 @@ function teamKuerzelExistiertInTurnier($conn, $TurnierID, $bn) {
     return (bool)$stmt->get_result()->fetch_assoc();
 }
 // ================================================================================================
-// TEAM-LOGIN GEGEN VERGANGENE TURNIERE (type = 3) PRÜFEN - auf ausdrücklichen Wunsch, siehe Chat:
+// TEAM-LOGIN GEGEN VERGANGENE TURNIERE (type = 3) PRÜFEN:
 // wenn Kürzel+Passwort im AKTUELLEN Turnier nicht existieren, aber exakt zu einem Team aus einem
 // vergangenen Turnier derselben Website passen, soll der Login-Fehler gezielt auf "Vergangene
 // Turniere" verweisen statt nur zu sagen "gibt es nicht" - das Team hat ja mitgespielt, nur eben
