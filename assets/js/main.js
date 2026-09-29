@@ -54,20 +54,30 @@
 		}
 
 	// Nav.
-		var $nav = $header.children('nav'),
-			$nav_li = $nav.find('li');
-
-		// Add "middle" alignment classes if we're dealing with an even number of items.
-			if ($nav_li.length % 2 == 0) {
-
-				$nav.addClass('use-middle');
-				$nav_li.eq( ($nav_li.length / 2) ).addClass('is-middle');
-
-			}
+		// ENTFERNT: das Original-Theme fuegte bei einer GERADEN Anzahl Nav-Items automatisch die
+		// Klasse "use-middle" hinzu, die per CSS eine senkrechte weisse Trennlinie in die Mitte der
+		// Navigation zeichnet (#header nav.use-middle:after in main.css) - gedacht fuer ein
+		// symmetrisches Logo-in-der-Mitte-Layout des alten Templates. Mit den eigenen Chip-Buttons
+		// (aktuell 6 Stueck, ebenfalls eine gerade Zahl) wirkte das nur noch wie ein stoerender alter
+		// Ueberrest quer durch die Navigation - deshalb komplett entfernt statt nur per CSS versteckt.
 
 	// Main.
+		// ==========================================================================
+		// FIX: RACE CONDITION BEIM SCHNELLEN KLICKEN AUF HASH-NAV-LINKS (TAB-WECHSEL)
+		// ==========================================================================
 		var	delay = 325,
-			locked = false;
+			pendingTimers = [];
+
+		// Cancel any transition steps still queued from a previous, interrupted
+		// show/hide call. Without this, a fast second click (e.g. switching tabs
+		// again before the ~650ms transition finished) lets the first call's
+		// delayed steps fire later and clobber the second call's end state
+		// (symptom: click does nothing, then a later click suddenly shows two
+		// articles active at once).
+			function clearPendingTimers() {
+				while (pendingTimers.length)
+					clearTimeout(pendingTimers.pop());
+			}
 
 		// Methods.
 			$main._show = function(id, initial) {
@@ -78,45 +88,41 @@
 					if ($article.length == 0)
 						return;
 
-				// Handle lock.
+				// Cancel whatever a previous, still in-flight call queued up.
+					clearPendingTimers();
 
-					// Already locked? Speed through "show" steps w/o delays.
-						if (locked || (typeof initial != 'undefined' && initial === true)) {
+				// Initial load with a hash already in the URL? Skip straight to the
+				// end state, no animation/delay.
+					if (typeof initial != 'undefined' && initial === true) {
 
-							// Mark as switching.
-								$body.addClass('is-switching');
+						// Mark as switching.
+							$body.addClass('is-switching');
 
-							// Mark as visible.
-								$body.addClass('is-article-visible');
+						// Mark as visible.
+							$body.addClass('is-article-visible');
 
-							// Deactivate all articles (just in case one's already active).
-								$main_articles.removeClass('active');
+						// Deactivate all articles (just in case one's already active).
+							$main_articles.removeClass('active');
 
-							// Hide header, footer.
-								$header.hide();
-								$footer.hide();
+						// Hide header, footer.
+							$header.hide();
+							$footer.hide();
 
-							// Show main, article.
-								$main.show();
-								$article.show();
+						// Show main, article.
+							$main.show();
+							$article.show();
 
-							// Activate article.
-								$article.addClass('active');
+						// Activate article.
+							$article.addClass('active');
 
-							// Unlock.
-								locked = false;
+						// Unmark as switching.
+							pendingTimers.push(setTimeout(function() {
+								$body.removeClass('is-switching');
+							}, 1000));
 
-							// Unmark as switching.
-								setTimeout(function() {
-									$body.removeClass('is-switching');
-								}, (initial ? 1000 : 0));
+						return;
 
-							return;
-
-						}
-
-					// Lock.
-						locked = true;
+					}
 
 				// Article already visible? Just swap articles.
 					if ($body.hasClass('is-article-visible')) {
@@ -127,7 +133,7 @@
 							$currentArticle.removeClass('active');
 
 						// Show article.
-							setTimeout(function() {
+							pendingTimers.push(setTimeout(function() {
 
 								// Hide current article.
 									$currentArticle.hide();
@@ -136,7 +142,7 @@
 									$article.show();
 
 								// Activate article.
-									setTimeout(function() {
+									pendingTimers.push(setTimeout(function() {
 
 										$article.addClass('active');
 
@@ -145,14 +151,9 @@
 												.scrollTop(0)
 												.triggerHandler('resize.flexbox-fix');
 
-										// Unlock.
-											setTimeout(function() {
-												locked = false;
-											}, delay);
+									}, 25));
 
-									}, 25);
-
-							}, delay);
+							}, delay));
 
 					}
 
@@ -164,7 +165,7 @@
 								.addClass('is-article-visible');
 
 						// Show article.
-							setTimeout(function() {
+							pendingTimers.push(setTimeout(function() {
 
 								// Hide header, footer.
 									$header.hide();
@@ -175,7 +176,7 @@
 									$article.show();
 
 								// Activate article.
-									setTimeout(function() {
+									pendingTimers.push(setTimeout(function() {
 
 										$article.addClass('active');
 
@@ -184,14 +185,9 @@
 												.scrollTop(0)
 												.triggerHandler('resize.flexbox-fix');
 
-										// Unlock.
-											setTimeout(function() {
-												locked = false;
-											}, delay);
+									}, 25));
 
-									}, 25);
-
-							}, delay);
+							}, delay));
 
 					}
 
@@ -210,51 +206,14 @@
 					&&	addState === true)
 						history.pushState(null, null, '#');
 
-				// Handle lock.
-
-					// Already locked? Speed through "hide" steps w/o delays.
-						if (locked) {
-
-							// Mark as switching.
-								$body.addClass('is-switching');
-
-							// Deactivate article.
-								$article.removeClass('active');
-
-							// Hide article, main.
-								$article.hide();
-								$main.hide();
-
-							// Show footer, header.
-								$footer.show();
-								$header.show();
-
-							// Unmark as visible.
-								$body.removeClass('is-article-visible');
-
-							// Unlock.
-								locked = false;
-
-							// Unmark as switching.
-								$body.removeClass('is-switching');
-
-							// Window stuff.
-								$window
-									.scrollTop(0)
-									.triggerHandler('resize.flexbox-fix');
-
-							return;
-
-						}
-
-					// Lock.
-						locked = true;
+				// Cancel whatever a previous, still in-flight call queued up.
+					clearPendingTimers();
 
 				// Deactivate article.
 					$article.removeClass('active');
 
 				// Hide article.
-					setTimeout(function() {
+					pendingTimers.push(setTimeout(function() {
 
 						// Hide article, main.
 							$article.hide();
@@ -265,7 +224,7 @@
 							$header.show();
 
 						// Unmark as visible.
-							setTimeout(function() {
+							pendingTimers.push(setTimeout(function() {
 
 								$body.removeClass('is-article-visible');
 
@@ -274,14 +233,9 @@
 										.scrollTop(0)
 										.triggerHandler('resize.flexbox-fix');
 
-								// Unlock.
-									setTimeout(function() {
-										locked = false;
-									}, delay);
+							}, 25));
 
-							}, 25);
-
-					}, delay);
+					}, delay));
 
 
 			};
@@ -307,6 +261,34 @@
 
 		// Events.
 			$body.on('click', function(event) {
+
+				// ==================================================================
+				// FIX: KLICKS AUF INTERNE HASH-LINKS AUSSERHALB VON #main LOESTEN EINE
+				// RACE CONDITION AUS (frueher nur fuer #admin-bar gefixt -
+				// derselbe Bug tauchte spaeter bei der Team-Leiste, dem Login-Button oben
+				// rechts und Links in Fehlermeldungen wieder auf, weil die Ausnahme dort
+				// hart auf "#admin-bar" verdrahtet war statt generisch)
+				// ==================================================================
+				// Links innerhalb eines <article> bekommen weiter oben stopPropagation(),
+				// damit ein Klick darauf NICHT auch diesen globalen "irgendwo hinklicken
+				// schliesst das aktuelle Menue"-Handler ausloest. Alles, was AUSSERHALB von
+				// #main liegt (Admin-/Team-Leiste, der Login-Button oben rechts, Buttons in
+				// Fehlermeldungen, der "Backstage"-Link im Footer, ...), hatte diesen Schutz
+				// bisher nicht - ein Klick auf so einen Link loeste dadurch GLEICHZEITIG sowohl
+				// diesen Hide-Aufruf als auch den vom Hash-Wechsel ausgeloesten Show-Aufruf aus.
+				// Beide Aufrufe laufen mit eigenen verzoegerten setTimeout-Schritten und raeumen
+				// sich gegenseitig die Timer weg (siehe clearPendingTimers() in _show), wodurch
+				// das alte Menue nie richtig versteckt wurde - es blieb sichtbar und schob das
+				// neue Menue sichtbar nach unten (Symptom: die neue Seite erschien um die Hoehe
+				// der vorherigen nach unten verschoben).
+				// Generischer Fix statt weiterer Einzel-Ausnahmen: JEDER Klick auf einen <a>,
+				// dessen href auf ein tatsaechlich vorhandenes <article> zeigt, wird hier
+				// ignoriert - das Zeigen/Wechseln uebernimmt in jedem Fall bereits der
+				// hashchange-Handler weiter unten (inkl. dessen eigenem "aktuellen Artikel
+				// schliessen und neuen zeigen"-Zweig).
+					var $hashLink = $(event.target).closest('a[href^="#"]');
+					if ($hashLink.length > 0 && $main_articles.filter($hashLink.attr('href')).length > 0)
+						return;
 
 				// Article visible? Hide.
 					if ($body.hasClass('is-article-visible'))

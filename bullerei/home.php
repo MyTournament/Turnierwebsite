@@ -41,4 +41,16 @@ Diese Seite ist eine Sammlung der wichtigsten Bierballregeln:
 <br/><br/>WEITERFUEHRENDE LINKS
 <br/><a href="https://twitter.com/neighbours_wifi">Hier klicken</a>
 
+<!-- Bewusst unauffällig gehalten (kein Styling, kleine Schrift, "Login" statt z.B. "Bullerei weg") -
+     das hier ist der einzige Weg, die Website wieder zu aktivieren (siehe database/System_Website.
+     sperrung in index.php). Nur Admin/Co-Admin-Zugangsdaten funktionieren, siehe Rechte-Prüfung in
+     edit_website_bullerei.php. -->
+<br/><br/><br/>
+<form method="POST" action="../website_datachange/edit_website_bullerei.php" style="font-size:0.75em;">
+    <input type="hidden" name="action" value="take_online">
+    <input type="text" name="bn" placeholder="Kürzel" size="8">
+    <input type="password" name="pw" placeholder="Passwort" size="8">
+    <button type="submit">Login</button>
+</form>
+
 </html>

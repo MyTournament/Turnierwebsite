@@ -3,3 +3,8 @@ local_secrets/*.local.php
 *.bak
 tmp_*
 temp_*
+
+# Lokale Tool-Konfiguration
+CLAUDE.md
+.claude/
+.vs/

@@ -5,7 +5,9 @@ include_once '../website_functionalities/test_turnier_mode.php'; //Test-Modus
 //########################
 
 $NextSec = $_POST["NextSection"];
-$TurnierID = $_POST["TurnierID"];
+// SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber dieses Feld - dieser Passwort-Check ist
+// oeffentlich und unauthentifiziert erreichbar (er IST der Login-Mechanismus selbst).
+$TurnierID = (int)$_POST["TurnierID"];
 $Passwort = $_POST["turnier_pw"];
 
 // checken ob turnierID und pw zusammenpassen per DB abfrage

@@ -1,4 +1,86 @@
-<?php 
+<?php
+    // ================================================================================================
+    // GEMEINSAMER TEIL DER CMS-EDIT-TOOLBAR: Hoch/Runter/Hinzufügen/Löschen - ersetzt den früheren
+    // einzelnen "Danach einfügen"-Button. Hoch/Runter tauschen die Reihenfolge (order_in_group) mit
+    // dem jeweiligen Nachbar-Baustein in derselben Gruppe (Aktion "Verschieben" in edit_content.php).
+    // Löschen steht jetzt HIER in der Hauptansicht (nicht mehr im Bearbeiten-Formular) und postet
+    // direkt an edit_content.php statt erst ein Formular zu öffnen - braucht deshalb bn/pw + CSRF-
+    // Token direkt an dieser Stelle. bn/pw kommen bewusst per global (wie auch test_turnier_id an
+    // anderer Stelle in dieser Datei) statt als zusätzlicher Parameter, um nicht alle ~34 Aufrufstellen
+    // von cmsPrintSection() in index.php anpassen zu müssen.
+    // ================================================================================================
+    function cmsToolbarBewegenUndLoeschen($content_id, $TurnierID){
+        global $bn, $pw, $test_turnier_id;
+        $bnSafe = htmlspecialchars((string)$bn, ENT_QUOTES, 'UTF-8');
+        $pwSafe = htmlspecialchars((string)$pw, ENT_QUOTES, 'UTF-8');
+        $ttid = isset($test_turnier_id) ? (int)$test_turnier_id : 0;
+        $actionUrl = 'website_datachange/edit_content.php' . ($ttid != 0 ? "?test_turnier_id=$ttid" : '');
+        echo "
+            <form method='post' action='$actionUrl' style='display:inline;margin:0;'>
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnSafe'/>
+                <input type='hidden' name='pw' value='$pwSafe'/>
+                " . csrf_field() . "
+                <input type='hidden' name='action' value='Verschieben'/>
+                <input type='hidden' name='richtung' value='hoch'/>
+                <button type='submit' class='cms-edit-btn' title='Baustein nach oben verschieben'>&#8593;</button>
+            </form>
+            <form method='post' action='$actionUrl' style='display:inline;margin:0;'>
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnSafe'/>
+                <input type='hidden' name='pw' value='$pwSafe'/>
+                " . csrf_field() . "
+                <input type='hidden' name='action' value='Verschieben'/>
+                <input type='hidden' name='richtung' value='runter'/>
+                <button type='submit' class='cms-edit-btn' title='Baustein nach unten verschieben'>&#8595;</button>
+            </form>
+            <form method='post' action='#addcontent' style='display:inline;margin:0;'>
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <button type='submit' class='cms-edit-btn' title='Neuen Baustein direkt danach einfügen'>&#8595;&#43; Danach einfügen</button>
+            </form>
+            <form method='post' action='$actionUrl' style='display:inline;margin:0;' onsubmit=\"return confirm('Diesen Baustein wirklich unwiderruflich löschen? Das kann nicht rückgängig gemacht werden.');\">
+                <input type='hidden' name='contentID' value='$content_id'/>
+                <input type='hidden' name='TurnierID' value='$TurnierID'/>
+                <input type='hidden' name='bn' value='$bnSafe'/>
+                <input type='hidden' name='pw' value='$pwSafe'/>
+                " . csrf_field() . "
+                <input type='hidden' name='action' value='Löschen'/>
+                <button type='submit' class='cms-edit-btn cms-edit-btn-delete' title='Diesen Baustein löschen'>&#128465; Löschen</button>
+            </form>
+        ";
+    }
+
+    // ================================================================================================
+    // STYLE-TAG-HILFE (unterhalb von "Content ändern"/"Content hinzufügen") - war vorher SELBST ein
+    // CMS-Abschnitt (Section 9, ~8 einzelne CMS_Content-Bausteine, jeder mit voller Bearbeiten-
+    // Toolbar). Jetzt fest im Code statt in der Datenbank - kein Bearbeiten-
+    // Aufwand mehr nötig für eine reine Referenz-Erklärung, außerdem deutlich kompakter (ein
+    // einzelner Block statt 8 Bausteine mit je eigener Toolbar). Der alte Section-9-Aufruf ist damit
+    // ersetzt - die zugehörigen CMS_Content-Zeilen in der DB werden nicht mehr angezeigt, können aber
+    // bei Bedarf per SQL aufgeräumt werden.
+    // ================================================================================================
+    function printStyleTagHilfe(){
+        // Der "Immer doppelte Anführungszeichen"-Hinweis steht jetzt direkt über dem Inhalt-Feld im
+        // Formular selbst (siehe changeContent()/addContent() in cms_change_functions.php), damit man
+        // ihn VOR dem Eintippen sieht statt erst danach hier unten.
+        echo "
+        <div class='cms-style-tag-hilfe'>
+            <h3>Liste von Style-Tags</h3>
+            <p class='cms-style-tag-erklaerung'>Style-Tag hier reinkopieren - dabei nur den Buchstaben kopieren (ohne &lt; &gt;). Tags lassen sich auch kombinieren oder nur auf Teile des Inhalts anwenden - dafür direkt im Inhalt-Feld einsetzen, z.B. \"&lt;b&gt;du bist fett&lt;/b&gt; und ich nicht\" - sieht dann so aus: <b>du bist fett</b> und ich nicht.</p>
+            <ul class='cms-style-tag-liste'>
+                <li><code>p</code> normaler Text</li>
+                <li><code>h*</code> Überschrift - * mit einer Zahl von 1 bis 6 ersetzen, h2 ist Standard</li>
+                <li><code>em</code> kursiv</li>
+                <li><code>br</code> Zeilenumbruch</li>
+                <li><code>u</code> unterstrichen</li>
+                <li><code>b</code> fett</li>
+            </ul>
+        </div>
+        ";
+    }
+
     function cmsPrintSection($websiteId, $siteID, $TurnierID, $section, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $testTurnierMode){
         //SITE
         //checken ob es eine Site mit dieser ID gibt
@@ -98,23 +180,22 @@
                         $function = $rowFunction['function'];
                     }
                     //Login überprüfen und je nachdem in Buttons oder normal anzeigen
-                    if ($LoggedIn) { //<a style='color: green' href='#'>Bearbeiten</a> |||| color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;
-                        //BEARBEITEN
-                        echo "<form method='post' action='#changecontent' style='display: inline;margin: 0 0 0 0;'>
-                                <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;display: inline;' class='height: 1px;' name='content' value='' class='button primary'>&#9998;</button>
-                                <input type='hidden' name='contentID' value='$content_id'/>
-                                <input type='hidden' name='function' value='$content_fk_function'/>
-                                <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
-                                <p style='display: inline;'>&#8595;$content_order_in_group</p>
-                                <!-- <button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'>$content_order_in_group</button> -->
-                            </form> "; 
-                        //NEU EINFÜGEN
-                        echo "<form method='post' action='#addcontent' style='margin: 0 0 0 0;display: inline;'>
-                            <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;' class='height: 1px;' name='content' value='' class='button primary'>&#8595;+</button>
-                            <input type='hidden' name='contentID' value='$content_id'/>
-                        </form> ";
-                        echo "<h3 style='color: green;margin: 0 0 0 0;'>function -> $function ()</h3>";
-                        echo "<hr style='border-top: 3px solid green;margin: 0 0 0 0;'>";
+                    if ($LoggedIn) {
+                        // CMS-EDIT-TOOLBAR: einheitlich mit dem restlichen Backstage-Look (violett statt
+                        // grün), Buttons mit erklärenden Beschriftungen statt kryptischer Symbole allein,
+                        // Position klar beschriftet statt nacktem "↓3". CSS siehe main.css (.cms-edit-*).
+                        echo "<div class='cms-edit-toolbar'>
+                                <form method='post' action='#changecontent'>
+                                    <input type='hidden' name='contentID' value='$content_id'/>
+                                    <input type='hidden' name='function' value='$content_fk_function'/>
+                                    <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
+                                    <button type='submit' class='cms-edit-btn' title='Diesen Baustein bearbeiten'>&#9998; Bearbeiten</button>
+                                </form>
+                                <span class='cms-edit-position'>Position $content_order_in_group</span>";
+                        cmsToolbarBewegenUndLoeschen($content_id, $TurnierID);
+                        echo "</div>";
+                        echo "<h3 class='cms-edit-function-label'>Funktion: $function()</h3>";
+                        echo "<hr class='cms-edit-divider'>";
                     }else{
                         //echo "Funktionsausführung aus DB: $function<br>";
                         call_user_func($function, $TurnierID, $conn, $LoggedIn, $gameEditMode, $expertenmodus, $testTurnierMode);
@@ -122,24 +203,21 @@
                     }
                 }else{ //FALL CONTENT
                     //Login überprüfen und je nachdem in Buttons oder normal anzeigen
-                    if ($LoggedIn) { //<a style='color: green' href='#'>Bearbeiten</a> |||| color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;
-                        //BEARBEITEN
-                        echo "<form method='post' action='#changecontent' style='display: inline;margin: 0 0 0 0;'>
-                                <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;display: inline;' class='height: 1px;' name='content' value='' class='button primary'>&#9998;</button> <!-- width: 100%;height: auto;white-space: normal; -->
-                                <input type='hidden' name='contentID' value='$content_id'/>
-                                <input type='hidden' name='content' value='$content_text'/>
-                                <input type='hidden' name='content_style_tag' value='$content_style_tag'/>
-                                <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
-                                <p style='display: inline;'>&#8595;$content_order_in_group</p>
-                                <!-- <button style='background-color:red;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;' class='height: 1px;' name='action' value='' class='button primary'></button> -->
-                            </form> "; 
-                        //NEU EINFÜGEN
-                        echo "<form method='post' action='#addcontent' style='margin: 0 0 0 0;display: inline;'>
-                            <button style='background-color: green;padding: 0 0.1rem 0 0.2rem;height: 1rem;line-height: 1rem;border:none;outline: none;border-top: none;' class='height: 1px;' name='content' value='' class='button primary'>&#8595;+</button>
-                            <input type='hidden' name='contentID' value='$content_id'/>
-                        </form> ";
+                    if ($LoggedIn) {
+                        // CMS-EDIT-TOOLBAR: siehe Kommentar im FUNCTION-Zweig oben, gleiches Prinzip.
+                        echo "<div class='cms-edit-toolbar'>
+                                <form method='post' action='#changecontent'>
+                                    <input type='hidden' name='contentID' value='$content_id'/>
+                                    <input type='hidden' name='content' value='$content_text'/>
+                                    <input type='hidden' name='content_style_tag' value='$content_style_tag'/>
+                                    <input type='hidden' name='content_order_in_group' value='$content_order_in_group'/>
+                                    <button type='submit' class='cms-edit-btn' title='Diesen Baustein bearbeiten'>&#9998; Bearbeiten</button>
+                                </form>
+                                <span class='cms-edit-position'>Position $content_order_in_group</span>";
+                        cmsToolbarBewegenUndLoeschen($content_id, $TurnierID);
+                        echo "</div>";
                         echo "<$content_style_tag>$content_text</$content_style_tag>";
-                        echo "<hr style='border-top: 3px solid green;margin: 0 0 0 0;'>";
+                        echo "<hr class='cms-edit-divider'>";
                     }else{
                         if($content_style_tag){
                             echo "<$content_style_tag>$content_text</$content_style_tag>";

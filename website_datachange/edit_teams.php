@@ -1,4 +1,6 @@
 <?php
+// SICHERHEIT: MUSS vor dem ersten session_start() der Anfrage eingebunden werden.
+include_once '../website_functionalities/session_bootstrap.php';
 
 //########################
 include_once '../database/db_connection.php';
@@ -83,7 +85,11 @@ if (!headers_sent()) {
         if($captchaOk){
 			echo "<script>console.log('Step: reCAPTCHA response is valid')</script>";
 
-			$TurnierID = $_POST['TurnierID']; //die �bergebene TurnierID benutzen und nicht die aus variables.php
+			// SICHERHEIT: (int)-Cast schliesst SQL-Injection ueber dieses Feld, das ansonsten roh in
+			// mehreren Roh-SQL-Strings weiter unten landet (z.B. $sqlPhase/$sqlWarteliste) - dieses
+			// Formular ist oeffentlich und braucht KEINEN Login, war also ohne Cast durch jede/n
+			// unauthentifiziert ausnutzbar (z.B. per UNION SELECT ueber ein manipuliertes POST-Feld).
+			$TurnierID = (int)$_POST['TurnierID']; //die �bergebene TurnierID benutzen und nicht die aus variables.php
 
 			//SONDERFALL: WARTELISTE
 				echo "<script>console.log('Step: WARTELISTE - Aktuelle Turnierphase herausfinden')</script>";
@@ -255,19 +261,20 @@ if (!headers_sent()) {
 		$bn = $_POST['bn'];
 		$pw = $_POST['pw'];
 
-		//Benutzer
-		$benutzerliste = getBenutzerListe($conn);
+		// ====================================================================
+		// RECHTE-AUDIT: TEAMS BEARBEITEN NUR NOCH ÜBER DAS "teams"-FLAG (Turniermaster)
+		// ====================================================================
+		// Kein Admin/Co-Admin-Shortcut mehr - Admin/Co-Admin haben das teams-Flag
+		// in der Rollentabelle ohnehin gesetzt und sind damit weiterhin berechtigt.
 		$successfulLogin = 0; //false
-		while ($row = $benutzerliste->fetch_assoc()) {
-			if(
-				$row['Benutzername'] == $bn and
-				$row['Passwort'] == $pw and
-				$row['fk_rechte'] <= 10
-			){
-				$successfulLogin = 1;
-				$rechte = $row['fk_rechte'];
-			}
+		$rollenInfoTeams = getUserRollenInfo($conn, $bn, $pw);
+		if ($rollenInfoTeams !== null && $rollenInfoTeams['flags']['teams']) {
+			$successfulLogin = 1;
 		}
+		// "Teams generieren" (nur Testturniere, siehe unten) ist bewusst breiter als der Rest dieser
+		// Datei: jede Person mit backstage-Flag (Admin, Co-Admin, Turniermaster, Backstage-Zugang) darf
+		// das, nicht erst ab dem engeren teams-Flag - siehe index.php, Menü-Punkt "Teams generieren".
+		$darfTeamsGenerieren = $rollenInfoTeams !== null && $rollenInfoTeams['flags']['backstage'];
 		//Teams
 		//TODO: Team-Login hab ich erstmal rausgenommwen weil braucht es eigentlich nicht - riskant
 		//FALL: Team-Login -> Bearbeitungsrechte nur f�r eigene Begegnungen
@@ -317,49 +324,203 @@ if (!headers_sent()) {
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#teams");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#teams");
-			}	
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+			}
 
+		// ====================================================================
+		// RECHTE-AUDIT-FIX: change_group/rechte_weg/rechte_geben hatten BISHER
+		// GAR KEINE Rechte-Prüfung (echte Sicherheitslücke - jeder x-beliebige
+		// POST-Request konnte ohne gültigen Login Gruppen ändern oder
+		// Bearbeitungsrechte wegnehmen/geben). Jetzt ebenfalls über
+		// $successfulLogin (= teams-Flag, s.o.) abgesichert - doppelte Prüfung
+		// wie überall: der Button ist im UI nur bei $rechteFlags['teams']
+		// sichtbar, UND das Backend prüft hier zusätzlich unabhängig nach.
+		// Außerdem war "rechte_geben" bisher ein Kopierfehler von "rechte_weg"
+		// und setzte bearbeitungsrechte fälschlich auch auf 0 statt auf 1.
+		// ====================================================================
 		}else if($action == 'change_group'){
-			$teamId = $_POST['team'];
-			$gruppeId = $_POST['gruppe'];
-			$sql = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 7",$sql, array($gruppeId, $teamId));
-			
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$gruppeId = $_POST['gruppe'];
+				$sql = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ?";
+				myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 7",$sql, array($gruppeId, $teamId));
+			}
+
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#login");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#login");
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
 		}else if($action == 'rechte_weg'){
-			$teamId = $_POST['team'];
-			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 8",$sql, array($teamId));
-			
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
+				myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 8",$sql, array($teamId));
+			}
+
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#login");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#login");
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
 			}
 
 		}else if($action == 'rechte_geben'){
-			$teamId = $_POST['team'];
-			$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 0 WHERE id = ?";
-			myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 9",$sql, array($teamId));
-			
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$sql = "UPDATE Turnier_Team SET bearbeitungsrechte = 1 WHERE id = ?";
+				myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 9",$sql, array($teamId));
+			}
+
 			//WEITERLEITUNG ZUR�CK - mit eventueller TestTurnierID
 			$test_turnier_id = $_GET['test_turnier_id'];
 			if($test_turnier_id==NULL){
-				header("Location: /#login");
+				header("Location: /#backstage_teams_bearbeiten");
 			}else{
-				header("Location: /?test_turnier_id=$test_turnier_id#login");
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+			}
+
+		// ====================================================================
+		// NEU: TEAMNAME UND SPIELERNAMEN INLINE BEARBEITEN (Teil des Teams-
+		// bearbeiten-Neubaus) - Turniermaster (teams-Flag) darf laut Vorgabe auch
+		// Teamnamen und einzelne Spielernamen im Freitext ändern.
+		// ====================================================================
+		}else if($action == 'Team_Name_Aendern'){
+			if ($successfulLogin == 1) {
+				$teamId = $_POST['team'];
+				$neuerTeamname = trim($_POST['neuer_teamname']);
+				if ($neuerTeamname !== '') {
+					$sql = "UPDATE Turnier_Team SET name = ? WHERE id = ?";
+					myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 10",$sql, array($neuerTeamname, $teamId));
+				}
+			}
+
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_teams_bearbeiten");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+			}
+
+		}else if($action == 'Spieler_Name_Aendern'){
+			if ($successfulLogin == 1) {
+				$spielerId = $_POST['spieler'];
+				$neuerSpielername = trim($_POST['neuer_spielername']);
+				if ($neuerSpielername !== '') {
+					// fk_team gehört zum aktuellen Turnier gehört mit prüfen, damit nicht per
+					// manipulierter spieler-id ein Spieler eines fremden Turniers geändert werden kann.
+					$sql = "UPDATE Turnier_Spieler_in SET name = ? WHERE id = ? AND fk_team IN (SELECT id FROM Turnier_Team WHERE fk_turnier = ?)";
+					myDb_execute($conn, $TurnierID, $bn, "edit_teams.php 11",$sql, array($neuerSpielername, $spielerId, $TurnierID));
+				}
+			}
+
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_teams_bearbeiten");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_bearbeiten");
+			}
+
+		// ====================================================================================
+		// TEAMS IN GRUPPEN EINSORTIEREN: GESAMMELTE BATCH-ÄNDERUNG (ein Klick statt pro Team einzeln)
+		// ====================================================================================
+		// $_POST['gruppe'] ist ein Array team_id => gruppe_id (leerer String = "keine Gruppe" -> NULL).
+		// "AND fk_turnier = ?" pro Update ist ein Sicherheitsnetz, damit über manipulierte team_ids
+		// nicht Teams eines fremden Turniers verändert werden können.
+		}else if($action == 'Teams_Gruppen_Batch_Aendern'){
+			if ($successfulLogin == 1) {
+				$gruppenZuweisungen = (isset($_POST['gruppe']) && is_array($_POST['gruppe'])) ? $_POST['gruppe'] : [];
+				foreach ($gruppenZuweisungen as $tgTeamIdRaw => $tgGruppeIdRaw) {
+					$tgTeamId = (int)$tgTeamIdRaw;
+					if ($tgGruppeIdRaw === '') {
+						$sqlTgBatch = "UPDATE Turnier_Team SET fk_gruppe = NULL WHERE id = ? AND fk_turnier = ?";
+						myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Gruppen_Batch_Aendern", $sqlTgBatch, array($tgTeamId, $TurnierID));
+					} else {
+						$tgGruppeId = (int)$tgGruppeIdRaw;
+						$sqlTgBatch = "UPDATE Turnier_Team SET fk_gruppe = ? WHERE id = ? AND fk_turnier = ?";
+						myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Gruppen_Batch_Aendern", $sqlTgBatch, array($tgGruppeId, $tgTeamId, $TurnierID));
+					}
+				}
+			}
+
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#backstage_teams_gruppen_einsortieren");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#backstage_teams_gruppen_einsortieren");
+			}
+
+		// ====================================================================================
+		// TEAMS GENERIEREN: NUR FÜR TESTTURNIERE (type=2) - LEGT N TESTTEAMS INKL. SPIELER AN
+		// ====================================================================================
+		// Sicherheitsnetz unabhängig von der UI-Sichtbarkeit: bevor irgendetwas eingefügt wird, wird
+		// hier noch einmal serverseitig geprüft, dass $TurnierID tatsächlich zu einem Testturnier
+		// gehört. Damit kann diese Funktion (auch bei manipulierten Requests) niemals versehentlich
+		// Teams im echten, laufenden Turnier anlegen. Kürzel und Passwort sind bewusst identisch
+		// (z.B. "T5"/"T5"), damit einzelne Team-Logins beim Testen leicht nachvollzogen werden können.
+		}else if($action == 'Teams_Generieren'){
+			if ($darfTeamsGenerieren) {
+				$sqlTypCheck = "SELECT type FROM Turnier_Main WHERE id = ?";
+				$stmtTypCheck = $conn->prepare($sqlTypCheck);
+				$stmtTypCheck->bind_param("i", $TurnierID);
+				$stmtTypCheck->execute();
+				$rowTypCheck = $stmtTypCheck->get_result()->fetch_assoc();
+
+				if ($rowTypCheck !== null && (int)$rowTypCheck['type'] === 2) {
+					$anzahlTestteams = max(1, min(100, (int)$_POST['anzahl_testteams']));
+
+					$vornamenPool = ['Anna','Ben','Clara','David','Emma','Felix','Greta','Hannes','Ida','Jan','Klara','Leon','Mia','Noah','Olivia','Paul','Quirin','Rosa','Simon','Tim'];
+					$nachnamenPool = ['Bauer','Fischer','Huber','Klein','Lang','Meyer','Neumann','Otto','Peters','Richter','Schmidt','Schulz','Vogel','Wagner','Weber','Winter','Wolf','Zimmermann'];
+
+					// Höchstes bereits vorhandenes "T<n>"-Kürzel in diesem Turnier ermitteln, damit die
+					// Funktion mehrfach ausführbar ist, ohne Kürzel-Kollisionen zu erzeugen.
+					$sqlMaxT = "SELECT kuerzel FROM Turnier_Team WHERE fk_turnier = ? AND kuerzel REGEXP '^T[0-9]+$'";
+					$stmtMaxT = $conn->prepare($sqlMaxT);
+					$stmtMaxT->bind_param("i", $TurnierID);
+					$stmtMaxT->execute();
+					$resMaxT = $stmtMaxT->get_result();
+					$maxT = 0;
+					while ($rowMaxT = $resMaxT->fetch_assoc()) {
+						$n = (int)substr($rowMaxT['kuerzel'], 1);
+						if ($n > $maxT) { $maxT = $n; }
+					}
+
+					for ($i = 1; $i <= $anzahlTestteams; $i++) {
+						$nummer = $maxT + $i;
+						$kuerzel = "T$nummer";
+						$teamname = "Testteam $nummer";
+						// fk_gruppe wird bewusst explizit auf NULL gesetzt (nicht einfach weggelassen) -
+						// damit generierte Teams garantiert ungruppiert starten, unabhaengig davon, ob
+						// die Spalte in der DB zufaellig einen anderen Default-Wert haette.
+						$sqlInsertTeam = "INSERT INTO Turnier_Team (fk_turnier, name, kuerzel, password, mail, woher_erfahren, bearbeitungsrechte, fk_gruppe) VALUES (?, ?, ?, ?, '', 'Automatisch generiertes Testteam', 1, NULL)";
+						$teamId = myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Generieren", $sqlInsertTeam, array($TurnierID, $teamname, $kuerzel, $kuerzel));
+
+						for ($s = 1; $s <= 3; $s++) {
+							$spielername = $vornamenPool[array_rand($vornamenPool)] . ' ' . $nachnamenPool[array_rand($nachnamenPool)];
+							$telefonnummer = '0151' . str_pad((string)random_int(0, 9999999), 7, '0', STR_PAD_LEFT);
+							$sqlInsertSpieler = "INSERT INTO Turnier_Spieler_in (fk_team, name, telefonnummer) VALUES (?, ?, ?)";
+							myDb_execute($conn, $TurnierID, $bn, "edit_teams.php Teams_Generieren Spieler", $sqlInsertSpieler, array($teamId, $spielername, $telefonnummer));
+						}
+					}
+
+					if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+					$_SESSION['flash_success'] = "$anzahlTestteams Testteam(s) erfolgreich generiert.";
+				}
+			}
+
+			// Nach dem Generieren zur oeffentlichen Teamliste weiterleiten, damit man die neu
+			// angelegten Teams direkt zwischen den echten/anderen Teams sieht.
+			$test_turnier_id = $_GET['test_turnier_id'];
+			if($test_turnier_id==NULL){
+				header("Location: /#teams");
+			}else{
+				header("Location: /?test_turnier_id=$test_turnier_id#teams");
 			}
 
 		}
