@@ -1,6 +1,6 @@
 # Tournament Website
 
-A full-featured web platform for organizing and running recurring sports tournaments —
+A full-featured web platform for organizing and running recurring sports tournaments:
 from team registration and the group draw through the knockout bracket to the final
 standings. It is used in production for the annual **Blankiball** tournament
 ([blankiball.de](https://blankiball.de)) and ships with its own **content management system**,
@@ -55,7 +55,7 @@ tournaments (history) and sandboxed test tournaments.
 
 ## Content Management System
 
-The public pages are not hard-coded — they are assembled from content blocks stored in the
+The public pages are not hard-coded. They are assembled from content blocks stored in the
 database and can be edited directly on the live page by users with the *Author* role (or higher).
 
 **Content model.** Content is organized hierarchically:
@@ -128,7 +128,7 @@ any local PHP stack such as XAMPP or EasyPHP works for development).
 3. Create the database and point the configuration to it.
 4. Open `index.php` in the browser.
 
-Credentials are never committed — `local_secrets/*.local.php` is excluded via `.gitignore`.
+Credentials are never committed: `local_secrets/*.local.php` is excluded via `.gitignore`.
 More details on the server setup can be found in [SETUP.md](SETUP.md).
 
 ## Contributors
